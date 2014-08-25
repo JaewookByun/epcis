@@ -8,10 +8,14 @@
 package org.oliot.epcis.wsdl;
 
 public class EPCISServiceBindingStub extends org.apache.axis.client.Stub implements org.oliot.epcis.wsdl.EPCISServicePortType {
-    private java.util.Vector cachedSerClasses = new java.util.Vector();
-    private java.util.Vector cachedSerQNames = new java.util.Vector();
-    private java.util.Vector cachedSerFactories = new java.util.Vector();
-    private java.util.Vector cachedDeserFactories = new java.util.Vector();
+    @SuppressWarnings("rawtypes")
+	private java.util.Vector cachedSerClasses = new java.util.Vector();
+    @SuppressWarnings("rawtypes")
+	private java.util.Vector cachedSerQNames = new java.util.Vector();
+    @SuppressWarnings("rawtypes")
+	private java.util.Vector cachedSerFactories = new java.util.Vector();
+    @SuppressWarnings("rawtypes")
+	private java.util.Vector cachedDeserFactories = new java.util.Vector();
 
     static org.apache.axis.description.OperationDesc [] _operations;
 
@@ -319,7 +323,8 @@ public class EPCISServiceBindingStub extends org.apache.axis.client.Stub impleme
          super.cachedEndpoint = endpointURL;
     }
 
-    public EPCISServiceBindingStub(javax.xml.rpc.Service service) throws org.apache.axis.AxisFault {
+    @SuppressWarnings({ "rawtypes", "unused" })
+	public EPCISServiceBindingStub(javax.xml.rpc.Service service) throws org.apache.axis.AxisFault {
         if (service == null) {
             super.service = new org.apache.axis.client.Service();
         } else {
@@ -343,7 +348,8 @@ public class EPCISServiceBindingStub extends org.apache.axis.client.Stub impleme
         addBindings1();
     }
 
-    private void addBindings0() {
+    @SuppressWarnings({ "rawtypes", "unused", "unchecked" })
+	private void addBindings0() {
             java.lang.Class cls;
             javax.xml.namespace.QName qName;
             javax.xml.namespace.QName qName2;
@@ -1080,7 +1086,8 @@ public class EPCISServiceBindingStub extends org.apache.axis.client.Stub impleme
             cachedDeserFactories.add(new org.apache.axis.encoding.ser.ArrayDeserializerFactory());
 
     }
-    private void addBindings1() {
+    @SuppressWarnings({ "rawtypes", "unused", "unchecked" })
+	private void addBindings1() {
             java.lang.Class cls;
             javax.xml.namespace.QName qName;
             javax.xml.namespace.QName qName2;
@@ -1208,7 +1215,8 @@ public class EPCISServiceBindingStub extends org.apache.axis.client.Stub impleme
 
     }
 
-    protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
+    @SuppressWarnings("rawtypes")
+	protected org.apache.axis.client.Call createCall() throws java.rmi.RemoteException {
         try {
             org.apache.axis.client.Call _call = super._createCall();
             if (super.maintainSessionSet) {

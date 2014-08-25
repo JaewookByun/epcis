@@ -7,6 +7,7 @@
 
 package org.unece.www.cefact.namespaces.StandardBusinessDocumentHeader;
 
+@SuppressWarnings("serial")
 public class Manifest  implements java.io.Serializable {
     private java.math.BigInteger numberOfItems;
 
@@ -71,7 +72,8 @@ public class Manifest  implements java.io.Serializable {
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof Manifest)) return false;
         Manifest other = (Manifest) obj;
         if (obj == null) return false;
@@ -148,7 +150,8 @@ public class Manifest  implements java.io.Serializable {
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -160,7 +163,8 @@ public class Manifest  implements java.io.Serializable {
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

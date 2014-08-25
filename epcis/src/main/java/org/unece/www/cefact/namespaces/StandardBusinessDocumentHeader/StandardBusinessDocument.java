@@ -7,6 +7,7 @@
 
 package org.unece.www.cefact.namespaces.StandardBusinessDocumentHeader;
 
+@SuppressWarnings("serial")
 public class StandardBusinessDocument  implements java.io.Serializable, org.apache.axis.encoding.AnyContentType {
     private org.unece.www.cefact.namespaces.StandardBusinessDocumentHeader.StandardBusinessDocumentHeader standardBusinessDocumentHeader;
 
@@ -63,7 +64,8 @@ public class StandardBusinessDocument  implements java.io.Serializable, org.apac
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof StandardBusinessDocument)) return false;
         StandardBusinessDocument other = (StandardBusinessDocument) obj;
         if (obj == null) return false;
@@ -134,7 +136,8 @@ public class StandardBusinessDocument  implements java.io.Serializable, org.apac
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -146,7 +149,8 @@ public class StandardBusinessDocument  implements java.io.Serializable, org.apac
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

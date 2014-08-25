@@ -7,6 +7,7 @@
 
 package org.oliot.epcis.wsdl;
 
+@SuppressWarnings("serial")
 public class EPCglobalEPCISServiceLocator extends org.apache.axis.client.Service implements org.oliot.epcis.wsdl.EPCglobalEPCISService {
 
     public EPCglobalEPCISServiceLocator() {
@@ -70,7 +71,8 @@ public class EPCglobalEPCISServiceLocator extends org.apache.axis.client.Service
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
      */
-    public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
+    @SuppressWarnings("rawtypes")
+	public java.rmi.Remote getPort(Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         try {
             if (org.oliot.epcis.wsdl.EPCISServicePortType.class.isAssignableFrom(serviceEndpointInterface)) {
                 org.oliot.epcis.wsdl.EPCISServiceBindingStub _stub = new org.oliot.epcis.wsdl.EPCISServiceBindingStub(new java.net.URL(EPCglobalEPCISServicePort_address), this);
@@ -89,7 +91,8 @@ public class EPCglobalEPCISServiceLocator extends org.apache.axis.client.Service
      * If this service has no port for the given interface,
      * then ServiceException is thrown.
      */
-    public java.rmi.Remote getPort(javax.xml.namespace.QName portName, Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
+    @SuppressWarnings("rawtypes")
+	public java.rmi.Remote getPort(javax.xml.namespace.QName portName, Class serviceEndpointInterface) throws javax.xml.rpc.ServiceException {
         if (portName == null) {
             return getPort(serviceEndpointInterface);
         }
@@ -108,9 +111,11 @@ public class EPCglobalEPCISServiceLocator extends org.apache.axis.client.Service
         return new javax.xml.namespace.QName("wsdl.epcis.oliot.org", "EPCglobalEPCISService");
     }
 
-    private java.util.HashSet ports = null;
+    @SuppressWarnings("rawtypes")
+	private java.util.HashSet ports = null;
 
-    public java.util.Iterator getPorts() {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public java.util.Iterator getPorts() {
         if (ports == null) {
             ports = new java.util.HashSet();
             ports.add(new javax.xml.namespace.QName("wsdl.epcis.oliot.org", "EPCglobalEPCISServicePort"));

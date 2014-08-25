@@ -7,6 +7,7 @@
 
 package org.unece.www.cefact.namespaces.StandardBusinessDocumentHeader;
 
+@SuppressWarnings("serial")
 public class CorrelationInformation  implements java.io.Serializable {
     private java.util.Calendar requestingDocumentCreationDateTime;
 
@@ -48,7 +49,7 @@ public class CorrelationInformation  implements java.io.Serializable {
 
 
     /**
-     * Gets the requestingDocumentInstanceIdentifier value for this CorrelationInformation.
+     * Gets the requestingDocumentInstanceIdentif가ier value for this CorrelationInformation.
      * 
      * @return requestingDocumentInstanceIdentifier
      */
@@ -87,7 +88,8 @@ public class CorrelationInformation  implements java.io.Serializable {
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof CorrelationInformation)) return false;
         CorrelationInformation other = (CorrelationInformation) obj;
         if (obj == null) return false;
@@ -170,7 +172,8 @@ public class CorrelationInformation  implements java.io.Serializable {
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -182,7 +185,8 @@ public class CorrelationInformation  implements java.io.Serializable {
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

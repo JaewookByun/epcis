@@ -7,12 +7,15 @@
 
 package org.oliot.epcis.query;
 
+@SuppressWarnings("serial")
 public class ImplementationExceptionSeverity implements java.io.Serializable {
     private org.apache.axis.types.NCName _value_;
-    private static java.util.HashMap _table_ = new java.util.HashMap();
+    @SuppressWarnings("rawtypes")
+	private static java.util.HashMap _table_ = new java.util.HashMap();
 
     // Constructor
-    protected ImplementationExceptionSeverity(org.apache.axis.types.NCName value) {
+    @SuppressWarnings("unchecked")
+	protected ImplementationExceptionSeverity(org.apache.axis.types.NCName value) {
         _value_ = value;
         _table_.put(_value_,this);
     }
@@ -41,7 +44,8 @@ public class ImplementationExceptionSeverity implements java.io.Serializable {
     public int hashCode() { return toString().hashCode();}
     public java.lang.String toString() { return _value_.toString();}
     public java.lang.Object readResolve() throws java.io.ObjectStreamException { return fromValue(_value_);}
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -49,7 +53,8 @@ public class ImplementationExceptionSeverity implements java.io.Serializable {
           new org.apache.axis.encoding.ser.EnumSerializer(
             _javaType, _xmlType);
     }
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

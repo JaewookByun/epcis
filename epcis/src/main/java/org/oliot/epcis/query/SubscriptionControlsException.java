@@ -7,6 +7,7 @@
 
 package org.oliot.epcis.query;
 
+@SuppressWarnings("serial")
 public class SubscriptionControlsException  extends org.oliot.epcis.query.EPCISException  implements java.io.Serializable {
     public SubscriptionControlsException() {
     }
@@ -18,7 +19,8 @@ public class SubscriptionControlsException  extends org.oliot.epcis.query.EPCISE
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof SubscriptionControlsException)) return false;
         SubscriptionControlsException other = (SubscriptionControlsException) obj;
         if (obj == null) return false;
@@ -62,7 +64,8 @@ public class SubscriptionControlsException  extends org.oliot.epcis.query.EPCISE
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -74,7 +77,8 @@ public class SubscriptionControlsException  extends org.oliot.epcis.query.EPCISE
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

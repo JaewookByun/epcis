@@ -7,6 +7,7 @@
 
 package org.oliot.epcis.query;
 
+@SuppressWarnings("serial")
 public class SubscriptionControls  implements java.io.Serializable, org.apache.axis.encoding.AnyContentType {
     private org.oliot.epcis.query.QuerySchedule schedule;
 
@@ -159,7 +160,8 @@ public class SubscriptionControls  implements java.io.Serializable, org.apache.a
     }
 
     private java.lang.Object __equalsCalc = null;
-    public synchronized boolean equals(java.lang.Object obj) {
+    @SuppressWarnings("unused")
+	public synchronized boolean equals(java.lang.Object obj) {
         if (!(obj instanceof SubscriptionControls)) return false;
         SubscriptionControls other = (SubscriptionControls) obj;
         if (obj == null) return false;
@@ -277,7 +279,8 @@ public class SubscriptionControls  implements java.io.Serializable, org.apache.a
     /**
      * Get Custom Serializer
      */
-    public static org.apache.axis.encoding.Serializer getSerializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Serializer getSerializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {
@@ -289,7 +292,8 @@ public class SubscriptionControls  implements java.io.Serializable, org.apache.a
     /**
      * Get Custom Deserializer
      */
-    public static org.apache.axis.encoding.Deserializer getDeserializer(
+    @SuppressWarnings("rawtypes")
+	public static org.apache.axis.encoding.Deserializer getDeserializer(
            java.lang.String mechType, 
            java.lang.Class _javaType,  
            javax.xml.namespace.QName _xmlType) {

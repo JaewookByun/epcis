@@ -7,6 +7,7 @@
 
 package org.oliot.epcis.wsdl;
 
+@SuppressWarnings({ "serial", "unchecked", "rawtypes" })
 public class EPCISServiceBindingSkeleton implements org.oliot.epcis.wsdl.EPCISServicePortType, org.apache.axis.wsdl.Skeleton {
     private org.oliot.epcis.wsdl.EPCISServicePortType impl;
     private static java.util.Map _myOperations = new java.util.Hashtable();
