@@ -7,10 +7,14 @@
 
 package org.oliot.epcis.wsdl;
 
+import java.net.URL;
+
+import javax.xml.rpc.ServiceException;
+
 public interface EPCglobalEPCISService extends javax.xml.rpc.Service {
-    public java.lang.String getEPCglobalEPCISServicePortAddress();
+    public String getEPCglobalEPCISServicePortAddress();
 
-    public org.oliot.epcis.wsdl.EPCISServicePortType getEPCglobalEPCISServicePort() throws javax.xml.rpc.ServiceException;
+    public EPCISServicePortType getEPCglobalEPCISServicePort() throws ServiceException;
 
-    public org.oliot.epcis.wsdl.EPCISServicePortType getEPCglobalEPCISServicePort(java.net.URL portAddress) throws javax.xml.rpc.ServiceException;
+    public EPCISServicePortType getEPCglobalEPCISServicePort(URL portAddress) throws ServiceException;
 }

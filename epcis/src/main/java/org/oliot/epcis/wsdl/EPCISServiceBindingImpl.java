@@ -7,33 +7,58 @@
 
 package org.oliot.epcis.wsdl;
 
-public class EPCISServiceBindingImpl implements org.oliot.epcis.wsdl.EPCISServicePortType{
-    public java.lang.String[] getQueryNames(org.oliot.epcis.query.EmptyParms parms) throws java.rmi.RemoteException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+import java.rmi.RemoteException;
 
-    public org.oliot.epcis.query.VoidHolder subscribe(org.oliot.epcis.query.Subscribe parms) throws java.rmi.RemoteException, org.oliot.epcis.query.QueryTooComplexException, org.oliot.epcis.query.SubscribeNotPermittedException, org.oliot.epcis.query.QueryParameterException, org.oliot.epcis.query.NoSuchNameException, org.oliot.epcis.query.DuplicateSubscriptionException, org.oliot.epcis.query.InvalidURIException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.SubscriptionControlsException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+import org.oliot.epcis.query.DuplicateSubscriptionException;
+import org.oliot.epcis.query.EmptyParms;
+import org.oliot.epcis.query.GetSubscriptionIDs;
+import org.oliot.epcis.query.ImplementationException;
+import org.oliot.epcis.query.InvalidURIException;
+import org.oliot.epcis.query.NoSuchNameException;
+import org.oliot.epcis.query.NoSuchSubscriptionException;
+import org.oliot.epcis.query.Poll;
+import org.oliot.epcis.query.QueryParameterException;
+import org.oliot.epcis.query.QueryResults;
+import org.oliot.epcis.query.QueryTooComplexException;
+import org.oliot.epcis.query.QueryTooLargeException;
+import org.oliot.epcis.query.Subscribe;
+import org.oliot.epcis.query.SubscribeNotPermittedException;
+import org.oliot.epcis.query.SubscriptionControlsException;
+import org.oliot.epcis.query.Unsubscribe;
+import org.oliot.epcis.query.ValidationException;
+import org.oliot.epcis.query.VoidHolder;
 
-    public org.oliot.epcis.query.VoidHolder unsubscribe(org.oliot.epcis.query.Unsubscribe parms) throws java.rmi.RemoteException, org.oliot.epcis.query.NoSuchSubscriptionException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+public class EPCISServiceBindingImpl implements EPCISServicePortType{
+	public String[] getQueryNames(EmptyParms parms) throws RemoteException, ImplementationException, org.oliot.epcis.query.SecurityException, ValidationException {
 
-    public java.lang.String[] getSubscriptionIDs(org.oliot.epcis.query.GetSubscriptionIDs parms) throws java.rmi.RemoteException, org.oliot.epcis.query.NoSuchNameException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+		return null;
+	}
 
-    public org.oliot.epcis.query.QueryResults poll(org.oliot.epcis.query.Poll parms) throws java.rmi.RemoteException, org.oliot.epcis.query.QueryTooComplexException, org.oliot.epcis.query.QueryTooLargeException, org.oliot.epcis.query.NoSuchNameException, org.oliot.epcis.query.QueryParameterException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+	public VoidHolder subscribe(Subscribe parms) throws RemoteException, QueryTooComplexException, SubscribeNotPermittedException, QueryParameterException, NoSuchNameException, DuplicateSubscriptionException, InvalidURIException, ImplementationException, SecurityException, SubscriptionControlsException, ValidationException {
+		return null;
+	}
 
-    public java.lang.String getStandardVersion(org.oliot.epcis.query.EmptyParms parms) throws java.rmi.RemoteException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+	public VoidHolder unsubscribe(Unsubscribe parms) throws RemoteException, NoSuchSubscriptionException, ImplementationException, SecurityException, ValidationException {
+		return null;
+	}
 
-    public java.lang.String getVendorVersion(org.oliot.epcis.query.EmptyParms parms) throws java.rmi.RemoteException, org.oliot.epcis.query.ImplementationException, org.oliot.epcis.query.SecurityException, org.oliot.epcis.query.ValidationException {
-        return null;
-    }
+	public String[] getSubscriptionIDs( GetSubscriptionIDs parms) throws RemoteException, NoSuchNameException, ImplementationException, SecurityException, ValidationException {
+		return null;
+	}
+
+	public QueryResults poll(Poll parms) throws RemoteException, QueryTooComplexException, QueryTooLargeException, NoSuchNameException, QueryParameterException, ImplementationException, SecurityException, ValidationException {
+		
+		return null;
+	}
+
+	public String getStandardVersion(EmptyParms parms) throws RemoteException, ImplementationException, SecurityException, ValidationException {
+		// This is the implementation of EPCIS v1.1
+		return "1.1";
+	}
+
+	public String getVendorVersion(EmptyParms parms) throws RemoteException, ImplementationException, SecurityException, ValidationException {
+		// This is standard Version, thus returning null according to the EPCIS v1.1
+		return null;
+	}
 
 }

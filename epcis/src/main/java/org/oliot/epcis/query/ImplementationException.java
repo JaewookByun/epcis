@@ -7,46 +7,51 @@
 
 package org.oliot.epcis.query;
 
+import java.io.IOException;
+import java.io.Serializable;
+
+import javax.xml.namespace.QName;
+
+import org.apache.axis.description.ElementDesc;
+import org.apache.axis.description.TypeDesc;
+import org.apache.axis.encoding.Deserializer;
+import org.apache.axis.encoding.SerializationContext;
+import org.apache.axis.encoding.Serializer;
+import org.apache.axis.encoding.ser.BeanDeserializer;
+import org.apache.axis.encoding.ser.BeanSerializer;
+
 @SuppressWarnings("serial")
-public class ImplementationException  extends org.oliot.epcis.query.EPCISException  implements java.io.Serializable {
-    private org.oliot.epcis.query.ImplementationExceptionSeverity severity;
+public class ImplementationException  extends EPCISException  implements Serializable {
+    private ImplementationExceptionSeverity severity;
 
-    private java.lang.String queryName;
+    private String queryName;
 
-    private java.lang.String subscriptionID;
+    private String subscriptionID;
 
-    public ImplementationException() {
-    }
+    public ImplementationException() {}
 
-    public ImplementationException(
-           java.lang.String reason,
-           org.oliot.epcis.query.ImplementationExceptionSeverity severity,
-           java.lang.String queryName,
-           java.lang.String subscriptionID) {
-        super(
-            reason);
+    public ImplementationException( String reason, ImplementationExceptionSeverity severity, String queryName, String subscriptionID) {
+        super(reason);
         this.severity = severity;
         this.queryName = queryName;
         this.subscriptionID = subscriptionID;
     }
-
 
     /**
      * Gets the severity value for this ImplementationException.
      * 
      * @return severity
      */
-    public org.oliot.epcis.query.ImplementationExceptionSeverity getSeverity() {
+    public ImplementationExceptionSeverity getSeverity() {
         return severity;
     }
-
 
     /**
      * Sets the severity value for this ImplementationException.
      * 
      * @param severity
      */
-    public void setSeverity(org.oliot.epcis.query.ImplementationExceptionSeverity severity) {
+    public void setSeverity( ImplementationExceptionSeverity severity) {
         this.severity = severity;
     }
 
@@ -56,7 +61,7 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
      * 
      * @return queryName
      */
-    public java.lang.String getQueryName() {
+    public String getQueryName() {
         return queryName;
     }
 
@@ -66,7 +71,7 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
      * 
      * @param queryName
      */
-    public void setQueryName(java.lang.String queryName) {
+    public void setQueryName( String queryName) {
         this.queryName = queryName;
     }
 
@@ -76,7 +81,7 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
      * 
      * @return subscriptionID
      */
-    public java.lang.String getSubscriptionID() {
+    public String getSubscriptionID() {
         return subscriptionID;
     }
 
@@ -86,13 +91,13 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
      * 
      * @param subscriptionID
      */
-    public void setSubscriptionID(java.lang.String subscriptionID) {
+    public void setSubscriptionID( String subscriptionID) {
         this.subscriptionID = subscriptionID;
     }
 
-    private java.lang.Object __equalsCalc = null;
+    private Object __equalsCalc = null;
     @SuppressWarnings("unused")
-	public synchronized boolean equals(java.lang.Object obj) {
+	public synchronized boolean equals(Object obj) {
         if (!(obj instanceof ImplementationException)) return false;
         ImplementationException other = (ImplementationException) obj;
         if (obj == null) return false;
@@ -137,28 +142,27 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
     }
 
     // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(ImplementationException.class, true);
+    private static TypeDesc typeDesc = new TypeDesc(ImplementationException.class, true);
 
     static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("query.epcis.oliot.org", "ImplementationException"));
-        org.apache.axis.description.ElementDesc elemField = new org.apache.axis.description.ElementDesc();
+        typeDesc.setXmlType(new QName("query.epcis.oliot.org", "ImplementationException"));
+        ElementDesc elemField = new ElementDesc();
         elemField.setFieldName("severity");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "severity"));
-        elemField.setXmlType(new javax.xml.namespace.QName("query.epcis.oliot.org", "ImplementationExceptionSeverity"));
+        elemField.setXmlName(new QName("", "severity"));
+        elemField.setXmlType(new QName("query.epcis.oliot.org", "ImplementationExceptionSeverity"));
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
+        elemField = new ElementDesc();
         elemField.setFieldName("queryName");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "queryName"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlName(new QName("", "queryName"));
+        elemField.setXmlType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
-        elemField = new org.apache.axis.description.ElementDesc();
+        elemField = new ElementDesc();
         elemField.setFieldName("subscriptionID");
-        elemField.setXmlName(new javax.xml.namespace.QName("", "subscriptionID"));
-        elemField.setXmlType(new javax.xml.namespace.QName("http://www.w3.org/2001/XMLSchema", "string"));
+        elemField.setXmlName(new QName("", "subscriptionID"));
+        elemField.setXmlType(new QName("http://www.w3.org/2001/XMLSchema", "string"));
         elemField.setMinOccurs(0);
         elemField.setNillable(false);
         typeDesc.addFieldDesc(elemField);
@@ -167,7 +171,7 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
     /**
      * Return type metadata object
      */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
+    public static TypeDesc getTypeDesc() {
         return typeDesc;
     }
 
@@ -175,33 +179,23 @@ public class ImplementationException  extends org.oliot.epcis.query.EPCISExcepti
      * Get Custom Serializer
      */
     @SuppressWarnings("rawtypes")
-	public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanSerializer(
-            _javaType, _xmlType, typeDesc);
+	public static Serializer getSerializer( String mechType, Class _javaType, QName _xmlType) {
+        return new  BeanSerializer( _javaType, _xmlType, typeDesc);
     }
 
     /**
      * Get Custom Deserializer
      */
     @SuppressWarnings("rawtypes")
-	public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new  org.apache.axis.encoding.ser.BeanDeserializer(
-            _javaType, _xmlType, typeDesc);
+	public static Deserializer getDeserializer( String mechType, Class _javaType,  QName _xmlType) {
+        return new  BeanDeserializer( _javaType, _xmlType, typeDesc);
     }
 
 
     /**
      * Writes the exception data to the faultDetails
      */
-    public void writeDetails(javax.xml.namespace.QName qname, org.apache.axis.encoding.SerializationContext context) throws java.io.IOException {
+    public void writeDetails( QName qname, SerializationContext context) throws IOException {
         context.serialize(qname, null, this);
     }
 }

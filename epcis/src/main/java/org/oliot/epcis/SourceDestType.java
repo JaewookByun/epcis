@@ -19,7 +19,6 @@ public class SourceDestType  implements java.io.Serializable, org.apache.axis.en
        this.type = _value;
     }
 
-
     /**
      * Gets the type value for this SourceDestType.
      * 

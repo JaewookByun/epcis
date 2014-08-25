@@ -376,7 +376,7 @@
     <!-- The address shown below is an example; an implementation MAY specify
          any port it wishes
      -->
-      <wsdlsoap:address location="http://localhost:8888/epcis/services/EPCglobalEPCISServicePort"/>
+      <wsdlsoap:address location="http://localhost:8080/epcis/services/EPCglobalEPCISServicePort"/>
     </wsdl:port>
   </wsdl:service>
 
