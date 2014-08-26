@@ -15,6 +15,12 @@
   	<servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
   	<load-on-startup>100</load-on-startup>
   </servlet>
+  <servlet>
+  	<servlet-name>CaptureServlet</servlet-name>
+  	<display-name>CaptureServlet</display-name>
+  	<description></description>
+  	<servlet-class>org.oliot.epcis.service.capture.CaptureServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
   	<servlet-name>AxisServlet</servlet-name>
   	<url-pattern>/servlet/AxisServlet</url-pattern>
@@ -30,5 +36,9 @@
   <servlet-mapping>
   	<servlet-name>AdminServlet</servlet-name>
   	<url-pattern>/servlet/AdminServlet</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>CaptureServlet</servlet-name>
+  	<url-pattern>/capture</url-pattern>
   </servlet-mapping>
 </web-app>
