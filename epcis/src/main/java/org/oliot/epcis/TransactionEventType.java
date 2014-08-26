@@ -31,7 +31,12 @@ public class TransactionEventType  extends org.oliot.epcis.EPCISEventType  imple
 
     private org.oliot.epcis.BusinessLocationType bizLocation;
 
-    private org.oliot.epcis.TransactionEventExtensionType extension;
+    //WSDL doesn't reflect QuantityList
+    private QuantityElementType[] quantityElements;
+    
+   
+
+	private org.oliot.epcis.TransactionEventExtensionType extension;
 
     private org.apache.axis.message.MessageElement [] _any;
 
@@ -110,7 +115,15 @@ public class TransactionEventType  extends org.oliot.epcis.EPCISEventType  imple
         this.parentID = parentID;
     }
 
+    public QuantityElementType[] getQuantityElements() {
+		return quantityElements;
+	}
 
+	public void setQuantityElements(QuantityElementType[] quantityElements) {
+		this.quantityElements = quantityElements;
+	}
+    
+    
     /**
      * Gets the epcList value for this TransactionEventType.
      * 

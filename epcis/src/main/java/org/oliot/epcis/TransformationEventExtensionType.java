@@ -11,6 +11,13 @@ package org.oliot.epcis;
 public class TransformationEventExtensionType  implements java.io.Serializable, org.apache.axis.encoding.AnyContentType {
     private org.apache.axis.message.MessageElement [] _any;
 
+    // omitting source, dest lists, ilmd
+    private org.oliot.epcis.SourceDestType[] sourceList;
+
+    private org.oliot.epcis.SourceDestType[] destinationList;
+    
+    private org.oliot.epcis.ILMDType ilmd;
+    
     public TransformationEventExtensionType() {
     }
 
@@ -39,6 +46,30 @@ public class TransformationEventExtensionType  implements java.io.Serializable, 
         this._any = _any;
     }
 
+    public org.oliot.epcis.SourceDestType[] getSourceList() {
+		return sourceList;
+	}
+
+	public void setSourceList(org.oliot.epcis.SourceDestType[] sourceList) {
+		this.sourceList = sourceList;
+	}
+
+	public org.oliot.epcis.SourceDestType[] getDestinationList() {
+		return destinationList;
+	}
+
+	public void setDestinationList(org.oliot.epcis.SourceDestType[] destinationList) {
+		this.destinationList = destinationList;
+	}
+
+	public org.oliot.epcis.ILMDType getIlmd() {
+		return ilmd;
+	}
+
+	public void setIlmd(org.oliot.epcis.ILMDType ilmd) {
+		this.ilmd = ilmd;
+	}
+    
     private java.lang.Object __equalsCalc = null;
     @SuppressWarnings("unused")
 	public synchronized boolean equals(java.lang.Object obj) {

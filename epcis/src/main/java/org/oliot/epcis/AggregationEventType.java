@@ -40,8 +40,13 @@ public class AggregationEventType  extends org.oliot.epcis.EPCISEventType  imple
 
     private org.oliot.epcis.BusinessLocationType bizLocation;
 
-    private org.oliot.epcis.BusinessTransactionType[] bizTransactionList;
+    
 
+	private org.oliot.epcis.BusinessTransactionType[] bizTransactionList;
+
+    //WSDL doesn't reflect QuantityElements List
+    private QuantityElementType[] childQuantityList;
+    
     private org.oliot.epcis.AggregationEventExtensionType extension;
 
     private org.apache.axis.message.MessageElement [] _any;
@@ -81,7 +86,15 @@ public class AggregationEventType  extends org.oliot.epcis.EPCISEventType  imple
         this._any = _any;
     }
 
+    public QuantityElementType[] getChildQuantityList() {
+		return childQuantityList;
+	}
 
+	public void setChildQuantityList(QuantityElementType[] childQuantityList) {
+		this.childQuantityList = childQuantityList;
+	}
+    
+    
     /**
      * Gets the parentID value for this AggregationEventType.
      * 
