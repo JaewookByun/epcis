@@ -11,6 +11,7 @@
 
 package org.oliot.epcis.service.capture;
 
+import java.net.UnknownHostException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -18,7 +19,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.axis.message.MessageElement;
+import org.apache.axis.message.PrefixedQName;
 import org.apache.axis.types.URI;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.oliot.epcglobal.EPC;
 import org.oliot.epcis.ActionType;
 import org.oliot.epcis.AggregationEventExtension2Type;
@@ -27,7 +31,6 @@ import org.oliot.epcis.AggregationEventType;
 import org.oliot.epcis.BusinessLocationType;
 import org.oliot.epcis.BusinessTransactionType;
 import org.oliot.epcis.EPCISEventExtensionType;
-import org.oliot.epcis.EPCISEventType;
 import org.oliot.epcis.ILMDType;
 import org.oliot.epcis.ObjectEventExtension2Type;
 import org.oliot.epcis.ObjectEventExtensionType;
@@ -43,17 +46,15 @@ import org.oliot.epcis.TransactionEventType;
 import org.oliot.epcis.TransformationEventExtensionType;
 import org.oliot.epcis.TransformationEventType;
 
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
+
 
 public class CaptureService implements CoreCaptureService {
-
-	@SuppressWarnings("unused")
-	@Override
-	public void capture(EPCISEventType event) {
-		Calendar eventTime = event.getEventTime();
-		String eventTimeZoneOffset = event.getEventTimeZoneOffset();
-		Calendar recordTime = new GregorianCalendar();
-		Map<String, String> extensionMap = getEPCISExtension(event.getBaseExtension());	
-	}
 
 	@SuppressWarnings("unused")
 	@Override
@@ -86,7 +87,7 @@ public class CaptureService implements CoreCaptureService {
 
 	@SuppressWarnings("unused")
 	@Override
-	public void capture(ObjectEventType event) {
+	public void capture(ObjectEventType event) throws UnknownHostException, MongoException {
 
 		//EPCISEventType
 		Calendar eventTime = event.getEventTime();
@@ -109,6 +110,100 @@ public class CaptureService implements CoreCaptureService {
 		Map<String, String> ilmdMap = getILMD(extension.getIlmd());
 		QuantityElementType[] quantityElements = extension.getQuantityList();
 		Map<String, String> extensionMap = getObjectExtension(extension.getExtension());		
+	
+		JSONObject jObj = new JSONObject();
+		if( eventTime != null ) jObj.put("eventTime", eventTime.getTime().toString());
+		if( eventTimeZoneOffset != null ) jObj.put("eventTimeZoneOffset", eventTimeZoneOffset);
+		if( recordTime != null )jObj.put("recordTime", recordTime.getTime().toString());
+		if( actionStr != null ) jObj.put("action", actionStr);
+		if( bizLocStr != null ) jObj.put("bizLocation", bizLocStr);
+		
+		if( bizTranStrArr != null )
+		{
+			JSONArray bizTranArr = new JSONArray();
+			for( int i = 0 ; i < bizTranStrArr.length ; i++)
+			{
+				bizTranArr.put(bizTranStrArr[i]);
+			}
+			jObj.put("bizTransactionList", bizTranArr);
+		}
+		if( dispositionStr != null ) jObj.put("disposition", dispositionStr);
+		if( epcArr != null )
+		{
+			JSONArray epcJSONArr = new JSONArray();
+			for( int i = 0 ; i < epcArr.length ; i++ )
+			{
+				epcJSONArr.put(epcArr[i]);
+			}
+			jObj.put("epcList", epcJSONArr);
+		}
+		if( readPointStr != null ) jObj.put("readPoint", readPointStr);
+		if( sourceArr != null )
+		{
+			JSONArray sourceJSON = new JSONArray();
+			for( int i = 0 ; i < sourceArr.length ; i++)
+			{
+				sourceJSON.put(sourceArr[i]);
+			}
+			jObj.put("sourceList", sourceJSON);
+		}
+		
+		if( destinationArr != null )
+		{
+			JSONArray destJSON = new JSONArray();
+			for( int i = 0 ; i < destinationArr.length ; i++)
+			{
+				destJSON.put(destinationArr[i]);
+			}
+			jObj.put("destinationList", destJSON);
+		}
+		
+		if( ilmdMap != null )
+		{
+			JSONObject ilmdJSON = new JSONObject();
+			Iterator<String> ilmdIter = ilmdMap.keySet().iterator();
+			while(ilmdIter.hasNext())
+			{
+				String key = ilmdIter.next();
+				ilmdJSON.put(key, ilmdMap.get(key));
+			}
+			jObj.put("ilmd", ilmdJSON);
+		}
+		if( quantityElements != null )
+		{
+			JSONArray quantityElementArr = new JSONArray();
+			for( int i = 0 ; i < quantityElements.length ; i++)
+			{
+				QuantityElementType qet = quantityElements[i];
+				JSONObject quantityElement = new JSONObject();
+				quantityElement.put("epcClass", qet.getEpcClass().toString());
+				quantityElement.put("quantity", qet.getQuantity());
+				quantityElement.put("uom", qet.getUom());
+				quantityElementArr.put(quantityElement);
+			}
+			jObj.put("quantityElementList", quantityElementArr);
+		}
+		if( extensionMap != null )
+		{
+			JSONObject extensionJSON = new JSONObject();
+			Iterator<String> extensionIter = extensionMap.keySet().iterator();
+			while(extensionIter.hasNext())
+			{
+				String key = extensionIter.next();
+				extensionJSON.put(key, extensionMap.get(key));
+			}
+			jObj.put("extension", extension);
+		}
+		
+		Mongo mongoClient = new Mongo( "localhost" , 27017 );
+		DB db = mongoClient.getDB( "epcis" );
+		
+		DBCollection objectEventCollection = db.getCollection("ObjectEvent");
+		DBObject dbObject = (DBObject)JSON.parse(jObj.toString());
+		objectEventCollection.insert(dbObject);
+		
+		mongoClient.close();
+	
 	}
 
 	@SuppressWarnings("unused")
@@ -240,11 +335,11 @@ public class CaptureService implements CoreCaptureService {
 		for(int i = 0 ; i < extensionElements.length ; i ++ )
 		{
 			MessageElement extensionElement = extensionElements[i];
-			Iterator<String> iter = extensionElement.getAllAttributes();
+			Iterator<PrefixedQName> iter = extensionElement.getAllAttributes();
 			while(iter.hasNext())
 			{
-				String key = iter.next();
-				extensionMap.put(key, extensionElement.getAttribute(key));
+				PrefixedQName key = iter.next();
+				extensionMap.put(key.toString(), extensionElement.getAttribute(key.toString()));
 			}
 		}
 		return extensionMap;

@@ -31,7 +31,8 @@ public class ObjectEventExtensionType  implements Serializable {
 
 	public ObjectEventExtensionType() {}
 
-	public ObjectEventExtensionType(QuantityElementType[] quantityList,SourceDestType[] sourceList,SourceDestType[] destinationList,
+	public ObjectEventExtensionType(QuantityElementType[] quantityList,
+			SourceDestType[] sourceList,SourceDestType[] destinationList,
 			ILMDType ilmd,ObjectEventExtension2Type extension) {
 		this.quantityList = quantityList;
 		this.sourceList = sourceList;
