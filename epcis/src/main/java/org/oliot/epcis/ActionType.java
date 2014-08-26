@@ -18,72 +18,71 @@
 
 package org.oliot.epcis;
 
+import java.io.ObjectStreamException;
+import java.io.Serializable;
+import java.util.HashMap;
+
+import javax.xml.namespace.QName;
+
+import org.apache.axis.description.TypeDesc;
+import org.apache.axis.encoding.Deserializer;
+import org.apache.axis.encoding.Serializer;
+import org.apache.axis.encoding.ser.EnumDeserializer;
+import org.apache.axis.encoding.ser.EnumSerializer;
+
 
 @SuppressWarnings("serial")
-public class ActionType implements java.io.Serializable {
-    private java.lang.String _value_;
-    @SuppressWarnings("rawtypes")
-	private static java.util.HashMap _table_ = new java.util.HashMap();
+public class ActionType implements Serializable {
+	private String _value_;
+	@SuppressWarnings("rawtypes")
+	private static HashMap _table_ = new HashMap();
 
-    // Constructor
-    @SuppressWarnings("unchecked")
-	protected ActionType(java.lang.String value) {
-        _value_ = value;
-        _table_.put(_value_,this);
-    }
+	// Constructor
+	@SuppressWarnings("unchecked")
+	protected ActionType(String value) {
+		_value_ = value;
+		_table_.put(_value_,this);
+	}
 
-    public static final java.lang.String _ADD = "ADD";
-    public static final java.lang.String _OBSERVE = "OBSERVE";
-    public static final java.lang.String _DELETE = "DELETE";
-    public static final ActionType ADD = new ActionType(_ADD);
-    public static final ActionType OBSERVE = new ActionType(_OBSERVE);
-    public static final ActionType DELETE = new ActionType(_DELETE);
-    public java.lang.String getValue() { return _value_;}
-    public static ActionType fromValue(java.lang.String value)
-          throws java.lang.IllegalArgumentException {
-        ActionType enumeration = (ActionType)
-            _table_.get(value);
-        if (enumeration==null) throw new java.lang.IllegalArgumentException();
-        return enumeration;
-    }
-    public static ActionType fromString(java.lang.String value)
-          throws java.lang.IllegalArgumentException {
-        return fromValue(value);
-    }
-    public boolean equals(java.lang.Object obj) {return (obj == this);}
-    public int hashCode() { return toString().hashCode();}
-    public java.lang.String toString() { return _value_;}
-    public java.lang.Object readResolve() throws java.io.ObjectStreamException { return fromValue(_value_);}
-    @SuppressWarnings("rawtypes")
-	public static org.apache.axis.encoding.Serializer getSerializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new org.apache.axis.encoding.ser.EnumSerializer(
-            _javaType, _xmlType);
-    }
-    @SuppressWarnings("rawtypes")
-	public static org.apache.axis.encoding.Deserializer getDeserializer(
-           java.lang.String mechType, 
-           java.lang.Class _javaType,  
-           javax.xml.namespace.QName _xmlType) {
-        return 
-          new org.apache.axis.encoding.ser.EnumDeserializer(
-            _javaType, _xmlType);
-    }
-    // Type metadata
-    private static org.apache.axis.description.TypeDesc typeDesc =
-        new org.apache.axis.description.TypeDesc(ActionType.class);
+	public static final String _ADD = "ADD";
+	public static final String _OBSERVE = "OBSERVE";
+	public static final String _DELETE = "DELETE";
+	public static final ActionType ADD = new ActionType(_ADD);
+	public static final ActionType OBSERVE = new ActionType(_OBSERVE);
+	public static final ActionType DELETE = new ActionType(_DELETE);
+	public String getValue() { return _value_;}
+	public static ActionType fromValue(String value) throws IllegalArgumentException {
+		ActionType enumeration = (ActionType) _table_.get(value);
+		if (enumeration==null) throw new IllegalArgumentException();
+		return enumeration;
+	}
+	public static ActionType fromString(String value) throws IllegalArgumentException {
+		return fromValue(value);
+	}
+	public boolean equals(Object obj) {return (obj == this);}
+	public int hashCode() { return toString().hashCode();}
+	public String toString() { return _value_;}
+	public Object readResolve() throws ObjectStreamException { return fromValue(_value_);}
 
-    static {
-        typeDesc.setXmlType(new javax.xml.namespace.QName("epcis.oliot.org", "ActionType"));
-    }
-    /**
-     * Return type metadata object
-     */
-    public static org.apache.axis.description.TypeDesc getTypeDesc() {
-        return typeDesc;
-    }
+	@SuppressWarnings("rawtypes")
+	public static Serializer getSerializer( String mechType, Class _javaType,  QName _xmlType) {
+		return new EnumSerializer( _javaType, _xmlType);
+	}
+	@SuppressWarnings("rawtypes")
+	public static Deserializer getDeserializer( String mechType, Class _javaType, QName _xmlType) {
+		return new EnumDeserializer(_javaType, _xmlType);
+	}
+	// Type metadata
+	private static TypeDesc typeDesc =	new TypeDesc(ActionType.class);
+
+	static {
+		typeDesc.setXmlType(new QName("epcis.oliot.org", "ActionType"));
+	}
+	/**
+	 * Return type metadata object
+	 */
+	public static TypeDesc getTypeDesc() {
+		return typeDesc;
+	}
 
 }
