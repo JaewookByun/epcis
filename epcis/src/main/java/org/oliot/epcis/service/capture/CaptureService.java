@@ -55,7 +55,6 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoException;
 import com.mongodb.util.JSON;
 
-
 public class CaptureService implements CoreCaptureService {
 
 	@SuppressWarnings("unused")
