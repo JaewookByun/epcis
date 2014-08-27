@@ -27,6 +27,13 @@
   	<description></description>
   	<servlet-class>org.oliot.epcis.service.capture.ALECaptureServlet</servlet-class>
   </servlet>
+  <servlet>
+  	<servlet-name>ConfigurationServlet</servlet-name>
+  	<display-name>ConfigurationServlet</display-name>
+  	<description></description>
+  	<servlet-class>org.oliot.epcis.service.ConfigurationServlet</servlet-class>
+  	<load-on-startup>1</load-on-startup>
+  </servlet>
   <servlet-mapping>
   	<servlet-name>AxisServlet</servlet-name>
   	<url-pattern>/servlet/AxisServlet</url-pattern>
@@ -50,5 +57,9 @@
   <servlet-mapping>
   	<servlet-name>ALECaptureServlet</servlet-name>
   	<url-pattern>/aleCapture</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>ConfigurationServlet</servlet-name>
+  	<url-pattern>/ConfigurationServlet</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -20,12 +20,19 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.axis.message.MessageElement;
+import org.apache.axis.types.URI;
+import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.commons.io.IOUtils;
 import org.oliot.epcglobal.EPC;
+import org.oliot.epcis.ActionType;
+import org.oliot.epcis.BusinessLocationType;
+import org.oliot.epcis.BusinessTransactionType;
 import org.oliot.epcis.EPCISEventExtensionType;
 import org.oliot.epcis.ObjectEventExtension2Type;
 import org.oliot.epcis.ObjectEventExtensionType;
 import org.oliot.epcis.ObjectEventType;
+import org.oliot.epcis.ReadPointType;
+import org.oliot.epcis.SourceDestType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -59,9 +66,9 @@ public class ALECaptureServlet extends HttpServlet {
 		try {
 			// Identifying what the event type is
 			String eventType = request.getParameter("eventType");
-			String backendType = request.getParameter("backendType");
-
-
+			// Default Event Type
+			if( eventType == null ) eventType = "ObjectEvent";
+			
 			// Get ECReport
 			InputStream is = request.getInputStream();
 
@@ -78,7 +85,7 @@ public class ALECaptureServlet extends HttpServlet {
 				//TODO: 	
 			}else if( eventType.equals("ObjectEvent"))
 			{
-				ObjectEventType[] events = makeObjectEvents(doc);
+				ObjectEventType[] events = makeObjectEvents(doc, request);
 				CaptureService captureService = new CaptureService();
 				for( int i = 0 ; i < events.length ; i++ )
 				{
@@ -103,8 +110,57 @@ public class ALECaptureServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-	private ObjectEventType[] makeObjectEvents(Document doc) throws ParseException {
+	
+	
+	private ObjectEventType[] makeObjectEvents(Document doc, HttpServletRequest request) throws ParseException, MalformedURIException {
 
+		// get extra param : action
+		String actionType = request.getParameter("action");
+		// Mandatory Field : Default - OBSERVE
+		if( actionType == null ) actionType = "OBSERVE";
+		// Optional Field
+		String bizStep = request.getParameter("bizStep");
+		// Optional Field
+		String disposition = request.getParameter("disposition");
+		// Optional Field
+		String readPoint = request.getParameter("readPoint");
+		// Optional Field
+		String bizLocation = request.getParameter("bizLocation");
+		// Optional Field : Comma Separated List , ~,~,~
+		String bizTransactionListStr = request.getParameter("bizTransactionList");
+		String[] bizTransactionList = null;
+		if( bizTransactionListStr != null )
+		{
+			bizTransactionList = bizTransactionListStr.split(",");
+			for(int i = 0 ; i < bizTransactionList.length ; i++ )
+			{
+				bizTransactionList[i] = bizTransactionList[i].trim();
+			}
+		}
+		// Optional Field : Comma Separated List , ~,~,~
+		String sourceListStr = request.getParameter("sourceList");
+		String[] sourceList = null;
+		if( sourceListStr != null )
+		{
+			sourceList = sourceListStr.split(",");
+			for(int i = 0 ; i < sourceList.length ; i++ )
+			{
+				sourceList[i] = sourceList[i].trim();
+			}
+		}
+		// Optional Field : Comma Separated List , ~,~,~
+		String destinationListStr = request.getParameter("destinationList");
+		String[] destinationList = null;
+		if( destinationListStr != null )
+		{
+			destinationList = destinationListStr.split(",");
+			for(int i = 0 ; i < destinationList.length ; i++ )
+			{
+				destinationList[i] = destinationList[i].trim();
+			}
+		}
+			
+		
 		Calendar eventTime = getEventTime(doc);
 		Calendar recordTime = new GregorianCalendar();
 		String eventTimeZoneOffset = eventTime.getTimeZone().toString();
@@ -143,15 +199,60 @@ public class ALECaptureServlet extends HttpServlet {
 				}
 				oet.setEpcList(epcArr);
 			}
+			ActionType action = new ActionType(actionType);
+			oet.setAction(action);
+			if( bizStep != null ) oet.setBizStep(new URI(bizStep));
+			if( disposition != null ) oet.setDisposition(new URI(disposition));
+			if( readPoint != null ) oet.setReadPoint(new ReadPointType(new URI(readPoint), null, null));
+			if( bizLocation != null ) oet.setBizLocation(new BusinessLocationType(new URI(bizLocation), null, null));
+			if( bizTransactionList != null )
+			{
+				BusinessTransactionType[] bizTranTypeArr= new BusinessTransactionType[bizTransactionList.length];
+				for(int j = 0 ; j < bizTransactionList.length ; j++ )
+				{
+					BusinessTransactionType bizTran = new BusinessTransactionType();
+					bizTran.setType(new URI(bizTransactionList[j]));
+					bizTranTypeArr[j] = bizTran;
+				}
+				oet.setBizTransactionList(bizTranTypeArr);
+			}
+			
+			ObjectEventExtensionType extension = oet.getExtension();
+			if( extension == null ) extension = new ObjectEventExtensionType();
+			
+			if( sourceList != null )
+			{
+				SourceDestType[] sdTypeArr= new SourceDestType[sourceList.length];
+				for(int j = 0 ; j < sourceList.length ; j++ )
+				{
+					SourceDestType sd = new SourceDestType();
+					sd.setType(new URI(sourceList[j]));
+					sdTypeArr[j] = sd;
+				}
+				extension.setSourceList(sdTypeArr);
+				oet.setExtension(extension);
+			}
+			
+			extension = oet.getExtension();
+			if( extension == null ) extension = new ObjectEventExtensionType();
+			
+			if( destinationList != null )
+			{
+				SourceDestType[] sdTypeArr= new SourceDestType[destinationList.length];
+				for(int j = 0 ; j < destinationList.length ; j++ )
+				{
+					SourceDestType sd = new SourceDestType();
+					sd.setType(new URI(destinationList[j]));
+					sdTypeArr[j] = sd;
+				}
+				extension.setDestinationList(sdTypeArr);
+				oet.setExtension(extension);
+			}
 			oetArr[i] = oet;
 		}
 
 		return oetArr;
 	}
-
-
-
-
 
 	private ObjectEventExtensionType getObjectEventExtensionType(Node extension) {
 		ObjectEventExtensionType eet = new ObjectEventExtensionType();
@@ -172,48 +273,6 @@ public class ALECaptureServlet extends HttpServlet {
 		{
 			Node field = fields.item(i);
 			if( !field.getNodeName().equals("field")) continue;
-			String name = null;
-			String value = null;
-			
-			NodeList nodes = field.getChildNodes();
-			for(int j = 0 ; j < nodes.getLength() ; j++)
-			{
-				if(nodes.item(j).getNodeName().equals("name"))
-				{
-					name = nodes.item(j).getTextContent();
-				}
-				else if(nodes.item(j).getNodeName().equals("value"))
-				{
-					value = nodes.item(j).getTextContent();
-				}
-			}
-			
-			if( name != null & value != null )
-			{
-				me.setAttribute(name, value);
-			}
-		}
-		meArr[0] = me;
-		ObjectEventExtension2Type extension2 = new ObjectEventExtension2Type();
-		extension2.set_any(meArr);
-		eet.setExtension(extension2);
-		return eet;
-	}
-
-	private ObjectEventExtensionType getObjectEventExtensionType(Document doc) {
-		NodeList fieldList = doc.getElementsByTagName("fieldList");
-		if( fieldList.getLength() == 0 ) return null;
-
-		ObjectEventExtensionType eet = new ObjectEventExtensionType();
-		MessageElement[] meArr = new MessageElement[1];
-		MessageElement me = new MessageElement();
-		//fieldList
-		Node fieldNode = fieldList.item(0);
-		//field(s)
-		NodeList fields = fieldNode.getChildNodes();
-		for(int i = 0 ; i < fields.getLength() ; i++ )
-		{
-			Node field = fields.item(i);
 			String name = null;
 			String value = null;
 			

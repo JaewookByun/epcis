@@ -12,7 +12,9 @@
 package org.oliot.epcis.service.capture;
 
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -83,9 +85,6 @@ public class CaptureService implements CoreCaptureService {
 		Map<String, String> extensionMap = getAggregationExtension(extension.getExtension());
 	}
 
-
-
-	@SuppressWarnings("unused")
 	@Override
 	public void capture(ObjectEventType event) throws UnknownHostException, MongoException {
 
@@ -112,10 +111,29 @@ public class CaptureService implements CoreCaptureService {
 		Map<String, String> extensionMap = getObjectExtension(extension.getExtension());		
 	
 		JSONObject jObj = new JSONObject();
-		if( eventTime != null ) jObj.put("eventTime", eventTime.getTime().toString());
-		if( eventTimeZoneOffset != null ) jObj.put("eventTimeZoneOffset", eventTimeZoneOffset);
-		if( recordTime != null )jObj.put("recordTime", recordTime.getTime().toString());
+		if( eventTime != null )
+		{
+			Date eventDate = eventTime.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			String eventTimeStr = sdf.format(eventDate);
+			jObj.put("eventTime", eventTimeStr);
+		}
+		if( eventTimeZoneOffset != null )
+		{
+			Date eventDate = eventTime.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("XXX");
+			String eventTimeZoneOffsetStr = sdf.format(eventDate);
+			jObj.put("eventTimeZoneOffset", eventTimeZoneOffsetStr);
+		}
+		if( recordTime != null )
+		{
+			Date recordDate = recordTime.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			String recordTimeStr = sdf.format(recordDate);
+			jObj.put("recordTime", recordTimeStr);
+		}
 		if( actionStr != null ) jObj.put("action", actionStr);
+		if( bizStepStr != null ) jObj.put("bizStep", bizStepStr);
 		if( bizLocStr != null ) jObj.put("bizLocation", bizLocStr);
 		
 		if( bizTranStrArr != null )
@@ -192,7 +210,7 @@ public class CaptureService implements CoreCaptureService {
 				String key = extensionIter.next();
 				extensionJSON.put(key, extensionMap.get(key));
 			}
-			jObj.put("extension", extension);
+			jObj.put("extension", extensionJSON);
 		}
 		
 		Mongo mongoClient = new Mongo( "localhost" , 27017 );
@@ -203,6 +221,7 @@ public class CaptureService implements CoreCaptureService {
 		objectEventCollection.insert(dbObject);
 		
 		mongoClient.close();
+		System.out.println( "[Capture Service] : Object Event is appended ");
 	
 	}
 

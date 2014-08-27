@@ -39,7 +39,7 @@ public class ActionType implements Serializable {
 
 	// Constructor
 	@SuppressWarnings("unchecked")
-	protected ActionType(String value) {
+	public ActionType(String value) {
 		_value_ = value;
 		_table_.put(_value_,this);
 	}

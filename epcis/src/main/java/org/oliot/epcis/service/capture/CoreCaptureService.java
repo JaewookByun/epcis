@@ -4,7 +4,6 @@ package org.oliot.epcis.service.capture;
 import java.net.UnknownHostException;
 
 import org.oliot.epcis.AggregationEventType;
-import org.oliot.epcis.EPCISEventType;
 import org.oliot.epcis.ObjectEventType;
 import org.oliot.epcis.QuantityEventType;
 import org.oliot.epcis.TransactionEventType;
