@@ -530,7 +530,20 @@ public class CaptureService implements CoreCaptureService {
 
 	@Override
 	public void capture(JSONObject epcisJSONObject) {
-		
-		
+		try {
+			Mongo mongoClient = new Mongo( "localhost" , 27017 );
+			DB db = mongoClient.getDB( "epcis" );
+			DBCollection objectEventCollection = db.getCollection("ObjectEvent");
+			DBObject dbObject = (DBObject)JSON.parse(epcisJSONObject.toString());
+			objectEventCollection.insert(dbObject);	
+			mongoClient.close();
+			System.out.println( "[Capture Service] : Object Event is appended ");
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MongoException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
