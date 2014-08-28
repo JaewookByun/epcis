@@ -527,4 +527,10 @@ public class CaptureService implements CoreCaptureService {
 		String retStr = transformationID.toString();
 		return retStr;
 	}
+
+	@Override
+	public void capture(JSONObject epcisJSONObject) {
+		
+		
+	}
 }

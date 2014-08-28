@@ -3,6 +3,7 @@ package org.oliot.epcis.service.capture;
 
 import java.net.UnknownHostException;
 
+import org.json.JSONObject;
 import org.oliot.epcis.AggregationEventType;
 import org.oliot.epcis.ObjectEventType;
 import org.oliot.epcis.QuantityEventType;
@@ -16,5 +17,6 @@ public interface CoreCaptureService {
 	public void capture(ObjectEventType event) throws UnknownHostException, MongoException;
 	public void capture(QuantityEventType event);
 	public void capture(TransactionEventType event);
-	public void capture(TransformationEventType event);	
+	public void capture(TransformationEventType event);
+	public void capture(JSONObject epcisJSONObject);
 }

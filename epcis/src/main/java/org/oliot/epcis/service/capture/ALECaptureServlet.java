@@ -1,28 +1,46 @@
 package org.oliot.epcis.service.capture;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.URI;
 import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.XML;
 import org.oliot.epcglobal.EPC;
 import org.oliot.epcis.ActionType;
 import org.oliot.epcis.BusinessLocationType;
@@ -31,6 +49,7 @@ import org.oliot.epcis.EPCISEventExtensionType;
 import org.oliot.epcis.ObjectEventExtension2Type;
 import org.oliot.epcis.ObjectEventExtensionType;
 import org.oliot.epcis.ObjectEventType;
+import org.oliot.epcis.QuantityElementType;
 import org.oliot.epcis.ReadPointType;
 import org.oliot.epcis.SourceDestType;
 import org.w3c.dom.Document;
@@ -61,36 +80,38 @@ public class ALECaptureServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+
 		try {
 			// Identifying what the event type is
 			String eventType = request.getParameter("eventType");
 			// Default Event Type
 			if( eventType == null ) eventType = "ObjectEvent";
-			
+
 			// Get ECReport
 			InputStream is = request.getInputStream();
 
-			// Parsing data
-			Document doc = getXMLDocument(is);
+			String xmlDocumentString = getXMLDocumentString(is);
+			InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
+			// Parsing and Validating data
+			ServletConfig conf = getServletConfig();
+			String xsdPath = conf.getServletContext().getRealPath("/wsdl");
+			xsdPath += "/EPCglobal-ale-1_1-ale.xsd";
+			boolean isValidated = validateECReport(validateStream, xsdPath);
+			if( isValidated == false )
+			{
+				return;
+			}
 
-			// Check whether data is available
-			boolean hasContents = isDataAvailable(doc);
-			if( hasContents == false ) return;
+
 
 			// Event Type branch
 			if( eventType.equals("AggregationEvent"))
 			{
 				//TODO: 	
 			}else if( eventType.equals("ObjectEvent"))
-			{
-				ObjectEventType[] events = makeObjectEvents(doc, request);
-				CaptureService captureService = new CaptureService();
-				for( int i = 0 ; i < events.length ; i++ )
-				{
-					captureService.capture(events[i]);
-				}
+			{				
+				JSONObject epcisDocumentObject = makeObjectEvent(xmlDocumentString, request);
 			}else if( eventType.equals("QuantityEvent"))
 			{
 				//TODO: 
@@ -101,17 +122,311 @@ public class ALECaptureServlet extends HttpServlet {
 			{
 				//TODO: 
 			}
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+
+
+
+	private boolean validateECReport(InputStream is, String xsdPath) {
+		try {
+			SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+			File xsdFile = new File(xsdPath);
+			Schema schema = schemaFactory.newSchema(xsdFile);
+			Validator validator = schema.newValidator();
+			StreamSource xmlSource = new StreamSource(is);
+			validator.validate(xmlSource);
+			return true;
+		} catch (SAXException e) {
+			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
+			return false;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+
+	private JSONObject makeObjectEventBase(String ecReportString,	HttpServletRequest request) {
+		try {
+			InputStream ecReportStream = getXMLDocumentInputStream(ecReportString);
+			Document doc = getXMLDocument(ecReportStream);
+			// get extra param : action
+			String actionType = request.getParameter("action");
+			// Mandatory Field : Default - OBSERVE
+			if( actionType == null ) actionType = "OBSERVE";
+			// Optional Field
+			String bizStep = request.getParameter("bizStep");
+			// Optional Field
+			String disposition = request.getParameter("disposition");
+			// Optional Field
+			String readPoint = request.getParameter("readPoint");
+			// Optional Field
+			String bizLocation = request.getParameter("bizLocation");
+			// Optional Field : Comma Separated List , ~,~,~
+			String bizTransactionListStr = request.getParameter("bizTransactionList");
+			String[] bizTransactionList = null;
+			if( bizTransactionListStr != null )
+			{
+				bizTransactionList = bizTransactionListStr.split(",");
+				for(int i = 0 ; i < bizTransactionList.length ; i++ )
+				{
+					bizTransactionList[i] = bizTransactionList[i].trim();
+				}
+			}
+			// Optional Field : Comma Separated List , ~,~,~
+			String sourceListStr = request.getParameter("sourceList");
+			String[] sourceList = null;
+			if( sourceListStr != null )
+			{
+				sourceList = sourceListStr.split(",");
+				for(int i = 0 ; i < sourceList.length ; i++ )
+				{
+					sourceList[i] = sourceList[i].trim();
+				}
+			}
+			// Optional Field : Comma Separated List , ~,~,~
+			String destinationListStr = request.getParameter("destinationList");
+			String[] destinationList = null;
+			if( destinationListStr != null )
+			{
+				destinationList = destinationListStr.split(",");
+				for(int i = 0 ; i < destinationList.length ; i++ )
+				{
+					destinationList[i] = destinationList[i].trim();
+				}
+			}
+			Calendar eventTime = getEventTime(doc);
+			Calendar recordTime = new GregorianCalendar();
+			String eventTimeZoneOffset = eventTime.getTimeZone().toString();
+
+			JSONObject ecReportObject = XML.toJSONObject(ecReportString);
+
+			// Null Reports Check
+			boolean isNull = isReportNull(ecReportObject);		
+			if( isNull == true )
+			{
+				return null;
+			}
+
+			// Start to make EPCIS Object
+			JSONObject epcisObject = new JSONObject();
+			if( eventTime != null )
+			{
+				Date eventDate = eventTime.getTime();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				String eventTimeStr = sdf.format(eventDate);
+				epcisObject.put("eventTime", eventTimeStr);
+			}
+			if( eventTimeZoneOffset != null )
+			{
+				Date eventDate = eventTime.getTime();
+				SimpleDateFormat sdf = new SimpleDateFormat("XXX");
+				String eventTimeZoneOffsetStr = sdf.format(eventDate);
+				epcisObject.put("eventTimeZoneOffset", eventTimeZoneOffsetStr);
+			}
+			if( recordTime != null )
+			{
+				Date recordDate = recordTime.getTime();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				String recordTimeStr = sdf.format(recordDate);
+				epcisObject.put("recordTime", recordTimeStr);
+			}
+			if( actionType != null ) epcisObject.put("action", actionType);
+			if( bizStep != null ) epcisObject.put("bizStep", bizStep);
+			if( bizLocation != null ) epcisObject.put("bizLocation", bizLocation);
+			if( bizTransactionList != null )
+			{
+				JSONArray bizTranArr = new JSONArray();
+				for( int i = 0 ; i < bizTransactionList.length ; i++)
+				{
+					bizTranArr.put(bizTransactionList[i]);
+				}
+				epcisObject.put("bizTransactionList", bizTranArr);
+			}
+			if( disposition != null ) epcisObject.put("disposition", disposition);
+			if( readPoint != null ) epcisObject.put("readPoint", readPoint);
+			if( sourceList != null )
+			{
+				JSONArray sourceJSON = new JSONArray();
+				for( int i = 0 ; i < sourceList.length ; i++)
+				{
+					sourceJSON.put(sourceList[i]);
+				}
+				epcisObject.put("sourceList", sourceJSON);
+			}
+
+			if( destinationList != null )
+			{
+				JSONArray destJSON = new JSONArray();
+				for( int i = 0 ; i < destinationList.length ; i++)
+				{
+					destJSON.put(destinationList[i]);
+				}
+				epcisObject.put("destinationList", destJSON);
+			}
+			return epcisObject;
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 	
+	private void doCapture(JSONObject epcisObject, JSONObject reportsObj)
+	{
+		String reportKey = getJSONKey(reportsObj, "report");
+		JSONObject report = reportsObj.getJSONObject(reportKey);
+		String groupKey = getJSONKey(report, "group");
+		JSONObject group = report.getJSONObject(groupKey);
+		String groupListKey = getJSONKey(group, "groupList");
+		JSONObject groupList = group.getJSONObject(groupListKey);
+		String memberKey = getJSONKey(groupList, "member");
+		Object member = groupList.get(memberKey);
+		// Each member would be one EPCIS Report				
+		if( member instanceof JSONObject )
+		{
+			JSONObject memberObject = (JSONObject) member;
+			epcisObject = getEPCISObject(epcisObject, memberObject);
+			CaptureService capture = new CaptureService();
+			capture.capture(epcisObject);
+		}
+		else if( member instanceof JSONArray )
+		{
+			JSONArray memberArray = (JSONArray) member;
+			for(int i = 0 ; i < memberArray.length() ; i++)
+			{
+				JSONObject memberObject = (JSONObject) memberArray.getJSONObject(i);
+				epcisObject = getEPCISObject(epcisObject, memberObject);
+				CaptureService capture = new CaptureService();
+				capture.capture(epcisObject);
+			}
+		}
+	}
 	
+
+	private JSONObject getEPCISObject(JSONObject base, JSONObject memberObject)
+	{
+		// Make epcList
+		String epcKey = getJSONKey(memberObject, "epc");
+		JSONObject epc = memberObject.getJSONObject(epcKey);
+		JSONArray epcJSONArr = new JSONArray();
+		epcJSONArr.put(epc);
+		base.put("epcList", epcJSONArr);
+
+		// Make Extension
+		String extensionKey = getJSONKey(memberObject, "extension");
+		// Extension
+		if( extensionKey != null )
+		{
+			JSONObject extension = memberObject.getJSONObject(extensionKey);
+			JSONArray extensionArr = getExtensionArray(extension);
+			base.put("extension", extensionArr);
+		}
+		return base;
+	}
+
+	private JSONArray getExtensionArray(JSONObject extension)
+	{
+		String fieldListKey = getJSONKey(extension, "fieldList");
+		JSONObject fieldList = extension.getJSONObject(fieldListKey);
+		String fieldKey = getJSONKey(fieldList, "field");
+		Object field = fieldList.get(fieldKey);
+		JSONArray extensionArr = new JSONArray();
+		// Single extension field
+		if( field instanceof JSONObject )
+		{
+			JSONObject fieldObject = (JSONObject) field;
+			JSONObject extensionObj = getExtensionObject(fieldObject);
+			extensionArr.put(extensionObj);
+		}
+		else if( field instanceof JSONArray )
+		{
+			JSONArray fieldArray = (JSONArray) field;
+			for(int i = 0 ; i < fieldArray.length() ; i++ )
+			{
+				JSONObject fieldObject = (JSONObject) fieldArray.get(i);
+				JSONObject extensionObj = getExtensionObject(fieldObject);
+				extensionArr.put(extensionObj);
+			}
+		}
+		return extensionArr;
+	}
+
+	private JSONObject getExtensionObject(JSONObject fieldObject)
+	{
+		String nameKey = getJSONKey(fieldObject, "name");
+		String name = fieldObject.getString(nameKey);
+		String valueKey = getJSONKey(fieldObject, "value");
+		String value = fieldObject.getString(valueKey);
+		JSONObject extensionObj = new JSONObject();
+		extensionObj.put(name, value);
+		return extensionObj;
+	}
+
+	private JSONObject makeObjectEvent(String ecReportString, HttpServletRequest request) {
+
+		// Make Object Event Base
+		JSONObject epcisObject =  makeObjectEventBase(ecReportString, request);
+		if( epcisObject == null ) return null;
+
+		JSONObject ecReportObject = XML.toJSONObject(ecReportString);
+
+		String ecReportsKey = getJSONKey(ecReportObject, "ECReports");
+		JSONObject ecReports = ecReportObject.getJSONObject(ecReportsKey);
+		String reportsKey = getJSONKey(ecReports, "reports");
+		Object reports = ecReports.get(reportsKey);
+
+		// Single Reports
+		if( reports instanceof JSONObject)
+		{
+			JSONObject reportsObj = (JSONObject) reports;
+			doCapture(epcisObject, reportsObj);
+		}
+		else if( reports instanceof JSONArray)	// Multiple Reports
+		{
+			JSONArray reportsArr = (JSONArray) reports;
+			for( int i = 0 ; i < reportsArr.length() ; i++ )
+			{
+				JSONObject reportsObj = reportsArr.getJSONObject(i);
+				doCapture(epcisObject, reportsObj);
+			}
+		}
+
+		return null;
+
+	}
+
+
+
+	public String getJSONKey(JSONObject jObj, String contain)
+	{
+		String[] names = JSONObject.getNames(jObj);
+		for(int i = 0 ; i < names.length ; i++ )
+		{
+			if(names[i].contains(contain))
+			{
+				return names[i];
+			}
+		}
+		return null;
+	}
+
+	private boolean isReportNull(JSONObject ecReportObject) {
+
+		//Cannot Be Null
+		String ecReportsKey = getJSONKey(ecReportObject, "ECReports");
+		JSONObject ecReports = ecReportObject.getJSONObject(ecReportsKey);
+		String reportsKey = getJSONKey(ecReports, "reports");
+		Object e = ecReports.get(reportsKey);
+		if( e.toString().equals(""))
+		{
+			return true;
+		}
+		return false;
+	}
+
 	private ObjectEventType[] makeObjectEvents(Document doc, HttpServletRequest request) throws ParseException, MalformedURIException {
 
 		// get extra param : action
@@ -159,8 +474,9 @@ public class ALECaptureServlet extends HttpServlet {
 				destinationList[i] = destinationList[i].trim();
 			}
 		}
-			
-		
+
+
+
 		Calendar eventTime = getEventTime(doc);
 		Calendar recordTime = new GregorianCalendar();
 		String eventTimeZoneOffset = eventTime.getTimeZone().toString();
@@ -216,10 +532,10 @@ public class ALECaptureServlet extends HttpServlet {
 				}
 				oet.setBizTransactionList(bizTranTypeArr);
 			}
-			
+
 			ObjectEventExtensionType extension = oet.getExtension();
 			if( extension == null ) extension = new ObjectEventExtensionType();
-			
+
 			if( sourceList != null )
 			{
 				SourceDestType[] sdTypeArr= new SourceDestType[sourceList.length];
@@ -232,10 +548,10 @@ public class ALECaptureServlet extends HttpServlet {
 				extension.setSourceList(sdTypeArr);
 				oet.setExtension(extension);
 			}
-			
+
 			extension = oet.getExtension();
 			if( extension == null ) extension = new ObjectEventExtensionType();
-			
+
 			if( destinationList != null )
 			{
 				SourceDestType[] sdTypeArr= new SourceDestType[destinationList.length];
@@ -275,7 +591,7 @@ public class ALECaptureServlet extends HttpServlet {
 			if( !field.getNodeName().equals("field")) continue;
 			String name = null;
 			String value = null;
-			
+
 			NodeList nodes = field.getChildNodes();
 			for(int j = 0 ; j < nodes.getLength() ; j++)
 			{
@@ -288,7 +604,7 @@ public class ALECaptureServlet extends HttpServlet {
 					value = nodes.item(j).getTextContent();
 				}
 			}
-			
+
 			if( name != null & value != null )
 			{
 				me.setAttribute(name, value);
@@ -351,28 +667,71 @@ public class ALECaptureServlet extends HttpServlet {
 		return eventTime;
 	}
 
-
-
-	private boolean isDataAvailable(Document doc)
+	private InputStream getXMLDocumentInputStream(String xmlString)
 	{
-		Element root = doc.getDocumentElement();
-		String termination = root.getAttribute("terminationCondition");
-		if( !termination.equals("WhenDataAvailable"))
-		{
-			return false;
-		}
-		else
-		{
-			return true;
+		InputStream stream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
+		return stream;
+	}
+
+	private String getXMLDocumentString(InputStream is) {
+		try {
+			StringWriter writer = new StringWriter();
+			IOUtils.copy(is, writer, "UTF-8");
+			String xmlString = writer.toString();
+			return xmlString;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 
-	private Document getXMLDocument(InputStream is) throws ParserConfigurationException, SAXException, IOException {
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(is);
-		doc.getDocumentElement().normalize();
-		return doc;
+	private Document getXMLDocument(InputStream is)  {
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(is);
+			doc.getDocumentElement().normalize();
+			return doc;
+		} catch (SAXException e) {
+			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+
+	@SuppressWarnings("unused")
+	private Document getXMLDocument(InputStream is, String xsdPath)  {
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+			File xsdFile = new File(xsdPath);
+			Schema schema = schemaFactory.newSchema(xsdFile);
+			Validator validator = schema.newValidator();
+			Source xmlSource = new StreamSource(is);
+			validator.validate(xmlSource);
+			dbFactory.setSchema(schemaFactory.newSchema(new Source[] { new StreamSource(xsdFile) } ));
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(is);
+			doc.getDocumentElement().normalize();
+			return doc;
+		} catch (SAXException e) {
+			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
+			return null;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+			return null;
+		}
+
 	}
 
 	public String getDataFromInputStream(ServletInputStream is) throws IOException
