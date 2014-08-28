@@ -33,8 +33,6 @@ import org.xml.sax.SAXException;
 public class CaptureServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     
-	public Map<String, String> extensionMap;
-	
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -88,9 +86,6 @@ public class CaptureServlet extends HttpServlet {
 				ConfigurationServlet.logger.log(Level.INFO, " Null Report ");
 				return;
 			}
-			extensionMap = new HashMap<String, String>();
-			updateExtensionMap(epcisBodyObject, extensionMap);
-			updateExtensionMap(epcisDocument, extensionMap);
 			JSONObject eventList = epcisBodyObject.getJSONObject("EventList");
 			
 			String[] eventNames = JSONObject.getNames(eventList);
@@ -120,89 +115,73 @@ public class CaptureServlet extends HttpServlet {
 		}
 	}
 	
+	public void updateObjectList(JSONObject jObj, String key)
+	{
+		// jObj e.g. : epcList
+		// objList e.g.: epc
+		Object objList = jObj.get(key);
+		// Need to be updated 
+		if( !(objList instanceof JSONArray) )
+		{
+			JSONArray jArr = new JSONArray();
+			jArr.put(objList);
+			jObj.put(key, jArr);
+		
+		}
+		return;
+	}
+	
+	public JSONObject prepareObjectEvent(JSONObject objectEventObj)
+	{
+		JSONObject epcList = objectEventObj.getJSONObject("epcList");
+		updateObjectList(epcList, "epc");
+		if( !objectEventObj.isNull("bizTransactionList"))
+		{
+			JSONObject bizTransactionList = objectEventObj.getJSONObject("bizTransactionList");
+		}
+		if( !objectEventObj.isNull("extension"))	//Extension Field exists
+		{
+			JSONObject extension = objectEventObj.getJSONObject("extension");
+			// QuantityList update
+			if( !extension.isNull("quantityList"))
+			{
+				JSONObject quantityList = extension.getJSONObject("quantityList");
+				updateObjectList(quantityList, "quantityElement");
+			}
+			// SourceList update
+			if( !extension.isNull("sourceList"))
+			{
+				JSONObject sourceList = extension.getJSONObject("sourceList");
+				updateObjectList(sourceList, "source");
+			}
+			// DestinationList update
+			if( !extension.isNull("destinationList"))
+			{
+				JSONObject destinationList = extension.getJSONObject("destinationList");
+				updateObjectList(destinationList, "destination");
+			}
+		}
+		return objectEventObj;
+	}
 	public void doObjectEventCapture(Object objectEvent)
 	{
 		if( objectEvent instanceof JSONObject )
 		{
 			JSONObject objectEventObj = (JSONObject) objectEvent;
-			/*
-			{
-				"extension":
-					{  
-						"extension":
-							{
-								"ANY-ELEMENT":""},
-						"destinationList":
-							{
-								"destination":
-									{
-										"content":"http://tempuri.org",
-										"type":"http://tempuri.org"
-									}
-							},
-						"sourceList":
-							{
-								"source":
-									{
-										"content":"http://tempuri.org",
-										"type":"http://tempuri.org"
-									}
-							},
-						"quantityList":
-							{
-								"quantityElement":
-									{
-										"uom":"http://tempuri.org",
-										"epcClass":"http://tempuri.org",
-										"quantity":0
-									}
-							},
-						"ilmd":
-							{
-								"extension":
-									{ "ANY-ELEMENT":""}
-							}
-					},
-				"baseExtension":{"ANY-ELEMENT":""},
-				"bizTransactionList":
-					{
-						"bizTransaction":
-							{
-								"content":"http://tempuri.org",
-								"type":"http://tempuri.org"
-							}
-					},
-				"action":"ADD",
-				"bizLocation":
-					{
-						"extension":
-							{
-								"ANY-ELEMENT":""
-							},
-						"id":"http://tempuri.org"
-					},
-				"readPoint":{
-					"extension":{"ANY-ELEMENT":""},
-					"id":"http://tempuri.org"
-					},
-				"bizStep":"http://tempuri.org",
-				"epcList":{"epc":"epc"},
-				"eventTimeZoneOffset":"+09:00",
-				"eventTime":"2001-12-31T12:00:00",
-				"recordTime":"2001-12-31T12:00:00",
-				"disposition":"http://tempuri.org"
-			}
-			
-			
-			
-			
-			*/
-		
-		
+			objectEventObj = prepareObjectEvent(objectEventObj);
+			CaptureService captureService = new CaptureService();
+			captureService.capture(objectEventObj);
 		}
 		else if( objectEvent instanceof JSONArray )
 		{
-			
+			JSONArray objectEventArr = (JSONArray) objectEvent;
+			for( int i = 0 ; i < objectEventArr.length() ; i++ )
+			{
+				JSONObject objectEventObj = objectEventArr.getJSONObject(i);
+				objectEventObj = prepareObjectEvent(objectEventObj);
+				CaptureService captureService = new CaptureService();
+				captureService.capture(objectEventObj);
+			}
 		}
 	}
 	public void doAggregationEventCapture(Object aggregationEvent)
@@ -218,7 +197,24 @@ public class CaptureServlet extends HttpServlet {
 		
 	}
 	
-	
+	public void updateBaseExtensionMap(JSONObject parent, Map<String, String> extensionMap)
+	{
+		String extensionKey = getJSONKey(parent, "baseExtension");
+		if( extensionKey == null )
+		{
+			return;
+		}
+		JSONObject extension = parent.getJSONObject(extensionKey);
+		String[] extensionNames = JSONObject.getNames(extension);
+		
+		for( int i = 0 ; i < extensionNames.length ; i++ )
+		{
+			String name = extensionNames[i];
+			String value = extension.get(name).toString();
+			extensionMap.put(name, value);
+		}
+		parent.remove(extensionKey);
+	}
 	
 	public void updateExtensionMap(JSONObject parent, Map<String, String> extensionMap)
 	{
@@ -229,12 +225,14 @@ public class CaptureServlet extends HttpServlet {
 		}
 		JSONObject extension = parent.getJSONObject(extensionKey);
 		String[] extensionNames = JSONObject.getNames(extension);
+		
 		for( int i = 0 ; i < extensionNames.length ; i++ )
 		{
 			String name = extensionNames[i];
 			String value = extension.get(name).toString();
 			extensionMap.put(name, value);
 		}
+		parent.remove(extensionKey);
 	}
 	
 	private String getXMLDocumentString(InputStream is) {
