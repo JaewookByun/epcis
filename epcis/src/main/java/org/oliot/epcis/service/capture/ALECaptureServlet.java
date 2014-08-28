@@ -8,11 +8,9 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -23,34 +21,19 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.axis.message.MessageElement;
-import org.apache.axis.types.URI;
-import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
-import org.oliot.epcglobal.EPC;
-import org.oliot.epcis.ActionType;
-import org.oliot.epcis.BusinessLocationType;
-import org.oliot.epcis.BusinessTransactionType;
-import org.oliot.epcis.EPCISEventExtensionType;
-import org.oliot.epcis.ObjectEventExtension2Type;
-import org.oliot.epcis.ObjectEventExtensionType;
-import org.oliot.epcis.ObjectEventType;
-
-import org.oliot.epcis.ReadPointType;
-import org.oliot.epcis.SourceDestType;
+import org.oliot.epcis.service.ConfigurationServlet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -58,7 +41,6 @@ import org.xml.sax.SAXException;
  */
 public class ALECaptureServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -72,6 +54,7 @@ public class ALECaptureServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		ConfigurationServlet.logger.info(" doGet : not implemented, use doPost ");	
 	}
 
 	/**
@@ -82,6 +65,7 @@ public class ALECaptureServlet extends HttpServlet {
 			HttpServletResponse response) {
 
 		try {
+			ConfigurationServlet.logger.info(" ECReport Capture Started.... ");
 			// Identifying what the event type is
 			String eventType = request.getParameter("eventType");
 			// Default Event Type
@@ -119,8 +103,7 @@ public class ALECaptureServlet extends HttpServlet {
 				// TODO:
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -135,10 +118,10 @@ public class ALECaptureServlet extends HttpServlet {
 			validator.validate(xmlSource);
 			return true;
 		} catch (SAXException e) {
-			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (IOException e) {
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return false;
 		}
 	}
@@ -257,7 +240,7 @@ public class ALECaptureServlet extends HttpServlet {
 			}
 			return epcisObject;
 		} catch (ParseException e) {
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return null;
 		}
 	}
@@ -394,214 +377,6 @@ public class ALECaptureServlet extends HttpServlet {
 		return false;
 	}
 
-	private ObjectEventType[] makeObjectEvents(Document doc,
-			HttpServletRequest request) throws ParseException,
-			MalformedURIException {
-
-		// get extra param : action
-		String actionType = request.getParameter("action");
-		// Mandatory Field : Default - OBSERVE
-		if (actionType == null)
-			actionType = "OBSERVE";
-		// Optional Field
-		String bizStep = request.getParameter("bizStep");
-		// Optional Field
-		String disposition = request.getParameter("disposition");
-		// Optional Field
-		String readPoint = request.getParameter("readPoint");
-		// Optional Field
-		String bizLocation = request.getParameter("bizLocation");
-		// Optional Field : Comma Separated List , ~,~,~
-		String bizTransactionListStr = request
-				.getParameter("bizTransactionList");
-		String[] bizTransactionList = null;
-		if (bizTransactionListStr != null) {
-			bizTransactionList = bizTransactionListStr.split(",");
-			for (int i = 0; i < bizTransactionList.length; i++) {
-				bizTransactionList[i] = bizTransactionList[i].trim();
-			}
-		}
-		// Optional Field : Comma Separated List , ~,~,~
-		String sourceListStr = request.getParameter("sourceList");
-		String[] sourceList = null;
-		if (sourceListStr != null) {
-			sourceList = sourceListStr.split(",");
-			for (int i = 0; i < sourceList.length; i++) {
-				sourceList[i] = sourceList[i].trim();
-			}
-		}
-		// Optional Field : Comma Separated List , ~,~,~
-		String destinationListStr = request.getParameter("destinationList");
-		String[] destinationList = null;
-		if (destinationListStr != null) {
-			destinationList = destinationListStr.split(",");
-			for (int i = 0; i < destinationList.length; i++) {
-				destinationList[i] = destinationList[i].trim();
-			}
-		}
-
-		Calendar eventTime = getEventTime(doc);
-		Calendar recordTime = new GregorianCalendar();
-		String eventTimeZoneOffset = eventTime.getTimeZone().toString();
-		Element root = doc.getDocumentElement();
-		NodeList memberList = root.getElementsByTagName("member");
-		ObjectEventType[] oetArr = new ObjectEventType[memberList.getLength()];
-		for (int i = 0; i < memberList.getLength(); i++) {
-			ObjectEventType oet = new ObjectEventType();
-			oet.setEventTime(eventTime);
-			oet.setRecordTime(recordTime);
-			oet.setEventTimeZoneOffset(eventTimeZoneOffset);
-			List<EPC> epcs = new ArrayList<EPC>();
-			Node member = memberList.item(i);
-			NodeList children = member.getChildNodes();
-			for (int j = 0; j < children.getLength(); j++) {
-				Node child = children.item(j);
-				String nodeName = child.getNodeName();
-				if (nodeName.equals("epc")) {
-					epcs.add(new EPC(child.getTextContent()));
-				} else if (nodeName.equals("extension")) {
-					ObjectEventExtensionType extension = getObjectEventExtensionType(child);
-					oet.setExtension(extension);
-				}
-			}
-			if (epcs != null) {
-				EPC[] epcArr = new EPC[epcs.size()];
-				for (int j = 0; j < epcs.size(); j++) {
-					epcArr[j] = epcs.get(i);
-				}
-				oet.setEpcList(epcArr);
-			}
-			ActionType action = new ActionType(actionType);
-			oet.setAction(action);
-			if (bizStep != null)
-				oet.setBizStep(new URI(bizStep));
-			if (disposition != null)
-				oet.setDisposition(new URI(disposition));
-			if (readPoint != null)
-				oet.setReadPoint(new ReadPointType(new URI(readPoint), null,
-						null));
-			if (bizLocation != null)
-				oet.setBizLocation(new BusinessLocationType(
-						new URI(bizLocation), null, null));
-			if (bizTransactionList != null) {
-				BusinessTransactionType[] bizTranTypeArr = new BusinessTransactionType[bizTransactionList.length];
-				for (int j = 0; j < bizTransactionList.length; j++) {
-					BusinessTransactionType bizTran = new BusinessTransactionType();
-					bizTran.setType(new URI(bizTransactionList[j]));
-					bizTranTypeArr[j] = bizTran;
-				}
-				oet.setBizTransactionList(bizTranTypeArr);
-			}
-
-			ObjectEventExtensionType extension = oet.getExtension();
-			if (extension == null)
-				extension = new ObjectEventExtensionType();
-
-			if (sourceList != null) {
-				SourceDestType[] sdTypeArr = new SourceDestType[sourceList.length];
-				for (int j = 0; j < sourceList.length; j++) {
-					SourceDestType sd = new SourceDestType();
-					sd.setType(new URI(sourceList[j]));
-					sdTypeArr[j] = sd;
-				}
-				extension.setSourceList(sdTypeArr);
-				oet.setExtension(extension);
-			}
-
-			extension = oet.getExtension();
-			if (extension == null)
-				extension = new ObjectEventExtensionType();
-
-			if (destinationList != null) {
-				SourceDestType[] sdTypeArr = new SourceDestType[destinationList.length];
-				for (int j = 0; j < destinationList.length; j++) {
-					SourceDestType sd = new SourceDestType();
-					sd.setType(new URI(destinationList[j]));
-					sdTypeArr[j] = sd;
-				}
-				extension.setDestinationList(sdTypeArr);
-				oet.setExtension(extension);
-			}
-			oetArr[i] = oet;
-		}
-
-		return oetArr;
-	}
-
-	private ObjectEventExtensionType getObjectEventExtensionType(Node extension) {
-		ObjectEventExtensionType eet = new ObjectEventExtensionType();
-		NodeList fieldList = extension.getChildNodes();
-		Node fieldNode = null;
-		for (int i = 0; i < fieldList.getLength(); i++) {
-			if (fieldList.item(i).getNodeName().equals("fieldList")) {
-				fieldNode = fieldList.item(i);
-				break;
-			}
-		}
-		NodeList fields = fieldNode.getChildNodes();
-		MessageElement[] meArr = new MessageElement[1];
-		MessageElement me = new MessageElement();
-		for (int i = 0; i < fields.getLength(); i++) {
-			Node field = fields.item(i);
-			if (!field.getNodeName().equals("field"))
-				continue;
-			String name = null;
-			String value = null;
-
-			NodeList nodes = field.getChildNodes();
-			for (int j = 0; j < nodes.getLength(); j++) {
-				if (nodes.item(j).getNodeName().equals("name")) {
-					name = nodes.item(j).getTextContent();
-				} else if (nodes.item(j).getNodeName().equals("value")) {
-					value = nodes.item(j).getTextContent();
-				}
-			}
-
-			if (name != null & value != null) {
-				me.setAttribute(name, value);
-			}
-		}
-		meArr[0] = me;
-		ObjectEventExtension2Type extension2 = new ObjectEventExtension2Type();
-		extension2.set_any(meArr);
-		eet.setExtension(extension2);
-		return eet;
-	}
-
-	@SuppressWarnings("unused")
-	private EPCISEventExtensionType getEPCISEventExtensionType(Document doc) {
-		NodeList fieldList = doc.getElementsByTagName("fieldList");
-		if (fieldList.getLength() == 0)
-			return null;
-
-		EPCISEventExtensionType eet = new EPCISEventExtensionType();
-		MessageElement[] meArr = new MessageElement[1];
-		MessageElement me = new MessageElement();
-		// fieldList
-		Node fieldNode = fieldList.item(0);
-		// field(s)
-		NodeList fields = fieldNode.getChildNodes();
-		for (int i = 0; i < fields.getLength(); i++) {
-			Node field = fields.item(i);
-			Node first = field.getFirstChild();
-			Node second = first.getNextSibling();
-			String name;
-			String value;
-			if (first.getNodeName().equals("name")) {
-				name = first.getTextContent();
-				value = second.getTextContent();
-				me.setAttribute(value, name);
-			} else if (first.getNodeName().equals("value")) {
-				name = second.getTextContent();
-				value = first.getTextContent();
-				me.setAttribute(value, name);
-			}
-		}
-		meArr[0] = me;
-		eet.set_any(meArr);
-		return eet;
-	}
-
 	private Calendar getEventTime(Document doc) throws ParseException {
 		Element root = doc.getDocumentElement();
 		String date = root.getAttribute("date");
@@ -642,44 +417,13 @@ public class ALECaptureServlet extends HttpServlet {
 			doc.getDocumentElement().normalize();
 			return doc;
 		} catch (SAXException e) {
-			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return null;
 		} catch (IOException e) {
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return null;
 		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-			return null;
-		}
-
-	}
-
-	@SuppressWarnings("unused")
-	private Document getXMLDocument(InputStream is, String xsdPath) {
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
-			SchemaFactory schemaFactory = SchemaFactory
-					.newInstance("http://www.w3.org/2001/XMLSchema");
-			File xsdFile = new File(xsdPath);
-			Schema schema = schemaFactory.newSchema(xsdFile);
-			Validator validator = schema.newValidator();
-			Source xmlSource = new StreamSource(is);
-			validator.validate(xmlSource);
-			dbFactory.setSchema(schemaFactory
-					.newSchema(new Source[] { new StreamSource(xsdFile) }));
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = dBuilder.parse(is);
-			doc.getDocumentElement().normalize();
-			return doc;
-		} catch (SAXException e) {
-			System.out.println("Invalid ECReport: " + e.getLocalizedMessage());
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 			return null;
 		}
 

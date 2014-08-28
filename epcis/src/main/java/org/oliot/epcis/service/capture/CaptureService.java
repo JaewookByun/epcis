@@ -47,6 +47,7 @@ import org.oliot.epcis.TransactionEventExtensionType;
 import org.oliot.epcis.TransactionEventType;
 import org.oliot.epcis.TransformationEventExtensionType;
 import org.oliot.epcis.TransformationEventType;
+import org.oliot.epcis.service.ConfigurationServlet;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -537,13 +538,11 @@ public class CaptureService implements CoreCaptureService {
 			DBObject dbObject = (DBObject)JSON.parse(epcisJSONObject.toString());
 			objectEventCollection.insert(dbObject);	
 			mongoClient.close();
-			System.out.println( "[Capture Service] : Object Event is appended ");
+			ConfigurationServlet.logger.info(" ObjectEvent from ECReport is stored ");
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.error(e.toString());
 		} catch (MongoException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.error(e.toString());
 		}
 	}
 }

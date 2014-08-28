@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 /**
@@ -19,6 +22,7 @@ import org.json.JSONObject;
 public class ConfigurationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static String backend;
+	public static Logger logger;
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -44,9 +48,14 @@ public class ConfigurationServlet extends HttpServlet {
 	@Override
 	public void init(ServletConfig servletConfig ) throws ServletException
 	{
+		// Log4j Setting
+		BasicConfigurator.configure();
+		Logger.getRootLogger().setLevel(Level.INFO);
+		ConfigurationServlet.logger = Logger.getRootLogger();
 		String path = servletConfig.getServletContext().getRealPath("/WEB-INF");
 		try
 		{
+			// Set up Backend
 			File file = new File(path+"/Configuration.json");
 			FileReader fileReader = new FileReader(file);
 			BufferedReader reader = new BufferedReader(fileReader);
@@ -62,16 +71,17 @@ public class ConfigurationServlet extends HttpServlet {
 			String backend = json.getString("backend");
 			if( backend == null )
 			{
-				System.out.println( "[Configuration Servlet] : Backend is null, please restart the service ");
+				ConfigurationServlet.logger.info("Backend is null, please restart the service");
 			}
 			else
 			{
 				ConfigurationServlet.backend = backend;
-				System.out.println( "[Configuration Servlet] : Backend - " + ConfigurationServlet.backend);
+				ConfigurationServlet.logger.info("Backend - " + ConfigurationServlet.backend);
 			}
+			
 		}catch(Exception ex)
 		{
-
+			ConfigurationServlet.logger.error(ex.toString());
 		}
 	}
 }
