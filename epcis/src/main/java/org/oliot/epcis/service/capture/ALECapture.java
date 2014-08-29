@@ -12,10 +12,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -26,43 +24,42 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.axis.message.MessageElement;
+import org.apache.axis.types.URI;
+import org.apache.axis.types.URI.MalformedURIException;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
+import org.oliot.epcis.model.BusinessLocationType;
+import org.oliot.epcis.model.ActionType;
+import org.oliot.epcis.model.BusinessTransactionType;
+import org.oliot.epcis.model.EPC;
+import org.oliot.epcis.model.ObjectEventExtension2Type;
+import org.oliot.epcis.model.ObjectEventExtensionType;
+import org.oliot.epcis.model.ObjectEventType;
+import org.oliot.epcis.model.QuantityElementType;
+import org.oliot.epcis.model.ReadPointType;
+import org.oliot.epcis.model.SourceDestType;
 import org.oliot.epcis.service.ConfigurationServlet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.context.ServletContextAware;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
-/**
- * Servlet implementation class ALECaptureServlet
- */
-public class ALECaptureServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-	/**
-	 * @see HttpServlet#HttpServlet()
-	 */
-	public ALECaptureServlet() {
-		super();
-	}
+@Controller
+@RequestMapping("/aleCapture")
+public class ALECapture implements ServletContextAware {
 
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
-		ConfigurationServlet.logger.info(" doGet : not implemented, use doPost ");	
-	}
+	@Autowired
+	ServletContext servletContext;
 
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	protected void doPost(HttpServletRequest request,
-			HttpServletResponse response) {
+	@RequestMapping
+	public void post(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
 			ConfigurationServlet.logger.info(" ECReport Capture Started.... ");
@@ -78,8 +75,7 @@ public class ALECaptureServlet extends HttpServlet {
 			String xmlDocumentString = getXMLDocumentString(is);
 			InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
 			// Parsing and Validating data
-			ServletConfig conf = getServletConfig();
-			String xsdPath = conf.getServletContext().getRealPath("/wsdl");
+			String xsdPath = servletContext.getRealPath("/wsdl");
 			xsdPath += "/EPCglobal-ale-1_1-ale.xsd";
 			boolean isValidated = validateECReport(validateStream, xsdPath);
 			if (isValidated == false) {
@@ -89,11 +85,13 @@ public class ALECaptureServlet extends HttpServlet {
 			if (eventType.equals("AggregationEvent")) {
 				// TODO:
 			} else if (eventType.equals("ObjectEvent")) {
-				JSONArray epcisArray = makeObjectEvent(xmlDocumentString, request);
+				JSONArray epcisArray = makeObjectEvent(xmlDocumentString,
+						request);
 				for (int i = 0; i < epcisArray.length(); i++) {
 					JSONObject epcisObject = epcisArray.getJSONObject(i);
+					ObjectEventType objectEvent = makeObjectEvent(epcisObject);
 					CaptureService capture = new CaptureService();
-					capture.capture(epcisObject);
+					capture.capture(objectEvent);
 				}
 			} else if (eventType.equals("QuantityEvent")) {
 				// TODO:
@@ -105,6 +103,166 @@ public class ALECaptureServlet extends HttpServlet {
 		} catch (IOException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
+	}
+
+	private ObjectEventType makeObjectEvent(JSONObject obj) {
+
+		try {
+			ObjectEventType objectEventType = new ObjectEventType();
+			if (!obj.isNull("eventTime")) {
+				String eventTimeStr = obj.getString("eventTime");
+				Calendar eventTime = Calendar.getInstance();
+				// Example: 2014-08-11T19:57:59.717+09:00
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+				eventTime.setTime(sdf.parse(eventTimeStr));
+				objectEventType.setEventTime(eventTime);
+			}
+			if (!obj.isNull("recordTime")) {
+				String recordTimeStr = obj.getString("recordTime");
+				Calendar recordTime = Calendar.getInstance();
+				// Example: 2014-08-11T19:57:59.717+09:00
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+
+				recordTime.setTime(sdf.parse(recordTimeStr));
+				objectEventType.setRecordTime(recordTime);
+			}
+			if (!obj.isNull("eventTimeZoneOffset")) {
+				objectEventType.setEventTimeZoneOffset(obj
+						.getString("eventTimeZoneOffset"));
+			}
+			if (!obj.isNull("epcList")) {
+				JSONArray epcList = obj.getJSONArray("epcList");
+				EPC[] epcs = new EPC[epcList.length()];
+				for (int i = 0; i < epcList.length(); i++) {
+					String epcStr = epcList.getString(i);
+					EPC epc = new EPC(epcStr);
+					epcs[i] = epc;
+				}
+				objectEventType.setEpcList(epcs);
+			}
+			if (!obj.isNull("action")) {
+				objectEventType.setAction(new ActionType(obj
+						.getString("action")));
+			}
+			if (!obj.isNull("bizStep")) {
+				// DEBUG
+				URI bizURI = new URI("http://tempuri.org");
+				objectEventType.setBizStep(bizURI);
+			}
+			if (!obj.isNull("disposition")) {
+				objectEventType.setDisposition(new URI(obj
+						.getString("disposition")));
+			}
+			if (!obj.isNull("readPoint")) {
+				JSONObject readPoint = obj.getJSONObject("readPoint");
+				URI id = new URI(readPoint.getString("id"));
+				ReadPointType rp = new ReadPointType();
+				rp.setId(id);
+				objectEventType.setReadPoint(rp);
+			}
+			if (!obj.isNull("bizLocation")) {
+				JSONObject bizLoc = obj.getJSONObject("bizLocation");
+				URI id = new URI(bizLoc.getString("id"));
+				BusinessLocationType bl = new BusinessLocationType();
+				bl.setId(id);
+				objectEventType.setBizLocation(bl);
+			}
+			if(!obj.isNull("bizTransactionList"))
+			{
+				JSONArray bizTranArr = obj.getJSONArray("bizTransactionList");
+				BusinessTransactionType[] btl = new BusinessTransactionType[bizTranArr.length()];
+				for( int i = 0 ; i < bizTranArr.length() ; i++ )
+				{
+					String bizTransaction = bizTranArr.getString(i);
+					BusinessTransactionType bt = new BusinessTransactionType();
+					bt.setType(new URI(bizTransaction));
+					btl[i] = bt;
+				}
+				objectEventType.setBizTransactionList(btl);
+			}
+			ObjectEventExtensionType oeet = new ObjectEventExtensionType();
+			if(!obj.isNull("quantityList"))
+			{
+				JSONArray quantityArr = obj.getJSONArray("quantityList");
+				QuantityElementType[] qel = new QuantityElementType[quantityArr.length()];
+				for( int i = 0 ; i < quantityArr.length() ; i++ )
+				{
+					JSONObject quantityObj = quantityArr.getJSONObject(i);
+					QuantityElementType qe = new QuantityElementType();
+					if(!quantityObj.isNull("epcClass"))
+					{
+						qe.setEpcClass(new URI(quantityObj.getString("epcClass")));
+					}
+					if(!quantityObj.isNull("quantity"))
+					{
+						qe.setQuantity(Float.parseFloat(quantityObj.getString("quantity")));
+					}
+					if(!quantityObj.isNull("uom"))
+					{
+						qe.setUom(new URI(quantityObj.getString("uom")));
+					}
+					qel[i] = qe;
+				}
+				oeet.setQuantityList(qel);
+			}
+			if(!obj.isNull("sourceList"))
+			{
+				JSONArray sourceArr = obj.getJSONArray("sourceList");
+				SourceDestType[] sdtl = new SourceDestType[sourceArr.length()];
+				for(int i = 0 ; i < sourceArr.length() ; i++ )
+				{
+					String source = sourceArr.getString(i);
+					SourceDestType sdt = new SourceDestType();
+					sdt.setType(new URI(source));
+					sdtl[i] = sdt;
+				}
+				oeet.setSourceList(sdtl);
+			}
+			if(!obj.isNull("destinationList"))
+			{
+				JSONArray destArr = obj.getJSONArray("destinationList");
+				SourceDestType[] sdtl = new SourceDestType[destArr.length()];
+				for(int i = 0 ; i < destArr.length() ; i++ )
+				{
+					String dest = destArr.getString(i);
+					SourceDestType sdt = new SourceDestType();
+					sdt.setType(new URI(dest));
+					sdtl[i] = sdt;
+				}
+				oeet.setDestinationList(sdtl);
+			}
+			if(!obj.isNull("extension"))
+			{
+				JSONArray extension = obj.getJSONArray("extension");
+				ObjectEventExtension2Type oeet2 = new ObjectEventExtension2Type();
+				MessageElement[] anyl = new MessageElement[1];
+				MessageElement any = new MessageElement();
+				for(int i = 0 ; i < extension.length() ; i++ )
+				{
+					JSONObject extObj = extension.getJSONObject(i);
+					String[] names =JSONObject.getNames(extObj);
+					if( names.length == 1 )
+					{
+						any.setAttribute(names[0], extObj.getString(names[0]));
+					}
+				}
+				anyl[0] = any;
+				oeet2.set_any(anyl);
+				oeet.setExtension(oeet2);
+			}
+			objectEventType.setExtension(oeet);
+			return objectEventType;
+		} catch (ParseException e) {
+			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+		} catch (MalformedURIException e) {
+			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+		}
+		return null;
 	}
 
 	private boolean validateECReport(InputStream is, String xsdPath) {
@@ -245,7 +403,8 @@ public class ALECaptureServlet extends HttpServlet {
 		}
 	}
 
-	private JSONArray makeEPCISArray(JSONObject epcisObject, JSONObject reportsObj) {
+	private JSONArray makeEPCISArray(JSONObject epcisObject,
+			JSONObject reportsObj) {
 		String reportKey = getJSONKey(reportsObj, "report");
 		JSONObject report = reportsObj.getJSONObject(reportKey);
 		String groupKey = getJSONKey(report, "group");
@@ -435,6 +594,11 @@ public class ALECaptureServlet extends HttpServlet {
 		IOUtils.copy(is, writer, "UTF-8");
 		String data = writer.toString();
 		return data;
+	}
+
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		this.servletContext = servletContext;
 	}
 
 }

@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletConfig;
@@ -170,8 +169,8 @@ public class CaptureServlet extends HttpServlet {
 		{
 			JSONObject objectEventObj = (JSONObject) objectEvent;
 			objectEventObj = prepareObjectEvent(objectEventObj);
-			CaptureService captureService = new CaptureService();
-			captureService.capture(objectEventObj);
+			//CaptureService captureService = new CaptureService();
+			//captureService.capture(objectEventObj);
 		}
 		else if( objectEvent instanceof JSONArray )
 		{
@@ -180,8 +179,8 @@ public class CaptureServlet extends HttpServlet {
 			{
 				JSONObject objectEventObj = objectEventArr.getJSONObject(i);
 				objectEventObj = prepareObjectEvent(objectEventObj);
-				CaptureService captureService = new CaptureService();
-				captureService.capture(objectEventObj);
+				//CaptureService captureService = new CaptureService();
+				//captureService.capture(objectEventObj);
 			}
 		}
 	}

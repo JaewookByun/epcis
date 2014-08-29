@@ -25,6 +25,7 @@ import org.apache.axis.encoding.AnyContentType;
 import org.apache.axis.message.MessageElement;
 import org.apache.axis.types.URI;
 import org.oliot.epcglobal.EPC;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 
 /**
@@ -33,6 +34,7 @@ import org.oliot.epcglobal.EPC;
  * 			objects identified by EPCs.
  */
 @SuppressWarnings("serial")
+@Document(collection = "ObjectEvent")
 public class ObjectEventType  extends EPCISEventType  implements Serializable, AnyContentType {
 	
 	private EPC[] epcList;

@@ -18,15 +18,17 @@
 
 package org.oliot.epcglobal;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 /**
  * EPC represents the Electronic Product Code.
  */
 
-
-
-
 @SuppressWarnings("serial")
+@Document(collection = "Test")
 public class EPC  implements java.io.Serializable, org.apache.axis.encoding.SimpleType {
+	@Id
 	private java.lang.String _value;
 
 	public EPC() {
@@ -61,6 +63,7 @@ public class EPC  implements java.io.Serializable, org.apache.axis.encoding.Simp
 		this._value = _value;
 	}
 
+	
 	private java.lang.Object __equalsCalc = null;
 	@SuppressWarnings("unused")
 	public synchronized boolean equals(java.lang.Object obj) {

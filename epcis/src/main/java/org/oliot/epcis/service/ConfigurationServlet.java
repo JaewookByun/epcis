@@ -23,6 +23,7 @@ public class ConfigurationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static String backend;
 	public static Logger logger;
+	public static String webInfoPath;
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -78,6 +79,7 @@ public class ConfigurationServlet extends HttpServlet {
 				ConfigurationServlet.backend = backend;
 				ConfigurationServlet.logger.info("Backend - " + ConfigurationServlet.backend);
 			}
+			ConfigurationServlet.webInfoPath = servletConfig.getServletContext().getRealPath("/WEB-INF");
 			
 		}catch(Exception ex)
 		{
