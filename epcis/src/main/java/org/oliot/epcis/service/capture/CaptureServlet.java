@@ -138,6 +138,7 @@ public class CaptureServlet extends HttpServlet {
 		if( !objectEventObj.isNull("bizTransactionList"))
 		{
 			JSONObject bizTransactionList = objectEventObj.getJSONObject("bizTransactionList");
+			updateObjectList(bizTransactionList, "bizTransactionList");
 		}
 		if( !objectEventObj.isNull("extension"))	//Extension Field exists
 		{
