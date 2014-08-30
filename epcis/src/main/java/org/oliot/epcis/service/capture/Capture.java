@@ -19,8 +19,8 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.oliot.epcis.model.EPCISDocumentType;
-import org.oliot.epcis.service.ConfigurationServlet;
+import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -23,7 +23,7 @@ import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
-import org.oliot.epcis.service.ConfigurationServlet;
+import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.xml.sax.SAXException;
 
 /**

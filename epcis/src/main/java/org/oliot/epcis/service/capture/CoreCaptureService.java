@@ -1,12 +1,12 @@
 package org.oliot.epcis.service.capture;
 
 
-import org.oliot.epcis.model.EPCISDocumentType;
-import org.oliot.epcis.model.AggregationEventType;
-import org.oliot.epcis.model.ObjectEventType;
-import org.oliot.epcis.model.QuantityEventType;
-import org.oliot.epcis.model.TransactionEventType;
-import org.oliot.epcis.model.TransformationEventType;
+import org.oliot.model.epcis.AggregationEventType;
+import org.oliot.model.epcis.EPCISDocumentType;
+import org.oliot.model.epcis.ObjectEventType;
+import org.oliot.model.epcis.QuantityEventType;
+import org.oliot.model.epcis.TransactionEventType;
+import org.oliot.model.epcis.TransformationEventType;
 
 
 public interface CoreCaptureService {

@@ -12,10 +12,10 @@
 	<mongo:mongo host="127.0.0.1" port="27017" />
 	<mongo:db-factory dbname="epcis" mongo-ref="mongo" />
 
-	<mongo:mapping-converter base-package="org.oliot.epcis.service">
+	<mongo:mapping-converter base-package="org.oliot.epcis.serde">
 		<mongo:custom-converters>
 			<mongo:converter>
-				<bean class="org.oliot.epcis.service.ObjectEventWriteConverter" />
+				<bean class="org.oliot.epcis.serde.ObjectEventWriteConverter" />
 			</mongo:converter>
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
