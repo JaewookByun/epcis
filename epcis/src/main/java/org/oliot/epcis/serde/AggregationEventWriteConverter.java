@@ -20,6 +20,8 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.QuantityElementType;
+import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SourceDestType;
@@ -87,6 +89,8 @@ public class AggregationEventWriteConverter implements
 		if (aggregationEventType.getRecordTime() != null)
 			dbo.put("recordTime", aggregationEventType.getRecordTime()
 					.toGregorianCalendar().getTimeInMillis());
+		if (aggregationEventType.getParentID() != null )
+			dbo.put("parentID", aggregationEventType.getParentID());
 		if (aggregationEventType.getChildEPCs() != null) {
 			EPCListType epcs = aggregationEventType.getChildEPCs();
 			List<EPC> epcList = epcs.getEpc();
@@ -97,7 +101,7 @@ public class AggregationEventWriteConverter implements
 				epcDB.put("epc", epcList.get(i).getValue());
 				epcDBList.add(epcDB);
 			}
-			dbo.put("epcList", epcDBList);
+			dbo.put("childEPCs", epcDBList);
 		}
 		if (aggregationEventType.getAction() != null)
 			dbo.put("action", aggregationEventType.getAction().name());
@@ -188,7 +192,7 @@ public class AggregationEventWriteConverter implements
 				extension.put("otherAttributes", map2Save);
 			}
 			bizLocation.put("extension", extension);
-			dbo.put("readPoint", bizLocation);
+			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (aggregationEventType.getBizTransactionList() != null) {
@@ -213,6 +217,24 @@ public class AggregationEventWriteConverter implements
 		DBObject extension = new BasicDBObject();
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType oee = aggregationEventType.getExtension();
+			if (oee.getChildQuantityList() != null) {
+				QuantityListType qetl = oee.getChildQuantityList();
+				List<QuantityElementType> qetList = qetl.getQuantityElement();
+				List<DBObject> quantityList = new ArrayList<DBObject>();
+				for( int i = 0 ; i < qetList.size() ; i++ )
+				{
+					DBObject quantity = new BasicDBObject();
+					QuantityElementType qet = qetList.get(i);
+					if (qet.getEpcClass() != null)
+						quantity.put("epcClass", qet.getEpcClass().toString());
+					quantity.put("quantity", qet.getQuantity());
+					if (qet.getUom() != null)
+						quantity.put("uom", qet.getUom().toString());
+					quantityList.add(quantity);
+				}
+				extension.put("childQuantityList", quantityList);
+			}
+			
 			if (oee.getSourceList() != null) {
 				SourceListType sdtl = oee.getSourceList();
 				List<SourceDestType> sdtList = sdtl.getSource();

@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="epcis.oliot.org ../wsdl/Copy of EPCglobal-epcis-1_1.xsd ">
+  <EPCISBody>
+    <EventList>
+      <AggregationEvent>
+        <eventTime>2001-12-31T12:00:00</eventTime>
+        <recordTime>2001-12-31T12:00:00</recordTime>
+        <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+        <baseExtension>
+          <base1>b1</base1>
+<base2>b2</base2>
+        </baseExtension>
+        <parentID>parentID</parentID>
+        <childEPCs>
+          <epc>epc</epc>
+        </childEPCs>
+        <action>ADD</action>
+        <bizStep>zcxvvcvc</bizStep>
+        <disposition>zxcvzcv</disposition>
+        <readPoint>
+          <id>http://tempuri.org</id>
+          <extension>
+            <longitude>35</longitude>
+		<latitude>124</latitude>
+          </extension>
+        </readPoint>
+        <bizLocation>
+          <id>zxcvcv</id>
+          <extension>
+            <longitude>35</longitude>
+		<latitude>124</latitude>
+          </extension>
+        </bizLocation>
+        <bizTransactionList>
+          <bizTransaction type="badz">zcxvzcvcv</bizTransaction>
+        </bizTransactionList>
+        <extension>
+          <childQuantityList>
+            <quantityElement>
+              <epcClass>zxcvcvzc</epcClass>
+              <quantity>0.0</quantity>
+              <uom>http://tempuri.org</uom>
+            </quantityElement>
+          </childQuantityList>
+          <sourceList>
+            <source type="bzz">azcvzcv</source>
+          </sourceList>
+          <destinationList>
+            <destination type="bdz">zcxvzcvzcxv</destination>
+          </destinationList>
+          <extension>
+            <ANY-ELEMENT/>
+          </extension>
+        </extension>
+      </AggregationEvent>
+<ObjectEvent>
+        <eventTime>2001-12-31T12:00:00</eventTime>
+        <recordTime>2001-12-31T12:00:00</recordTime>
+        <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+        <baseExtension>
+          	<base1>base1</base1>
+		<base2>base2</base2>
+        </baseExtension>
+        <epcList>
+          <epc>http://epc</epc>
+	    <epc>http://epc2</epc>
+        </epcList>
+        <action>ADD</action>
+        <bizStep>zcxvzcvzcv</bizStep>
+        <disposition>zcxvzcxvczxv</disposition>
+        <readPoint>
+          <id>http://tempuri.org</id>
+          <extension>
+		<longitude>36.1</longitude>
+		<latitude>125.2</latitude>
+          </extension>
+        </readPoint>
+        <bizLocation>
+          <id>zxcvzcvzcv</id>
+          <extension>
+            <longitude>36.1</longitude>
+	     <latitude>125.2</latitude>
+          </extension>
+        </bizLocation>
+        <bizTransactionList>
+          <bizTransaction type="bbhg">zcvzcvzcvzcxv</bizTransaction>
+        </bizTransactionList>
+        <extension>
+          <quantityList>
+            <quantityElement>
+              <epcClass>zxcvzcvzcv</epcClass>
+              <quantity>0.0</quantity>
+              <uom>zcxvzcvzcvzcxvadd</uom>
+            </quantityElement>
+          </quantityList>
+          <sourceList>
+            <source type="dbz">zxcvzcv</source>
+          </sourceList>
+          <destinationList>
+            <destination type="ddaas">zxcvzcvzcv</destination>
+          </destinationList>
+          <ilmd>
+            <extension>
+              	<manufacturer>RESL</manufacturer>
+			<expire>2001-12-31T12:00:00</expire>
+            </extension>
+          </ilmd>
+          <extension>
+               <temperature>36</temperature>
+	      <emg>22</emg>
+	      <ecg>11</ecg>
+          </extension>
+        </extension>
+      </ObjectEvent>
+<QuantityEvent>
+        <eventTime>2001-12-31T12:00:00</eventTime>
+        <recordTime>2001-12-31T12:00:00</recordTime>
+        <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+        <baseExtension>
+          <ANY-ELEMENT/>
+        </baseExtension>
+        <epcClass>zcxvzcxvzcxvcv</epcClass>
+        <quantity>0</quantity>
+        <bizStep>zcxvzcxvzcvx</bizStep>
+        <disposition>zcxvzcxvzcxv</disposition>
+        <readPoint>
+          <id>zxcvzcvzcv</id>
+          <extension>
+            <longitude>35</longitude>
+		<latitude>124</latitude>
+          </extension>
+        </readPoint>
+        <bizLocation>
+          <id>hzcvzcvzcxv</id>
+          <extension>
+            <longitude>35</longitude>
+		<latitude>124</latitude>
+          </extension>
+        </bizLocation>
+        <bizTransactionList>
+          <bizTransaction type="asd">adfadf</bizTransaction>
+        </bizTransactionList>
+        <extension>
+          <ANY-ELEMENT/>
+        </extension>
+      </QuantityEvent>
+ <TransactionEvent>
+        <eventTime>2001-12-31T12:00:00</eventTime>
+        <recordTime>2001-12-31T12:00:00</recordTime>
+        <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+        <baseExtension>
+          <ANY-ELEMENT/>
+        </baseExtension>
+        <bizTransactionList>
+          <bizTransaction type="sdf">qerqwerqewr</bizTransaction>
+        </bizTransactionList>
+        <parentID>qewrqwerewrq</parentID>
+        <epcList>
+          <epc>epc</epc>
+        </epcList>
+        <action>ADD</action>
+        <bizStep>qewrwer</bizStep>
+        <disposition>asdfasdfadsf</disposition>
+        <readPoint>
+          <id>zfbfbfbf</id>
+          <extension>
+            <ANY-ELEMENT/>
+          </extension>
+        </readPoint>
+        <bizLocation>
+          <id>fghfghfghgfh</id>
+          <extension>
+            <ANY-ELEMENT/>
+          </extension>
+        </bizLocation>
+        <extension>
+          <quantityList>
+            <quantityElement>
+              <epcClass>fghfghfghgfh</epcClass>
+              <quantity>0.0</quantity>
+              <uom>fghfhrtyrtyrty</uom>
+            </quantityElement>
+          </quantityList>
+          <sourceList>
+            <source type="gdz">fghfghfgh</source>
+          </sourceList>
+          <destinationList>
+            <destination type="bdz">fghfghfghfgh</destination>
+          </destinationList>
+          <extension>
+            <ANY-ELEMENT/>
+          </extension>
+        </extension>
+      </TransactionEvent>
+<TransformationEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+				<baseExtension>
+					<ANY-ELEMENT />
+				</baseExtension>
+				<inputEPCList>
+					<epc>epc</epc>
+				</inputEPCList>
+				<inputQuantityList>
+					<quantityElement>
+						<epcClass>qweqwe</epcClass>
+						<quantity>0.0</quantity>
+						<uom>qweqwe</uom>
+					</quantityElement>
+				</inputQuantityList>
+				<outputEPCList>
+					<epc>epc</epc>
+				</outputEPCList>
+				<outputQuantityList>
+					<quantityElement>
+						<epcClass>qweqwe</epcClass>
+						<quantity>0.0</quantity>
+						<uom>qweqwe</uom>
+					</quantityElement>
+				</outputQuantityList>
+				<transformationID>zcvzcv</transformationID>
+				<bizStep>zcxvzcxv</bizStep>
+				<disposition>xcvbxcvbxcvb</disposition>
+				<readPoint>
+					<id>xvcbxcvbvxcb</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>xcvbxcvbxcvb</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="hghf">gjkgkjgjk
+					</bizTransaction>
+				</bizTransactionList>
+				<sourceList>
+					<source type="fgh">gjkgjkg</source>
+				</sourceList>
+				<destinationList>
+					<destination type="fghhhg">yuiyuirg</destination>
+				</destinationList>
+				<ilmd>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</ilmd>
+				<extension>
+					<ANY-ELEMENT />
+				</extension>
+			</TransformationEvent>
+    </EventList>
+    <extension>
+      <ANY-ELEMENT/>
+    </extension>
+  </EPCISBody>
+  <extension>
+    <ANY-ELEMENT/>
+  </extension>
+</epcis:EPCISDocument>

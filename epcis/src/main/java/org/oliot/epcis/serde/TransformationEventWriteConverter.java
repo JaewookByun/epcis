@@ -13,11 +13,16 @@ import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
+import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.QuantityElementType;
+import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
+import org.oliot.model.epcis.SourceDestType;
+import org.oliot.model.epcis.SourceListType;
 import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.core.convert.converter.Converter;
@@ -94,6 +99,18 @@ public class TransformationEventWriteConverter implements
 				epcDBList.add(epcDB);
 			}
 			dbo.put("inputEPCList", epcDBList);
+		}
+		if (transformationEventType.getOutputEPCList() != null) {
+			EPCListType epcs = transformationEventType.getOutputEPCList();
+			List<EPC> epcList = epcs.getEpc();
+			List<DBObject> epcDBList = new ArrayList<DBObject>();
+
+			for (int i = 0; i < epcList.size(); i++) {
+				DBObject epcDB = new BasicDBObject();
+				epcDB.put("epc", epcList.get(i).getValue());
+				epcDBList.add(epcDB);
+			}
+			dbo.put("outputEPCList", epcDBList);
 		}
 		if (transformationEventType.getBizStep() != null)
 			dbo.put("bizStep", transformationEventType.getBizStep());
@@ -183,7 +200,7 @@ public class TransformationEventWriteConverter implements
 				extension.put("otherAttributes", map2Save);
 			}
 			bizLocation.put("extension", extension);
-			dbo.put("readPoint", bizLocation);
+			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (transformationEventType.getBizTransactionList() != null) {
@@ -204,6 +221,67 @@ public class TransformationEventWriteConverter implements
 			}
 			dbo.put("bizTransactionList", bizTranList);
 		}
+
+		if (transformationEventType.getInputQuantityList() != null) {
+			QuantityListType qetl = transformationEventType
+					.getInputQuantityList();
+			List<QuantityElementType> qetList = qetl.getQuantityElement();
+			List<DBObject> quantityList = new ArrayList<DBObject>();
+			for (int i = 0; i < qetList.size(); i++) {
+				DBObject quantity = new BasicDBObject();
+				QuantityElementType qet = qetList.get(i);
+				if (qet.getEpcClass() != null)
+					quantity.put("epcClass", qet.getEpcClass().toString());
+				quantity.put("quantity", qet.getQuantity());
+				if (qet.getUom() != null)
+					quantity.put("uom", qet.getUom().toString());
+				quantityList.add(quantity);
+			}
+			dbo.put("inputQuantityList", quantityList);
+		}
+		if (transformationEventType.getOutputQuantityList() != null) {
+			QuantityListType qetl = transformationEventType
+					.getOutputQuantityList();
+			List<QuantityElementType> qetList = qetl.getQuantityElement();
+			List<DBObject> quantityList = new ArrayList<DBObject>();
+			for (int i = 0; i < qetList.size(); i++) {
+				DBObject quantity = new BasicDBObject();
+				QuantityElementType qet = qetList.get(i);
+				if (qet.getEpcClass() != null)
+					quantity.put("epcClass", qet.getEpcClass().toString());
+				quantity.put("quantity", qet.getQuantity());
+				if (qet.getUom() != null)
+					quantity.put("uom", qet.getUom().toString());
+				quantityList.add(quantity);
+			}
+			dbo.put("outputQuantityList", quantityList);
+		}
+		if (transformationEventType.getSourceList() != null) {
+			SourceListType sdtl = transformationEventType.getSourceList();
+			List<SourceDestType> sdtList = sdtl.getSource();
+			List<DBObject> dbList = new ArrayList<DBObject>();
+			for (int i = 0; i < sdtList.size(); i++) {
+				SourceDestType sdt = sdtList.get(i);
+				DBObject dbObj = new BasicDBObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
+				dbList.add(dbObj);
+			}
+			dbo.put("sourceList", dbList);
+		}
+		if (transformationEventType.getDestinationList() != null) {
+			DestinationListType sdtl = transformationEventType
+					.getDestinationList();
+			List<SourceDestType> sdtList = sdtl.getDestination();
+			List<DBObject> dbList = new ArrayList<DBObject>();
+			for (int i = 0; i < sdtList.size(); i++) {
+				SourceDestType sdt = sdtList.get(i);
+				DBObject dbObj = new BasicDBObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
+				dbList.add(dbObj);
+			}
+			dbo.put("destinationList", dbList);
+		}
+
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (transformationEventType.getExtension() != null) {

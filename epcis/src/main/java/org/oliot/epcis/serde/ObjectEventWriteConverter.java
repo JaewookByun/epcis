@@ -190,7 +190,7 @@ public class ObjectEventWriteConverter implements
 				extension.put("otherAttributes", map2Save);
 			}
 			bizLocation.put("extension", extension);
-			dbo.put("readPoint", bizLocation);
+			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (objectEventType.getBizTransactionList() != null) {

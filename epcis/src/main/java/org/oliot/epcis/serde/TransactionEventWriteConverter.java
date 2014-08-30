@@ -89,6 +89,8 @@ public class TransactionEventWriteConverter implements
 		if (transactionEventType.getRecordTime() != null)
 			dbo.put("recordTime", transactionEventType.getRecordTime()
 					.toGregorianCalendar().getTimeInMillis());
+		if (transactionEventType.getParentID() != null)
+			dbo.put("parentID", transactionEventType.getParentID());
 		if (transactionEventType.getEpcList() != null) {
 			EPCListType epcs = transactionEventType.getEpcList();
 			List<EPC> epcList = epcs.getEpc();
@@ -190,7 +192,7 @@ public class TransactionEventWriteConverter implements
 				extension.put("otherAttributes", map2Save);
 			}
 			bizLocation.put("extension", extension);
-			dbo.put("readPoint", bizLocation);
+			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (transactionEventType.getBizTransactionList() != null) {

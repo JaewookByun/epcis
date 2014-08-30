@@ -82,7 +82,8 @@ public class QuantityEventWriteConverter implements
 			dbo.put("recordTime", quantityEventType.getRecordTime()
 					.toGregorianCalendar().getTimeInMillis());
 		if (quantityEventType.getEpcClass() != null)
-			dbo.put("epcList", quantityEventType.getEpcClass());
+			dbo.put("epcClass", quantityEventType.getEpcClass());
+		dbo.put("quantity", quantityEventType.getQuantity());
 		if (quantityEventType.getBizStep() != null)
 			dbo.put("bizStep", quantityEventType.getBizStep());
 		if (quantityEventType.getDisposition() != null)
@@ -170,7 +171,7 @@ public class QuantityEventWriteConverter implements
 				extension.put("otherAttributes", map2Save);
 			}
 			bizLocation.put("extension", extension);
-			dbo.put("readPoint", bizLocation);
+			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (quantityEventType.getBizTransactionList() != null) {
