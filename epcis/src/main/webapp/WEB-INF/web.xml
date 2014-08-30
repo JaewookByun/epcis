@@ -16,12 +16,6 @@
 		<load-on-startup>100</load-on-startup>
 	</servlet>
 	<servlet>
-		<servlet-name>CaptureServlet</servlet-name>
-		<display-name>CaptureServlet</display-name>
-		<description></description>
-		<servlet-class>org.oliot.epcis.service.capture.CaptureServlet</servlet-class>
-	</servlet>
-	<servlet>
 		<servlet-name>ConfigurationServlet</servlet-name>
 		<display-name>ConfigurationServlet</display-name>
 		<description></description>
@@ -55,10 +49,6 @@
 	<servlet-mapping>
 		<servlet-name>AdminServlet</servlet-name>
 		<url-pattern>/servlet/AdminServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>CaptureServlet</servlet-name>
-		<url-pattern>/capture</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>ConfigurationServlet</servlet-name>

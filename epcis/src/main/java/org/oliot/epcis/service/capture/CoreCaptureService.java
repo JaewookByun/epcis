@@ -1,6 +1,7 @@
 package org.oliot.epcis.service.capture;
 
 
+import org.oliot.epcis.model.EPCISDocumentType;
 import org.oliot.epcis.model.AggregationEventType;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.QuantityEventType;
@@ -14,4 +15,5 @@ public interface CoreCaptureService {
 	public void capture(QuantityEventType event);
 	public void capture(TransactionEventType event);
 	public void capture(TransformationEventType event);
+	public void capture(EPCISDocumentType epcisDocument);
 }

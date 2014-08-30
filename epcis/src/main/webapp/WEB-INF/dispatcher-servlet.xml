@@ -9,8 +9,10 @@
      
     <!-- EXAMPLE -->
 	<bean id="helloController" class="test.HelloController"></bean>
-	<bean id="mongoTest" class="test.mongoTest"></bean>
+	
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
+	<bean id="capture" class="org.oliot.epcis.service.capture.Capture"></bean>
+	
 	
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

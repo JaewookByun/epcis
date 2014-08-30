@@ -7,10 +7,12 @@
         <recordTime>2001-12-31T12:00:00</recordTime>
         <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
         <baseExtension>
-          <ANY-ELEMENT/>
+          	<base1>base1</base1>
+		<base2>base2</base2>
         </baseExtension>
         <epcList>
-          <epc>epc</epc>
+          <epc>http://epc</epc>
+	    <epc>http://epc2</epc>
         </epcList>
         <action>ADD</action>
         <bizStep>http://tempuri.org</bizStep>
@@ -18,13 +20,15 @@
         <readPoint>
           <id>http://tempuri.org</id>
           <extension>
-            <ANY-ELEMENT/>
+		<longitude>36.1</longitude>
+		<latitude>125.2</latitude>
           </extension>
         </readPoint>
         <bizLocation>
           <id>http://tempuri.org</id>
           <extension>
-            <ANY-ELEMENT/>
+            <longitude>36.1</longitude>
+	     <latitude>125.2</latitude>
           </extension>
         </bizLocation>
         <bizTransactionList>
@@ -46,20 +50,23 @@
           </destinationList>
           <ilmd>
             <extension>
-              <ANY-ELEMENT/>
+              	<manufacturer>RESL</manufacturer>
+			<expire>2001-12-31T12:00:00</expire>
             </extension>
           </ilmd>
           <extension>
-            <ANY-ELEMENT/>
+               <temperature>36</temperature>
+	      <emg>22</emg>
+	      <ecg>11</ecg>
           </extension>
         </extension>
       </ObjectEvent>
     </EventList>
     <extension>
-      <ANY-ELEMENT/>
+      <author>Jaewook2</author>
     </extension>
   </EPCISBody>
   <extension>
-    <ANY-ELEMENT/>
+	 <author>Jaewook</author>
   </extension>
 </epcis:EPCISDocument>

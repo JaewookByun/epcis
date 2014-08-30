@@ -1,7 +1,7 @@
 <root>
   <facet id="jpt.jaxb">
     <node name="classgen">
-      <attribute name="package" value="org.oliot"/>
+      <attribute name="package" value="org.oliot.ale.model"/>
     </node>
   </facet>
 </root>
