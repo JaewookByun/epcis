@@ -97,49 +97,38 @@ public class CaptureService implements CoreCaptureService {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void capture(EPCISDocumentType epcisDocument) {
-		if( epcisDocument.getEPCISBody() == null )
-		{
+		if (epcisDocument.getEPCISBody() == null) {
 			ConfigurationServlet.logger.info(" There is no DocumentBody ");
 			return;
 		}
-		if( epcisDocument.getEPCISBody().getEventList() == null )
-		{
+		if (epcisDocument.getEPCISBody().getEventList() == null) {
 			ConfigurationServlet.logger.info(" There is no EventList ");
 			return;
 		}
-		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
-		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
+		EventListType eventListType = epcisDocument.getEPCISBody()
+				.getEventList();
+		List<Object> eventList = eventListType
+				.getObjectEventOrAggregationEventOrQuantityEvent();
 		/*
-		 * JAXBElement<EPCISEventListExtensionType> 
-		 * JAXBElement<TransactionEventType> Object 
-		 * JAXBElement<QuantityEventType> 
-		 * JAXBElement<ObjectEventType> 
+		 * JAXBElement<EPCISEventListExtensionType>
+		 * JAXBElement<TransactionEventType> Object
+		 * JAXBElement<QuantityEventType> JAXBElement<ObjectEventType>
 		 * JAXBElement<AggregationEventType> Element
 		 */
-		
-		for( int i = 0 ; i < eventList.size() ; i++ )
-		{
-			JAXBElement eventElement = (JAXBElement)eventList.get(i);
+
+		for (int i = 0; i < eventList.size(); i++) {
+			JAXBElement eventElement = (JAXBElement) eventList.get(i);
 			Object event = eventElement.getValue();
-			if( event instanceof ObjectEventType )
-			{
-				capture((ObjectEventType)event);
-			}
-			else if( event instanceof AggregationEventType )
-			{
-				capture((AggregationEventType)event);
-			}
-			else if( event instanceof TransactionEventType )
-			{
-				capture((TransactionEventType)event);
-			}
-			else if( event instanceof TransformationEventType )
-			{
-				capture((TransformationEventType)event);
-			}
-			else if( event instanceof QuantityEventType )
-			{
-				capture((QuantityEventType)event);
+			if (event instanceof ObjectEventType) {
+				capture((ObjectEventType) event);
+			} else if (event instanceof AggregationEventType) {
+				capture((AggregationEventType) event);
+			} else if (event instanceof TransactionEventType) {
+				capture((TransactionEventType) event);
+			} else if (event instanceof TransformationEventType) {
+				capture((TransformationEventType) event);
+			} else if (event instanceof QuantityEventType) {
+				capture((QuantityEventType) event);
 			}
 		}
 	}

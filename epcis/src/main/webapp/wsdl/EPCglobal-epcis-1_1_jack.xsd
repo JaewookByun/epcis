@@ -82,6 +82,7 @@
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="AggregationEvent" type="epcis:AggregationEventType"/>
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="QuantityEvent" type="epcis:QuantityEventType"/>
 			<xsd:element maxOccurs="unbounded" minOccurs="0" name="TransactionEvent" type="epcis:TransactionEventType"/>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="TransformationEvent" type="epcis:TransformationEventType"/>
 			<xsd:element name="extension" type="epcis:EPCISEventListExtensionType"/>
 			<xsd:any namespace="##other" processContents="lax"/>
 		</xsd:choice>
@@ -94,7 +95,6 @@
 	<!-- Modified in 1.1 -->
 	<xsd:complexType name="EPCISEventListExtensionType">
 		<xsd:choice>
-			<xsd:element name="TransformationEvent" type="epcis:TransformationEventType"/>
 			<xsd:element name="extension" type="epcis:EPCISEventListExtension2Type"/>
 		</xsd:choice>
 	</xsd:complexType>

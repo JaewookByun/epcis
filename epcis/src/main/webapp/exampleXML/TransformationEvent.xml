@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epcis:EPCISDocument creationDate="2001-12-31T12:00:00"
+	schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org"
+	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="epcis.oliot.org ../wsdl/Copy of EPCglobal-epcis-1_1_jack.xsd ">
+	<EPCISBody>
+		<EventList>
+			<TransformationEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+				<baseExtension>
+					<ANY-ELEMENT />
+				</baseExtension>
+				<inputEPCList>
+					<epc>epc</epc>
+				</inputEPCList>
+				<inputQuantityList>
+					<quantityElement>
+						<epcClass>http://tempuri.org</epcClass>
+						<quantity>0.0</quantity>
+						<uom>http://tempuri.org</uom>
+					</quantityElement>
+				</inputQuantityList>
+				<outputEPCList>
+					<epc>epc</epc>
+				</outputEPCList>
+				<outputQuantityList>
+					<quantityElement>
+						<epcClass>http://tempuri.org</epcClass>
+						<quantity>0.0</quantity>
+						<uom>http://tempuri.org</uom>
+					</quantityElement>
+				</outputQuantityList>
+				<transformationID>http://tempuri.org</transformationID>
+				<bizStep>http://tempuri.org</bizStep>
+				<disposition>http://tempuri.org</disposition>
+				<readPoint>
+					<id>http://tempuri.org</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>http://tempuri.org</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="http://tempuri.org">http://tempuri.org
+					</bizTransaction>
+				</bizTransactionList>
+				<sourceList>
+					<source type="http://tempuri.org">http://tempuri.org</source>
+				</sourceList>
+				<destinationList>
+					<destination type="http://tempuri.org">http://tempuri.org</destination>
+				</destinationList>
+				<ilmd>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</ilmd>
+				<extension>
+					<ANY-ELEMENT />
+				</extension>
+			</TransformationEvent>
+		</EventList>
+		<extension>
+			<ANY-ELEMENT />
+		</extension>
+	</EPCISBody>
+	<extension>
+		<ANY-ELEMENT />
+	</extension>
+</epcis:EPCISDocument>

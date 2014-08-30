@@ -38,37 +38,39 @@ public class Capture implements ServletContextAware {
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
-	
+
 	@RequestMapping
 	public void post(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
-			
-			ConfigurationServlet.logger.info(" EPCIS Document Capture Started.... ");
-			
+
+			ConfigurationServlet.logger
+					.info(" EPCIS Document Capture Started.... ");
+
 			// Get ECReport
 			InputStream is = request.getInputStream();
 			String isString = getInputStream(is);
-			
+
 			InputStream validateStream = getXMLDocumentInputStream(isString);
 			// Parsing and Validating data
 			String xsdPath = servletContext.getRealPath("/wsdl");
-			xsdPath += "/EPCglobal-epcis-1_1.xsd";
+			xsdPath += "/EPCglobal-epcis-1_1_jack.xsd";
 			boolean isValidated = validate(validateStream, xsdPath);
 			if (isValidated == false) {
 				return;
 			}
-			
+
 			InputStream epcisStream = getXMLDocumentInputStream(isString);
 			ConfigurationServlet.logger.info(" EPCIS Document : Validated ");
-			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
-			
+			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
+					EPCISDocumentType.class);
+
 			CaptureService cs = new CaptureService();
 			cs.capture(epcisDocument);
-			
+
 		} catch (IOException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
-		} 
+		}
 	}
 
 	private static String getInputStream(InputStream is) {
@@ -82,7 +84,7 @@ public class Capture implements ServletContextAware {
 			return null;
 		}
 	}
-	
+
 	private static InputStream getXMLDocumentInputStream(String xmlString) {
 		InputStream stream = new ByteArrayInputStream(
 				xmlString.getBytes(StandardCharsets.UTF_8));
@@ -96,7 +98,7 @@ public class Capture implements ServletContextAware {
 		String data = writer.toString();
 		return data;
 	}
-	
+
 	private static boolean validate(InputStream is, String xsdPath) {
 		try {
 			SchemaFactory schemaFactory = SchemaFactory
