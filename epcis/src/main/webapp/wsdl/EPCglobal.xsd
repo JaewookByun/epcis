@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" attributeFormDefault="unqualified"
-	elementFormDefault="unqualified" targetNamespace="epcglobal.axis.epcis.oliot.org"
-	version="1.0">
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="epcglobal.axis.epcis.oliot.org" version="1.0">
 	<xsd:annotation>
 		<xsd:documentation>
 			<epcglobal:copyright>Copyright (C) 2004 Epcglobal Inc., All Rights
@@ -23,8 +19,7 @@
 				EPCglobal document properties for all messages.
 			</xsd:documentation>
 		</xsd:annotation>
-		<xsd:attribute name="schemaVersion" type="xsd:decimal"
-			use="required">
+		<xsd:attribute name="schemaVersion" type="xsd:decimal" use="required">
 			<xsd:annotation>
 				<xsd:documentation xml:lang="en">
 					The version of the schema corresponding to which the instance
@@ -32,8 +27,7 @@
 				</xsd:documentation>
 			</xsd:annotation>
 		</xsd:attribute>
-		<xsd:attribute name="creationDate" type="xsd:dateTime"
-			use="required">
+		<xsd:attribute name="creationDate" type="xsd:dateTime" use="required">
 			<xsd:annotation>
 				<xsd:documentation xml:lang="en">
 					The date the message was created. Used for auditing and logging.
@@ -48,7 +42,7 @@
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:simpleContent>
-			<xsd:extension base="xsd:string" />
+			<xsd:extension base="xsd:string"/>
 		</xsd:simpleContent>
 	</xsd:complexType>
 </xsd:schema>

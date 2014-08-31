@@ -139,7 +139,7 @@
 	</wsdl:message>
 
 	<!-- EPCISSERVICE PORTTYPE -->
-	<wsdl:portType name="EPCISServicePortType">
+	<wsdl:portType name="Query">
 
 		<wsdl:operation name="getQueryNames">
 			<wsdl:input message="impl:getQueryNamesRequest" name="getQueryNamesRequest" />
@@ -242,7 +242,7 @@
 	</wsdl:portType>
 
 	<!-- EPCISSERVICE BINDING -->
-	<wsdl:binding name="EPCISServiceBinding" type="impl:EPCISServicePortType">
+	<wsdl:binding name="EPCISServiceBinding" type="impl:Query">
 		<wsdlsoap:binding style="document"
 			transport="http://schemas.xmlsoap.org/soap/http" />
 
@@ -437,8 +437,8 @@
 	</wsdl:binding>
 
 	<!-- EPCISSERVICE -->
-	<wsdl:service name="EPCglobalEPCISService">
-		<wsdl:port binding="impl:EPCISServiceBinding" name="EPCglobalEPCISServicePort">
+	<wsdl:service name="Query">
+		<wsdl:port binding="impl:EPCISServiceBinding" name="Query">
 			<!-- The address shown below is an example; an implementation MAY specify 
 				any port it wishes -->
 			<wsdlsoap:address

@@ -7,7 +7,8 @@
 	<xsd:annotation>
 		<xsd:documentation xml:lang="en">
 			<epcglobal:copyright>Copyright (C) 2006-2013 GS1 AISBL, All Rights
-				Reserved.</epcglobal:copyright>
+				Reserved.
+			</epcglobal:copyright>
 			<epcglobal:disclaimer>GS1 makes NO WARRANTY, EXPRESS OR IMPLIED, THAT
 				THIS DOCUMENT IS CORRECT, WILL NOT REQUIRE MODIFICATION AS
 				EXPERIENCE AND TECHNOLOGY DICTATE, OR WILL BE SUITABLE FOR ANY
@@ -20,12 +21,14 @@
 				ANY KIND, INCLUDING DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
 				CONSEQUENTIAL OR EXEMPLARY DAMAGES, ARISING OUT OF USE OR THE
 				INABILITY TO USE INFORMATION CONTAINED HEREIN OR FROM ERRORS
-				CONTAINED HEREIN.</epcglobal:disclaimer>
+				CONTAINED HEREIN.
+			</epcglobal:disclaimer>
 			<epcglobal:specification>EPC INFORMATION SERVICE (EPCIS) Version 1.1
 			</epcglobal:specification>
 		</xsd:documentation>
 	</xsd:annotation>
-	<xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="./EPCglobal.xsd" />
+	<xsd:import namespace="epcglobal.axis.epcis.oliot.org"
+		schemaLocation="./EPCglobal.xsd" />
 	<xsd:import
 		namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
 		schemaLocation="./StandardBusinessDocumentHeader.xsd" />
@@ -34,7 +37,8 @@
 	<xsd:complexType name="EPCISDocumentType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				document that contains a Header and a Body.
+				document that contains
+				a Header and a Body.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -62,7 +66,8 @@
 	<xsd:complexType name="EPCISHeaderType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				specific header(s) including the Standard Business Document Header.
+				specific header(s)
+				including the Standard Business Document Header.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -85,7 +90,8 @@
 	<xsd:complexType name="EPCISBodyType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				specific body that contains EPCIS related Events.
+				specific body that
+				contains EPCIS related Events.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -325,7 +331,8 @@
 	<xsd:complexType abstract="true" name="EPCISEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				base type for all EPCIS events.
+				base type for all EPCIS
+				events.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>
@@ -348,8 +355,10 @@
 	<xsd:complexType name="ObjectEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				Object Event captures information about an event pertaining to one or more
-				objects identified by EPCs.
+				Object Event captures
+				information about an event pertaining to one or more
+				objects
+				identified by EPCs.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -400,8 +409,10 @@
 	<xsd:complexType name="AggregationEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				Aggregation Event captures an event that applies to objects that
-				have a physical association with one another.
+				Aggregation Event
+				captures an event that applies to objects that
+				have a physical
+				association with one another.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -452,7 +463,8 @@
 	<xsd:complexType name="QuantityEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				Quantity Event captures an event that takes place with respect to a
+				Quantity Event captures
+				an event that takes place with respect to a
 				specified quantity of
 				object class.
 			</xsd:documentation>
@@ -491,8 +503,10 @@
 	<xsd:complexType name="TransactionEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				Transaction Event describes the association or disassociation of physical
-				objects to one or more business
+				Transaction Event
+				describes the association or disassociation of physical
+				objects to
+				one or more business
 				transactions.
 			</xsd:documentation>
 		</xsd:annotation>
@@ -544,8 +558,10 @@
 	<xsd:complexType name="TransformationEventType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				Transformation Event captures an event in which inputs are consumed
-				and outputs are produced
+				Transformation Event
+				captures an event in which inputs are consumed
+				and outputs are
+				produced
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>

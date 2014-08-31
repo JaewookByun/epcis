@@ -19,6 +19,17 @@
 		<!-- <init-param> <param-name>contextConfigLocation</param-name> <param-value> 
 			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
 	</servlet>
+	<servlet>
+		<servlet-name>AxisServlet</servlet-name>
+		<display-name>Apache-Axis Servlet</display-name>
+		<servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<servlet-name>AdminServlet</servlet-name>
+		<display-name>Axis Admin Servlet</display-name>
+		<servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
+		<load-on-startup>100</load-on-startup>
+	</servlet>
 	
 	<servlet-mapping>
 		<servlet-name>ConfigurationServlet</servlet-name>
@@ -30,6 +41,22 @@
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
 		<url-pattern>/Service/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AxisServlet</servlet-name>
+		<url-pattern>/servlet/AxisServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AxisServlet</servlet-name>
+		<url-pattern>*.jws</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AxisServlet</servlet-name>
+		<url-pattern>/services/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>AdminServlet</servlet-name>
+		<url-pattern>/servlet/AdminServlet</url-pattern>
 	</servlet-mapping>
 
 </web-app>

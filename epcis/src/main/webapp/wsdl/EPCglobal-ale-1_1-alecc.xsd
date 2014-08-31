@@ -2,9 +2,9 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             xmlns:ale="urn:epcglobal:ale:xsd:1"
             targetNamespace="urn:epcglobal:ale:xsd:1"
-            xmlns:epcglobal="epcglobal.oliot.org" elementFormDefault="unqualified"
+            xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" elementFormDefault="unqualified"
             attributeFormDefault="unqualified" version="1.0">
-  <xsd:import namespace="epcglobal.oliot.org" schemaLocation="EPCglobal.xsd"/>
+  <xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="EPCglobal.xsd"/>
   <xsd:include schemaLocation="EPCglobal-ale-1_1-common.xsd"/>
   <!-- ALECC ELEMENTS -->
   <xsd:element name="CCSpec" type="ale:CCSpec"/>
