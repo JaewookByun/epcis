@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-	xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org"
-	xmlns:epcismd="masterdata.epcis.oliot.org"
+	xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" xmlns:epcis="axis.epcis.oliot.org"
+	xmlns:epcismd="masterdata.axis.epcis.oliot.org"
 	xmlns:sbdh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
 	attributeFormDefault="unqualified" elementFormDefault="unqualified"
-	targetNamespace="masterdata.epcis.oliot.org" version="1.0">
+	targetNamespace="masterdata.axis.epcis.oliot.org" version="1.0">
 	<xsd:annotation>
 		<xsd:documentation xml:lang="en">
 			<epcglobal:copyright>Copyright (C) 2006, 2005, 2004 EPCglobal Inc.,
-				All Rights Reserved.</epcglobal:copyright>
+				All Rights Reserved.
+			</epcglobal:copyright>
 			<epcglobal:disclaimer>EPCglobal Inc., its members, officers,
 				directors, employees, or agents shall not be liable for any injury,
 				loss, damages, financial or otherwise, arising from, related to, or
@@ -19,18 +20,19 @@
 			</epcglobal:specification>
 		</xsd:documentation>
 	</xsd:annotation>
-	<xsd:import namespace="epcglobal.oliot.org" schemaLocation="./EPCglobal.xsd" />
+	<xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="./EPCglobal.xsd" />
 	<xsd:import
 		namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
 		schemaLocation="./StandardBusinessDocumentHeader.xsd" />
-	<xsd:import namespace="epcis.oliot.org" schemaLocation="./EPCglobal-epcis-1_1_jack.xsd" />
+	<xsd:import namespace="axis.epcis.oliot.org" schemaLocation="./EPCglobal-epcis-1_1_jack.xsd" />
 
 	<!-- MasterData CORE ELEMENTS -->
 	<xsd:element name="EPCISMasterDataDocument" type="epcismd:EPCISMasterDataDocumentType" />
 	<xsd:complexType name="EPCISMasterDataDocumentType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				MasterData document that contains a Header and a Body.
+				MasterData document
+				that contains a Header and a Body.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:complexContent>
@@ -51,7 +53,8 @@
 	<xsd:complexType name="EPCISMasterDataBodyType">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
-				MasterData specific body that contains Vocabularies.
+				MasterData specific
+				body that contains Vocabularies.
 			</xsd:documentation>
 		</xsd:annotation>
 		<xsd:sequence>

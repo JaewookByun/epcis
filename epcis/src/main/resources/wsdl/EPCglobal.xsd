@@ -1,9 +1,4 @@
-<xsd:schema 
-	xmlns:epcglobal="epcglobal.oliot.org"
-	xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-	targetNamespace="epcglobal.oliot.org" 
-	elementFormDefault="unqualified" 
-	attributeFormDefault="unqualified" version="1.0">
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:epcglobal="epcglobal.oliot.org" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="epcglobal.oliot.org" version="1.0">
 	<xsd:annotation>
 		<xsd:documentation>
 			<epcglobal:copyright>Copyright (C) 2004 Epcglobal Inc., All Rights Reserved.</epcglobal:copyright>
@@ -11,7 +6,7 @@
 			<epcglobal:specification>EPCglobal common components Version 1.0</epcglobal:specification>
 		</xsd:documentation>
 	</xsd:annotation>
-	<xsd:complexType name="Document" abstract="true">
+	<xsd:complexType abstract="true" name="Document">
 		<xsd:annotation>
 			<xsd:documentation xml:lang="en">
          EPCglobal document properties for all messages.

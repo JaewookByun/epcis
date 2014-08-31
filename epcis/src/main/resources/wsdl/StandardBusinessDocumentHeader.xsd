@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" targetNamespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" elementFormDefault="qualified" attributeFormDefault="unqualified">
+<?xml version="1.0" encoding="UTF-8"?><xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader">
   <xs:include schemaLocation="DocumentIdentification.xsd"/>
   <xs:include schemaLocation="Partner.xsd"/>
   <xs:include schemaLocation="Manifest.xsd"/>
@@ -7,18 +6,18 @@
   <xs:complexType name="StandardBusinessDocumentHeader">
     <xs:sequence>
       <xs:element name="HeaderVersion" type="xs:string"/>
-      <xs:element name="Sender" type="Partner" maxOccurs="unbounded"/>
-      <xs:element name="Receiver" type="Partner" maxOccurs="unbounded"/>
+      <xs:element maxOccurs="unbounded" name="Sender" type="Partner"/>
+      <xs:element maxOccurs="unbounded" name="Receiver" type="Partner"/>
       <xs:element name="DocumentIdentification" type="DocumentIdentification"/>
-      <xs:element name="Manifest" type="Manifest" minOccurs="0"/>
-      <xs:element name="BusinessScope" type="BusinessScope" minOccurs="0"/>
+      <xs:element minOccurs="0" name="Manifest" type="Manifest"/>
+      <xs:element minOccurs="0" name="BusinessScope" type="BusinessScope"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="StandardBusinessDocumentHeader" type="StandardBusinessDocumentHeader"/>
   <xs:element name="StandardBusinessDocument" type="StandardBusinessDocument"/>
   <xs:complexType name="StandardBusinessDocument">
     <xs:sequence>
-      <xs:element ref="StandardBusinessDocumentHeader" minOccurs="0"/>
+      <xs:element minOccurs="0" ref="StandardBusinessDocumentHeader"/>
       <xs:any namespace="##other" processContents="lax"/>
     </xs:sequence>
   </xs:complexType>
