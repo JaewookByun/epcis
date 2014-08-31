@@ -19,7 +19,7 @@
   </xsd:annotation>
 
   <xsd:import namespace="epcglobal.oliot.org" schemaLocation="./EPCglobal.xsd"/>
-  <xsd:import namespace="epcis.oliot.org" schemaLocation="./EPCglobal-epcis-1_1.xsd"/>
+  <xsd:import namespace="epcis.oliot.org" schemaLocation="./EPCglobal-epcis-1_1_jack.xsd"/>
   <xsd:import namespace="masterdata.epcis.oliot.org" schemaLocation="./EPCglobal-epcis-masterdata-1_1.xsd"/>
 
   <xsd:element name="EPCISQueryDocument" type="epcisq:EPCISQueryDocumentType"/>
