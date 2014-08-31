@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<epcismd:EPCISMasterDataDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org" xmlns:epcismd="masterdata.epcis.oliot.org" xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="masterdata.epcis.oliot.org EPCglobal-epcis-masterdata-1_1.xsd ">
+<!DOCTYPE EPCISDocument>
+<epcismd:EPCISMasterDataDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org" xmlns:epcismd="masterdata.epcis.oliot.org" xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="masterdata.epcis.oliot.org ../wsdl/EPCglobal-epcis-masterdata-1_1.xsd ">
   <EPCISBody>
     <VocabularyList>
       <Vocabulary type="http://tempuri.org">

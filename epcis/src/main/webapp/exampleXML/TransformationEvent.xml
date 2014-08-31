@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE EPCISDocument>
 <epcis:EPCISDocument creationDate="2001-12-31T12:00:00"
 	schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org" xmlns:epcis="epcis.oliot.org"
 	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="epcis.oliot.org ../wsdl/Copy of EPCglobal-epcis-1_1_jack.xsd ">
+	xsi:schemaLocation="epcis.oliot.org ../wsdl/EPCglobal-epcis-1_1_jack.xsd ">
 	<EPCISBody>
 		<EventList>
 			<TransformationEvent>

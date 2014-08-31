@@ -17,7 +17,7 @@
      <xsd:schema targetNamespace="wsdl.epcis.oliot.org">
 
        <xsd:import namespace="epcglobal.oliot.org" schemaLocation="EPCglobal.xsd"/>
-       <xsd:import namespace="epcis.oliot.org" schemaLocation="EPCglobal-epcis-1_1.xsd"/>
+       <xsd:import namespace="epcis.oliot.org" schemaLocation="EPCglobal-epcis-1_1_jack.xsd"/>
        <xsd:import namespace="query.epcis.oliot.org" schemaLocation="EPCglobal-epcis-query-1_1.xsd"/>
     </xsd:schema>
   </wsdl:types>
