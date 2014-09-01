@@ -55,9 +55,7 @@ import com.mongodb.DBObject;
 public class QuantityEventReadConverter implements
 		Converter<DBObject, QuantityEventType> {
 
-	public QuantityEventType convert(DBObject dbObject) {
-
-		
+	public QuantityEventType convert(DBObject dbObject) {		
 		try {
 			ObjectEventType objectEventType = new ObjectEventType();
 			if (dbObject.get("eventTime") != null) {
