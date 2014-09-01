@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ale="urn:epcglobal:ale:xsd:1"
+            targetNamespace="urn:epcglobal:ale:xsd:1"
+            xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" elementFormDefault="unqualified"
+            attributeFormDefault="unqualified" version="1.0">
+  <xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="EPCglobal.xsd"/>
+  <xsd:include schemaLocation="EPCglobal-ale-1_1-common.xsd"/>
+  <!-- ALE ELEMENTS -->
+  <xsd:element name="ECSpec" type="ale:ECSpec"/>
+  <xsd:element name="ECReports" type="ale:ECReports"/>
+
+  <!-- ALE TYPES -->
+
+  <xsd:complexType name="ECBoundarySpec">
+    <xsd:sequence>
+      <xsd:element name="startTrigger" type="ale:ECTrigger" minOccurs="0"/>
+      <xsd:element name="repeatPeriod" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="stopTrigger" type="ale:ECTrigger" minOccurs="0"/>
+      <xsd:element name="duration" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="stableSetInterval" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECBoundarySpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECBoundarySpecExtension">
+    <xsd:sequence>
+      <xsd:element name="startTriggerList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="startTrigger" type="ale:ECTrigger" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="stopTriggerList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="stopTrigger" type="ale:ECTrigger" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="whenDataAvailable" type="xsd:boolean" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECBoundarySpecExtension2" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECBoundarySpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECFilterSpec">
+    <xsd:sequence>
+      <xsd:element name="includePatterns" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="includePattern" type="xsd:string" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="excludePatterns" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="excludePattern" type="xsd:string" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECFilterSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECFilterSpecExtension">
+    <xsd:sequence>
+      <xsd:element name="filterList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="filter" type="ale:ECFilterListMember" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECFilterSpecExtension2" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECFilterSpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECGroupSpec">
+    <xsd:sequence>
+      <xsd:element name="pattern" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="extension" type="ale:ECGroupSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECGroupSpecExtension">
+    <xsd:sequence>
+      <xsd:element name="fieldspec" type="ale:ECFieldSpec" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECGroupSpecExtension2" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECGroupSpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The ECInitiationCondition type is an enumerated type.
+       The following strings are legal values for this type:
+         TRIGGER
+         REPEAT_PERIOD
+         REQUESTED
+         UNDEFINE
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="ECInitiationCondition">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="ECReport">
+    <xsd:sequence>
+      <xsd:element name="group" type="ale:ECReportGroup" minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="extension" type="ale:ECReportExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:attribute name="reportName" type="xsd:string" use="required"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroup">
+    <xsd:sequence>
+      <xsd:element name="groupList" type="ale:ECReportGroupList" minOccurs="0"/>
+      <xsd:element name="groupCount" type="ale:ECReportGroupCount" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECReportGroupExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <!-- The groupName attribute SHALL be omitted to indicate the default group. -->
+    <xsd:attribute name="groupName" type="xsd:string" use="optional"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupCount">
+    <xsd:sequence>
+      <xsd:element name="count" type="xsd:int"/>
+      <xsd:element name="extension" type="ale:ECReportGroupCountExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupCountExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupList">
+    <xsd:sequence>
+      <xsd:element name="member" type="ale:ECReportGroupListMember" minOccurs="0"
+                   maxOccurs="unbounded"/>
+      <xsd:element name="extension" type="ale:ECReportGroupListExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupListExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupListMember">
+    <xsd:sequence>
+      <!-- Each of the following four elements SHALL be omitted if null. -->
+      <xsd:element name="epc" type="epcglobal:EPC" minOccurs="0"/>
+      <xsd:element name="tag" type="epcglobal:EPC" minOccurs="0"/>
+      <xsd:element name="rawHex" type="epcglobal:EPC" minOccurs="0"/>
+      <xsd:element name="rawDecimal" type="epcglobal:EPC" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECReportGroupListMemberExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupListMemberExtension">
+    <xsd:sequence>
+      <xsd:element name="fieldList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="field" type="ale:ECReportMemberField" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="stats" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="stat" type="ale:ECTagStat" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECReportGroupListMemberExtension2"
+                   minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportGroupListMemberExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportMemberField">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="fieldspec" type="ale:ECFieldSpec" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECReportMemberFieldExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportMemberFieldExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportOutputFieldSpec">
+    <xsd:sequence>
+      <xsd:element name="fieldspec" type="ale:ECFieldSpec"/>
+      <xsd:element name="name" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="includeFieldSpecInReport" type="xsd:boolean" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:ECReportOutputFieldSpecExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportOutputFieldSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportOutputSpec">
+    <xsd:sequence>
+      <xsd:element name="extension" type="ale:ECReportOutputSpecExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:attribute name="includeEPC" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="includeTag" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="includeRawHex" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="includeRawDecimal" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="includeCount" type="xsd:boolean" default="false"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportOutputSpecExtension">
+    <xsd:sequence>
+      <xsd:element name="fieldList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="field" type="ale:ECReportOutputFieldSpec" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECReportOutputSpecExtension2"
+                   minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportOutputSpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReports">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="reports">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="report" type="ale:ECReport" minOccurs="0"
+                             maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:ECReportsExtension" minOccurs="0"/>
+          <xsd:element name="ECSpec" type="ale:ECSpec" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:attribute name="specName" type="xsd:string" use="required"/>
+        <xsd:attribute name="date" type="xsd:dateTime" use="required"/>
+        <xsd:attribute name="ALEID" type="xsd:string" use="required"/>
+        <xsd:attribute name="totalMilliseconds" type="xsd:long" use="required"/>
+        <xsd:attribute name="initiationCondition" type="ale:ECInitiationCondition"
+                       use="optional"/>
+        <xsd:attribute name="initiationTrigger" type="ale:ECTrigger" use="optional"/>
+        <xsd:attribute name="terminationCondition" type="ale:ECTerminationCondition"
+                       use="required"/>
+        <xsd:attribute name="terminationTrigger" type="ale:ECTrigger" use="optional"/>
+        <xsd:attribute name="schemaURL" type="xsd:string" use="optional"/>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportsExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The ECReportSetEnum type is an enumerated type.
+       The following strings are legal values for this type:
+         CURRENT
+         ADDITIONS
+         DELETIONS
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="ECReportSetEnum">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="ECReportSetSpec">
+    <xsd:attribute name="set" type="ale:ECReportSetEnum" use="required"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportSpec">
+    <xsd:sequence>
+      <xsd:element name="reportSet" type="ale:ECReportSetSpec"/>
+      <xsd:element name="filterSpec" type="ale:ECFilterSpec" minOccurs="0"/>
+      <xsd:element name="groupSpec" type="ale:ECGroupSpec" minOccurs="0"/>
+      <xsd:element name="output" type="ale:ECReportOutputSpec"/>
+      <xsd:element name="extension" type="ale:ECReportSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:attribute name="reportName" type="xsd:string" use="required"/>
+    <xsd:attribute name="reportIfEmpty" type="xsd:boolean" default="false"/>
+    <xsd:attribute name="reportOnlyOnChange" type="xsd:boolean" default="false"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportSpecExtension">
+    <xsd:sequence>
+      <xsd:element name="statProfileNames" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="statProfileName" type="ale:ECStatProfileName"
+                         minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECReportSpecExtension2" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECReportSpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECSpec">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="logicalReaders">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="logicalReader" type="xsd:string"
+                             maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="boundarySpec" type="ale:ECBoundarySpec"/>
+          <xsd:element name="reportSpecs">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="reportSpec" type="ale:ECReportSpec"
+                             maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:ECSpecExtension" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:attribute name="includeSpecInReports" type="xsd:boolean" default="false"/>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECSpecExtension">
+    <xsd:sequence>
+      <xsd:element name="primaryKeyFields" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="primaryKeyField" type="xsd:string" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:ECSpecExtension2" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECSpecExtension2">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The ECStatProfileName type is an enumerated type.
+       The following strings are legal values for this type:
+         TagTimestamps
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="ECStatProfileName">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="ECTagStat">
+    <xsd:sequence>
+      <xsd:element name="profile" type="ale:ECStatProfileName"/>
+      <xsd:element name="statBlocks" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="statBlock" type="ale:ECReaderStat" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="ECTagTimestampStat">
+    <xsd:complexContent>
+      <xsd:extension base="ale:ECTagStat">
+        <xsd:sequence>
+          <xsd:element name="firstSightingTime" type="xsd:dateTime"/>
+          <xsd:element name="lastSightingTime" type="xsd:dateTime"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <!-- The ECTerminationCondition type is an enumerated type.
+       The following strings are legal values for this type:
+         TRIGGER
+         DURATION
+         STABLE_SET
+         DATA_AVAILABLE
+         UNREQUEST
+         UNDEFINE
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="ECTerminationCondition">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+</xsd:schema>

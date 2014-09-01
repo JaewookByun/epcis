@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ale="urn:epcglobal:ale:xsd:1"
+            targetNamespace="urn:epcglobal:ale:xsd:1"
+            xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" elementFormDefault="unqualified"
+            attributeFormDefault="unqualified" version="1.0">
+  <xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="EPCglobal.xsd"/>
+  <!-- ALETM ELEMENTS -->
+  <xsd:element name="TMSpec" type="ale:TMSpec"/>
+
+  <!-- ALETM TYPES -->
+
+  <xsd:complexType name="TMFixedFieldListSpec">
+    <xsd:complexContent>
+      <xsd:extension base="ale:TMSpec">
+        <xsd:sequence>
+          <xsd:element name="fixedFields" minOccurs="0">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="fixedField" type="ale:TMFixedFieldSpec"
+                             minOccurs="0" maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:TMFixedFieldListSpecExtension"
+                       minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMFixedFieldListSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMFixedFieldSpec">
+    <xsd:sequence>
+      <xsd:element name="fieldname" type="xsd:string"/>
+      <xsd:element name="bank" type="xsd:int"/>
+      <xsd:element name="length" type="xsd:int"/>
+      <xsd:element name="offset" type="xsd:int"/>
+      <xsd:element name="defaultDatatype" type="xsd:string"/>
+      <xsd:element name="defaultFormat" type="xsd:string"/>
+      <xsd:element name="extension" type="ale:TMFixedFieldSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMFixedFieldSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMSpec" abstract="true">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="baseExtension" type="ale:TMSpecExtension" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMVariableFieldListSpec">
+    <xsd:complexContent>
+      <xsd:extension base="ale:TMSpec">
+        <xsd:sequence>
+          <xsd:element name="variableFields" minOccurs="0">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="variableField" type="ale:TMVariableFieldSpec"
+                             minOccurs="0" maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:TMVariableFieldListSpecExtension"
+                       minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMVariableFieldListSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMVariableFieldSpec">
+    <xsd:sequence>
+      <xsd:element name="fieldname" type="xsd:string"/>
+      <xsd:element name="bank" type="xsd:int"/>
+      <xsd:element name="oid" type="xsd:string"/>
+      <xsd:element name="extension" type="ale:TMVariableFieldSpecExtension"
+                   minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TMVariableFieldSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+</xsd:schema>

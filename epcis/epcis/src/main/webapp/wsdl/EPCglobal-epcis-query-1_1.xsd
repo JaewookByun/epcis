@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" xmlns:epcis="axis.epcis.oliot.org" xmlns:epcismd="masterdata.axis.epcis.oliot.org" xmlns:epcisq="query.axis.epcis.oliot.org" attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="query.axis.epcis.oliot.org" version="1.0">
+
+	<xsd:annotation>
+		<xsd:documentation xml:lang="en">
+			<epcglobal:copyright>
+				Copyright (C) 2006, 2005 EPCglobal Inc., All Rights Reserved.
+			</epcglobal:copyright>
+			<epcglobal:disclaimer>
+				EPCglobal Inc., its members, officers, directors, employees, or
+				agents shall not be liable for any injury, loss, damages, financial
+				or otherwise, arising from, related to, or caused by the use of
+				this document. The use of said document shall constitute your
+				express consent to the foregoing exculpation.
+			</epcglobal:disclaimer>
+			<epcglobal:specification>
+				EPCIS Query 1.0
+			</epcglobal:specification>
+		</xsd:documentation>
+	</xsd:annotation>
+
+	<xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="./EPCglobal.xsd"/>
+	<xsd:import namespace="axis.epcis.oliot.org" schemaLocation="./EPCglobal-epcis-1_1_jack.xsd"/>
+	<xsd:import namespace="masterdata.axis.epcis.oliot.org" schemaLocation="./EPCglobal-epcis-masterdata-1_1.xsd"/>
+
+	<xsd:element name="EPCISQueryDocument" type="epcisq:EPCISQueryDocumentType"/>
+	<xsd:complexType name="EPCISQueryDocumentType">
+		<xsd:complexContent>
+			<xsd:extension base="epcglobal:Document">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="EPCISHeader" type="epcis:EPCISHeaderType"/>
+					<xsd:element name="EPCISBody" type="epcisq:EPCISQueryBodyType"/>
+					<xsd:element minOccurs="0" name="extension" type="epcisq:EPCISQueryDocumentExtensionType"/>
+					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+				</xsd:sequence>
+				<xsd:anyAttribute processContents="lax"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="EPCISQueryDocumentExtensionType">
+		<xsd:sequence>
+			<xsd:any maxOccurs="unbounded" namespace="##local" processContents="lax"/>
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="EPCISQueryBodyType">
+		<xsd:choice>
+			<xsd:element ref="epcisq:GetQueryNames"/>
+			<xsd:element ref="epcisq:GetQueryNamesResult"/>
+			<xsd:element ref="epcisq:Subscribe"/>
+			<xsd:element ref="epcisq:SubscribeResult"/>
+			<xsd:element ref="epcisq:Unsubscribe"/>
+			<xsd:element ref="epcisq:UnsubscribeResult"/>
+			<xsd:element ref="epcisq:GetSubscriptionIDs"/>
+			<xsd:element ref="epcisq:GetSubscriptionIDsResult"/>
+			<xsd:element ref="epcisq:Poll"/>
+			<xsd:element ref="epcisq:GetStandardVersion"/>
+			<xsd:element ref="epcisq:GetStandardVersionResult"/>
+			<xsd:element ref="epcisq:GetVendorVersion"/>
+			<xsd:element ref="epcisq:GetVendorVersionResult"/>
+			<xsd:element ref="epcisq:DuplicateNameException"/>
+			<!-- queryValidationException unimplemented in EPCIS 1.0 <xsd:element 
+				ref="epcisq:QueryValidationException"/> -->
+			<xsd:element ref="epcisq:InvalidURIException"/>
+			<xsd:element ref="epcisq:NoSuchNameException"/>
+			<xsd:element ref="epcisq:NoSuchSubscriptionException"/>
+			<xsd:element ref="epcisq:DuplicateSubscriptionException"/>
+			<xsd:element ref="epcisq:QueryParameterException"/>
+			<xsd:element ref="epcisq:QueryTooLargeException"/>
+			<xsd:element ref="epcisq:QueryTooComplexException"/>
+			<xsd:element ref="epcisq:SubscriptionControlsException"/>
+			<xsd:element ref="epcisq:SubscribeNotPermittedException"/>
+			<xsd:element ref="epcisq:SecurityException"/>
+			<xsd:element ref="epcisq:ValidationException"/>
+			<xsd:element ref="epcisq:ImplementationException"/>
+			<xsd:element ref="epcisq:QueryResults"/>
+		</xsd:choice>
+	</xsd:complexType>
+
+	<!-- EPCISSERVICE MESSAGE WRAPPERS -->
+
+	<xsd:element name="GetQueryNames" type="epcisq:EmptyParms"/>
+	<xsd:element name="GetQueryNamesResult" type="epcisq:ArrayOfString"/>
+
+	<xsd:element name="Subscribe" type="epcisq:Subscribe"/>
+	<xsd:complexType name="Subscribe">
+		<xsd:sequence>
+			<xsd:element name="queryName" type="xsd:string"/>
+			<xsd:element name="params" type="epcisq:QueryParams"/>
+			<xsd:element name="dest" type="xsd:anyURI"/>
+			<xsd:element name="controls" type="epcisq:SubscriptionControls"/>
+			<xsd:element name="subscriptionID" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="SubscribeResult" type="epcisq:VoidHolder"/>
+
+	<xsd:element name="Unsubscribe" type="epcisq:Unsubscribe"/>
+	<xsd:complexType name="Unsubscribe">
+		<xsd:sequence>
+			<xsd:element name="subscriptionID" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="UnsubscribeResult" type="epcisq:VoidHolder"/>
+
+	<xsd:element name="GetSubscriptionIDs" type="epcisq:GetSubscriptionIDs"/>
+	<xsd:complexType name="GetSubscriptionIDs">
+		<xsd:sequence>
+			<xsd:element name="queryName" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="GetSubscriptionIDsResult" type="epcisq:ArrayOfString"/>
+
+	<xsd:element name="Poll" type="epcisq:Poll"/>
+	<xsd:complexType name="Poll">
+		<xsd:sequence>
+			<xsd:element name="queryName" type="xsd:string"/>
+			<xsd:element name="params" type="epcisq:QueryParams"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<!-- The response from a Poll method is the QueryResults element, defined 
+		below. The QueryResults element is also used to deliver standing query results 
+		through the Query Callback Interface -->
+
+	<xsd:element name="GetStandardVersion" type="epcisq:EmptyParms"/>
+	<xsd:element name="GetStandardVersionResult" type="xsd:string"/>
+
+	<xsd:element name="GetVendorVersion" type="epcisq:EmptyParms"/>
+	<xsd:element name="GetVendorVersionResult" type="xsd:string"/>
+
+	<xsd:element name="VoidHolder" type="epcisq:VoidHolder"/>
+	<xsd:complexType name="VoidHolder">
+		<xsd:sequence>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="EmptyParms"/>
+
+	<xsd:complexType name="ArrayOfString">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="string" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="SubscriptionControls">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" name="schedule" type="epcisq:QuerySchedule"/>
+			<xsd:element minOccurs="0" name="trigger" type="xsd:anyURI"/>
+			<xsd:element minOccurs="0" name="initialRecordTime" type="xsd:dateTime"/>
+			<xsd:element name="reportIfEmpty" type="xsd:boolean"/>
+			<xsd:element minOccurs="0" name="extension" type="epcisq:SubscriptionControlsExtensionType"/>
+			<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="SubscriptionControlsExtensionType">
+		<xsd:sequence>
+			<xsd:any maxOccurs="unbounded" namespace="##local" processContents="lax"/>
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="QuerySchedule">
+		<xsd:sequence>
+			<xsd:element minOccurs="0" name="second" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="minute" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="hour" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="dayOfMonth" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="month" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="dayOfWeek" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="extension" type="epcisq:QueryScheduleExtensionType"/>
+			<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="QueryScheduleExtensionType">
+		<xsd:sequence>
+			<xsd:any maxOccurs="unbounded" namespace="##local" processContents="lax"/>
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="QueryParams">
+		<xsd:sequence>
+			<xsd:element maxOccurs="unbounded" minOccurs="0" name="param" type="epcisq:QueryParam"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="QueryParam">
+		<xsd:sequence>
+			<xsd:element name="name" type="xsd:string"/>
+			<!-- See note in EPCIS spec text regarding the value for this element -->
+			<xsd:element name="value" type="xsd:anyType"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="QueryResults" type="epcisq:QueryResults"/>
+	<xsd:complexType name="QueryResults">
+		<xsd:sequence>
+			<xsd:element name="queryName" type="xsd:string"/>
+			<xsd:element minOccurs="0" name="subscriptionID" type="xsd:string"/>
+			<xsd:element name="resultsBody" type="epcisq:QueryResultsBody"/>
+			<xsd:element minOccurs="0" name="extension" type="epcisq:QueryResultsExtensionType"/>
+			<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="QueryResultsExtensionType">
+		<xsd:sequence>
+			<xsd:any maxOccurs="unbounded" namespace="##local" processContents="lax"/>
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax"/>
+	</xsd:complexType>
+
+	<xsd:complexType name="QueryResultsBody">
+		<xsd:choice>
+			<xsd:element name="EventList" type="epcis:EventListType"/>
+			<xsd:element name="VocabularyList" type="epcismd:VocabularyListType"/>
+		</xsd:choice>
+	</xsd:complexType>
+
+	<!-- EPCIS EXCEPTIONS -->
+
+	<xsd:element name="EPCISException" type="epcisq:EPCISException"/>
+	<xsd:complexType name="EPCISException">
+		<xsd:sequence>
+			<xsd:element name="reason" type="xsd:string"/>
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:element name="DuplicateNameException" type="epcisq:DuplicateNameException"/>
+	<xsd:complexType name="DuplicateNameException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<!-- QueryValidationException not implemented in EPCIS 1.0 <xsd:element 
+		name="QueryValidationException" type="epcisq:QueryValidationException"/> 
+		<xsd:complexType name="QueryValidationException"> <xsd:complexContent> <xsd:extension 
+		base="epcisq:EPCISException"> <xsd:sequence/> </xsd:extension> </xsd:complexContent> 
+		</xsd:complexType> -->
+
+	<xsd:element name="InvalidURIException" type="epcisq:InvalidURIException"/>
+	<xsd:complexType name="InvalidURIException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="NoSuchNameException" type="epcisq:NoSuchNameException"/>
+	<xsd:complexType name="NoSuchNameException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="NoSuchSubscriptionException" type="epcisq:NoSuchSubscriptionException"/>
+	<xsd:complexType name="NoSuchSubscriptionException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="DuplicateSubscriptionException" type="epcisq:DuplicateSubscriptionException"/>
+	<xsd:complexType name="DuplicateSubscriptionException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="QueryParameterException" type="epcisq:QueryParameterException"/>
+	<xsd:complexType name="QueryParameterException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="QueryTooLargeException" type="epcisq:QueryTooLargeException"/>
+	<xsd:complexType name="QueryTooLargeException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence>
+					<xsd:element minOccurs="0" name="queryName" type="xsd:string"/>
+					<xsd:element minOccurs="0" name="subscriptionID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="QueryTooComplexException" type="epcisq:QueryTooComplexException"/>
+	<xsd:complexType name="QueryTooComplexException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="SubscriptionControlsException" type="epcisq:SubscriptionControlsException"/>
+	<xsd:complexType name="SubscriptionControlsException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="SubscribeNotPermittedException" type="epcisq:SubscribeNotPermittedException"/>
+	<xsd:complexType name="SubscribeNotPermittedException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="SecurityException" type="epcisq:SecurityException"/>
+	<xsd:complexType name="SecurityException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="ValidationException" type="epcisq:ValidationException"/>
+	<xsd:complexType name="ValidationException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:element name="ImplementationException" type="epcisq:ImplementationException"/>
+	<xsd:complexType name="ImplementationException">
+		<xsd:complexContent>
+			<xsd:extension base="epcisq:EPCISException">
+				<xsd:sequence>
+					<xsd:element name="severity" type="epcisq:ImplementationExceptionSeverity"/>
+					<xsd:element minOccurs="0" name="queryName" type="xsd:string"/>
+					<xsd:element minOccurs="0" name="subscriptionID" type="xsd:string"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:simpleType name="ImplementationExceptionSeverity">
+		<xsd:restriction base="xsd:NCName">
+			<xsd:enumeration value="ERROR"/>
+			<xsd:enumeration value="SEVERE"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>

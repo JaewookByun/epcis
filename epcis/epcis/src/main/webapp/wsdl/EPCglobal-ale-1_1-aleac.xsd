@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:ale="urn:epcglobal:ale:xsd:1" targetNamespace="urn:epcglobal:ale:xsd:1"
+	xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" elementFormDefault="unqualified"
+	attributeFormDefault="unqualified" version="1.0">
+	<xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="EPCglobal.xsd" />
+	<!-- ALEAC ELEMENTS -->
+	<xsd:element name="ACPermission" type="ale:ACPermission" />
+	<xsd:element name="ACRole" type="ale:ACRole" />
+	<xsd:element name="ACClientIdentity" type="ale:ACClientIdentity" />
+
+	<!-- ALEAC TYPES -->
+
+	<!-- The ACClass type is an enumerated type. The following strings are legal 
+		values for this type: Method An implementation may also recognize additional 
+		strings as extensions. -->
+	<xsd:simpleType name="ACClass">
+		<xsd:restriction base="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:complexType name="ACClientCredential">
+		<xsd:sequence>
+			<xsd:element name="extension" type="ale:ACClientCredentialExtension"
+				minOccurs="0" />
+			<xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+				namespace="##other" />
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax" />
+	</xsd:complexType>
+
+	<xsd:complexType name="ACClientCredentialExtension">
+		<xsd:sequence>
+			<xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+				namespace="##local" />
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax" />
+	</xsd:complexType>
+
+	<xsd:complexType name="ACClientIdentity">
+		<xsd:complexContent>
+			<xsd:extension base="epcglobal:Document">
+				<xsd:sequence>
+					<xsd:element name="credentials" minOccurs="0">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="credential" type="ale:ACClientCredential"
+									minOccurs="0" maxOccurs="unbounded" />
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="roleNames" minOccurs="0">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="roleName" type="xsd:string"
+									minOccurs="0" maxOccurs="unbounded" />
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="extension" type="ale:ACClientIdentityExtension"
+						minOccurs="0" />
+					<xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+						namespace="##other" />
+				</xsd:sequence>
+				<xsd:anyAttribute processContents="lax" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="ACClientIdentityExtension">
+		<xsd:sequence>
+			<xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+				namespace="##local" />
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax" />
+	</xsd:complexType>
+
+	<xsd:complexType name="ACPermission">
+		<xsd:complexContent>
+			<xsd:extension base="epcglobal:Document">
+				<xsd:sequence>
+					<xsd:element name="permissionClass" type="ale:ACClass" />
+					<xsd:element name="instances" minOccurs="0">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="instance" type="xsd:string"
+									minOccurs="0" maxOccurs="unbounded" />
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="extension" type="ale:ACPermissionExtension"
+						minOccurs="0" />
+					<xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+						namespace="##other" />
+				</xsd:sequence>
+				<xsd:anyAttribute processContents="lax" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="ACPermissionExtension">
+		<xsd:sequence>
+			<xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+				namespace="##local" />
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax" />
+	</xsd:complexType>
+
+	<xsd:complexType name="ACRole">
+		<xsd:complexContent>
+			<xsd:extension base="epcglobal:Document">
+				<xsd:sequence>
+					<xsd:element name="permissionNames" minOccurs="0">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="permissionName" type="xsd:string"
+									minOccurs="0" maxOccurs="unbounded" />
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+					<xsd:element name="extension" type="ale:ACRoleExtension"
+						minOccurs="0" />
+					<xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+						namespace="##other" />
+				</xsd:sequence>
+				<xsd:anyAttribute processContents="lax" />
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="ACRoleExtension">
+		<xsd:sequence>
+			<xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+				namespace="##local" />
+		</xsd:sequence>
+		<xsd:anyAttribute processContents="lax" />
+	</xsd:complexType>
+</xsd:schema>

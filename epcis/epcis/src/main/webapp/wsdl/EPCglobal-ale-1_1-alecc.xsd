@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ale="urn:epcglobal:ale:xsd:1"
+            targetNamespace="urn:epcglobal:ale:xsd:1"
+            xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" elementFormDefault="unqualified"
+            attributeFormDefault="unqualified" version="1.0">
+  <xsd:import namespace="epcglobal.axis.epcis.oliot.org" schemaLocation="EPCglobal.xsd"/>
+  <xsd:include schemaLocation="EPCglobal-ale-1_1-common.xsd"/>
+  <!-- ALECC ELEMENTS -->
+  <xsd:element name="CCSpec" type="ale:CCSpec"/>
+  <xsd:element name="CCReports" type="ale:CCReports"/>
+  <xsd:element name="EPCCacheSpec" type="ale:EPCCacheSpec"/>
+  <xsd:element name="EPCPatternList" type="ale:EPCPatternList"/>
+  <xsd:element name="AssocTableSpec" type="ale:AssocTableSpec"/>
+  <xsd:element name="AssocTableEntryList" type="ale:AssocTableEntryList"/>
+  <xsd:element name="RNGSpec" type="ale:RNGSpec"/>
+
+  <!-- ALECC TYPES -->
+
+  <xsd:complexType name="AssocTableEntry">
+    <xsd:sequence>
+      <xsd:element name="key" type="xsd:string"/>
+      <xsd:element name="value" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="AssocTableEntryList">
+    <xsd:sequence>
+      <xsd:element name="entries" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="entry" type="ale:AssocTableEntry" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="AssocTableSpec">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="datatype" type="xsd:string"/>
+          <xsd:element name="format" type="xsd:string"/>
+          <xsd:element name="extension" type="ale:AssocTableSpecExtension"
+                       minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="AssocTableSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCBoundarySpec">
+    <xsd:sequence>
+      <xsd:element name="startTriggerList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="startTrigger" type="ale:ECTrigger" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="repeatPeriod" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="stopTriggerList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="stopTrigger" type="ale:ECTrigger" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="duration" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="noNewTagsInterval" type="ale:ECTime" minOccurs="0"/>
+      <xsd:element name="tagsProcessedCount" type="xsd:int" minOccurs="0"/>
+      <xsd:element name="afterError" type="xsd:boolean" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:CCBoundarySpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCBoundarySpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCCmdReport">
+    <xsd:sequence>
+      <xsd:element name="tagReports" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="tagReport" type="ale:CCTagReport" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:CCCmdReportExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:attribute name="cmdSpecName" type="xsd:string" use="required"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCCmdReportExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCCmdSpec">
+    <xsd:sequence>
+      <xsd:element name="filterSpec" type="ale:CCFilterSpec" minOccurs="0"/>
+      <xsd:element name="opSpecs" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="opSpec" type="ale:CCOpSpec" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="statProfileNames" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="statProfileName" type="ale:CCStatProfileName"
+                         minOccurs="0" maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:CCCmdSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:string" use="required"/>
+    <xsd:attribute name="reportIfEmpty" type="xsd:boolean" default="false"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCCmdSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCFilterSpec">
+    <xsd:sequence>
+      <xsd:element name="filterList" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="filter" type="ale:ECFilterListMember" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:CCFilterSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCFilterSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The CCInitiationCondition type is an enumerated type.
+       The following strings are legal values for this type:
+         TRIGGER
+         REPEAT_PERIOD
+         REQUESTED
+         UNDEFINE
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCInitiationCondition">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <!-- The CCLockOperation type is an enumerated type.
+       The following strings are legal values for this type:
+         UNLOCK
+         PERMAUNLOCK
+         LOCK
+         PERMALOCK
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCLockOperation">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="CCOpDataSpec">
+    <xsd:sequence>
+      <xsd:element name="specType" type="ale:CCOpDataSpecType"/>
+      <xsd:element name="data" type="xsd:string"/>
+      <xsd:element name="extension" type="ale:CCOpDataSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCOpDataSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The CCOpDataSpecType type is an enumerated type.
+       The following strings are legal values for this type:
+         LITERAL
+         PARAMETER
+         CACHE
+         ASSOCIATION
+         RANDOM
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCOpDataSpecType">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="CCOpReport">
+    <xsd:sequence>
+      <xsd:element name="data" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="opStatus" type="ale:CCStatus"/>
+      <xsd:element name="opName" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:CCOpReportExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCOpReportExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCOpSpec">
+    <xsd:sequence>
+      <xsd:element name="opType" type="ale:CCOpType"/>
+      <xsd:element name="fieldspec" type="ale:ECFieldSpec" minOccurs="0"/>
+      <xsd:element name="dataSpec" type="ale:CCOpDataSpec" minOccurs="0"/>
+      <xsd:element name="opName" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="extension" type="ale:CCOpSpecExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCOpSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The CCOpType type is an enumerated type.
+       The following strings are legal values for this type:
+         READ
+         CHECK
+         INITIALIZE
+         ADD
+         WRITE
+         DELETE
+         PASSWORD
+         KILL
+         LOCK
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCOpType">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="CCParameterList">
+    <xsd:sequence>
+      <xsd:element name="entries" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="entry" type="ale:CCParameterListEntry" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCParameterListEntry">
+    <xsd:sequence>
+      <xsd:element name="name" type="xsd:string"/>
+      <xsd:element name="value" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCReports">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="CCSpec" type="ale:CCSpec" minOccurs="0"/>
+          <xsd:element name="cmdReports" minOccurs="0">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="cmdReport" type="ale:CCCmdReport" minOccurs="0"
+                             maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:CCReportsExtension" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:attribute name="specName" type="xsd:string" use="required"/>
+        <xsd:attribute name="date" type="xsd:dateTime" use="required"/>
+        <xsd:attribute name="ALEID" type="xsd:string" use="required"/>
+        <xsd:attribute name="totalMilliseconds" type="xsd:long" use="required"/>
+        <xsd:attribute name="initiationCondition" type="ale:CCInitiationCondition"
+                       use="required"/>
+        <xsd:attribute name="initiationTrigger" type="ale:ECTrigger" use="optional"/>
+        <xsd:attribute name="terminationCondition" type="ale:CCTerminationCondition"
+                       use="required"/>
+        <xsd:attribute name="terminationTrigger" type="ale:ECTrigger" use="optional"/>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCReportsExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCSpec">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="logicalReaders">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="logicalReader" type="xsd:string"
+                             maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="boundarySpec" type="ale:CCBoundarySpec"/>
+          <xsd:element name="cmdSpecs">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="cmdSpec" type="ale:CCCmdSpec" maxOccurs="unbounded"/>
+              </xsd:sequence>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="extension" type="ale:CCSpecExtension" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:attribute name="includeSpecInReports" type="xsd:boolean" default="false"/>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- The CCStatProfileName type is an enumerated type.
+       The following strings are legal values for this type:
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCStatProfileName">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <!-- The CCStatus type is an enumerated type.
+       The following strings are legal values for this type:
+         SUCCESS
+         MISC_ERROR_TOTAL
+         MISC_ERROR_PARTIAL
+         PERMISSION_ERROR
+         PASSWORD_ERROR
+         FIELD_NOT_FOUND_ERROR
+         OP_NOT_POSSIBLE_ERROR
+         OUT_OF_RANGE_ERROR
+         FIELD_EXISTS_ERROR
+         MEMORY_OVERFLOW_ERROR
+         MEMORY_CHECK_ERROR
+         ASSOCIATION_TABLE_VALUE_INVALID
+         ASSOCIATION_TABLE_VALUE_MISSING
+         EPC_CACHE_DEPLETED
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCStatus">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="CCTagReport">
+    <xsd:sequence>
+      <xsd:element name="id" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="opReports" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="opReport" type="ale:CCOpReport" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="stats" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="stat" type="ale:CCTagStat" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="extension" type="ale:CCTagReportExtension" minOccurs="0"/>
+      <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+               namespace="##other"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCTagReportExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="CCTagStat">
+    <xsd:sequence>
+      <xsd:element name="profile" type="ale:CCStatProfileName"/>
+      <xsd:element name="statBlocks" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="statBlock" type="ale:ECReaderStat" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- The CCTerminationCondition type is an enumerated type.
+       The following strings are legal values for this type:
+         TRIGGER
+         DURATION
+         NO_NEW_TAGS
+         COUNT
+         ERROR
+         UNREQUEST
+         UNDEFINE
+       An implementation may also recognize additional strings as extensions.
+        -->
+  <xsd:simpleType name="CCTerminationCondition">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+
+  <xsd:complexType name="EPCCacheSpec">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="extension" type="ale:EPCCacheSpecExtension" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCCacheSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCPatternList">
+    <xsd:sequence>
+      <xsd:element name="patterns" minOccurs="0">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="pattern" type="xsd:string" minOccurs="0"
+                         maxOccurs="unbounded"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="RNGSpec">
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="length" type="xsd:int"/>
+          <xsd:element name="extension" type="ale:RNGSpecExtension" minOccurs="0"/>
+          <xsd:any processContents="lax" minOccurs="0" maxOccurs="unbounded"
+                   namespace="##other"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="RNGSpecExtension">
+    <xsd:sequence>
+      <xsd:any processContents="lax" minOccurs="1" maxOccurs="unbounded"
+               namespace="##local"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+</xsd:schema>
