@@ -155,6 +155,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 			}
 		}
 		
+		
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
