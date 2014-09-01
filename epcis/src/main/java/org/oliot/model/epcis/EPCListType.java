@@ -42,7 +42,11 @@ public class EPCListType {
 
     protected List<EPC> epc;
 
-    /**
+    public void setEpc(List<EPC> epc) {
+		this.epc = epc;
+	}
+
+	/**
      * Gets the value of the epc property.
      * 
      * <p>

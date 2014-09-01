@@ -49,7 +49,15 @@ public class ReadPointExtensionType {
 
     @XmlAnyElement(lax = true)
     protected List<Object> any;
-    @XmlAnyAttribute
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
+	@XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**

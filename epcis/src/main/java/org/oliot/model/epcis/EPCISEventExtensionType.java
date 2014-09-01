@@ -52,7 +52,15 @@ public class EPCISEventExtensionType {
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
+	/**
      * Gets the value of the any property.
      * 
      * <p>
