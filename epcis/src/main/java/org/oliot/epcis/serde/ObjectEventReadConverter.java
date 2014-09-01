@@ -87,7 +87,8 @@ public class ObjectEventReadConverter implements
 				for(int i = 0 ; i < epcListM.size() ; i++ )
 				{
 					EPC epc = new EPC();
-					epc.setValue(epcListM.get(i).toString());
+					BasicDBObject epcObject = (BasicDBObject)epcListM.get(i);
+					epc.setValue(epcObject.getString("epc"));
 					epcs.add(epc);
 				}
 				epcListType.setEpc(epcs);
@@ -315,7 +316,8 @@ public class ObjectEventReadConverter implements
 						if( epcClassObject != null && quantity != null && uom != null )
 						{
 							qet.setEpcClass(epcClassObject.toString());
-							qet.setQuantity((float)quantity);
+							double quantityDouble = (double)quantity;
+							qet.setQuantity((float)quantityDouble);
 							qet.setUom(uom.toString());
 							qetList.add(qet);
 						}
