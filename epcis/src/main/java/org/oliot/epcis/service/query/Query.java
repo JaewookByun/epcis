@@ -22,15 +22,19 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
 import org.json.JSONArray;
+import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
+import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.SubscriptionControls;
+import org.oliot.model.epcis.TransactionEventType;
+import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
@@ -49,16 +53,16 @@ public class Query implements CoreQueryService, ServletContextAware {
 
 	@Autowired
 	ServletContext servletContext;
-	
+
 	@Autowired
 	private HttpServletRequest request;
-	
+
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
-		
+
 	}
-	
+
 	/**
 	 * Registers a subscriber for a previously defined query having the
 	 * specified name. The params argument provides the values to be used for
@@ -107,16 +111,15 @@ public class Query implements CoreQueryService, ServletContextAware {
 		return null;
 	}
 
-	
 	@SuppressWarnings({ "resource", "rawtypes", "unchecked" })
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
-	public String poll(@PathVariable String queryName, @RequestParam(required = false) String MATCH_epc)
-	{
-		if( !queryName.equals("SimpleEventQuery"))
+	public String poll(@PathVariable String queryName,
+			@RequestParam(required = false) String MATCH_epc) {
+		if (!queryName.equals("SimpleEventQuery"))
 			return "Unavailable Query Name";
-	
-		//Make Base Result Document
+
+		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = new EPCISQueryDocumentType();
 		EPCISQueryBodyType epcisBody = new EPCISQueryBodyType();
 		epcisQueryDocumentType.setEPCISBody(epcisBody);
@@ -124,51 +127,80 @@ public class Query implements CoreQueryService, ServletContextAware {
 		queryResults.setQueryName(queryName);
 		epcisBody.setQueryResults(queryResults);
 		QueryResultsBody queryResultsBody = new QueryResultsBody();
-		queryResults.setResultsBody(queryResultsBody);;
+		queryResults.setResultsBody(queryResultsBody);
+		;
 		EventListType eventListType = new EventListType();
 		queryResultsBody.setEventList(eventListType);
 		// Object instanceof JAXBElement
 		List<Object> eventObjects = new ArrayList<Object>();
-		eventListType.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
-		if( MATCH_epc != null )
-		{
-			String[] MATCH_epcs = MATCH_epc.split(",");
-			for(int i = 0 ; i < MATCH_epcs.length ; i++ )
-			{
-				String epc = MATCH_epcs[i];
-				epc = epc.trim();
-				
-				ApplicationContext ctx = new GenericXmlApplicationContext(
-						"classpath:MongoConfig.xml");
-				MongoOperations mongoOperation = (MongoOperations) ctx
-						.getBean("mongoTemplate");
-				
-				//org.springframework.data.mongodb.core.query.Query searchQuery = new org.springframework.data.mongodb.core.query.Query(Criteria.where("EPCList").in(epc));
-				
-				List<ObjectEventType> objectEvents = mongoOperation.findAll(ObjectEventType.class);
-				for(int j= 0 ; j < objectEvents.size() ; j++ )
-				{
-					ObjectEventType objectEvent = objectEvents.get(j);
-					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class, objectEvent );
-					eventObjects.add(element);
-				}
-			}
+		eventListType
+				.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
+
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		// org.springframework.data.mongodb.core.query.Query searchQuery = new
+		// org.springframework.data.mongodb.core.query.Query(Criteria.where("EPCList").in(epc));
+
+		List<ObjectEventType> objectEvents = mongoOperation
+				.findAll(ObjectEventType.class);
+		for (int j = 0; j < objectEvents.size(); j++) {
+			ObjectEventType objectEvent = objectEvents.get(j);
+			JAXBElement element = new JAXBElement(new QName("ObjectEvent"),
+					ObjectEventType.class, objectEvent);
+			eventObjects.add(element);
 		}
 		
+		List<AggregationEventType> aggregationEvents = mongoOperation
+				.findAll(AggregationEventType.class);
+		for (int j = 0; j < aggregationEvents.size(); j++) {
+			AggregationEventType aggregationEvent = aggregationEvents.get(j);
+			JAXBElement element = new JAXBElement(new QName("AggregationEvent"),
+					AggregationEventType.class, aggregationEvent);
+			eventObjects.add(element);
+		}
 		
+		List<QuantityEventType> quantityEvents = mongoOperation
+				.findAll(QuantityEventType.class);
+		for (int j = 0; j < quantityEvents.size(); j++) {
+			QuantityEventType quantityEvent = quantityEvents.get(j);
+			JAXBElement element = new JAXBElement(new QName("QuantityEvent"),
+					QuantityEventType.class, quantityEvent);
+			eventObjects.add(element);
+		}
+		
+		List<TransactionEventType> transactionEvents = mongoOperation
+				.findAll(TransactionEventType.class);
+		for (int j = 0; j < transactionEvents.size(); j++) {
+			TransactionEventType transactionEvent = transactionEvents.get(j);
+			JAXBElement element = new JAXBElement(new QName("TransactionEvent"),
+					TransactionEventType.class, transactionEvent);
+			eventObjects.add(element);
+		}
+		
+		List<TransformationEventType> transformationEvents = mongoOperation
+				.findAll(TransformationEventType.class);
+		for (int j = 0; j < transformationEvents.size(); j++) {
+			TransformationEventType transformationEvent = transformationEvents.get(j);
+			JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
+					TransformationEventType.class, transformationEvent);
+			eventObjects.add(element);
+		}
+
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
 	}
-	
+
 	/**
 	 * Invokes a previously defined query having the specified name, returning
 	 * the results. The params argument provides the values to be used for any
 	 * named parameters defined by the query.
 	 * 
-	 * @author jack
-	 * Since var 'Query Param' is just key-value pairs 
-	 * this method is better to be parameter of http servlet request
+	 * @author jack Since var 'Query Param' is just key-value pairs this method
+	 *         is better to be parameter of http servlet request
 	 * @deprecated
 	 */
 	@SuppressWarnings("unused")
@@ -176,8 +208,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 	public QueryResults poll(String queryName, QueryParams params) {
 		List<QueryParam> queryParams = params.getParam();
 		// Query Parameter is just key-value pairs
-		for( int i = 0 ; i < queryParams.size() ; i ++ )
-		{
+		for (int i = 0; i < queryParams.size(); i++) {
 			QueryParam queryParam = queryParams.get(i);
 			String name = queryParam.getName();
 			Object value = queryParam.getValue();
@@ -212,52 +243,50 @@ public class Query implements CoreQueryService, ServletContextAware {
 		int GE_quantity;
 		int LT_quantity;
 		int LE_quantity;
-		
-		Object EQ_fieldname;	// List<String> , int, Float, Time
-		Object GT_fieldname;	// int, Float, Time, 
-		Object GE_fieldname;	// int, Float, Time, 
-		Object LT_fieldname;	// int, Float, Time, 
-		Object LE_fieldname;	// int, Float, Time, 
-		Object EQ_ILMD_fieldname;	// List<String> , int, Float, Time, 
-		Object GT_ILMD_fieldname;	// int, Float, Time, 
-		Object GE_ILMD_fieldname;	// int, Float, Time, 
-		Object LT_ILMD_fieldname;	// int, Float, Time, 
-		Object LE_ILMD_fieldname;	// Lint, Float, Time, 
-		
+
+		Object EQ_fieldname; // List<String> , int, Float, Time
+		Object GT_fieldname; // int, Float, Time,
+		Object GE_fieldname; // int, Float, Time,
+		Object LT_fieldname; // int, Float, Time,
+		Object LE_fieldname; // int, Float, Time,
+		Object EQ_ILMD_fieldname; // List<String> , int, Float, Time,
+		Object GT_ILMD_fieldname; // int, Float, Time,
+		Object GE_ILMD_fieldname; // int, Float, Time,
+		Object LT_ILMD_fieldname; // int, Float, Time,
+		Object LE_ILMD_fieldname; // Lint, Float, Time,
+
 		Void EXIST_fieldname;
 		Void EXIST_ILMD_fieldname;
-		
+
 		List<String> HASATTR_fieldname;
 		List<String> EQATTR_fieldname_attrname;
-		
+
 		String orderBy;
 		String orderDirection;
 		int eventCountLimit;
 		int maxEventCount;
-		
-		
-		
-		
-		
-//		QueryResults queryResults = new QueryResults();
-//		queryResults.setQueryName(queryName);
-//		QueryResultsBody queryResultsBody = queryResults.getResultsBody();
-//		EventListType eventListType = queryResultsBody.getEventList();
-//		List<Object> events = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
-//		JAXBElement eventElement = (JAXBElement) eventList.get(i);
-//		Object event = eventElement.getValue();
-//		if (event instanceof ObjectEventType) {
-//			capture((ObjectEventType) event);
-//		
-//		
+
+		// QueryResults queryResults = new QueryResults();
+		// queryResults.setQueryName(queryName);
+		// QueryResultsBody queryResultsBody = queryResults.getResultsBody();
+		// EventListType eventListType = queryResultsBody.getEventList();
+		// List<Object> events =
+		// eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
+		// JAXBElement eventElement = (JAXBElement) eventList.get(i);
+		// Object event = eventElement.getValue();
+		// if (event instanceof ObjectEventType) {
+		// capture((ObjectEventType) event);
+		//
+		//
 		return null;
 	}
 
 	/**
-	 * [REST Version of getQueryNames]
-	 * Returns a list of all query names available for use with the subscribe
-	 * and poll methods. This includes all pre- defined queries provided by the
-	 * implementation, including those specified in Section 8.2.7.
+	 * [REST Version of getQueryNames] Returns a list of all query names
+	 * available for use with the subscribe and poll methods. This includes all
+	 * pre- defined queries provided by the implementation, including those
+	 * specified in Section 8.2.7.
+	 * 
 	 * @return JSONArray of query names ( String )
 	 */
 	@RequestMapping(value = "/QueryNames", method = RequestMethod.GET)
@@ -265,8 +294,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 	public String getQueryNamesREST() {
 		JSONArray jsonArray = new JSONArray();
 		List<String> queryNames = getQueryNames();
-		for(int i = 0 ; i < queryNames.size() ; i++ )
-		{
+		for (int i = 0; i < queryNames.size(); i++) {
 			jsonArray.put(queryNames.get(i));
 		}
 		return jsonArray.toString(1);
