@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -15,11 +14,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for SourceListType complex type.
+ * <p>
+ * Java class for SourceListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SourceListType">
@@ -36,41 +37,44 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SourceListType", propOrder = {
-    "source"
-})
+@XmlType(name = "SourceListType", propOrder = { "source" })
 public class SourceListType {
 
-    @XmlElement(required = true)
-    protected List<SourceDestType> source;
+	@XmlElement(required = true)
+	protected List<SourceDestType> source;
 
-    /**
-     * Gets the value of the source property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the source property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getSource().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link SourceDestType }
-     * 
-     * 
-     */
-    public List<SourceDestType> getSource() {
-        if (source == null) {
-            source = new ArrayList<SourceDestType>();
-        }
-        return this.source;
-    }
+	/**
+	 * Gets the value of the source property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the source property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getSource().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link SourceDestType }
+	 * 
+	 * 
+	 */
+	public List<SourceDestType> getSource() {
+		if (source == null) {
+			source = new ArrayList<SourceDestType>();
+		}
+		return this.source;
+	}
+
+	public void setSource(List<SourceDestType> source) {
+		this.source = source;
+	}
 
 }
