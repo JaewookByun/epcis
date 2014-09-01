@@ -12,8 +12,8 @@
 	
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
 	<bean id="capture" class="org.oliot.epcis.service.capture.Capture"></bean>
-	
-	
+	<bean id="query" class="org.oliot.epcis.service.query.Query"></bean>
+		
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/view/"></property>
