@@ -73,4 +73,8 @@ public class BusinessTransactionListType {
         return this.bizTransaction;
     }
 
+	public void setBizTransaction(List<BusinessTransactionType> bizTransaction) {
+		this.bizTransaction = bizTransaction;
+	}
+
 }
