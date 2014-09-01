@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<epcisq:EPCISQueryDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" xmlns:epcis="axis.epcis.oliot.org" xmlns:epcismd="masterdata.axis.epcis.oliot.org" xmlns:epcisq="query.axis.epcis.oliot.org" xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="query.axis.epcis.oliot.org ../wsdl/TestQuery.xsd ">
+<epcisq:EPCISQueryDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" xmlns:epcis="axis.epcis.oliot.org" xmlns:epcismd="masterdata.axis.epcis.oliot.org" xmlns:epcisq="query.axis.epcis.oliot.org" xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="query.axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-query-1_1.xsd axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-1_1_jack.xsd epcglobal.axis.epcis.oliot.org ../wsdl/EPCglobal.xsd">
   <EPCISBody>
     <epcisq:QueryResults>
       <queryName>queryName</queryName>
@@ -10,73 +10,6 @@
             <eventTime>2001-12-31T12:00:00</eventTime>
             <recordTime>2001-12-31T12:00:00</recordTime>
             <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
-            <baseExtension>
-              <epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0">
-                <EPCISHeader>
-                  <p:StandardBusinessDocumentHeader>
-                    <p:HeaderVersion>p:HeaderVersion</p:HeaderVersion>
-                    <p:Sender>
-                      <p:Identifier Authority="">p:Identifier</p:Identifier>
-                      <p:ContactInformation>
-                        <p:Contact>p:Contact</p:Contact>
-                        <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                        <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                        <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                        <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                      </p:ContactInformation>
-                    </p:Sender>
-                    <p:Receiver>
-                      <p:Identifier Authority="">p:Identifier</p:Identifier>
-                      <p:ContactInformation>
-                        <p:Contact>p:Contact</p:Contact>
-                        <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                        <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                        <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                        <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                      </p:ContactInformation>
-                    </p:Receiver>
-                    <p:DocumentIdentification>
-                      <p:Standard>p:Standard</p:Standard>
-                      <p:TypeVersion>p:TypeVersion</p:TypeVersion>
-                      <p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
-                      <p:Type>p:Type</p:Type>
-                      <p:MultipleType>true</p:MultipleType>
-                      <p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
-                    </p:DocumentIdentification>
-                    <p:Manifest>
-                      <p:NumberOfItems>0</p:NumberOfItems>
-                      <p:ManifestItem>
-                        <p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
-                        <p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
-                        <p:Description>p:Description</p:Description>
-                        <p:LanguageCode>p:LanguageCode</p:LanguageCode>
-                      </p:ManifestItem>
-                    </p:Manifest>
-                    <p:BusinessScope>
-                      <p:Scope>
-                        <p:CorrelationInformation>
-                          <p:RequestingDocumentCreationDateTime>2001-12-31T12:00:00</p:RequestingDocumentCreationDateTime>
-                          <p:RequestingDocumentInstanceIdentifier>p:RequestingDocumentInstanceIdentifier</p:RequestingDocumentInstanceIdentifier>
-                          <p:ExpectedResponseDateTime>2001-12-31T12:00:00</p:ExpectedResponseDateTime>
-                        </p:CorrelationInformation>
-                      </p:Scope>
-                    </p:BusinessScope>
-                  </p:StandardBusinessDocumentHeader>
-                  <extension>
-                    <ANY-ELEMENT/>
-                  </extension>
-                </EPCISHeader>
-                <EPCISBody>
-                  <EventList/>
-                  <extension>
-                    <ANY-ELEMENT/>
-                  </extension>
-                </EPCISBody>
-                <extension>
-                  <ANY-ELEMENT/>
-                </extension>
-              </epcis:EPCISDocument>
-            </baseExtension>
             <epcList>
               <epc>epc</epc>
             </epcList>
@@ -86,141 +19,13 @@
             <readPoint>
               <id>http://tempuri.org</id>
               <extension>
-                <epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0">
-                  <EPCISHeader>
-                    <p:StandardBusinessDocumentHeader>
-                      <p:HeaderVersion>p:HeaderVersion</p:HeaderVersion>
-                      <p:Sender>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Sender>
-                      <p:Receiver>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Receiver>
-                      <p:DocumentIdentification>
-                        <p:Standard>p:Standard</p:Standard>
-                        <p:TypeVersion>p:TypeVersion</p:TypeVersion>
-                        <p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
-                        <p:Type>p:Type</p:Type>
-                        <p:MultipleType>true</p:MultipleType>
-                        <p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
-                      </p:DocumentIdentification>
-                      <p:Manifest>
-                        <p:NumberOfItems>0</p:NumberOfItems>
-                        <p:ManifestItem>
-                          <p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
-                          <p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
-                          <p:Description>p:Description</p:Description>
-                          <p:LanguageCode>p:LanguageCode</p:LanguageCode>
-                        </p:ManifestItem>
-                      </p:Manifest>
-                      <p:BusinessScope>
-                        <p:Scope>
-                          <p:CorrelationInformation>
-                            <p:RequestingDocumentCreationDateTime>2001-12-31T12:00:00</p:RequestingDocumentCreationDateTime>
-                            <p:RequestingDocumentInstanceIdentifier>p:RequestingDocumentInstanceIdentifier</p:RequestingDocumentInstanceIdentifier>
-                            <p:ExpectedResponseDateTime>2001-12-31T12:00:00</p:ExpectedResponseDateTime>
-                          </p:CorrelationInformation>
-                        </p:Scope>
-                      </p:BusinessScope>
-                    </p:StandardBusinessDocumentHeader>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISHeader>
-                  <EPCISBody>
-                    <EventList/>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISBody>
-                  <extension>
-                    <ANY-ELEMENT/>
-                  </extension>
-                </epcis:EPCISDocument>
+             		<any/>	
               </extension>
             </readPoint>
             <bizLocation>
               <id>http://tempuri.org</id>
               <extension>
-                <epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0">
-                  <EPCISHeader>
-                    <p:StandardBusinessDocumentHeader>
-                      <p:HeaderVersion>p:HeaderVersion</p:HeaderVersion>
-                      <p:Sender>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Sender>
-                      <p:Receiver>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Receiver>
-                      <p:DocumentIdentification>
-                        <p:Standard>p:Standard</p:Standard>
-                        <p:TypeVersion>p:TypeVersion</p:TypeVersion>
-                        <p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
-                        <p:Type>p:Type</p:Type>
-                        <p:MultipleType>true</p:MultipleType>
-                        <p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
-                      </p:DocumentIdentification>
-                      <p:Manifest>
-                        <p:NumberOfItems>0</p:NumberOfItems>
-                        <p:ManifestItem>
-                          <p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
-                          <p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
-                          <p:Description>p:Description</p:Description>
-                          <p:LanguageCode>p:LanguageCode</p:LanguageCode>
-                        </p:ManifestItem>
-                      </p:Manifest>
-                      <p:BusinessScope>
-                        <p:Scope>
-                          <p:CorrelationInformation>
-                            <p:RequestingDocumentCreationDateTime>2001-12-31T12:00:00</p:RequestingDocumentCreationDateTime>
-                            <p:RequestingDocumentInstanceIdentifier>p:RequestingDocumentInstanceIdentifier</p:RequestingDocumentInstanceIdentifier>
-                            <p:ExpectedResponseDateTime>2001-12-31T12:00:00</p:ExpectedResponseDateTime>
-                          </p:CorrelationInformation>
-                        </p:Scope>
-                      </p:BusinessScope>
-                    </p:StandardBusinessDocumentHeader>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISHeader>
-                  <EPCISBody>
-                    <EventList/>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISBody>
-                  <extension>
-                    <ANY-ELEMENT/>
-                  </extension>
-                </epcis:EPCISDocument>
+                	<any/>
               </extension>
             </bizLocation>
             <bizTransactionList>
@@ -242,154 +47,22 @@
               </destinationList>
               <ilmd>
                 <extension>
-                  <epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0">
-                    <EPCISHeader>
-                      <p:StandardBusinessDocumentHeader>
-                        <p:HeaderVersion>p:HeaderVersion</p:HeaderVersion>
-                        <p:Sender>
-                          <p:Identifier Authority="">p:Identifier</p:Identifier>
-                          <p:ContactInformation>
-                            <p:Contact>p:Contact</p:Contact>
-                            <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                            <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                            <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                            <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                          </p:ContactInformation>
-                        </p:Sender>
-                        <p:Receiver>
-                          <p:Identifier Authority="">p:Identifier</p:Identifier>
-                          <p:ContactInformation>
-                            <p:Contact>p:Contact</p:Contact>
-                            <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                            <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                            <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                            <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                          </p:ContactInformation>
-                        </p:Receiver>
-                        <p:DocumentIdentification>
-                          <p:Standard>p:Standard</p:Standard>
-                          <p:TypeVersion>p:TypeVersion</p:TypeVersion>
-                          <p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
-                          <p:Type>p:Type</p:Type>
-                          <p:MultipleType>true</p:MultipleType>
-                          <p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
-                        </p:DocumentIdentification>
-                        <p:Manifest>
-                          <p:NumberOfItems>0</p:NumberOfItems>
-                          <p:ManifestItem>
-                            <p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
-                            <p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
-                            <p:Description>p:Description</p:Description>
-                            <p:LanguageCode>p:LanguageCode</p:LanguageCode>
-                          </p:ManifestItem>
-                        </p:Manifest>
-                        <p:BusinessScope>
-                          <p:Scope>
-                            <p:CorrelationInformation>
-                              <p:RequestingDocumentCreationDateTime>2001-12-31T12:00:00</p:RequestingDocumentCreationDateTime>
-                              <p:RequestingDocumentInstanceIdentifier>p:RequestingDocumentInstanceIdentifier</p:RequestingDocumentInstanceIdentifier>
-                              <p:ExpectedResponseDateTime>2001-12-31T12:00:00</p:ExpectedResponseDateTime>
-                            </p:CorrelationInformation>
-                          </p:Scope>
-                        </p:BusinessScope>
-                      </p:StandardBusinessDocumentHeader>
-                      <extension>
-                        <ANY-ELEMENT/>
-                      </extension>
-                    </EPCISHeader>
-                    <EPCISBody>
-                      <EventList/>
-                      <extension>
-                        <ANY-ELEMENT/>
-                      </extension>
-                    </EPCISBody>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </epcis:EPCISDocument>
+                  	<any/>
                 </extension>
               </ilmd>
               <extension>
-                <epcis:EPCISDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0">
-                  <EPCISHeader>
-                    <p:StandardBusinessDocumentHeader>
-                      <p:HeaderVersion>p:HeaderVersion</p:HeaderVersion>
-                      <p:Sender>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Sender>
-                      <p:Receiver>
-                        <p:Identifier Authority="">p:Identifier</p:Identifier>
-                        <p:ContactInformation>
-                          <p:Contact>p:Contact</p:Contact>
-                          <p:EmailAddress>p:EmailAddress</p:EmailAddress>
-                          <p:FaxNumber>p:FaxNumber</p:FaxNumber>
-                          <p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
-                          <p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
-                        </p:ContactInformation>
-                      </p:Receiver>
-                      <p:DocumentIdentification>
-                        <p:Standard>p:Standard</p:Standard>
-                        <p:TypeVersion>p:TypeVersion</p:TypeVersion>
-                        <p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
-                        <p:Type>p:Type</p:Type>
-                        <p:MultipleType>true</p:MultipleType>
-                        <p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
-                      </p:DocumentIdentification>
-                      <p:Manifest>
-                        <p:NumberOfItems>0</p:NumberOfItems>
-                        <p:ManifestItem>
-                          <p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
-                          <p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
-                          <p:Description>p:Description</p:Description>
-                          <p:LanguageCode>p:LanguageCode</p:LanguageCode>
-                        </p:ManifestItem>
-                      </p:Manifest>
-                      <p:BusinessScope>
-                        <p:Scope>
-                          <p:CorrelationInformation>
-                            <p:RequestingDocumentCreationDateTime>2001-12-31T12:00:00</p:RequestingDocumentCreationDateTime>
-                            <p:RequestingDocumentInstanceIdentifier>p:RequestingDocumentInstanceIdentifier</p:RequestingDocumentInstanceIdentifier>
-                            <p:ExpectedResponseDateTime>2001-12-31T12:00:00</p:ExpectedResponseDateTime>
-                          </p:CorrelationInformation>
-                        </p:Scope>
-                      </p:BusinessScope>
-                    </p:StandardBusinessDocumentHeader>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISHeader>
-                  <EPCISBody>
-                    <EventList/>
-                    <extension>
-                      <ANY-ELEMENT/>
-                    </extension>
-                  </EPCISBody>
-                  <extension>
-                    <ANY-ELEMENT/>
-                  </extension>
-                </epcis:EPCISDocument>
+                	<any/>
               </extension>
             </extension>
           </ObjectEvent>
         </EventList>
       </resultsBody>
       <extension>
-        <epcisq:ValidationException>
-          <reason>reason</reason>
-        </epcisq:ValidationException>
+        <any/>
       </extension>
     </epcisq:QueryResults>
   </EPCISBody>
   <extension>
-    <epcisq:ValidationException>
-      <reason>reason</reason>
-    </epcisq:ValidationException>
+    <any/>
   </extension>
 </epcisq:EPCISQueryDocument>
