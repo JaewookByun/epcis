@@ -1,15 +1,14 @@
 <html>
 <body>
 	<h2>Welcome to Oliot-EPCIS</h2>
-	<br>
-	<br>Spec:
+	Spec:
 	<br>-EPCIS v1.1
 	<br>-Java, Dynamic Web Service
 	<br>-Maven
 	<br>-Spring Framework
 	<br>
 	<br><h2>Service:</h2>
-	<br>-Capture
+	-Capture
 	<br>--Description: this service allows you to store your EPCIS
 	Document into your backend storage (e.g. Mongo DB)
 	<br>--method: post
