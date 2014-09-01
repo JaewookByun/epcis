@@ -73,4 +73,8 @@ public class DestinationListType {
         return this.destination;
     }
 
+	public void setDestination(List<SourceDestType> destination) {
+		this.destination = destination;
+	}
+
 }

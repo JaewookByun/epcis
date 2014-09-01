@@ -16,7 +16,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.axis.message.MessageElement;
-import org.oliot.model.ale.ECReportMemberField;
+import org.apache.log4j.Level;
+import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -37,7 +38,6 @@ import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
-import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -297,6 +297,7 @@ public class ObjectEventReadConverter implements
 			// Extension Field
 			if( dbObject.get("extension") != null )
 			{
+				ObjectEventExtensionType oeet = new ObjectEventExtensionType();
 				BasicDBObject extObject = (BasicDBObject) dbObject.get("extension");
 				// Quantity
 				if( extObject.get("quantityList") != null )
@@ -310,77 +311,132 @@ public class ObjectEventReadConverter implements
 						BasicDBObject quantityDBObject = (BasicDBObject)quantityDBList.get(i);
 						Object epcClassObject = quantityDBObject.get("epcClass");
 						Object quantity = quantityDBObject.get("quantity");
+						Object uom = quantityDBObject.get("uom");
+						if( epcClassObject != null && quantity != null && uom != null )
+						{
+							qet.setEpcClass(epcClassObject.toString());
+							qet.setQuantity((float)quantity);
+							qet.setUom(uom.toString());
+							qetList.add(qet);
+						}
 					}
+					qlt.setQuantityElement(qetList);
+					oeet.setQuantityList(qlt);
 				}
-				
-				
-				
-				
+				//SourceList
+				if( extObject.get("sourceList") != null )
+				{
+					// Source Dest Type : Key / Value
+					SourceListType slt = new SourceListType();
+					List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
+					BasicDBList sourceDBList = (BasicDBList)extObject.get("sourceList");
+					for(int i = 0 ; i < sourceDBList.size() ; i++)
+					{
+						BasicDBObject sdObject = (BasicDBObject) sourceDBList.get(i);
+						// DBObject, key and value
+						SourceDestType sdt = new SourceDestType();
+						Iterator<String> keyIter = sdObject.keySet().iterator();
+						// at most one bizTran
+						if(keyIter.hasNext())
+						{
+							String key = keyIter.next();
+							String value = sdObject.getString(key);
+							if( key != null && value != null )
+							{
+								sdt.setType(key);
+								sdt.setValue(value);
+							}
+						}
+						if( sdt != null )
+							sdtList.add(sdt);
+					}
+					slt.setSource(sdtList);
+					oeet.setSourceList(slt);
+				}
+				//DestinationList
+				if( extObject.get("destinationList") != null )
+				{
+					// Source Dest Type : Key / Value
+					DestinationListType dlt = new DestinationListType();
+					List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
+					BasicDBList destinationDBList = (BasicDBList)extObject.get("destinationList");
+					for(int i = 0 ; i < destinationDBList.size() ; i++)
+					{
+						BasicDBObject sdObject = (BasicDBObject) destinationDBList.get(i);
+						// DBObject, key and value
+						SourceDestType sdt = new SourceDestType();
+						Iterator<String> keyIter = sdObject.keySet().iterator();
+						// at most one bizTran
+						if(keyIter.hasNext())
+						{
+							String key = keyIter.next();
+							String value = sdObject.getString(key);
+							if( key != null && value != null )
+							{
+								sdt.setType(key);
+								sdt.setValue(value);
+							}
+						}
+						if( sdt != null )
+							sdtList.add(sdt);
+					}
+					dlt.setDestination(sdtList);
+					oeet.setDestinationList(dlt);
+				}
+				//extension2
+				if( extObject.get("extension") != null)
+				{
+					ObjectEventExtension2Type oee2t = new ObjectEventExtension2Type();
+					BasicDBObject extension = (BasicDBObject) extObject.get("extension");
+					if( extension.get("any") != null )
+					{
+						BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+						Iterator<String> anyKeysIter = anyObject.keySet().iterator();
+						List<Object> elementList = new ArrayList<Object>();
+						while(anyKeysIter.hasNext())
+						{
+							String anyKey = anyKeysIter.next();
+							String value = anyObject.get(anyKey).toString();
+							if( anyKey != null && value != null )
+							{
+								DocumentBuilderFactory dbf = DocumentBuilderFactory
+										.newInstance();
+								DocumentBuilder builder = dbf
+										.newDocumentBuilder();
+								Document doc = builder.newDocument();
+								
+								Node node = doc.createElement("value");
+								node.setTextContent(value);
+								Element element = doc.createElement(anyKey);
+								element.appendChild(node);
+								elementList.add(element);
+							}
+						}
+						oee2t.setAny(elementList);
+					}
+					if( extension.get("otherAttributes") != null)
+					{
+						Map<QName, String> otherAttributes = new HashMap<QName, String>();
+						BasicDBObject otherAttributeObject = (BasicDBObject) extension.get("otherAttributes");
+						Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
+						while(otherKeysIter.hasNext())
+						{
+							String anyKey = otherKeysIter.next();
+							String value = otherAttributeObject.get(anyKey).toString();
+							otherAttributes.put(new QName("", anyKey), value);
+						}
+						oee2t.setOtherAttributes(otherAttributes);
+					}
+					//
+					oeet.setExtension(oee2t);
+				}
 			}
-			
-			
-			
-			
-			System.out.println();
+			return objectEventType;
 		} catch (DatatypeConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
-
-		
-		/*
-		 * // Extension DBObject
-		 * extension = new BasicDBObject(); if (objectEventType.getExtension()
-		 * != null) { ObjectEventExtensionType oee =
-		 * objectEventType.getExtension(); if (oee.getQuantityList() != null) {
-		 * QuantityListType qetl = oee.getQuantityList();
-		 * List<QuantityElementType> qetList = qetl.getQuantityElement();
-		 * List<DBObject> quantityList = new ArrayList<DBObject>(); for( int i =
-		 * 0 ; i < qetList.size() ; i++ ) { DBObject quantity = new
-		 * BasicDBObject(); QuantityElementType qet = qetList.get(i); if
-		 * (qet.getEpcClass() != null) quantity.put("epcClass",
-		 * qet.getEpcClass().toString()); quantity.put("quantity",
-		 * qet.getQuantity()); if (qet.getUom() != null) quantity.put("uom",
-		 * qet.getUom().toString()); quantityList.add(quantity); }
-		 * extension.put("quantityList", quantityList); } if
-		 * (oee.getSourceList() != null) { SourceListType sdtl =
-		 * oee.getSourceList(); List<SourceDestType> sdtList = sdtl.getSource();
-		 * List<DBObject> dbList = new ArrayList<DBObject>(); for (int i = 0; i
-		 * < sdtList.size(); i++) { SourceDestType sdt = sdtList.get(i);
-		 * DBObject dbObj = new BasicDBObject(); dbObj.put(sdt.getType(),
-		 * sdt.getValue()); dbList.add(dbObj); } extension.put("sourceList",
-		 * dbList); } if (oee.getDestinationList() != null) {
-		 * DestinationListType sdtl = oee.getDestinationList();
-		 * List<SourceDestType> sdtList = sdtl.getDestination(); List<DBObject>
-		 * dbList = new ArrayList<DBObject>(); for (int i = 0; i <
-		 * sdtList.size(); i++) { SourceDestType sdt = sdtList.get(i); DBObject
-		 * dbObj = new BasicDBObject(); dbObj.put(sdt.getType(),
-		 * sdt.getValue()); dbList.add(dbObj); }
-		 * extension.put("destinationList", dbList); } if (oee.getExtension() !=
-		 * null) { ObjectEventExtension2Type extension2Type =
-		 * oee.getExtension(); DBObject extension2 = new BasicDBObject(); if
-		 * (extension2Type.getAny() != null) { Map<String, String> map2Save =
-		 * new HashMap<String, String>(); List<Object> objList =
-		 * extension2Type.getAny(); for (int i = 0; i < objList.size(); i++) {
-		 * Object obj = objList.get(i); if (obj instanceof Element) { Element
-		 * element = (Element) obj; if (element.getFirstChild() != null) {
-		 * String name = element.getNodeName(); String value =
-		 * element.getFirstChild() .getTextContent(); map2Save.put(name, value);
-		 * } } } if (map2Save != null) extension2.put("any", map2Save); }
-		 * 
-		 * if (extension2Type.getOtherAttributes() != null) { Map<QName, String>
-		 * map = extension2Type.getOtherAttributes(); Map<String, String>
-		 * map2Save = new HashMap<String, String>(); Iterator<QName> iter =
-		 * map.keySet().iterator(); while (iter.hasNext()) { QName qName =
-		 * iter.next(); String value = map.get(qName);
-		 * map2Save.put(qName.toString(), value); }
-		 * extension2.put("otherAttributes", map2Save); }
-		 * extension.put("extension", extension2); } } dbo.put("extension",
-		 * extension); return dbo;
-		 */
 		return null;
 	}
 

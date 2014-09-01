@@ -12,27 +12,21 @@ package org.oliot.epcis.service.query;
 import java.net.URI;
 import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.JAXBElement;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
-import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
-import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.SubscriptionControls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +34,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
-import org.springframework.web.context.request.RequestContextHolder;
 
 @Controller
 @RequestMapping("/query")
@@ -107,6 +100,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 	}
 
 	
+	@SuppressWarnings({ "unused", "resource" })
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String poll(@PathVariable String queryName, @RequestParam(required = false) String MATCH_epc)
@@ -127,11 +121,11 @@ public class Query implements CoreQueryService, ServletContextAware {
 				MongoOperations mongoOperation = (MongoOperations) ctx
 						.getBean("mongoTemplate");
 				
-				org.springframework.data.mongodb.core.query.Query searchQuery = new org.springframework.data.mongodb.core.query.Query(Criteria.where("EPCList").in(epc));
+				//org.springframework.data.mongodb.core.query.Query searchQuery = new org.springframework.data.mongodb.core.query.Query(Criteria.where("EPCList").in(epc));
 				
 				List<ObjectEventType> objectEvents = mongoOperation.findAll(ObjectEventType.class);
-				System.out.println();
 				
+				System.out.println();
 			}
 		}
 		

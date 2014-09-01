@@ -71,4 +71,8 @@ public class QuantityListType {
         return this.quantityElement;
     }
 
+	public void setQuantityElement(List<QuantityElementType> quantityElement) {
+		this.quantityElement = quantityElement;
+	}
+
 }
