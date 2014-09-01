@@ -24,13 +24,25 @@
 				<bean class="org.oliot.epcis.serde.TransformationEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.TransformationEventReadConverter" />
+			</mongo:converter>
+			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.AggregationEventWriteConverter" />
+			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.AggregationEventReadConverter" />
 			</mongo:converter>
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.TransactionEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.TransactionEventReadConverter" />
+			</mongo:converter>
+			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.QuantityEventWriteConverter" />
+			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.QuantityEventReadConverter" />
 			</mongo:converter>
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
