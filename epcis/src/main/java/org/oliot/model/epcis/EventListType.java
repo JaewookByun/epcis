@@ -62,7 +62,12 @@ public class EventListType {
     @XmlAnyElement(lax = true)
     protected List<Object> objectEventOrAggregationEventOrQuantityEvent;
 
-    /**
+    public void setObjectEventOrAggregationEventOrQuantityEvent(
+			List<Object> objectEventOrAggregationEventOrQuantityEvent) {
+		this.objectEventOrAggregationEventOrQuantityEvent = objectEventOrAggregationEventOrQuantityEvent;
+	}
+
+	/**
      * Gets the value of the objectEventOrAggregationEventOrQuantityEvent property.
      * 
      * <p>

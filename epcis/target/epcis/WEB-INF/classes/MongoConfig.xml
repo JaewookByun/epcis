@@ -18,6 +18,9 @@
 				<bean class="org.oliot.epcis.serde.ObjectEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.ObjectEventReadConverter" />
+			</mongo:converter>
+			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.TransformationEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>

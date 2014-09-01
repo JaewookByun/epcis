@@ -9,6 +9,7 @@
 
 package org.oliot.epcis.service.query;
 
+import java.io.StringWriter;
 import java.net.URI;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -16,12 +17,19 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
 
 import org.json.JSONArray;
+import org.oliot.model.epcis.EPCISQueryBodyType;
+import org.oliot.model.epcis.EPCISQueryDocumentType;
+import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
+import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.SubscriptionControls;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -100,7 +108,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 	}
 
 	
-	@SuppressWarnings({ "unused", "resource" })
+	@SuppressWarnings({ "resource", "rawtypes", "unchecked" })
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String poll(@PathVariable String queryName, @RequestParam(required = false) String MATCH_epc)
@@ -108,6 +116,20 @@ public class Query implements CoreQueryService, ServletContextAware {
 		if( !queryName.equals("SimpleEventQuery"))
 			return "Unavailable Query Name";
 	
+		//Make Base Result Document
+		EPCISQueryDocumentType epcisQueryDocumentType = new EPCISQueryDocumentType();
+		EPCISQueryBodyType epcisBody = new EPCISQueryBodyType();
+		epcisQueryDocumentType.setEPCISBody(epcisBody);
+		QueryResults queryResults = new QueryResults();
+		queryResults.setQueryName(queryName);
+		epcisBody.setQueryResults(queryResults);
+		QueryResultsBody queryResultsBody = new QueryResultsBody();
+		queryResults.setResultsBody(queryResultsBody);;
+		EventListType eventListType = new EventListType();
+		queryResultsBody.setEventList(eventListType);
+		// Object instanceof JAXBElement
+		List<Object> eventObjects = new ArrayList<Object>();
+		eventListType.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
 		if( MATCH_epc != null )
 		{
 			String[] MATCH_epcs = MATCH_epc.split(",");
@@ -124,12 +146,18 @@ public class Query implements CoreQueryService, ServletContextAware {
 				//org.springframework.data.mongodb.core.query.Query searchQuery = new org.springframework.data.mongodb.core.query.Query(Criteria.where("EPCList").in(epc));
 				
 				List<ObjectEventType> objectEvents = mongoOperation.findAll(ObjectEventType.class);
-				
-				System.out.println();
+				for(int j= 0 ; j < objectEvents.size() ; j++ )
+				{
+					ObjectEventType objectEvent = objectEvents.get(j);
+					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class, objectEvent );
+					eventObjects.add(element);
+				}
 			}
 		}
 		
-		return queryName;
+		StringWriter sw = new StringWriter();
+		JAXB.marshal(epcisQueryDocumentType, sw);
+		return sw.toString();
 	}
 	
 	/**
@@ -288,7 +316,7 @@ public class Query implements CoreQueryService, ServletContextAware {
 	@RequestMapping(value = "/VendorVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public String getVendorVersion() {
-		// TODO Auto-generated method stub
+		// It is not a version of Vendor
 		return null;
 	}
 
