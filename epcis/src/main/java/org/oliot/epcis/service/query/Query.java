@@ -152,16 +152,17 @@ public class Query implements CoreQueryService, ServletContextAware {
 					ObjectEventType.class, objectEvent);
 			eventObjects.add(element);
 		}
-		
+
 		List<AggregationEventType> aggregationEvents = mongoOperation
 				.findAll(AggregationEventType.class);
 		for (int j = 0; j < aggregationEvents.size(); j++) {
 			AggregationEventType aggregationEvent = aggregationEvents.get(j);
-			JAXBElement element = new JAXBElement(new QName("AggregationEvent"),
-					AggregationEventType.class, aggregationEvent);
+			JAXBElement element = new JAXBElement(
+					new QName("AggregationEvent"), AggregationEventType.class,
+					aggregationEvent);
 			eventObjects.add(element);
 		}
-		
+
 		List<QuantityEventType> quantityEvents = mongoOperation
 				.findAll(QuantityEventType.class);
 		for (int j = 0; j < quantityEvents.size(); j++) {
@@ -170,22 +171,25 @@ public class Query implements CoreQueryService, ServletContextAware {
 					QuantityEventType.class, quantityEvent);
 			eventObjects.add(element);
 		}
-		
+
 		List<TransactionEventType> transactionEvents = mongoOperation
 				.findAll(TransactionEventType.class);
 		for (int j = 0; j < transactionEvents.size(); j++) {
 			TransactionEventType transactionEvent = transactionEvents.get(j);
-			JAXBElement element = new JAXBElement(new QName("TransactionEvent"),
-					TransactionEventType.class, transactionEvent);
+			JAXBElement element = new JAXBElement(
+					new QName("TransactionEvent"), TransactionEventType.class,
+					transactionEvent);
 			eventObjects.add(element);
 		}
-		
+
 		List<TransformationEventType> transformationEvents = mongoOperation
 				.findAll(TransformationEventType.class);
 		for (int j = 0; j < transformationEvents.size(); j++) {
-			TransformationEventType transformationEvent = transformationEvents.get(j);
-			JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
-					TransformationEventType.class, transformationEvent);
+			TransformationEventType transformationEvent = transformationEvents
+					.get(j);
+			JAXBElement element = new JAXBElement(new QName(
+					"TransformationEvent"), TransformationEventType.class,
+					transformationEvent);
 			eventObjects.add(element);
 		}
 
