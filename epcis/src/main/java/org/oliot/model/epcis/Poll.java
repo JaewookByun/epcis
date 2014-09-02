@@ -5,7 +5,6 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,11 +12,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for Poll complex type.
+ * <p>
+ * Java class for Poll complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="Poll">
@@ -36,62 +37,54 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Poll", namespace = "query.epcis.oliot.org", propOrder = {
-    "queryName",
-    "params"
-})
+		"queryName", "params" })
 public class Poll {
 
-    @XmlElement(required = true)
-    protected String queryName;
-    @XmlElement(required = true)
-    protected QueryParams params;
+	@XmlElement(required = true)
+	protected String queryName;
+	@XmlElement(required = true)
+	protected QueryParams params;
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
-    /**
-     * Gets the value of the params property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QueryParams }
-     *     
-     */
-    public QueryParams getParams() {
-        return params;
-    }
+	/**
+	 * Gets the value of the params property.
+	 * 
+	 * @return possible object is {@link QueryParams }
+	 * 
+	 */
+	public QueryParams getParams() {
+		return params;
+	}
 
-    /**
-     * Sets the value of the params property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QueryParams }
-     *     
-     */
-    public void setParams(QueryParams value) {
-        this.params = value;
-    }
+	/**
+	 * Sets the value of the params property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link QueryParams }
+	 * 
+	 */
+	public void setParams(QueryParams value) {
+		this.params = value;
+	}
 
 }

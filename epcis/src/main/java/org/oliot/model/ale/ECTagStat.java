@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 03:25:42 PM KST 
 //
 
-
 package org.oliot.model.ale;
 
 import java.util.ArrayList;
@@ -16,11 +15,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for ECTagStat complex type.
+ * <p>
+ * Java class for ECTagStat complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="ECTagStat">
@@ -48,124 +49,114 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ECTagStat", propOrder = {
-    "profile",
-    "statBlocks"
-})
-@XmlSeeAlso({
-    ECTagTimestampStat.class
-})
+@XmlType(name = "ECTagStat", propOrder = { "profile", "statBlocks" })
+@XmlSeeAlso({ ECTagTimestampStat.class })
 public class ECTagStat {
 
-    @XmlElement(required = true)
-    protected String profile;
-    protected ECTagStat.StatBlocks statBlocks;
+	@XmlElement(required = true)
+	protected String profile;
+	protected ECTagStat.StatBlocks statBlocks;
 
-    /**
-     * Gets the value of the profile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getProfile() {
-        return profile;
-    }
+	/**
+	 * Gets the value of the profile property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getProfile() {
+		return profile;
+	}
 
-    /**
-     * Sets the value of the profile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setProfile(String value) {
-        this.profile = value;
-    }
+	/**
+	 * Sets the value of the profile property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setProfile(String value) {
+		this.profile = value;
+	}
 
-    /**
-     * Gets the value of the statBlocks property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ECTagStat.StatBlocks }
-     *     
-     */
-    public ECTagStat.StatBlocks getStatBlocks() {
-        return statBlocks;
-    }
+	/**
+	 * Gets the value of the statBlocks property.
+	 * 
+	 * @return possible object is {@link ECTagStat.StatBlocks }
+	 * 
+	 */
+	public ECTagStat.StatBlocks getStatBlocks() {
+		return statBlocks;
+	}
 
-    /**
-     * Sets the value of the statBlocks property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ECTagStat.StatBlocks }
-     *     
-     */
-    public void setStatBlocks(ECTagStat.StatBlocks value) {
-        this.statBlocks = value;
-    }
+	/**
+	 * Sets the value of the statBlocks property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link ECTagStat.StatBlocks }
+	 * 
+	 */
+	public void setStatBlocks(ECTagStat.StatBlocks value) {
+		this.statBlocks = value;
+	}
 
+	/**
+	 * <p>
+	 * Java class for anonymous complex type.
+	 * 
+	 * <p>
+	 * The following schema fragment specifies the expected content contained
+	 * within this class.
+	 * 
+	 * <pre>
+	 * &lt;complexType>
+	 *   &lt;complexContent>
+	 *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+	 *       &lt;sequence>
+	 *         &lt;element name="statBlock" type="{urn:epcglobal:ale:xsd:1}ECReaderStat" maxOccurs="unbounded" minOccurs="0"/>
+	 *       &lt;/sequence>
+	 *     &lt;/restriction>
+	 *   &lt;/complexContent>
+	 * &lt;/complexType>
+	 * </pre>
+	 * 
+	 * 
+	 */
+	@XmlAccessorType(XmlAccessType.FIELD)
+	@XmlType(name = "", propOrder = { "statBlock" })
+	public static class StatBlocks {
 
-    /**
-     * <p>Java class for anonymous complex type.
-     * 
-     * <p>The following schema fragment specifies the expected content contained within this class.
-     * 
-     * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="statBlock" type="{urn:epcglobal:ale:xsd:1}ECReaderStat" maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
-     * </pre>
-     * 
-     * 
-     */
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlType(name = "", propOrder = {
-        "statBlock"
-    })
-    public static class StatBlocks {
+		protected List<ECReaderStat> statBlock;
 
-        protected List<ECReaderStat> statBlock;
+		/**
+		 * Gets the value of the statBlock property.
+		 * 
+		 * <p>
+		 * This accessor method returns a reference to the live list, not a
+		 * snapshot. Therefore any modification you make to the returned list
+		 * will be present inside the JAXB object. This is why there is not a
+		 * <CODE>set</CODE> method for the statBlock property.
+		 * 
+		 * <p>
+		 * For example, to add a new item, do as follows:
+		 * 
+		 * <pre>
+		 * getStatBlock().add(newItem);
+		 * </pre>
+		 * 
+		 * 
+		 * <p>
+		 * Objects of the following type(s) are allowed in the list
+		 * {@link ECReaderStat }
+		 * 
+		 * 
+		 */
+		public List<ECReaderStat> getStatBlock() {
+			if (statBlock == null) {
+				statBlock = new ArrayList<ECReaderStat>();
+			}
+			return this.statBlock;
+		}
 
-        /**
-         * Gets the value of the statBlock property.
-         * 
-         * <p>
-         * This accessor method returns a reference to the live list,
-         * not a snapshot. Therefore any modification you make to the
-         * returned list will be present inside the JAXB object.
-         * This is why there is not a <CODE>set</CODE> method for the statBlock property.
-         * 
-         * <p>
-         * For example, to add a new item, do as follows:
-         * <pre>
-         *    getStatBlock().add(newItem);
-         * </pre>
-         * 
-         * 
-         * <p>
-         * Objects of the following type(s) are allowed in the list
-         * {@link ECReaderStat }
-         * 
-         * 
-         */
-        public List<ECReaderStat> getStatBlock() {
-            if (statBlock == null) {
-                statBlock = new ArrayList<ECReaderStat>();
-            }
-            return this.statBlock;
-        }
-
-    }
+	}
 
 }

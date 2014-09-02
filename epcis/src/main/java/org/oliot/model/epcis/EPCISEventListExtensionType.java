@@ -5,18 +5,19 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for EPCISEventListExtensionType complex type.
+ * <p>
+ * Java class for EPCISEventListExtensionType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISEventListExtensionType">
@@ -33,35 +34,30 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISEventListExtensionType", propOrder = {
-    "extension"
-})
+@XmlType(name = "EPCISEventListExtensionType", propOrder = { "extension" })
 public class EPCISEventListExtensionType {
 
-    protected EPCISEventListExtension2Type extension;
+	protected EPCISEventListExtension2Type extension;
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISEventListExtension2Type }
-     *     
-     */
-    public EPCISEventListExtension2Type getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link EPCISEventListExtension2Type }
+	 * 
+	 */
+	public EPCISEventListExtension2Type getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISEventListExtension2Type }
-     *     
-     */
-    public void setExtension(EPCISEventListExtension2Type value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link EPCISEventListExtension2Type }
+	 * 
+	 */
+	public void setExtension(EPCISEventListExtension2Type value) {
+		this.extension = value;
+	}
 
 }

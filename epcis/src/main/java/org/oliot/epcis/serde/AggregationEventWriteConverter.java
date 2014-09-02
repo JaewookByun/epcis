@@ -36,6 +36,15 @@ import org.w3c.dom.NamedNodeMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Component
 @WritingConverter
 public class AggregationEventWriteConverter implements
@@ -89,13 +98,13 @@ public class AggregationEventWriteConverter implements
 		if (aggregationEventType.getRecordTime() != null)
 			dbo.put("recordTime", aggregationEventType.getRecordTime()
 					.toGregorianCalendar().getTimeInMillis());
-		if (aggregationEventType.getParentID() != null )
+		if (aggregationEventType.getParentID() != null)
 			dbo.put("parentID", aggregationEventType.getParentID());
 		if (aggregationEventType.getChildEPCs() != null) {
 			EPCListType epcs = aggregationEventType.getChildEPCs();
 			List<EPC> epcList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
-			
+
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
 				epcDB.put("epc", epcList.get(i).getValue());
@@ -216,13 +225,13 @@ public class AggregationEventWriteConverter implements
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (aggregationEventType.getExtension() != null) {
-			AggregationEventExtensionType oee = aggregationEventType.getExtension();
+			AggregationEventExtensionType oee = aggregationEventType
+					.getExtension();
 			if (oee.getChildQuantityList() != null) {
 				QuantityListType qetl = oee.getChildQuantityList();
 				List<QuantityElementType> qetList = qetl.getQuantityElement();
 				List<DBObject> quantityList = new ArrayList<DBObject>();
-				for( int i = 0 ; i < qetList.size() ; i++ )
-				{
+				for (int i = 0; i < qetList.size(); i++) {
 					DBObject quantity = new BasicDBObject();
 					QuantityElementType qet = qetList.get(i);
 					if (qet.getEpcClass() != null)
@@ -234,7 +243,7 @@ public class AggregationEventWriteConverter implements
 				}
 				extension.put("childQuantityList", quantityList);
 			}
-			
+
 			if (oee.getSourceList() != null) {
 				SourceListType sdtl = oee.getSourceList();
 				List<SourceDestType> sdtList = sdtl.getSource();
@@ -260,7 +269,8 @@ public class AggregationEventWriteConverter implements
 				extension.put("destinationList", dbList);
 			}
 			if (oee.getExtension() != null) {
-				AggregationEventExtension2Type extension2Type = oee.getExtension();
+				AggregationEventExtension2Type extension2Type = oee
+						.getExtension();
 				DBObject extension2 = new BasicDBObject();
 				if (extension2Type.getAny() != null) {
 					Map<String, String> map2Save = new HashMap<String, String>();
@@ -282,7 +292,8 @@ public class AggregationEventWriteConverter implements
 				}
 
 				if (extension2Type.getOtherAttributes() != null) {
-					Map<QName, String> map = extension2Type.getOtherAttributes();
+					Map<QName, String> map = extension2Type
+							.getOtherAttributes();
 					Map<String, String> map2Save = new HashMap<String, String>();
 					Iterator<QName> iter = map.keySet().iterator();
 					while (iter.hasNext()) {

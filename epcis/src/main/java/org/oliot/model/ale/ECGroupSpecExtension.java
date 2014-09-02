@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 03:25:42 PM KST 
 //
 
-
 package org.oliot.model.ale;
 
 import java.util.HashMap;
@@ -16,11 +15,13 @@ import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for ECGroupSpecExtension complex type.
+ * <p>
+ * Java class for ECGroupSpecExtension complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="ECGroupSpecExtension">
@@ -39,81 +40,72 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ECGroupSpecExtension", propOrder = {
-    "fieldspec",
-    "extension"
-})
+@XmlType(name = "ECGroupSpecExtension", propOrder = { "fieldspec", "extension" })
 public class ECGroupSpecExtension {
 
-    protected ECFieldSpec fieldspec;
-    protected ECGroupSpecExtension2 extension;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	protected ECFieldSpec fieldspec;
+	protected ECGroupSpecExtension2 extension;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the fieldspec property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ECFieldSpec }
-     *     
-     */
-    public ECFieldSpec getFieldspec() {
-        return fieldspec;
-    }
+	/**
+	 * Gets the value of the fieldspec property.
+	 * 
+	 * @return possible object is {@link ECFieldSpec }
+	 * 
+	 */
+	public ECFieldSpec getFieldspec() {
+		return fieldspec;
+	}
 
-    /**
-     * Sets the value of the fieldspec property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ECFieldSpec }
-     *     
-     */
-    public void setFieldspec(ECFieldSpec value) {
-        this.fieldspec = value;
-    }
+	/**
+	 * Sets the value of the fieldspec property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link ECFieldSpec }
+	 * 
+	 */
+	public void setFieldspec(ECFieldSpec value) {
+		this.fieldspec = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ECGroupSpecExtension2 }
-     *     
-     */
-    public ECGroupSpecExtension2 getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link ECGroupSpecExtension2 }
+	 * 
+	 */
+	public ECGroupSpecExtension2 getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ECGroupSpecExtension2 }
-     *     
-     */
-    public void setExtension(ECGroupSpecExtension2 value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link ECGroupSpecExtension2 }
+	 * 
+	 */
+	public void setExtension(ECGroupSpecExtension2 value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed
+	 * property on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

@@ -27,6 +27,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.ServletContextAware;
 import org.xml.sax.SAXException;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Controller
 @RequestMapping("/capture")
 public class Capture implements ServletContextAware {

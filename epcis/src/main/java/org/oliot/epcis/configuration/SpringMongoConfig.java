@@ -16,6 +16,15 @@ import org.springframework.data.mongodb.core.convert.CustomConversions;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Configuration
 public class SpringMongoConfig extends AbstractMongoConfiguration {
 

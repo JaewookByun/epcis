@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 03:25:42 PM KST 
 //
 
-
 package org.oliot.model.ale;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,11 +14,13 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-
 /**
- * <p>Java class for ECTagTimestampStat complex type.
+ * <p>
+ * Java class for ECTagTimestampStat complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="ECTagTimestampStat">
@@ -37,67 +38,57 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ECTagTimestampStat", propOrder = {
-    "firstSightingTime",
-    "lastSightingTime"
-})
-public class ECTagTimestampStat
-    extends ECTagStat
-{
+@XmlType(name = "ECTagTimestampStat", propOrder = { "firstSightingTime",
+		"lastSightingTime" })
+public class ECTagTimestampStat extends ECTagStat {
 
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar firstSightingTime;
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar lastSightingTime;
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar firstSightingTime;
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar lastSightingTime;
 
-    /**
-     * Gets the value of the firstSightingTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getFirstSightingTime() {
-        return firstSightingTime;
-    }
+	/**
+	 * Gets the value of the firstSightingTime property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getFirstSightingTime() {
+		return firstSightingTime;
+	}
 
-    /**
-     * Sets the value of the firstSightingTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setFirstSightingTime(XMLGregorianCalendar value) {
-        this.firstSightingTime = value;
-    }
+	/**
+	 * Sets the value of the firstSightingTime property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setFirstSightingTime(XMLGregorianCalendar value) {
+		this.firstSightingTime = value;
+	}
 
-    /**
-     * Gets the value of the lastSightingTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getLastSightingTime() {
-        return lastSightingTime;
-    }
+	/**
+	 * Gets the value of the lastSightingTime property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getLastSightingTime() {
+		return lastSightingTime;
+	}
 
-    /**
-     * Sets the value of the lastSightingTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setLastSightingTime(XMLGregorianCalendar value) {
-        this.lastSightingTime = value;
-    }
+	/**
+	 * Sets the value of the lastSightingTime property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setLastSightingTime(XMLGregorianCalendar value) {
+		this.lastSightingTime = value;
+	}
 
 }

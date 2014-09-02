@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 03:25:42 PM KST 
 //
 
-
 package org.oliot.model.ale;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,15 +12,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlValue;
 
-
 /**
  * 
- *          EPC represents the Electronic Product Code.
- *       
+ * EPC represents the Electronic Product Code.
  * 
- * <p>Java class for EPC complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for EPC complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPC">
@@ -35,36 +36,31 @@ import javax.xml.bind.annotation.XmlValue;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPC", namespace = "epcglobal.oliot.org", propOrder = {
-    "value"
-})
+@XmlType(name = "EPC", namespace = "epcglobal.oliot.org", propOrder = { "value" })
 public class EPC {
 
-    @XmlValue
-    protected String value;
+	@XmlValue
+	protected String value;
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValue() {
-        return value;
-    }
+	/**
+	 * Gets the value of the value property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getValue() {
+		return value;
+	}
 
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
+	/**
+	 * Sets the value of the value property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setValue(String value) {
+		this.value = value;
+	}
 
 }

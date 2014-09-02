@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.math.BigDecimal;
@@ -17,15 +16,17 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-
 /**
  * 
- *          EPCglobal document properties for all messages.
- *       
+ * EPCglobal document properties for all messages.
  * 
- * <p>Java class for Document complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for Document complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="Document">
@@ -42,63 +43,55 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Document", namespace = "epcglobal.oliot.org")
-@XmlSeeAlso({
-    EPCISDocumentType.class
-})
+@XmlSeeAlso({ EPCISDocumentType.class })
 public abstract class Document {
 
-    @XmlAttribute(name = "schemaVersion", required = true)
-    protected BigDecimal schemaVersion;
-    @XmlAttribute(name = "creationDate", required = true)
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar creationDate;
+	@XmlAttribute(name = "schemaVersion", required = true)
+	protected BigDecimal schemaVersion;
+	@XmlAttribute(name = "creationDate", required = true)
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar creationDate;
 
-    /**
-     * Gets the value of the schemaVersion property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BigDecimal }
-     *     
-     */
-    public BigDecimal getSchemaVersion() {
-        return schemaVersion;
-    }
+	/**
+	 * Gets the value of the schemaVersion property.
+	 * 
+	 * @return possible object is {@link BigDecimal }
+	 * 
+	 */
+	public BigDecimal getSchemaVersion() {
+		return schemaVersion;
+	}
 
-    /**
-     * Sets the value of the schemaVersion property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BigDecimal }
-     *     
-     */
-    public void setSchemaVersion(BigDecimal value) {
-        this.schemaVersion = value;
-    }
+	/**
+	 * Sets the value of the schemaVersion property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link BigDecimal }
+	 * 
+	 */
+	public void setSchemaVersion(BigDecimal value) {
+		this.schemaVersion = value;
+	}
 
-    /**
-     * Gets the value of the creationDate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getCreationDate() {
-        return creationDate;
-    }
+	/**
+	 * Gets the value of the creationDate property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getCreationDate() {
+		return creationDate;
+	}
 
-    /**
-     * Sets the value of the creationDate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setCreationDate(XMLGregorianCalendar value) {
-        this.creationDate = value;
-    }
+	/**
+	 * Sets the value of the creationDate property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setCreationDate(XMLGregorianCalendar value) {
+		this.creationDate = value;
+	}
 
 }

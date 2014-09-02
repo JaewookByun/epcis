@@ -7,3 +7,4 @@
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "epcis.oliot.org")
 package org.oliot.model.epcis;
+

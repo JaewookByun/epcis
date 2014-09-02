@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.HashMap;
@@ -16,11 +15,13 @@ import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for AggregationEventExtensionType complex type.
+ * <p>
+ * Java class for AggregationEventExtensionType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="AggregationEventExtensionType">
@@ -42,132 +43,116 @@ import javax.xml.namespace.QName;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AggregationEventExtensionType", propOrder = {
-    "childQuantityList",
-    "sourceList",
-    "destinationList",
-    "extension"
-})
+		"childQuantityList", "sourceList", "destinationList", "extension" })
 public class AggregationEventExtensionType {
 
-    protected QuantityListType childQuantityList;
-    protected SourceListType sourceList;
-    protected DestinationListType destinationList;
-    protected AggregationEventExtension2Type extension;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	protected QuantityListType childQuantityList;
+	protected SourceListType sourceList;
+	protected DestinationListType destinationList;
+	protected AggregationEventExtension2Type extension;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the childQuantityList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QuantityListType }
-     *     
-     */
-    public QuantityListType getChildQuantityList() {
-        return childQuantityList;
-    }
+	/**
+	 * Gets the value of the childQuantityList property.
+	 * 
+	 * @return possible object is {@link QuantityListType }
+	 * 
+	 */
+	public QuantityListType getChildQuantityList() {
+		return childQuantityList;
+	}
 
-    /**
-     * Sets the value of the childQuantityList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QuantityListType }
-     *     
-     */
-    public void setChildQuantityList(QuantityListType value) {
-        this.childQuantityList = value;
-    }
+	/**
+	 * Sets the value of the childQuantityList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link QuantityListType }
+	 * 
+	 */
+	public void setChildQuantityList(QuantityListType value) {
+		this.childQuantityList = value;
+	}
 
-    /**
-     * Gets the value of the sourceList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SourceListType }
-     *     
-     */
-    public SourceListType getSourceList() {
-        return sourceList;
-    }
+	/**
+	 * Gets the value of the sourceList property.
+	 * 
+	 * @return possible object is {@link SourceListType }
+	 * 
+	 */
+	public SourceListType getSourceList() {
+		return sourceList;
+	}
 
-    /**
-     * Sets the value of the sourceList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SourceListType }
-     *     
-     */
-    public void setSourceList(SourceListType value) {
-        this.sourceList = value;
-    }
+	/**
+	 * Sets the value of the sourceList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link SourceListType }
+	 * 
+	 */
+	public void setSourceList(SourceListType value) {
+		this.sourceList = value;
+	}
 
-    /**
-     * Gets the value of the destinationList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link DestinationListType }
-     *     
-     */
-    public DestinationListType getDestinationList() {
-        return destinationList;
-    }
+	/**
+	 * Gets the value of the destinationList property.
+	 * 
+	 * @return possible object is {@link DestinationListType }
+	 * 
+	 */
+	public DestinationListType getDestinationList() {
+		return destinationList;
+	}
 
-    /**
-     * Sets the value of the destinationList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link DestinationListType }
-     *     
-     */
-    public void setDestinationList(DestinationListType value) {
-        this.destinationList = value;
-    }
+	/**
+	 * Sets the value of the destinationList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link DestinationListType }
+	 * 
+	 */
+	public void setDestinationList(DestinationListType value) {
+		this.destinationList = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AggregationEventExtension2Type }
-     *     
-     */
-    public AggregationEventExtension2Type getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link AggregationEventExtension2Type }
+	 * 
+	 */
+	public AggregationEventExtension2Type getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AggregationEventExtension2Type }
-     *     
-     */
-    public void setExtension(AggregationEventExtension2Type value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link AggregationEventExtension2Type }
+	 * 
+	 */
+	public void setExtension(AggregationEventExtension2Type value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed
+	 * property on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

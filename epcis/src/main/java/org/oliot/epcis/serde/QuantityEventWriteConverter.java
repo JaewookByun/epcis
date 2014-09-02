@@ -28,6 +28,15 @@ import org.w3c.dom.NamedNodeMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Component
 @WritingConverter
 public class QuantityEventWriteConverter implements
@@ -195,8 +204,7 @@ public class QuantityEventWriteConverter implements
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (quantityEventType.getExtension() != null) {
-			QuantityEventExtensionType oee = quantityEventType
-					.getExtension();
+			QuantityEventExtensionType oee = quantityEventType.getExtension();
 			if (oee.getAny() != null) {
 				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = oee.getAny();

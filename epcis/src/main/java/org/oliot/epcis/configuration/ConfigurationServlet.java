@@ -19,11 +19,21 @@ import org.json.JSONObject;
 /**
  * Servlet implementation class ConfigurationServlet
  */
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 public class ConfigurationServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	public static String backend;
 	public static Logger logger;
 	public static String webInfoPath;
+
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -33,56 +43,56 @@ public class ConfigurationServlet extends HttpServlet {
 	}
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
 
 	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 	}
 
 	@Override
-	public void init(ServletConfig servletConfig ) throws ServletException
-	{
+	public void init(ServletConfig servletConfig) throws ServletException {
 		// Log4j Setting
 		BasicConfigurator.configure();
 		Logger.getRootLogger().setLevel(Level.INFO);
 		ConfigurationServlet.logger = Logger.getRootLogger();
 		String path = servletConfig.getServletContext().getRealPath("/WEB-INF");
-		try
-		{
+		try {
 			// Set up Backend
-			File file = new File(path+"/Configuration.json");
+			File file = new File(path + "/Configuration.json");
 			FileReader fileReader = new FileReader(file);
 			BufferedReader reader = new BufferedReader(fileReader);
 
 			String data = "";
 			String line = null;
-			while(( line = reader.readLine()) != null )
-			{
+			while ((line = reader.readLine()) != null) {
 				data += line;
 			}
 			reader.close();
 			JSONObject json = new JSONObject(data);
 			String backend = json.getString("backend");
-			if( backend == null )
-			{
-				ConfigurationServlet.logger.info("Backend is null, please restart the service");
-			}
-			else
-			{
+			if (backend == null) {
+				ConfigurationServlet.logger
+						.info("Backend is null, please restart the service");
+			} else {
 				ConfigurationServlet.backend = backend;
-				ConfigurationServlet.logger.info("Backend - " + ConfigurationServlet.backend);
+				ConfigurationServlet.logger.info("Backend - "
+						+ ConfigurationServlet.backend);
 			}
-			ConfigurationServlet.webInfoPath = servletConfig.getServletContext().getRealPath("/WEB-INF");
-			
-		}catch(Exception ex)
-		{
+			ConfigurationServlet.webInfoPath = servletConfig
+					.getServletContext().getRealPath("/WEB-INF");
+
+		} catch (Exception ex) {
 			ConfigurationServlet.logger.error(ex.toString());
 		}
 	}

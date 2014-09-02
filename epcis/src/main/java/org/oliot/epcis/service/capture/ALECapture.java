@@ -52,6 +52,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Controller
 @RequestMapping("/aleCapture")
 public class ALECapture implements ServletContextAware {
@@ -166,7 +175,7 @@ public class ALECapture implements ServletContextAware {
 								DocumentBuilder builder = dbf
 										.newDocumentBuilder();
 								Document doc = builder.newDocument();
-								
+
 								Node node = doc.createElement("value");
 								node.setTextContent(field.getValue());
 								Element element = doc.createElement(field

@@ -5,7 +5,6 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -21,15 +20,17 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 
-
 /**
  * 
- * 				MasterData specific body that contains Vocabularies.
- * 			
+ * MasterData specific body that contains Vocabularies.
  * 
- * <p>Java class for EPCISMasterDataBodyType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for EPCISMasterDataBodyType complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISMasterDataBodyType">
@@ -50,114 +51,105 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EPCISMasterDataBodyType", namespace = "masterdata.epcis.oliot.org", propOrder = {
-    "vocabularyList",
-    "extension",
-    "any"
-})
+		"vocabularyList", "extension", "any" })
 public class EPCISMasterDataBodyType {
 
-    @XmlElement(name = "VocabularyList")
-    protected VocabularyListType vocabularyList;
-    protected EPCISMasterDataBodyExtensionType extension;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlElement(name = "VocabularyList")
+	protected VocabularyListType vocabularyList;
+	protected EPCISMasterDataBodyExtensionType extension;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the vocabularyList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public VocabularyListType getVocabularyList() {
-        return vocabularyList;
-    }
+	/**
+	 * Gets the value of the vocabularyList property.
+	 * 
+	 * @return possible object is {@link VocabularyListType }
+	 * 
+	 */
+	public VocabularyListType getVocabularyList() {
+		return vocabularyList;
+	}
 
-    /**
-     * Sets the value of the vocabularyList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public void setVocabularyList(VocabularyListType value) {
-        this.vocabularyList = value;
-    }
+	/**
+	 * Sets the value of the vocabularyList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link VocabularyListType }
+	 * 
+	 */
+	public void setVocabularyList(VocabularyListType value) {
+		this.vocabularyList = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISMasterDataBodyExtensionType }
-     *     
-     */
-    public EPCISMasterDataBodyExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link EPCISMasterDataBodyExtensionType }
+	 * 
+	 */
+	public EPCISMasterDataBodyExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISMasterDataBodyExtensionType }
-     *     
-     */
-    public void setExtension(EPCISMasterDataBodyExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link EPCISMasterDataBodyExtensionType }
+	 * 
+	 */
+	public void setExtension(EPCISMasterDataBodyExtensionType value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed
+	 * property on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

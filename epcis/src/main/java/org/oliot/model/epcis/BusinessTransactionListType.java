@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -15,11 +14,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for BusinessTransactionListType complex type.
+ * <p>
+ * Java class for BusinessTransactionListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="BusinessTransactionListType">
@@ -36,42 +37,41 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "BusinessTransactionListType", propOrder = {
-    "bizTransaction"
-})
+@XmlType(name = "BusinessTransactionListType", propOrder = { "bizTransaction" })
 public class BusinessTransactionListType {
 
-    @XmlElement(required = true)
-    protected List<BusinessTransactionType> bizTransaction;
+	@XmlElement(required = true)
+	protected List<BusinessTransactionType> bizTransaction;
 
-    /**
-     * Gets the value of the bizTransaction property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the bizTransaction property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getBizTransaction().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link BusinessTransactionType }
-     * 
-     * 
-     */
-    public List<BusinessTransactionType> getBizTransaction() {
-        if (bizTransaction == null) {
-            bizTransaction = new ArrayList<BusinessTransactionType>();
-        }
-        return this.bizTransaction;
-    }
+	/**
+	 * Gets the value of the bizTransaction property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the bizTransaction property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getBizTransaction().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link BusinessTransactionType }
+	 * 
+	 * 
+	 */
+	public List<BusinessTransactionType> getBizTransaction() {
+		if (bizTransaction == null) {
+			bizTransaction = new ArrayList<BusinessTransactionType>();
+		}
+		return this.bizTransaction;
+	}
 
 	public void setBizTransaction(List<BusinessTransactionType> bizTransaction) {
 		this.bizTransaction = bizTransaction;
