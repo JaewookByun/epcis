@@ -49,6 +49,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Controller
 @RequestMapping("/query")
 public class QueryService implements CoreQueryService, ServletContextAware {
@@ -56,6 +65,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	@Autowired
 	ServletContext servletContext;
 
+	/**
+	 * 
+	 */
 	@Autowired
 	private HttpServletRequest request;
 

@@ -5,7 +5,6 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -15,11 +14,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for VocabularyElementListType complex type.
+ * <p>
+ * Java class for VocabularyElementListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="VocabularyElementListType">
@@ -36,41 +37,40 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "VocabularyElementListType", namespace = "masterdata.epcis.oliot.org", propOrder = {
-    "vocabularyElement"
-})
+@XmlType(name = "VocabularyElementListType", namespace = "masterdata.epcis.oliot.org", propOrder = { "vocabularyElement" })
 public class VocabularyElementListType {
 
-    @XmlElement(name = "VocabularyElement", required = true)
-    protected List<VocabularyElementType> vocabularyElement;
+	@XmlElement(name = "VocabularyElement", required = true)
+	protected List<VocabularyElementType> vocabularyElement;
 
-    /**
-     * Gets the value of the vocabularyElement property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the vocabularyElement property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getVocabularyElement().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link VocabularyElementType }
-     * 
-     * 
-     */
-    public List<VocabularyElementType> getVocabularyElement() {
-        if (vocabularyElement == null) {
-            vocabularyElement = new ArrayList<VocabularyElementType>();
-        }
-        return this.vocabularyElement;
-    }
+	/**
+	 * Gets the value of the vocabularyElement property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the vocabularyElement property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getVocabularyElement().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link VocabularyElementType }
+	 * 
+	 * 
+	 */
+	public List<VocabularyElementType> getVocabularyElement() {
+		if (vocabularyElement == null) {
+			vocabularyElement = new ArrayList<VocabularyElementType>();
+		}
+		return this.vocabularyElement;
+	}
 
 }

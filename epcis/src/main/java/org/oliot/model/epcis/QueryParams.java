@@ -5,7 +5,6 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -14,11 +13,13 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for QueryParams complex type.
+ * <p>
+ * Java class for QueryParams complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryParams">
@@ -35,40 +36,39 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryParams", namespace = "query.epcis.oliot.org", propOrder = {
-    "param"
-})
+@XmlType(name = "QueryParams", namespace = "query.epcis.oliot.org", propOrder = { "param" })
 public class QueryParams {
 
-    protected List<QueryParam> param;
+	protected List<QueryParam> param;
 
-    /**
-     * Gets the value of the param property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the param property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getParam().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link QueryParam }
-     * 
-     * 
-     */
-    public List<QueryParam> getParam() {
-        if (param == null) {
-            param = new ArrayList<QueryParam>();
-        }
-        return this.param;
-    }
+	/**
+	 * Gets the value of the param property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the param property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getParam().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link QueryParam }
+	 * 
+	 * 
+	 */
+	public List<QueryParam> getParam() {
+		if (param == null) {
+			param = new ArrayList<QueryParam>();
+		}
+		return this.param;
+	}
 
 }

@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,11 +12,13 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for QuantityElementType complex type.
+ * <p>
+ * Java class for QuantityElementType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QuantityElementType">
@@ -36,80 +37,71 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QuantityElementType", propOrder = {
-    "epcClass",
-    "quantity",
-    "uom"
-})
+@XmlType(name = "QuantityElementType", propOrder = { "epcClass", "quantity",
+		"uom" })
 public class QuantityElementType {
 
-    @XmlElement(required = true)
-    protected String epcClass;
-    protected float quantity;
-    protected String uom;
+	@XmlElement(required = true)
+	protected String epcClass;
+	protected float quantity;
+	protected String uom;
 
-    /**
-     * Gets the value of the epcClass property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEpcClass() {
-        return epcClass;
-    }
+	/**
+	 * Gets the value of the epcClass property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getEpcClass() {
+		return epcClass;
+	}
 
-    /**
-     * Sets the value of the epcClass property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEpcClass(String value) {
-        this.epcClass = value;
-    }
+	/**
+	 * Sets the value of the epcClass property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setEpcClass(String value) {
+		this.epcClass = value;
+	}
 
-    /**
-     * Gets the value of the quantity property.
-     * 
-     */
-    public float getQuantity() {
-        return quantity;
-    }
+	/**
+	 * Gets the value of the quantity property.
+	 * 
+	 */
+	public float getQuantity() {
+		return quantity;
+	}
 
-    /**
-     * Sets the value of the quantity property.
-     * 
-     */
-    public void setQuantity(float value) {
-        this.quantity = value;
-    }
+	/**
+	 * Sets the value of the quantity property.
+	 * 
+	 */
+	public void setQuantity(float value) {
+		this.quantity = value;
+	}
 
-    /**
-     * Gets the value of the uom property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUom() {
-        return uom;
-    }
+	/**
+	 * Gets the value of the uom property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getUom() {
+		return uom;
+	}
 
-    /**
-     * Sets the value of the uom property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUom(String value) {
-        this.uom = value;
-    }
+	/**
+	 * Sets the value of the uom property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setUom(String value) {
+		this.uom = value;
+	}
 
 }

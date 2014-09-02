@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -19,11 +18,13 @@ import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for EventListType complex type.
+ * <p>
+ * Java class for EventListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EventListType">
@@ -46,61 +47,59 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EventListType", propOrder = {
-    "objectEventOrAggregationEventOrQuantityEvent"
-})
+@XmlType(name = "EventListType", propOrder = { "objectEventOrAggregationEventOrQuantityEvent" })
 public class EventListType {
 
-    @XmlElementRefs({
-        @XmlElementRef(name = "extension", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "ObjectEvent", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "TransformationEvent", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "TransactionEvent", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "AggregationEvent", type = JAXBElement.class, required = false),
-        @XmlElementRef(name = "QuantityEvent", type = JAXBElement.class, required = false)
-    })
-    @XmlAnyElement(lax = true)
-    protected List<Object> objectEventOrAggregationEventOrQuantityEvent;
+	@XmlElementRefs({
+			@XmlElementRef(name = "extension", type = JAXBElement.class, required = false),
+			@XmlElementRef(name = "ObjectEvent", type = JAXBElement.class, required = false),
+			@XmlElementRef(name = "TransformationEvent", type = JAXBElement.class, required = false),
+			@XmlElementRef(name = "TransactionEvent", type = JAXBElement.class, required = false),
+			@XmlElementRef(name = "AggregationEvent", type = JAXBElement.class, required = false),
+			@XmlElementRef(name = "QuantityEvent", type = JAXBElement.class, required = false) })
+	@XmlAnyElement(lax = true)
+	protected List<Object> objectEventOrAggregationEventOrQuantityEvent;
 
-    public void setObjectEventOrAggregationEventOrQuantityEvent(
+	public void setObjectEventOrAggregationEventOrQuantityEvent(
 			List<Object> objectEventOrAggregationEventOrQuantityEvent) {
 		this.objectEventOrAggregationEventOrQuantityEvent = objectEventOrAggregationEventOrQuantityEvent;
 	}
 
 	/**
-     * Gets the value of the objectEventOrAggregationEventOrQuantityEvent property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the objectEventOrAggregationEventOrQuantityEvent property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getObjectEventOrAggregationEventOrQuantityEvent().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link JAXBElement }{@code <}{@link TransactionEventType }{@code >}
-     * {@link JAXBElement }{@code <}{@link EPCISEventListExtensionType }{@code >}
-     * {@link Element }
-     * {@link JAXBElement }{@code <}{@link ObjectEventType }{@code >}
-     * {@link JAXBElement }{@code <}{@link TransformationEventType }{@code >}
-     * {@link JAXBElement }{@code <}{@link AggregationEventType }{@code >}
-     * {@link JAXBElement }{@code <}{@link QuantityEventType }{@code >}
-     * 
-     * 
-     */
-    public List<Object> getObjectEventOrAggregationEventOrQuantityEvent() {
-        if (objectEventOrAggregationEventOrQuantityEvent == null) {
-            objectEventOrAggregationEventOrQuantityEvent = new ArrayList<Object>();
-        }
-        return this.objectEventOrAggregationEventOrQuantityEvent;
-    }
+	 * Gets the value of the objectEventOrAggregationEventOrQuantityEvent
+	 * property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the
+	 * objectEventOrAggregationEventOrQuantityEvent property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getObjectEventOrAggregationEventOrQuantityEvent().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link JAXBElement }{@code <}{@link TransactionEventType }{@code >}
+	 * {@link JAXBElement }{@code <}{@link EPCISEventListExtensionType }{@code >}
+	 * {@link Element } {@link JAXBElement }{@code <}{@link ObjectEventType }
+	 * {@code >} {@link JAXBElement }{@code <}{@link TransformationEventType }
+	 * {@code >} {@link JAXBElement }{@code <}{@link AggregationEventType }
+	 * {@code >} {@link JAXBElement }{@code <}{@link QuantityEventType }{@code >}
+	 * 
+	 * 
+	 */
+	public List<Object> getObjectEventOrAggregationEventOrQuantityEvent() {
+		if (objectEventOrAggregationEventOrQuantityEvent == null) {
+			objectEventOrAggregationEventOrQuantityEvent = new ArrayList<Object>();
+		}
+		return this.objectEventOrAggregationEventOrQuantityEvent;
+	}
 
 }

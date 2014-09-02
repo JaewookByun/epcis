@@ -36,6 +36,15 @@ import org.w3c.dom.NamedNodeMap;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This file is part of Oliot (oliot.org).
+ *
+ * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
+ *         and Technology Real-time Embedded System Laboratory(RESL)
+ *         bjw0829@kaist.ac.kr
+ */
 @Component
 @WritingConverter
 public class TransactionEventWriteConverter implements
@@ -95,7 +104,7 @@ public class TransactionEventWriteConverter implements
 			EPCListType epcs = transactionEventType.getEpcList();
 			List<EPC> epcList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
-			
+
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
 				epcDB.put("epc", epcList.get(i).getValue());
@@ -216,13 +225,13 @@ public class TransactionEventWriteConverter implements
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (transactionEventType.getExtension() != null) {
-			TransactionEventExtensionType oee = transactionEventType.getExtension();
+			TransactionEventExtensionType oee = transactionEventType
+					.getExtension();
 			if (oee.getQuantityList() != null) {
 				QuantityListType qetl = oee.getQuantityList();
 				List<QuantityElementType> qetList = qetl.getQuantityElement();
 				List<DBObject> quantityList = new ArrayList<DBObject>();
-				for( int i = 0 ; i < qetList.size() ; i++ )
-				{
+				for (int i = 0; i < qetList.size(); i++) {
 					DBObject quantity = new BasicDBObject();
 					QuantityElementType qet = qetList.get(i);
 					if (qet.getEpcClass() != null)
@@ -259,7 +268,8 @@ public class TransactionEventWriteConverter implements
 				extension.put("destinationList", dbList);
 			}
 			if (oee.getExtension() != null) {
-				TransactionEventExtension2Type extension2Type = oee.getExtension();
+				TransactionEventExtension2Type extension2Type = oee
+						.getExtension();
 				DBObject extension2 = new BasicDBObject();
 				if (extension2Type.getAny() != null) {
 					Map<String, String> map2Save = new HashMap<String, String>();
@@ -281,7 +291,8 @@ public class TransactionEventWriteConverter implements
 				}
 
 				if (extension2Type.getOtherAttributes() != null) {
-					Map<QName, String> map = extension2Type.getOtherAttributes();
+					Map<QName, String> map = extension2Type
+							.getOtherAttributes();
 					Map<String, String> map2Save = new HashMap<String, String>();
 					Iterator<QName> iter = map.keySet().iterator();
 					while (iter.hasNext()) {

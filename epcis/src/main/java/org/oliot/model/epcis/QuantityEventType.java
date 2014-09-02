@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -20,16 +19,18 @@ import javax.xml.bind.annotation.XmlType;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.w3c.dom.Element;
 
-
 /**
  * 
- * 			Quantity Event captures an event that takes place with respect to a specified quantity of
- * 			object class.
- * 			
+ * Quantity Event captures an event that takes place with respect to a specified
+ * quantity of object class.
  * 
- * <p>Java class for QuantityEventType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for QuantityEventType complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QuantityEventType">
@@ -55,246 +56,215 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QuantityEventType", propOrder = {
-    "epcClass",
-    "quantity",
-    "bizStep",
-    "disposition",
-    "readPoint",
-    "bizLocation",
-    "bizTransactionList",
-    "extension",
-    "any"
-})
-@Document(collection="QuantityEvent")
-public class QuantityEventType
-    extends EPCISEventType
-{
+@XmlType(name = "QuantityEventType", propOrder = { "epcClass", "quantity",
+		"bizStep", "disposition", "readPoint", "bizLocation",
+		"bizTransactionList", "extension", "any" })
+@Document(collection = "QuantityEvent")
+public class QuantityEventType extends EPCISEventType {
 
-    @XmlElement(required = true)
-    protected String epcClass;
-    protected int quantity;
-    protected String bizStep;
-    protected String disposition;
-    protected ReadPointType readPoint;
-    protected BusinessLocationType bizLocation;
-    protected BusinessTransactionListType bizTransactionList;
-    protected QuantityEventExtensionType extension;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
+	@XmlElement(required = true)
+	protected String epcClass;
+	protected int quantity;
+	protected String bizStep;
+	protected String disposition;
+	protected ReadPointType readPoint;
+	protected BusinessLocationType bizLocation;
+	protected BusinessTransactionListType bizTransactionList;
+	protected QuantityEventExtensionType extension;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
 
-    /**
-     * Gets the value of the epcClass property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEpcClass() {
-        return epcClass;
-    }
+	/**
+	 * Gets the value of the epcClass property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getEpcClass() {
+		return epcClass;
+	}
 
-    /**
-     * Sets the value of the epcClass property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEpcClass(String value) {
-        this.epcClass = value;
-    }
+	/**
+	 * Sets the value of the epcClass property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setEpcClass(String value) {
+		this.epcClass = value;
+	}
 
-    /**
-     * Gets the value of the quantity property.
-     * 
-     */
-    public int getQuantity() {
-        return quantity;
-    }
+	/**
+	 * Gets the value of the quantity property.
+	 * 
+	 */
+	public int getQuantity() {
+		return quantity;
+	}
 
-    /**
-     * Sets the value of the quantity property.
-     * 
-     */
-    public void setQuantity(int value) {
-        this.quantity = value;
-    }
+	/**
+	 * Sets the value of the quantity property.
+	 * 
+	 */
+	public void setQuantity(int value) {
+		this.quantity = value;
+	}
 
-    /**
-     * Gets the value of the bizStep property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getBizStep() {
-        return bizStep;
-    }
+	/**
+	 * Gets the value of the bizStep property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getBizStep() {
+		return bizStep;
+	}
 
-    /**
-     * Sets the value of the bizStep property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setBizStep(String value) {
-        this.bizStep = value;
-    }
+	/**
+	 * Sets the value of the bizStep property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setBizStep(String value) {
+		this.bizStep = value;
+	}
 
-    /**
-     * Gets the value of the disposition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDisposition() {
-        return disposition;
-    }
+	/**
+	 * Gets the value of the disposition property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDisposition() {
+		return disposition;
+	}
 
-    /**
-     * Sets the value of the disposition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDisposition(String value) {
-        this.disposition = value;
-    }
+	/**
+	 * Sets the value of the disposition property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setDisposition(String value) {
+		this.disposition = value;
+	}
 
-    /**
-     * Gets the value of the readPoint property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ReadPointType }
-     *     
-     */
-    public ReadPointType getReadPoint() {
-        return readPoint;
-    }
+	/**
+	 * Gets the value of the readPoint property.
+	 * 
+	 * @return possible object is {@link ReadPointType }
+	 * 
+	 */
+	public ReadPointType getReadPoint() {
+		return readPoint;
+	}
 
-    /**
-     * Sets the value of the readPoint property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ReadPointType }
-     *     
-     */
-    public void setReadPoint(ReadPointType value) {
-        this.readPoint = value;
-    }
+	/**
+	 * Sets the value of the readPoint property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link ReadPointType }
+	 * 
+	 */
+	public void setReadPoint(ReadPointType value) {
+		this.readPoint = value;
+	}
 
-    /**
-     * Gets the value of the bizLocation property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BusinessLocationType }
-     *     
-     */
-    public BusinessLocationType getBizLocation() {
-        return bizLocation;
-    }
+	/**
+	 * Gets the value of the bizLocation property.
+	 * 
+	 * @return possible object is {@link BusinessLocationType }
+	 * 
+	 */
+	public BusinessLocationType getBizLocation() {
+		return bizLocation;
+	}
 
-    /**
-     * Sets the value of the bizLocation property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BusinessLocationType }
-     *     
-     */
-    public void setBizLocation(BusinessLocationType value) {
-        this.bizLocation = value;
-    }
+	/**
+	 * Sets the value of the bizLocation property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link BusinessLocationType }
+	 * 
+	 */
+	public void setBizLocation(BusinessLocationType value) {
+		this.bizLocation = value;
+	}
 
-    /**
-     * Gets the value of the bizTransactionList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BusinessTransactionListType }
-     *     
-     */
-    public BusinessTransactionListType getBizTransactionList() {
-        return bizTransactionList;
-    }
+	/**
+	 * Gets the value of the bizTransactionList property.
+	 * 
+	 * @return possible object is {@link BusinessTransactionListType }
+	 * 
+	 */
+	public BusinessTransactionListType getBizTransactionList() {
+		return bizTransactionList;
+	}
 
-    /**
-     * Sets the value of the bizTransactionList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BusinessTransactionListType }
-     *     
-     */
-    public void setBizTransactionList(BusinessTransactionListType value) {
-        this.bizTransactionList = value;
-    }
+	/**
+	 * Sets the value of the bizTransactionList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link BusinessTransactionListType }
+	 * 
+	 */
+	public void setBizTransactionList(BusinessTransactionListType value) {
+		this.bizTransactionList = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QuantityEventExtensionType }
-     *     
-     */
-    public QuantityEventExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link QuantityEventExtensionType }
+	 * 
+	 */
+	public QuantityEventExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QuantityEventExtensionType }
-     *     
-     */
-    public void setExtension(QuantityEventExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link QuantityEventExtensionType }
+	 * 
+	 */
+	public void setExtension(QuantityEventExtensionType value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
 }

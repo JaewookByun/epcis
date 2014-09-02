@@ -5,7 +5,6 @@
 // Generated on: 2014.08.30 at 06:32:53 PM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -15,11 +14,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for StandardBusinessDocument complex type.
+ * <p>
+ * Java class for StandardBusinessDocument complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="StandardBusinessDocument">
@@ -38,64 +39,55 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "StandardBusinessDocument", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader", propOrder = {
-    "standardBusinessDocumentHeader",
-    "any"
-})
+		"standardBusinessDocumentHeader", "any" })
 public class StandardBusinessDocument {
 
-    @XmlElement(name = "StandardBusinessDocumentHeader", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
-    protected StandardBusinessDocumentHeader standardBusinessDocumentHeader;
-    @XmlAnyElement(lax = true)
-    protected Object any;
+	@XmlElement(name = "StandardBusinessDocumentHeader", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
+	protected StandardBusinessDocumentHeader standardBusinessDocumentHeader;
+	@XmlAnyElement(lax = true)
+	protected Object any;
 
-    /**
-     * Gets the value of the standardBusinessDocumentHeader property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link StandardBusinessDocumentHeader }
-     *     
-     */
-    public StandardBusinessDocumentHeader getStandardBusinessDocumentHeader() {
-        return standardBusinessDocumentHeader;
-    }
+	/**
+	 * Gets the value of the standardBusinessDocumentHeader property.
+	 * 
+	 * @return possible object is {@link StandardBusinessDocumentHeader }
+	 * 
+	 */
+	public StandardBusinessDocumentHeader getStandardBusinessDocumentHeader() {
+		return standardBusinessDocumentHeader;
+	}
 
-    /**
-     * Sets the value of the standardBusinessDocumentHeader property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link StandardBusinessDocumentHeader }
-     *     
-     */
-    public void setStandardBusinessDocumentHeader(StandardBusinessDocumentHeader value) {
-        this.standardBusinessDocumentHeader = value;
-    }
+	/**
+	 * Sets the value of the standardBusinessDocumentHeader property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link StandardBusinessDocumentHeader }
+	 * 
+	 */
+	public void setStandardBusinessDocumentHeader(
+			StandardBusinessDocumentHeader value) {
+		this.standardBusinessDocumentHeader = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Object }
-     *     {@link Element }
-     *     
-     */
-    public Object getAny() {
-        return any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * @return possible object is {@link Object } {@link Element }
+	 * 
+	 */
+	public Object getAny() {
+		return any;
+	}
 
-    /**
-     * Sets the value of the any property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Object }
-     *     {@link Element }
-     *     
-     */
-    public void setAny(Object value) {
-        this.any = value;
-    }
+	/**
+	 * Sets the value of the any property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link Object } {@link Element }
+	 * 
+	 */
+	public void setAny(Object value) {
+		this.any = value;
+	}
 
 }

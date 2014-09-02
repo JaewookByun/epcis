@@ -5,18 +5,19 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for SubscribeNotPermittedException complex type.
+ * <p>
+ * Java class for SubscribeNotPermittedException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SubscribeNotPermittedException">
@@ -33,9 +34,6 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SubscribeNotPermittedException", namespace = "query.epcis.oliot.org")
-public class SubscribeNotPermittedException
-    extends EPCISException
-{
-
+public class SubscribeNotPermittedException extends EPCISException {
 
 }

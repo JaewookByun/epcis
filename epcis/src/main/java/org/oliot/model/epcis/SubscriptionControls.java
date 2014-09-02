@@ -5,7 +5,6 @@
 // Generated on: 2014.08.31 at 10:36:23 AM KST 
 //
 
-
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
@@ -18,11 +17,13 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for SubscriptionControls complex type.
+ * <p>
+ * Java class for SubscriptionControls complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SubscriptionControls">
@@ -45,165 +46,148 @@ import org.w3c.dom.Element;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SubscriptionControls", namespace = "query.epcis.oliot.org", propOrder = {
-    "schedule",
-    "trigger",
-    "initialRecordTime",
-    "reportIfEmpty",
-    "extension",
-    "any"
-})
+		"schedule", "trigger", "initialRecordTime", "reportIfEmpty",
+		"extension", "any" })
 public class SubscriptionControls {
 
-    protected QuerySchedule schedule;
-    @XmlSchemaType(name = "anyURI")
-    protected String trigger;
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar initialRecordTime;
-    protected boolean reportIfEmpty;
-    protected SubscriptionControlsExtensionType extension;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
+	protected QuerySchedule schedule;
+	@XmlSchemaType(name = "anyURI")
+	protected String trigger;
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar initialRecordTime;
+	protected boolean reportIfEmpty;
+	protected SubscriptionControlsExtensionType extension;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
 
-    /**
-     * Gets the value of the schedule property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QuerySchedule }
-     *     
-     */
-    public QuerySchedule getSchedule() {
-        return schedule;
-    }
+	/**
+	 * Gets the value of the schedule property.
+	 * 
+	 * @return possible object is {@link QuerySchedule }
+	 * 
+	 */
+	public QuerySchedule getSchedule() {
+		return schedule;
+	}
 
-    /**
-     * Sets the value of the schedule property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QuerySchedule }
-     *     
-     */
-    public void setSchedule(QuerySchedule value) {
-        this.schedule = value;
-    }
+	/**
+	 * Sets the value of the schedule property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link QuerySchedule }
+	 * 
+	 */
+	public void setSchedule(QuerySchedule value) {
+		this.schedule = value;
+	}
 
-    /**
-     * Gets the value of the trigger property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTrigger() {
-        return trigger;
-    }
+	/**
+	 * Gets the value of the trigger property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getTrigger() {
+		return trigger;
+	}
 
-    /**
-     * Sets the value of the trigger property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTrigger(String value) {
-        this.trigger = value;
-    }
+	/**
+	 * Sets the value of the trigger property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link String }
+	 * 
+	 */
+	public void setTrigger(String value) {
+		this.trigger = value;
+	}
 
-    /**
-     * Gets the value of the initialRecordTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getInitialRecordTime() {
-        return initialRecordTime;
-    }
+	/**
+	 * Gets the value of the initialRecordTime property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getInitialRecordTime() {
+		return initialRecordTime;
+	}
 
-    /**
-     * Sets the value of the initialRecordTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setInitialRecordTime(XMLGregorianCalendar value) {
-        this.initialRecordTime = value;
-    }
+	/**
+	 * Sets the value of the initialRecordTime property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setInitialRecordTime(XMLGregorianCalendar value) {
+		this.initialRecordTime = value;
+	}
 
-    /**
-     * Gets the value of the reportIfEmpty property.
-     * 
-     */
-    public boolean isReportIfEmpty() {
-        return reportIfEmpty;
-    }
+	/**
+	 * Gets the value of the reportIfEmpty property.
+	 * 
+	 */
+	public boolean isReportIfEmpty() {
+		return reportIfEmpty;
+	}
 
-    /**
-     * Sets the value of the reportIfEmpty property.
-     * 
-     */
-    public void setReportIfEmpty(boolean value) {
-        this.reportIfEmpty = value;
-    }
+	/**
+	 * Sets the value of the reportIfEmpty property.
+	 * 
+	 */
+	public void setReportIfEmpty(boolean value) {
+		this.reportIfEmpty = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SubscriptionControlsExtensionType }
-     *     
-     */
-    public SubscriptionControlsExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link SubscriptionControlsExtensionType }
+	 * 
+	 */
+	public SubscriptionControlsExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SubscriptionControlsExtensionType }
-     *     
-     */
-    public void setExtension(SubscriptionControlsExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link SubscriptionControlsExtensionType }
+	 * 
+	 */
+	public void setExtension(SubscriptionControlsExtensionType value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a
+	 * snapshot. Therefore any modification you make to the returned list will
+	 * be present inside the JAXB object. This is why there is not a
+	 * <CODE>set</CODE> method for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
 }
