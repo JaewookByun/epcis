@@ -15,7 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.axis.message.MessageElement;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.ActionType;
@@ -39,10 +38,8 @@ import org.oliot.model.epcis.SourceListType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import com.mongodb.BasicDBList;
@@ -441,18 +438,4 @@ public class ObjectEventReadConverter implements
 		}
 		return null;
 	}
-
-	public DBObject getDBObjectFromMessageElement(MessageElement any) {
-		NamedNodeMap attributes = any.getAttributes();
-		DBObject attrObject = new BasicDBObject();
-		for (int i = 0; i < attributes.getLength(); i++) {
-			Attr attr = (Attr) attributes.item(i);
-
-			String attrName = attr.getNodeName();
-			String attrValue = attr.getNodeValue();
-			attrObject.put(attrName, attrValue);
-		}
-		return attrObject;
-	}
-
 }
