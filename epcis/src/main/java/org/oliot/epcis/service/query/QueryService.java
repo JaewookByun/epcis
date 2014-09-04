@@ -792,32 +792,60 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			}
 
 			/**
-			 * WD_readPoint: If specified, the result will only include events that (a) have a
-			 * non-null readPoint field; and where (b) the value of the
-			 * readPoint field matches one of the specified values, or is a
-			 * direct or indirect descendant of one of the specified values. The
-			 * meaning of “direct or indirect descendant” is specified by master
-			 * data, as described in Section 6.5. (WD is an abbreviation for
-			 * “with descendants.”) If this parameter and EQ_readPoint are both
-			 * omitted, events are returned regardless of the value of the
+			 * WD_readPoint: If specified, the result will only include events
+			 * that (a) have a non-null readPoint field; and where (b) the value
+			 * of the readPoint field matches one of the specified values, or is
+			 * a direct or indirect descendant of one of the specified values.
+			 * The meaning of “direct or indirect descendant” is specified by
+			 * master data, as described in Section 6.5. (WD is an abbreviation
+			 * for “with descendants.”) If this parameter and EQ_readPoint are
+			 * both omitted, events are returned regardless of the value of the
 			 * readPoint field or whether the readPoint field exists at all.
 			 */
-			if( WD_readPoint != null )
-			{
-				// TODO: Need to check nested query readPoint.id 
+			if (WD_readPoint != null) {
+				// TODO: Need to check nested query readPoint.id
 				// TODO: Need to check regex works or not
 				String[] wdReadPointArray = WD_readPoint.split(",");
 				Criteria criteria = new Criteria();
 				for (int i = 0; i < wdReadPointArray.length; i++) {
 					String wdReadPointString = wdReadPointArray[i].trim();
-					criteria.orOperator(Criteria.where("readPoint.id").regex("/^"+wdReadPointString+".*/"));
+					criteria.orOperator(Criteria.where("readPoint.id").regex(
+							"/^" + wdReadPointString + ".*/"));
+				}
+				criteriaList.add(criteria);
+			}
+			/**
+			 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
+			 * bizLocation field.
+			 */
+			if (EQ_bizLocation != null) {
+				// TODO: Need to check nested query bizLocation.id
+				String[] eqBizLocationArray = EQ_bizLocation.split(",");
+				Criteria criteria = new Criteria();
+				for (int i = 0; i < eqBizLocationArray.length; i++) {
+					String eqBizLocationString = eqBizLocationArray[i].trim();
+					criteria.orOperator(Criteria.where("bizLocation.id").is(
+							eqBizLocationString));
+				}
+				criteriaList.add(criteria);
+			}
+			/**
+			 * WD_bizLocation: Like the WD_readPoint parameter, but for the
+			 * bizLocation field.
+			 */
+			if (WD_bizLocation != null) {
+				// TODO: Need to check nested query readPoint.id
+				// TODO: Need to check regex works or not
+				String[] wdBizLocationArray = WD_bizLocation.split(",");
+				Criteria criteria = new Criteria();
+				for (int i = 0; i < wdBizLocationArray.length; i++) {
+					String wdBizLocationString = wdBizLocationArray[i].trim();
+					criteria.orOperator(Criteria.where("bizLocation.id").regex(
+							"/^" + wdBizLocationString + ".*/"));
 				}
 				criteriaList.add(criteria);
 			}
 
-			
-			
-			
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
