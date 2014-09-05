@@ -2,10 +2,10 @@ package org.oliot.epcis.service.query;
 
 import java.io.StringWriter;
 import java.net.URI;
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -22,7 +22,6 @@ import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
-import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
@@ -32,6 +31,7 @@ import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -42,6 +42,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -58,8 +61,11 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 	// Due to Created JAXB is not Throwable and need to send Exception to the
 	// Result
+	@SuppressWarnings("unused")
 	private boolean isQueryParameterException;
-
+	// Not EPC Spec
+	@SuppressWarnings("unused")
+	private boolean isNumberFormatException;
 	@Autowired
 	ServletContext servletContext;
 
@@ -299,6 +305,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
 
+			// Sort and Limit Query
+			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
+					orderDirection, eventCountLimit, maxEventCount);
+
 			// Invoke Query
 			List<ObjectEventType> objectEvents = mongoOperation.find(
 					searchQuery, ObjectEventType.class);
@@ -334,6 +344,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			for (int i = 0; i < criteriaList.size(); i++) {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
+
+			// Sort and Limit Query
+			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
+					orderDirection, eventCountLimit, maxEventCount);
 
 			// Query
 			List<QuantityEventType> quantityEvents = mongoOperation.find(
@@ -371,6 +385,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			for (int i = 0; i < criteriaList.size(); i++) {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
+
+			// Sort and Limit Query
+			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
+					orderDirection, eventCountLimit, maxEventCount);
 
 			// Query
 			List<TransactionEventType> transactionEvents = mongoOperation.find(
@@ -410,6 +428,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
 
+			// Sort and Limit Query
+			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
+					orderDirection, eventCountLimit, maxEventCount);
+
 			// Query
 			List<TransformationEventType> transformationEvents = mongoOperation
 					.find(searchQuery, TransformationEventType.class);
@@ -439,91 +461,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 *         is better to be parameter of http servlet request
 	 * @deprecated
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	public QueryResults poll(String queryName, QueryParams params) {
-
-		List<QueryParam> queryParams = params.getParam();
-		// Query Parameter is just key-value pairs
-		for (int i = 0; i < queryParams.size(); i++) {
-			QueryParam queryParam = queryParams.get(i);
-			String name = queryParam.getName();
-			Object value = queryParam.getValue();
-		}
-
-		// Criteria1: Collection Level
-		// List<String> eventType;
-
-		// Time
-		Time GE_eventTime;
-		Time LT_eventTime;
-		Time GE_recordTime;
-		Time LT_recordTime;
-
-		// Action
-		List<String> EQ_action;
-
-		// BizStep
-		List<String> EQ_bizStep;
-
-		// Disposition
-		List<String> EQ_disposition;
-
-		// Location
-		List<String> EQ_readPoint;
-		List<String> WD_readPoint;
-		List<String> EQ_bizLocation;
-		List<String> WD_bizLocation;
-
-		// Transaction
-		List<String> EQ_bizTransaction_type;
-
-		// Source Dest Type
-		List<String> EQ_source_type;
-		List<String> EQ_destination_type;
-
-		// Transformation ID
-		List<String> EQ_transformationID;
-
-		// EPC!
-		List<String> MATCH_epc;
-		List<String> MATCH_parentID;
-		List<String> MATCH_inputEPC;
-		List<String> MATCH_outputEPC;
-		List<String> MATCH_anyEPC;
-		List<String> MATCH_epcClass;
-		List<String> MATCH_inputEPCClass;
-		List<String> MATCH_outputEPCClass;
-		List<String> MATCH_anyEPCClass;
-
-		int EQ_quantity;
-		int GT_quantity;
-		int GE_quantity;
-		int LT_quantity;
-		int LE_quantity;
-
-		Object EQ_fieldname; // List<String> , int, Float, Time
-		Object GT_fieldname; // int, Float, Time,
-		Object GE_fieldname; // int, Float, Time,
-		Object LT_fieldname; // int, Float, Time,
-		Object LE_fieldname; // int, Float, Time,
-		Object EQ_ILMD_fieldname; // List<String> , int, Float, Time,
-		Object GT_ILMD_fieldname; // int, Float, Time,
-		Object GE_ILMD_fieldname; // int, Float, Time,
-		Object LT_ILMD_fieldname; // int, Float, Time,
-		Object LE_ILMD_fieldname; // Lint, Float, Time,
-
-		Void EXIST_fieldname;
-		Void EXIST_ILMD_fieldname;
-
-		List<String> HASATTR_fieldname;
-		List<String> EQATTR_fieldname_attrname;
-
-		String orderBy;
-		String orderDirection;
-		int eventCountLimit;
-		int maxEventCount;
-
 		return null;
 	}
 
@@ -614,6 +553,83 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		return epcisQueryDocumentType;
 	}
 
+	public Query makeSortAndLimitQuery(Query query, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount) {
+		/**
+		 * orderBy : If specified, names a single field that will be used to
+		 * order the results. The orderDirection field specifies whether the
+		 * ordering is in ascending sequence or descending sequence. Events
+		 * included in the result that lack the specified field altogether may
+		 * occur in any position within the result event list. The value of this
+		 * parameter SHALL be one of: eventTime, recordTime, or the fully
+		 * qualified name of an extension field whose type is Int, Float, Time,
+		 * or String. A fully qualified fieldname is constructed as for the
+		 * EQ_fieldname parameter. In the case of a field of type String, the
+		 * ordering SHOULD be in lexicographic order based on the Unicode
+		 * encoding of the strings, or in some other collating sequence
+		 * appropriate to the locale. If omitted, no order is specified. The
+		 * implementation MAY order the results in any order it chooses, and
+		 * that order MAY differ even when the same query is executed twice on
+		 * the same data. (In EPCIS 1.0, the value quantity was also permitted,
+		 * but its use is deprecated in EPCIS 1.1.)
+		 * 
+		 * orderDirection : If specified and orderBy is also specified,
+		 * specifies whether the results are ordered in ascending or descending
+		 * sequence according to the key specified by orderBy. The value of this
+		 * parameter must be one of ASC (for ascending order) or DESC (for
+		 * descending order); if not, the implementation SHALL raise a
+		 * QueryParameterException. If omitted, defaults to DESC.
+		 */
+
+		// Update Query with ORDER and LIMIT
+		if (orderBy != null) {
+			// Currently only eventTime, recordTime can be used
+			if (orderBy.trim().equals("eventTime")) {
+				if (orderDirection != null) {
+					if (orderDirection.trim().equals("ASC")) {
+						query.with(new Sort(Sort.Direction.ASC, "eventTime"));
+					} else if (orderDirection.trim().equals("DESC")) {
+						query.with(new Sort(Sort.Direction.DESC, "eventTime"));
+					}
+				}
+			} else if (orderBy.trim().equals("recordTime")) {
+				if (orderDirection != null) {
+					if (orderDirection.trim().equals("ASC")) {
+						query.with(new Sort(Sort.Direction.ASC, "recordTime"));
+					} else if (orderDirection.trim().equals("DESC")) {
+						query.with(new Sort(Sort.Direction.DESC, "recordTime"));
+					}
+				}
+			}
+		}
+
+		/**
+		 * eventCountLimit: If specified, the results will only include the
+		 * first N events that match the other criteria, where N is the value of
+		 * this parameter. The ordering specified by the orderBy and
+		 * orderDirection parameters determine the meaning of “first” for this
+		 * purpose. If omitted, all events matching the specified criteria will
+		 * be included in the results. This parameter and maxEventCount are
+		 * mutually exclusive; if both are specified, a QueryParameterException
+		 * SHALL be raised. This parameter may only be used when orderBy is
+		 * specified; if orderBy is omitted and eventCountLimit is specified, a
+		 * QueryParameterException SHALL be raised. This parameter differs from
+		 * maxEventCount in that this parameter limits the amount of data
+		 * returned, whereas maxEventCount causes an exception to be thrown if
+		 * the limit is exceeded.
+		 */
+		if (eventCountLimit != null) {
+			try {
+				int eventCount = Integer.parseInt(eventCountLimit);
+				query.limit(eventCount);
+			} catch (NumberFormatException nfe) {
+				isNumberFormatException = true;
+			}
+		}
+
+		return query;
+	}
+
 	public List<Criteria> makeCriteria(String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -644,7 +660,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * eventTime (unless constrained by the LT_eventTime parameter).
 			 * Example: 2014-08-11T19:57:59.717+09:00 SimpleDateFormat sdf = new
 			 * SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			 * eventTime.setTime(sdf.parse(timeString));
+			 * eventTime.setTime(sdf.parse(timeString)); e.g.
+			 * 1988-07-04T12:08:56.235-07:00
+			 * 
+			 * Verified
 			 */
 			if (GE_eventTime != null) {
 				SimpleDateFormat sdf = new SimpleDateFormat(
@@ -661,13 +680,15 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * the specified value will be included in the result. If omitted,
 			 * events are included regardless of their eventTime (unless
 			 * constrained by the GE_eventTime parameter).
+			 * 
+			 * Verified
 			 */
 			if (LT_eventTime != null) {
 				SimpleDateFormat sdf = new SimpleDateFormat(
 						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				GregorianCalendar ltEventTimeCalendar = new GregorianCalendar();
-
-				ltEventTimeCalendar.setTime(sdf.parse(LT_eventTime));
+				Date date = sdf.parse(LT_eventTime);
+				ltEventTimeCalendar.setTime(date);
 				long ltEventTimeMillis = ltEventTimeCalendar.getTimeInMillis();
 				criteriaList.add(Criteria.where("eventTime").lt(
 						ltEventTimeMillis));
@@ -680,6 +701,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * omitted, events are included regardless of their recordTime,
 			 * other than automatic limitation based on event record time
 			 * (Section 8.2.5.2).
+			 * 
+			 * Verified
 			 */
 			if (GE_recordTime != null) {
 				SimpleDateFormat sdf = new SimpleDateFormat(
@@ -698,6 +721,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * included regardless of their recordTime (unless constrained by
 			 * the GE_recordTime parameter or the automatic limitation based on
 			 * event record time).
+			 * 
+			 * Verified
 			 */
 			if (LT_recordTime != null) {
 				SimpleDateFormat sdf = new SimpleDateFormat(
@@ -719,10 +744,12 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * OBSERVE, or DELETE; if not, the implementation SHALL raise a
 			 * QueryParameterException. If omitted, events are included
 			 * regardless of their action field.
+			 * 
+			 * Verified
 			 */
 			if (EQ_action != null) {
 				String[] eqActionArray = EQ_action.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqActionArray.length; i++) {
 					String eqActionString = eqActionArray[i].trim();
 					// According to SPEC, this condition thwos
@@ -735,10 +762,12 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					if (eqActionString.equals("ADD")
 							|| eqActionString.equals("OBSERVE")
 							|| eqActionString.equals("DELETE"))
-						criteria.orOperator(Criteria.where("action").is(
-								eqActionString));
+						subStringList.add(eqActionString);
 				}
-				criteriaList.add(criteria);
+
+				if (subStringList != null)
+					criteriaList
+							.add(Criteria.where("action").in(subStringList));
 			}
 			/**
 			 * EQ_bizStep: If specified, the result will only include events
@@ -746,30 +775,36 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * of the bizStep field matches one of the specified values. If this
 			 * parameter is omitted, events are returned regardless of the value
 			 * of the bizStep field or whether the bizStep field exists at all.
+			 * 
+			 * Verified
 			 */
 			if (EQ_bizStep != null) {
 				String[] eqBizStepArray = EQ_bizStep.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqBizStepArray.length; i++) {
 					String eqBizStepString = eqBizStepArray[i].trim();
-					criteria.orOperator(Criteria.where("bizStep").is(
-							eqBizStepString));
+					subStringList.add(eqBizStepString);
 				}
-				criteriaList.add(criteria);
+				if (subStringList != null)
+					criteriaList.add(Criteria.where("bizStep")
+							.in(subStringList));
 			}
 			/**
 			 * EQ_disposition: Like the EQ_bizStep parameter, but for the
 			 * disposition field.
+			 * 
+			 * Verified
 			 */
 			if (EQ_disposition != null) {
 				String[] eqDispositionArray = EQ_disposition.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqDispositionArray.length; i++) {
 					String eqDispositionString = eqDispositionArray[i].trim();
-					criteria.orOperator(Criteria.where("disposition").is(
-							eqDispositionString));
+					subStringList.add(eqDispositionString);
 				}
-				criteriaList.add(criteria);
+				if (subStringList != null)
+					criteriaList.add(Criteria.where("disposition").in(
+							subStringList));
 			}
 			/**
 			 * EQ_readPoint: If specified, the result will only include events
@@ -778,16 +813,18 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * this parameter and WD_readPoint are both omitted, events are
 			 * returned regardless of the value of the readPoint field or
 			 * whether the readPoint field exists at all.
+			 * 
+			 * 
 			 */
 			if (EQ_readPoint != null) {
-				// TODO: Need to check nested query readPoint.id
 				String[] eqReadPointArray = EQ_readPoint.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqReadPointArray.length; i++) {
 					String eqReadPointString = eqReadPointArray[i].trim();
-					criteria.orOperator(Criteria.where("readPoint.id").is(
-							eqReadPointString));
+					subStringList.add(eqReadPointString);
 				}
+				Criteria criteria = Criteria.where("readPoint.id").is(
+						EQ_readPoint);
 				criteriaList.add(criteria);
 			}
 
@@ -860,18 +897,286 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * 쿼리조건도 봐보
 			 */
 			if (EQ_transformationID != null) {
-				String[] eqTransformationIDArray = EQ_transformationID.split(",");
+				String[] eqTransformationIDArray = EQ_transformationID
+						.split(",");
 				Criteria criteria = new Criteria();
 				for (int i = 0; i < eqTransformationIDArray.length; i++) {
-					String eqTransformationIDString = eqTransformationIDArray[i].trim();
+					String eqTransformationIDString = eqTransformationIDArray[i]
+							.trim();
 					criteria.orOperator(Criteria.where("transformationID").is(
 							eqTransformationIDString));
 				}
 				criteriaList.add(criteria);
 			}
-			
-			
-			
+
+			/**
+			 * MATCH_epc: If this parameter is specified, the result will only
+			 * include events that (a) have an epcList or a childEPCs field
+			 * (that is, ObjectEvent, AggregationEvent, TransactionEvent or
+			 * extension event types that extend one of those three); and where
+			 * (b) one of the EPCs listed in the epcList or childEPCs field
+			 * (depending on event type) matches one of the EPC patterns or URIs
+			 * specified in this parameter, where the meaning of “matches” is as
+			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
+			 * events are included regardless of their epcList or childEPCs
+			 * field or whether the epcList or childEPCs field exists.
+			 * 
+			 * Somewhat verified
+			 */
+			if (MATCH_epc != null) {
+				String[] match_EPCArray = MATCH_epc.split(",");
+				Criteria criteria = new Criteria();
+
+				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
+				for (int i = 0; i < match_EPCArray.length; i++) {
+					String match_EPCString = match_EPCArray[i].trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epc", match_EPCString);
+					subDBObjectList.add(queryObj);
+				}
+				criteria.orOperator(
+						Criteria.where("epcList").in(subDBObjectList), Criteria
+								.where("childEPCs").in(subDBObjectList));
+
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_parentID: Like MATCH_epc, but matches the parentID field of
+			 * AggregationEvent, the parentID field of TransactionEvent, and
+			 * extension event types that extend either AggregationEvent or
+			 * TransactionEvent. The meaning of “matches” is as specified in
+			 * Section 8.2.7.1.1.
+			 */
+			if (MATCH_parentID != null) {
+				String[] match_parentEPCArray = MATCH_parentID.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_parentEPCArray.length; i++) {
+					String match_parentEPCString = match_parentEPCArray[i]
+							.trim();
+					criteria.orOperator(Criteria.where("parentID").is(
+							match_parentEPCString));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_inputEPC: If this parameter is specified, the result will
+			 * only include events that (a) have an inputEPCList (that is,
+			 * TransformationEvent or an extension event type that extends
+			 * TransformationEvent); and where (b) one of the EPCs listed in the
+			 * inputEPCList field matches one of the EPC patterns or URIs
+			 * specified in this parameter. The meaning of “matches” is as
+			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
+			 * events are included regardless of their inputEPCList field or
+			 * whether the inputEPCList field exists.
+			 */
+			if (MATCH_inputEPC != null) {
+				String[] match_inputEPCArray = MATCH_inputEPC.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_inputEPCArray.length; i++) {
+					String match_inputEPCString = match_inputEPCArray[i].trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epc", match_inputEPCString);
+					criteria.orOperator(Criteria.where("inputEPCList").is(
+							queryObj));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_outputEPC: If this parameter is specified, the result will
+			 * only include events that (a) have an inputEPCList (that is,
+			 * TransformationEvent or an extension event type that extends
+			 * TransformationEvent); and where (b) one of the EPCs listed in the
+			 * inputEPCList field matches one of the EPC patterns or URIs
+			 * specified in this parameter. The meaning of “matches” is as
+			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
+			 * events are included regardless of their inputEPCList field or
+			 * whether the inputEPCList field exists.
+			 */
+			if (MATCH_outputEPC != null) {
+				String[] match_outputEPCArray = MATCH_outputEPC.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_outputEPCArray.length; i++) {
+					String match_outputEPCString = match_outputEPCArray[i]
+							.trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epc", match_outputEPCString);
+					criteria.orOperator(Criteria.where("outputEPCList").is(
+							queryObj));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_anyEPC: If this parameter is specified, the result will
+			 * only include events that (a) have an epcList field, a childEPCs
+			 * field, a parentID field, an inputEPCList field, or an
+			 * outputEPCList field (that is, ObjectEvent, AggregationEvent,
+			 * TransactionEvent, TransformationEvent, or extension event types
+			 * that extend one of those four); and where (b) the parentID field
+			 * or one of the EPCs listed in the epcList, childEPCs,
+			 * inputEPCList, or outputEPCList field (depending on event type)
+			 * matches one of the EPC patterns or URIs specified in this
+			 * parameter. The meaning of “matches” is as specified in Section
+			 * 8.2.7.1.1.
+			 */
+
+			if (MATCH_anyEPC != null) {
+				String[] match_anyEPCArray = MATCH_anyEPC.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_anyEPCArray.length; i++) {
+					String match_anyEPCString = match_anyEPCArray[i].trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epc", match_anyEPCString);
+					criteria.orOperator(Criteria.where("epcList").is(queryObj));
+					criteria.orOperator(Criteria.where("childEPCs")
+							.is(queryObj));
+					criteria.orOperator(Criteria.where("parentID").is(
+							match_anyEPCString));
+					criteria.orOperator(Criteria.where("inputEPCList").is(
+							queryObj));
+					criteria.orOperator(Criteria.where("outputEPCList").is(
+							queryObj));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_epcClass: If this parameter is specified, the result will
+			 * only include events that (a) have a quantityList or a
+			 * childQuantityList field (that is, ObjectEvent, AggregationEvent,
+			 * TransactionEvent or extension event types that extend one of
+			 * those three); and where (b) one of the EPC classes listed in the
+			 * quantityList or childQuantityList field (depending on event type)
+			 * matches one of the EPC patterns or URIs specified in this
+			 * parameter. The result will also include QuantityEvents whose
+			 * epcClass field matches one of the EPC patterns or URIs specified
+			 * in this parameter. The meaning of “matches” is as specified in
+			 * Section 8.2.7.1.1.
+			 */
+			if (MATCH_epcClass != null) {
+				String[] match_epcClassArray = MATCH_epcClass.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_epcClassArray.length; i++) {
+					String match_epcClassString = match_epcClassArray[i].trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epcClass", match_epcClassString);
+					criteria.orOperator(Criteria
+							.where("extension.quantityList").is(
+									match_epcClassString));
+					criteria.orOperator(Criteria.where(
+							"extension.childQuantityList").is(
+							match_epcClassString));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_inputEPCClass: If this parameter is specified, the result
+			 * will only include events that (a) have an inputQuantityList field
+			 * (that is, TransformationEvent or extension event types that
+			 * extend it); and where (b) one of the EPC classes listed in the
+			 * inputQuantityList field (depending on event type) matches one of
+			 * the EPC patterns or URIs specified in this parameter. The meaning
+			 * of “matches” is as specified in Section 8.2.7.1.1.
+			 */
+			if (MATCH_inputEPCClass != null) {
+				String[] match_inputEPCClassArray = MATCH_inputEPCClass
+						.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_inputEPCClassArray.length; i++) {
+					String match_inputEPCClassString = match_inputEPCClassArray[i]
+							.trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epcClass", match_inputEPCClassString);
+					criteria.orOperator(Criteria.where("inputQuantityList").is(
+							queryObj));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_outputEPCClass: If this parameter is specified, the result
+			 * will only include events that (a) have an outputQuantityList
+			 * field (that is, TransformationEvent or extension event types that
+			 * extend it); and where (b) one of the EPC classes listed in the
+			 * outputQuantityList field (depending on event type) matches one of
+			 * the EPC patterns or URIs specified in this parameter. The meaning
+			 * of “matches” is as specified in Section 8.2.7.1.1.
+			 */
+
+			if (MATCH_outputEPCClass != null) {
+				String[] match_outputEPCClassArray = MATCH_outputEPCClass
+						.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_outputEPCClassArray.length; i++) {
+					String match_outputEPCClassString = match_outputEPCClassArray[i]
+							.trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epcClass", match_outputEPCClassString);
+					criteria.orOperator(Criteria.where("outputQuantityList")
+							.is(queryObj));
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * MATCH_anyEPCClass: If this parameter is specified, the result
+			 * will only include events that (a) have a quantityList,
+			 * childQuantityList, inputQuantityList, or outputQuantityList field
+			 * (that is, ObjectEvent, AggregationEvent, TransactionEvent,
+			 * TransformationEvent, or extension event types that extend one of
+			 * those four); and where (b) one of the EPC classes listed in any
+			 * of those fields matches one of the EPC patterns or URIs specified
+			 * in this parameter. The result will also include QuantityEvents
+			 * whose epcClass field matches one of the EPC patterns or URIs
+			 * specified in this parameter. The meaning of “matches” is as
+			 * specified in Section 8.2.7.1.1.
+			 */
+			if (MATCH_anyEPCClass != null) {
+				String[] match_anyEPCClassArray = MATCH_anyEPCClass.split(",");
+				Criteria criteria = new Criteria();
+
+				for (int i = 0; i < match_anyEPCClassArray.length; i++) {
+					String match_anyEPCClassString = match_anyEPCClassArray[i]
+							.trim();
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epcClass", match_anyEPCClassString);
+					criteria.orOperator(Criteria
+							.where("extension.quantityList").is(
+									match_anyEPCClassString));
+					criteria.orOperator(Criteria.where(
+							"extension.childQuantityList").is(
+							match_anyEPCClassString));
+					criteria.orOperator(Criteria.where("inputQuantityList").is(
+							queryObj));
+					criteria.orOperator(Criteria.where("outputQuantityList")
+							.is(queryObj));
+
+				}
+				criteriaList.add(criteria);
+			}
+
+			/**
+			 * (DEPCRECATED in EPCIS 1.1) EQ_quantity; GT_quantity; GE_quantity;
+			 * LT_quantity; LE_quantity
+			 **/
+
+			/**
+			 * Implementation Pending
+			 * 
+			 * *_fieldname
+			 * 
+			 **/
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
