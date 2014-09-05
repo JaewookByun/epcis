@@ -845,6 +845,19 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				}
 				criteriaList.add(criteria);
 			}
+			/**
+			 * EQ_bizTransaction_type: EQ_source_type: EQ_destination_type: is
+			 * currently not processed, since its description seems ambiguous
+			 * EQ_transformationID: If this parameter is specified, the result
+			 * will only include events that (a) have a transformationID field
+			 * (that is, TransformationEvents or extension event type that
+			 * extend TransformationEvent); and where (b) the transformationID
+			 * field is equal to one of the values specified in this parameter.
+			 * TODO: TransformationID 가 있어야만 한다고 함. 이런 필터링을 고려해서 처리해야 하며. 다른 쿼리조건도 봐보
+			 */
+			
+			
+			
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
