@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -813,7 +814,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * this parameter and WD_readPoint are both omitted, events are
 			 * returned regardless of the value of the readPoint field or
 			 * whether the readPoint field exists at all.
-			 * 
+			 *
+			 * //TODO: This query style is successful in mongo console. However,
+			 * in the spring/mongo case is not available. Need to check later
 			 * 
 			 */
 			if (EQ_readPoint != null) {
@@ -823,8 +826,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					String eqReadPointString = eqReadPointArray[i].trim();
 					subStringList.add(eqReadPointString);
 				}
-				Criteria criteria = Criteria.where("readPoint.id").is(
-						EQ_readPoint);
+				Criteria criteria = Criteria.where("readPoint.id").in(
+						subStringList);
 				criteriaList.add(criteria);
 			}
 
@@ -838,17 +841,22 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * for “with descendants.”) If this parameter and EQ_readPoint are
 			 * both omitted, events are returned regardless of the value of the
 			 * readPoint field or whether the readPoint field exists at all.
+			 * 
+			 * //TODO: This query style is successful in mongo console. However,
+			 * in the spring/mongo case is not available. Need to check later
 			 */
 			if (WD_readPoint != null) {
 				// TODO: Need to check nested query readPoint.id
 				// TODO: Need to check regex works or not
 				String[] wdReadPointArray = WD_readPoint.split(",");
-				Criteria criteria = new Criteria();
+				List<Pattern> patternArray = new ArrayList<Pattern>();
 				for (int i = 0; i < wdReadPointArray.length; i++) {
 					String wdReadPointString = wdReadPointArray[i].trim();
-					criteria.orOperator(Criteria.where("readPoint.id").regex(
-							"/^" + wdReadPointString + ".*/"));
+					patternArray.add(Pattern.compile("/^" + wdReadPointString
+							+ ".*/"));
 				}
+				Criteria criteria = Criteria.where("readPoint.id").in(
+						patternArray);
 				criteriaList.add(criteria);
 			}
 			/**
@@ -856,14 +864,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * bizLocation field.
 			 */
 			if (EQ_bizLocation != null) {
-				// TODO: Need to check nested query bizLocation.id
 				String[] eqBizLocationArray = EQ_bizLocation.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqBizLocationArray.length; i++) {
 					String eqBizLocationString = eqBizLocationArray[i].trim();
-					criteria.orOperator(Criteria.where("bizLocation.id").is(
-							eqBizLocationString));
+					subStringList.add(eqBizLocationString);
 				}
+				Criteria criteria = Criteria.where("bizLocation.id").in(
+						subStringList);
 				criteriaList.add(criteria);
 			}
 			/**
@@ -874,12 +882,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				// TODO: Need to check nested query readPoint.id
 				// TODO: Need to check regex works or not
 				String[] wdBizLocationArray = WD_bizLocation.split(",");
-				Criteria criteria = new Criteria();
+				List<Pattern> patternArray = new ArrayList<Pattern>();
 				for (int i = 0; i < wdBizLocationArray.length; i++) {
 					String wdBizLocationString = wdBizLocationArray[i].trim();
-					criteria.orOperator(Criteria.where("bizLocation.id").regex(
-							"/^" + wdBizLocationString + ".*/"));
+					patternArray.add(Pattern.compile("/^" + wdBizLocationString
+							+ ".*/"));
 				}
+				Criteria criteria = Criteria.where("bizLocation.id").in(
+						patternArray);
 				criteriaList.add(criteria);
 			}
 			/**
@@ -899,13 +909,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			if (EQ_transformationID != null) {
 				String[] eqTransformationIDArray = EQ_transformationID
 						.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 				for (int i = 0; i < eqTransformationIDArray.length; i++) {
 					String eqTransformationIDString = eqTransformationIDArray[i]
 							.trim();
-					criteria.orOperator(Criteria.where("transformationID").is(
-							eqTransformationIDString));
+					subStringList.add(eqTransformationIDString);
 				}
+				Criteria criteria = Criteria.where("bizLocation.id").in(
+						subStringList);
 				criteriaList.add(criteria);
 			}
 
@@ -925,8 +936,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_epc != null) {
 				String[] match_EPCArray = MATCH_epc.split(",");
-				Criteria criteria = new Criteria();
-
 				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
 				for (int i = 0; i < match_EPCArray.length; i++) {
 					String match_EPCString = match_EPCArray[i].trim();
@@ -934,6 +943,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					queryObj.put("epc", match_EPCString);
 					subDBObjectList.add(queryObj);
 				}
+				Criteria criteria = new Criteria();
 				criteria.orOperator(
 						Criteria.where("epcList").in(subDBObjectList), Criteria
 								.where("childEPCs").in(subDBObjectList));
@@ -950,14 +960,17 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_parentID != null) {
 				String[] match_parentEPCArray = MATCH_parentID.split(",");
-				Criteria criteria = new Criteria();
 
+				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
 				for (int i = 0; i < match_parentEPCArray.length; i++) {
 					String match_parentEPCString = match_parentEPCArray[i]
 							.trim();
-					criteria.orOperator(Criteria.where("parentID").is(
-							match_parentEPCString));
+					DBObject queryObj = new BasicDBObject();
+					queryObj.put("epc", match_parentEPCString);
+					subDBObjectList.add(queryObj);
 				}
+				Criteria criteria = Criteria.where("parentID").in(
+						subDBObjectList);
 				criteriaList.add(criteria);
 			}
 
@@ -974,15 +987,17 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_inputEPC != null) {
 				String[] match_inputEPCArray = MATCH_inputEPC.split(",");
-				Criteria criteria = new Criteria();
+
+				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
 
 				for (int i = 0; i < match_inputEPCArray.length; i++) {
 					String match_inputEPCString = match_inputEPCArray[i].trim();
 					DBObject queryObj = new BasicDBObject();
 					queryObj.put("epc", match_inputEPCString);
-					criteria.orOperator(Criteria.where("inputEPCList").is(
-							queryObj));
+					subDBObjectList.add(queryObj);
 				}
+				Criteria criteria = Criteria.where("inputEPCList").in(
+						subDBObjectList);
 				criteriaList.add(criteria);
 			}
 
@@ -999,16 +1014,18 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_outputEPC != null) {
 				String[] match_outputEPCArray = MATCH_outputEPC.split(",");
-				Criteria criteria = new Criteria();
+
+				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
 
 				for (int i = 0; i < match_outputEPCArray.length; i++) {
 					String match_outputEPCString = match_outputEPCArray[i]
 							.trim();
 					DBObject queryObj = new BasicDBObject();
 					queryObj.put("epc", match_outputEPCString);
-					criteria.orOperator(Criteria.where("outputEPCList").is(
-							queryObj));
+					subDBObjectList.add(queryObj);
 				}
+				Criteria criteria = Criteria.where("outputEPCList").in(
+						subDBObjectList);
 				criteriaList.add(criteria);
 			}
 
@@ -1028,22 +1045,20 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 			if (MATCH_anyEPC != null) {
 				String[] match_anyEPCArray = MATCH_anyEPC.split(",");
-				Criteria criteria = new Criteria();
+				List<DBObject> subDBObjectList = new ArrayList<DBObject>();
 
 				for (int i = 0; i < match_anyEPCArray.length; i++) {
 					String match_anyEPCString = match_anyEPCArray[i].trim();
 					DBObject queryObj = new BasicDBObject();
 					queryObj.put("epc", match_anyEPCString);
-					criteria.orOperator(Criteria.where("epcList").is(queryObj));
-					criteria.orOperator(Criteria.where("childEPCs")
-							.is(queryObj));
-					criteria.orOperator(Criteria.where("parentID").is(
-							match_anyEPCString));
-					criteria.orOperator(Criteria.where("inputEPCList").is(
-							queryObj));
-					criteria.orOperator(Criteria.where("outputEPCList").is(
-							queryObj));
+					subDBObjectList.add(queryObj);
 				}
+				Criteria criteria = new Criteria();
+				criteria.orOperator(
+						Criteria.where("epcList").in(subDBObjectList), Criteria
+								.where("childEPCs").in(subDBObjectList),
+						Criteria.where("inputEPCList").in(subDBObjectList),
+						Criteria.where("outputEPCList").in(subDBObjectList));
 				criteriaList.add(criteria);
 			}
 
@@ -1062,19 +1077,19 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_epcClass != null) {
 				String[] match_epcClassArray = MATCH_epcClass.split(",");
+
+				List<String> subStringList = new ArrayList<String>();
 				Criteria criteria = new Criteria();
 
 				for (int i = 0; i < match_epcClassArray.length; i++) {
 					String match_epcClassString = match_epcClassArray[i].trim();
-					DBObject queryObj = new BasicDBObject();
-					queryObj.put("epcClass", match_epcClassString);
-					criteria.orOperator(Criteria
-							.where("extension.quantityList").is(
-									match_epcClassString));
-					criteria.orOperator(Criteria.where(
-							"extension.childQuantityList").is(
-							match_epcClassString));
+					subStringList.add(match_epcClassString);
 				}
+				criteria.orOperator(
+						Criteria.where("extension.quantityList.epcClass").in(
+								subStringList),
+						Criteria.where("extension.childQuantityList.epcClass")
+								.in(subStringList));
 				criteriaList.add(criteria);
 			}
 
@@ -1090,16 +1105,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			if (MATCH_inputEPCClass != null) {
 				String[] match_inputEPCClassArray = MATCH_inputEPCClass
 						.split(",");
-				Criteria criteria = new Criteria();
+
+				List<String> subStringList = new ArrayList<String>();
 
 				for (int i = 0; i < match_inputEPCClassArray.length; i++) {
 					String match_inputEPCClassString = match_inputEPCClassArray[i]
 							.trim();
-					DBObject queryObj = new BasicDBObject();
-					queryObj.put("epcClass", match_inputEPCClassString);
-					criteria.orOperator(Criteria.where("inputQuantityList").is(
-							queryObj));
+					subStringList.add(match_inputEPCClassString);
 				}
+				Criteria criteria = Criteria
+						.where("inputQuantityList.epcClass").in(subStringList);
 				criteriaList.add(criteria);
 			}
 
@@ -1116,16 +1131,15 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			if (MATCH_outputEPCClass != null) {
 				String[] match_outputEPCClassArray = MATCH_outputEPCClass
 						.split(",");
-				Criteria criteria = new Criteria();
+				List<String> subStringList = new ArrayList<String>();
 
 				for (int i = 0; i < match_outputEPCClassArray.length; i++) {
 					String match_outputEPCClassString = match_outputEPCClassArray[i]
 							.trim();
-					DBObject queryObj = new BasicDBObject();
-					queryObj.put("epcClass", match_outputEPCClassString);
-					criteria.orOperator(Criteria.where("outputQuantityList")
-							.is(queryObj));
+					subStringList.add(match_outputEPCClassString);
 				}
+				Criteria criteria = Criteria.where(
+						"outputQuantityList.epcClass").in(subStringList);
 				criteriaList.add(criteria);
 			}
 
@@ -1144,25 +1158,25 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 */
 			if (MATCH_anyEPCClass != null) {
 				String[] match_anyEPCClassArray = MATCH_anyEPCClass.split(",");
-				Criteria criteria = new Criteria();
+
+				List<String> subStringList = new ArrayList<String>();
 
 				for (int i = 0; i < match_anyEPCClassArray.length; i++) {
 					String match_anyEPCClassString = match_anyEPCClassArray[i]
 							.trim();
-					DBObject queryObj = new BasicDBObject();
-					queryObj.put("epcClass", match_anyEPCClassString);
-					criteria.orOperator(Criteria
-							.where("extension.quantityList").is(
-									match_anyEPCClassString));
-					criteria.orOperator(Criteria.where(
-							"extension.childQuantityList").is(
-							match_anyEPCClassString));
-					criteria.orOperator(Criteria.where("inputQuantityList").is(
-							queryObj));
-					criteria.orOperator(Criteria.where("outputQuantityList")
-							.is(queryObj));
+					subStringList.add(match_anyEPCClassString);
 
 				}
+				Criteria criteria = new Criteria();
+				criteria.orOperator(
+						Criteria.where("extension.quantityList.epcClass").in(
+								subStringList),
+						Criteria.where("extension.childQuantityList.epcClass")
+								.in(subStringList),
+						Criteria.where("inputQuantityList.epcClass").in(
+								subStringList),
+						Criteria.where("outputQuantityList.epcClass").in(
+								subStringList));
 				criteriaList.add(criteria);
 			}
 

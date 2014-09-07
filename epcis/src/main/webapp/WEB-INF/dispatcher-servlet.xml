@@ -13,6 +13,7 @@
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
 	<bean id="capture" class="org.oliot.epcis.service.capture.Capture"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.QueryService"></bean>
+	<bean id="querytest" class="org.oliot.epcis.service.query.QueryTest"></bean>
 		
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
