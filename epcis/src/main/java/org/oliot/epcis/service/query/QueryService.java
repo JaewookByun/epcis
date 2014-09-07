@@ -266,6 +266,11 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			for (int i = 0; i < criteriaList.size(); i++) {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
+			
+			// Sort and Limit Query
+			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
+					orderDirection, eventCountLimit, maxEventCount);
+
 			// Query
 			List<AggregationEventType> aggregationEvents = mongoOperation.find(
 					searchQuery, AggregationEventType.class);
