@@ -22,7 +22,7 @@ import com.mongodb.DBObject;
 @RequestMapping("/querytest")
 public class QueryTest {
 	
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "resource" })
 	@RequestMapping(value = "/a", method = RequestMethod.GET)
 	@ResponseBody
 	public String getTest()

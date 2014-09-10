@@ -106,8 +106,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	@Override
 	public void subscribe(String queryName, QueryParams params, URI dest,
 			SubscriptionControls controls, String subscriptionID) {
-		// TODO Auto-generated method stub
-
+		
+		
 	}
 
 	/**
