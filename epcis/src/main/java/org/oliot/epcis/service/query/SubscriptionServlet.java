@@ -1,23 +1,22 @@
 package org.oliot.epcis.service.query;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.Trigger;
-import org.quartz.impl.StdSchedulerFactory;
-
-import static org.quartz.JobBuilder.*;
-import static org.quartz.TriggerBuilder.*;
-import static org.quartz.SimpleScheduleBuilder.*;
-import static org.quartz.CronScheduleBuilder.*;
+import org.apache.commons.io.IOUtils;
+import org.apache.log4j.Level;
+import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.model.epcis.SubscriptionType;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoOperations;
 
 /**
  * Servlet implementation class SubscriptionServlet
@@ -30,7 +29,6 @@ public class SubscriptionServlet extends HttpServlet {
 	 */
 	public SubscriptionServlet() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -39,7 +37,8 @@ public class SubscriptionServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		ConfigurationServlet.logger.log(Level.WARN,
+				"SubscriptionServlet.doGet do nothing");
 	}
 
 	/**
@@ -48,36 +47,32 @@ public class SubscriptionServlet extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
+		ConfigurationServlet.logger.log(Level.WARN,
+				"SubscriptionServlet.doPost do nothing");
+		
+		// Test DoPost for the callback result
+		InputStream is = request.getInputStream();
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(is, writer, "UTF-8");
+		String xmlString = writer.toString();
+		System.out.println(xmlString);		
 	}
 
+	@SuppressWarnings("resource")
 	@Override
 	public void init() {
-
-		try {
-			SchedulerFactory schedFact = new StdSchedulerFactory();
-			Scheduler sched = schedFact.getScheduler();
-			sched.start();
-			// define the job and tie it to our HelloJob class
-			JobDetail job = newJob(SubscriptionTask.class).withIdentity(
-					"myJob", "group1").build();
-
-			// Trigger the job to run now, and then every 40 seconds
-			Trigger trigger = newTrigger()
-					.withIdentity("myTrigger", "group1")
-					.startNow()
-					.withSchedule(
-							simpleSchedule().withIntervalInSeconds(40)
-									.repeatForever()).build();
-
-			// Tell quartz to schedule the job using our trigger
-			sched.scheduleJob(job, trigger);
-
-		} catch (SchedulerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+		
+		List<SubscriptionType> allSubscription = mongoOperation.findAll(SubscriptionType.class);
+		QueryService queryService = new QueryService();
+		ConfigurationServlet.logger.log(Level.INFO, "Loading pre-existing subscription");
+		for(int i = 0 ; i < allSubscription.size() ; i++ )
+		{
+			SubscriptionType subscription = allSubscription.get(i);
+			queryService.addScheduleToQuartz(subscription);
 		}
-
 	}
-
 }

@@ -20,10 +20,10 @@
 			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
 	</servlet>
 	<servlet>
-		<servlet-name>SubscriptionManagerServlet</servlet-name>
-		<display-name>SubscriptionManagerServlet</display-name>
+		<servlet-name>SubscriptionServlet</servlet-name>
+		<display-name>SubscriptionServlet</display-name>
 		<description></description>
-		<servlet-class>org.oliot.epcis.service.query.SubscriptionManagerServlet</servlet-class>
+		<servlet-class>org.oliot.epcis.service.query.SubscriptionServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
 
@@ -32,17 +32,18 @@
 		<url-pattern>/configuration</url-pattern>
 	</servlet-mapping>
 
-	<servlet-mapping>
-		<servlet-name>SubscriptionManagerServlet</servlet-name>
-		<url-pattern>/SubscriptionManagerServlet</url-pattern>
-	</servlet-mapping>
-	
+
+
 	<!-- Spring Framework MVC -->
 
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
 		<url-pattern>/Service/*</url-pattern>
 	</servlet-mapping>
-	
+	<servlet-mapping>
+		<servlet-name>SubscriptionServlet</servlet-name>
+		<url-pattern>/SubscriptionServlet</url-pattern>
+	</servlet-mapping>
+
 
 </web-app>
