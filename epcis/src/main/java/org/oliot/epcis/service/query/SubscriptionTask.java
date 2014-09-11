@@ -8,12 +8,10 @@ import java.net.URL;
 
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.quartz.InterruptableJob;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.UnableToInterruptJobException;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -106,13 +104,13 @@ public class SubscriptionTask implements Job {
 				orderDirection, eventCountLimit, maxEventCount);
 
 		try {
- 			URL url = new URL(dest);
+			URL url = new URL(dest);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
-			conn.setRequestProperty("Content-Length", "" + 
-		               Integer.toString(pollResult.getBytes().length));
+			conn.setRequestProperty("Content-Length",
+					"" + Integer.toString(pollResult.getBytes().length));
 			DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
 			wr.writeBytes(pollResult);
 			wr.flush();
