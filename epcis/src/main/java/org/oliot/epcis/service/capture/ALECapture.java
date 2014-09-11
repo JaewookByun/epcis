@@ -81,20 +81,27 @@ public class ALECapture implements ServletContextAware {
 
 			// Get ECReport
 			InputStream is = request.getInputStream();
-			String xmlDocumentString = getXMLDocumentString(is);
-			InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
-			// Parsing and Validating data
-			String xsdPath = servletContext.getRealPath("/wsdl");
-			xsdPath += "/EPCglobal-ale-1_1-ale.xsd";
-			boolean isValidated = validate(validateStream, xsdPath);
-			if (isValidated == false) {
-				return;
-			}
+			ECReports ecReports;
+			
+			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
+				String xmlDocumentString = getXMLDocumentString(is);
+				InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
+				// Parsing and Validating data
+				String xsdPath = servletContext.getRealPath("/wsdl");
+				xsdPath += "/EPCglobal-ale-1_1-ale.xsd";
+				boolean isValidated = validate(validateStream, xsdPath);
+				if (isValidated == false) {
+					ConfigurationServlet.logger
+							.info(" ECReport : Verification Failed ");
+					return;
+				}
 
-			InputStream ecReportStream = getXMLDocumentInputStream(xmlDocumentString);
-			ConfigurationServlet.logger.info(" EPCIS Document : Validated ");
-			ECReports ecReports = JAXB.unmarshal(ecReportStream,
-					ECReports.class);
+				InputStream ecReportStream = getXMLDocumentInputStream(xmlDocumentString);
+				ConfigurationServlet.logger.info(" ECReport : Validated ");
+				ecReports = JAXB.unmarshal(ecReportStream, ECReports.class);
+			}else {
+				ecReports = JAXB.unmarshal(is, ECReports.class);
+			}
 
 			// Event Type branch
 			if (eventType.equals("AggregationEvent")) {

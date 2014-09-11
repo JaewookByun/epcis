@@ -56,26 +56,38 @@ public class Capture implements ServletContextAware {
 			ConfigurationServlet.logger
 					.info(" EPCIS Document Capture Started.... ");
 
-			// Get ECReport
+			// Get Input Stream
 			InputStream is = request.getInputStream();
-			String isString = getInputStream(is);
+			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
+				String isString = getInputStream(is);
 
-			InputStream validateStream = getXMLDocumentInputStream(isString);
-			// Parsing and Validating data
-			String xsdPath = servletContext.getRealPath("/wsdl");
-			xsdPath += "/EPCglobal-epcis-1_1_jack.xsd";
-			boolean isValidated = validate(validateStream, xsdPath);
-			if (isValidated == false) {
-				return;
+				InputStream validateStream = getXMLDocumentInputStream(isString);
+				// Parsing and Validating data
+				String xsdPath = servletContext.getRealPath("/wsdl");
+				xsdPath += "/EPCglobal-epcis-1_1_jack.xsd";
+				boolean isValidated = validate(validateStream, xsdPath);
+				if (isValidated == false) {
+					return;
+				}
+
+				InputStream epcisStream = getXMLDocumentInputStream(isString);
+				ConfigurationServlet.logger
+						.info(" EPCIS Document : Validated ");
+				EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
+						EPCISDocumentType.class);
+
+				CaptureService cs = new CaptureService();
+				cs.capture(epcisDocument);
+				ConfigurationServlet.logger
+				.info(" EPCIS Document : Captured ");
+			} else {
+				EPCISDocumentType epcisDocument = JAXB.unmarshal(is,
+						EPCISDocumentType.class);
+				CaptureService cs = new CaptureService();
+				cs.capture(epcisDocument);
+				ConfigurationServlet.logger
+				.info(" EPCIS Document : Captured ");
 			}
-
-			InputStream epcisStream = getXMLDocumentInputStream(isString);
-			ConfigurationServlet.logger.info(" EPCIS Document : Validated ");
-			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
-					EPCISDocumentType.class);
-
-			CaptureService cs = new CaptureService();
-			cs.capture(epcisDocument);
 
 		} catch (IOException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
