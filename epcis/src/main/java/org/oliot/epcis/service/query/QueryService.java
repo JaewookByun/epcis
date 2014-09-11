@@ -38,14 +38,10 @@ import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
-import org.quartz.JobKey;
-import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -58,6 +54,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+
+import static org.quartz.TriggerKey.*;
+import static org.quartz.JobKey.*;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -310,27 +309,26 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * Removes a previously registered subscription having the specified
 	 * subscriptionID.
 	 */
+	@SuppressWarnings("resource")
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	@Override
 	public void unsubscribe(@PathVariable String subscriptionID) {
-	
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
-		
+
 		// Its size should be 0 or 1
 		List<SubscriptionType> subscriptions = mongoOperation.find(new Query(
 				Criteria.where("subscriptionID").is(subscriptionID)),
-				SubscriptionType.class);		
+				SubscriptionType.class);
 
-		for(int i = 0 ; i < subscriptions.size() ;i++)
-		{
+		for (int i = 0; i < subscriptions.size(); i++) {
 			SubscriptionType subscription = subscriptions.get(i);
 			// Remove from current Quartz
 			removeScheduleFromQuartz(subscription);
 			// Remove from DB list
-			removeScheduleFromDB(subscription);
+			removeScheduleFromDB(mongoOperation, subscription);
 		}
 	}
 
@@ -342,33 +340,33 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	@RequestMapping(value = "/SubscriptionIDs/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
-		
+
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
-		
+
 		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
 				Criteria.where("queryName").is(queryName)),
-				SubscriptionType.class);		
-		
+				SubscriptionType.class);
+
 		JSONArray retArray = new JSONArray();
-		for(int i = 0 ; i < allSubscription.size() ;i++)
-		{
+		for (int i = 0; i < allSubscription.size(); i++) {
 			SubscriptionType subscription = allSubscription.get(i);
 			retArray.put(subscription.getSubscriptionID());
 		}
 		return retArray.toString(1);
 	}
-	
+
 	/**
 	 * Alternatively use public String getSubscriptionIDsREST(String queryName)
 	 */
 	@Deprecated
 	@Override
-	public List<String> getSubscriptionIDs(String queryName)
-	{
-		ConfigurationServlet.logger.log(Level.WARN, "Alternatively use public String getSubscriptionIDsREST(String queryName)");
+	public List<String> getSubscriptionIDs(String queryName) {
+		ConfigurationServlet.logger
+				.log(Level.WARN,
+						"Alternatively use public String getSubscriptionIDsREST(String queryName)");
 		return null;
 	}
 
@@ -1062,10 +1060,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * this parameter and WD_readPoint are both omitted, events are
 			 * returned regardless of the value of the readPoint field or
 			 * whether the readPoint field exists at all.
-			 *
-			 * //TODO: This query style is successful in mongo console. However,
-			 * in the spring/mongo case is not available. Need to check later
-			 * 
 			 */
 			if (EQ_readPoint != null) {
 				String[] eqReadPointArray = EQ_readPoint.split(",");
@@ -1089,13 +1083,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * for “with descendants.”) If this parameter and EQ_readPoint are
 			 * both omitted, events are returned regardless of the value of the
 			 * readPoint field or whether the readPoint field exists at all.
-			 * 
-			 * //TODO: This query style is successful in mongo console. However,
-			 * in the spring/mongo case is not available. Need to check later
 			 */
 			if (WD_readPoint != null) {
-				// TODO: Need to check nested query readPoint.id
-				// TODO: Need to check regex works or not
 				String[] wdReadPointArray = WD_readPoint.split(",");
 				List<Pattern> patternArray = new ArrayList<Pattern>();
 				for (int i = 0; i < wdReadPointArray.length; i++) {
@@ -1127,8 +1116,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * bizLocation field.
 			 */
 			if (WD_bizLocation != null) {
-				// TODO: Need to check nested query readPoint.id
-				// TODO: Need to check regex works or not
 				String[] wdBizLocationArray = WD_bizLocation.split(",");
 				List<Pattern> patternArray = new ArrayList<Pattern>();
 				for (int i = 0; i < wdBizLocationArray.length; i++) {
@@ -1151,8 +1138,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 * (that is, TransformationEvents or extension event type that
 			 * extend TransformationEvent); and where (b) the transformationID
 			 * field is equal to one of the values specified in this parameter.
-			 * TODO: TransformationID 가 있어야만 한다고 함. 이런 필터링을 고려해서 처리해야 하며. 다른
-			 * 쿼리조건도 봐보
 			 */
 			if (EQ_transformationID != null) {
 				String[] eqTransformationIDArray = EQ_transformationID
@@ -1479,13 +1464,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			if (subscription.getWD_bizLocation() != null)
 				map.put("WD_bizLocation", subscription.getWD_bizLocation());
 			if (subscription.getEQ_bizTransaction_type() != null)
-				map.put("EQ_bizTransaction_type", subscription.getEQ_bizTransaction_type());
+				map.put("EQ_bizTransaction_type",
+						subscription.getEQ_bizTransaction_type());
 			if (subscription.getEQ_source_type() != null)
 				map.put("EQ_source_type", subscription.getEQ_source_type());
 			if (subscription.getEQ_destination_type() != null)
-				map.put("EQ_destination_type", subscription.getEQ_destination_type());
+				map.put("EQ_destination_type",
+						subscription.getEQ_destination_type());
 			if (subscription.getEQ_transformationID() != null)
-				map.put("EQ_transformationID", subscription.getEQ_transformationID());
+				map.put("EQ_transformationID",
+						subscription.getEQ_transformationID());
 			if (subscription.getMATCH_epc() != null)
 				map.put("MATCH_epc", subscription.getMATCH_epc());
 			if (subscription.getMATCH_parentID() != null)
@@ -1499,11 +1487,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			if (subscription.getMATCH_epcClass() != null)
 				map.put("MATCH_epcClass", subscription.getMATCH_epcClass());
 			if (subscription.getMATCH_inputEPCClass() != null)
-				map.put("MATCH_inputEPCClass", subscription.getMATCH_inputEPCClass());
+				map.put("MATCH_inputEPCClass",
+						subscription.getMATCH_inputEPCClass());
 			if (subscription.getMATCH_outputEPCClass() != null)
-				map.put("MATCH_outputEPCClass", subscription.getMATCH_outputEPCClass());
+				map.put("MATCH_outputEPCClass",
+						subscription.getMATCH_outputEPCClass());
 			if (subscription.getMATCH_anyEPCClass() != null)
-				map.put("MATCH_anyEPCClass", subscription.getMATCH_anyEPCClass());
+				map.put("MATCH_anyEPCClass",
+						subscription.getMATCH_anyEPCClass());
 			if (subscription.getEQ_quantity() != null)
 				map.put("EQ_quantity", subscription.getEQ_quantity());
 			if (subscription.getGT_quantity() != null)
@@ -1527,24 +1518,32 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("LE_fieldname", subscription.getLE_fieldname());
 
 			if (subscription.getEQ_ILMD_fieldname() != null)
-				map.put("EQ_ILMD_fieldname", subscription.getEQ_ILMD_fieldname());
+				map.put("EQ_ILMD_fieldname",
+						subscription.getEQ_ILMD_fieldname());
 			if (subscription.getGT_ILMD_fieldname() != null)
-				map.put("GT_ILMD_fieldname", subscription.getGT_ILMD_fieldname());
+				map.put("GT_ILMD_fieldname",
+						subscription.getGT_ILMD_fieldname());
 			if (subscription.getGE_ILMD_fieldname() != null)
-				map.put("GE_ILMD_fieldname", subscription.getGE_ILMD_fieldname());
+				map.put("GE_ILMD_fieldname",
+						subscription.getGE_ILMD_fieldname());
 			if (subscription.getLT_ILMD_fieldname() != null)
-				map.put("LT_ILMD_fieldname", subscription.getLT_ILMD_fieldname());
+				map.put("LT_ILMD_fieldname",
+						subscription.getLT_ILMD_fieldname());
 			if (subscription.getLE_ILMD_fieldname() != null)
-				map.put("LE_ILMD_fieldname", subscription.getLE_ILMD_fieldname());
+				map.put("LE_ILMD_fieldname",
+						subscription.getLE_ILMD_fieldname());
 
 			if (subscription.getEXIST_fieldname() != null)
 				map.put("EXIST_fieldname", subscription.getEXIST_fieldname());
 			if (subscription.getEXIST_ILMD_fieldname() != null)
-				map.put("EXIST_ILMD_fieldname", subscription.getEXIST_ILMD_fieldname());
+				map.put("EXIST_ILMD_fieldname",
+						subscription.getEXIST_ILMD_fieldname());
 			if (subscription.getHASATTR_fieldname() != null)
-				map.put("HASATTR_fieldname", subscription.getHASATTR_fieldname());
+				map.put("HASATTR_fieldname",
+						subscription.getHASATTR_fieldname());
 			if (subscription.getEQATTR_fieldname_attrname() != null)
-				map.put("EQATTR_fieldname_attrname", subscription.getEQATTR_fieldname_attrname());
+				map.put("EQATTR_fieldname_attrname",
+						subscription.getEQATTR_fieldname_attrname());
 			if (subscription.getOrderBy() != null)
 				map.put("orderBy", subscription.getOrderBy());
 			if (subscription.getOrderDirection() != null)
@@ -1555,30 +1554,36 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("maxEventCount", subscription.getMaxEventCount());
 
 			JobDetail job = newJob(SubscriptionTask.class)
-					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).setJobData(map)
+					.withIdentity(subscription.getSubscriptionID(),
+							subscription.getQueryName()).setJobData(map)
 					.build();
 
 			Trigger trigger = newTrigger()
-					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).startNow()
-					.withSchedule(cronSchedule(subscription.getCronExpression()))
-					.forJob(subscription.getSubscriptionID(), subscription.getQueryName()).build();
+					.withIdentity(subscription.getSubscriptionID(),
+							subscription.getQueryName())
+					.startNow()
+					.withSchedule(
+							cronSchedule(subscription.getCronExpression()))
+					.forJob(subscription.getSubscriptionID(),
+							subscription.getQueryName()).build();
 
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					"classpath:QuartzConfig.xml");
-			Scheduler sched = (Scheduler) context
-					.getBean("schedulerFactoryBean");
+			// ClassPathXmlApplicationContext context = new
+			// ClassPathXmlApplicationContext(
+			// "classpath:QuartzConfig.xml");
+			// Scheduler sched = (Scheduler) context
+			// .getBean("schedulerFactoryBean");
 
-			if (sched.isStarted() != true)
-				sched.start();
-
-			sched.scheduleJob(job, trigger);
+			if (SubscriptionServlet.sched.isStarted() != true)
+				SubscriptionServlet.sched.start();
+			SubscriptionServlet.sched.scheduleJob(job, trigger);
+			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+					+ subscription.getSubscriptionID()
+					+ " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
 	}
-	
-	
-	@SuppressWarnings("resource")
+
 	public void addScheduleToQuartz(String queryName, String subscriptionID,
 			String dest, String cronExpression, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
@@ -1713,18 +1718,20 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 			Trigger trigger = newTrigger()
 					.withIdentity(subscriptionID, queryName).startNow()
-					.withSchedule(cronSchedule(cronExpression))
-					.build();
+					.withSchedule(cronSchedule(cronExpression)).build();
 
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					"classpath:QuartzConfig.xml");
-			Scheduler sched = (Scheduler) context
-					.getBean("schedulerFactoryBean");
+			// ClassPathXmlApplicationContext context = new
+			// ClassPathXmlApplicationContext(
+			// "classpath:QuartzConfig.xml");
+			// Scheduler sched = (Scheduler) context
+			// .getBean("schedulerFactoryBean");
 
-			if (sched.isStarted() != true)
-				sched.start();
+			if (SubscriptionServlet.sched.isStarted() != true)
+				SubscriptionServlet.sched.start();
+			SubscriptionServlet.sched.scheduleJob(job, trigger);
 
-			sched.scheduleJob(job, trigger);
+			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+					+ subscriptionID + " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
@@ -1779,29 +1786,34 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			return false;
 		if (existenceTest.size() == 0)
 			mongoOperation.save(st);
+
+		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+				+ subscriptionID + " is added to DB. ");
 		return true;
 	}
-	
-	@SuppressWarnings("resource")
-	public void removeScheduleFromQuartz(SubscriptionType subscription)
-	{
+
+	public void removeScheduleFromQuartz(SubscriptionType subscription) {
 		try {
-			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-					"classpath:QuartzConfig.xml");
-			Scheduler sched = (Scheduler) context
-					.getBean("schedulerFactoryBean");
-			JobKey jk = new JobKey(subscription.getSubscriptionID(), subscription.getQueryName());
-			TriggerKey tk = new TriggerKey(subscription.getSubscriptionID(), subscription.getQueryName());
-			sched.unscheduleJob(tk);
-			sched.deleteJob(jk);
-			sched.interrupt(jk);
-			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: " + subscription + " is successfully removed from scheduler");;
+			SubscriptionServlet.sched.unscheduleJob(triggerKey(
+					subscription.getSubscriptionID(),
+					subscription.getQueryName()));
+			SubscriptionServlet.sched.deleteJob(jobKey(
+					subscription.getSubscriptionID(),
+					subscription.getQueryName()));
+			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+					+ subscription + " is removed from scheduler");
 		} catch (SchedulerException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
 	}
-	public void removeScheduleFromDB(SubscriptionType subscription)
-	{
-		
+
+	public void removeScheduleFromDB(MongoOperations mongoOperation,
+			SubscriptionType subscription) {
+		mongoOperation.remove(
+				new Query(Criteria.where("subscriptionID").is(
+						subscription.getSubscriptionID())),
+				SubscriptionType.class);
+		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+				+ subscription + " is removed from DB");
 	}
 }
