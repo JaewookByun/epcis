@@ -1,5 +1,9 @@
 package org.oliot.epcis.service.query;
 
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.io.StringWriter;
 import java.net.URI;
 import java.text.ParseException;
@@ -16,7 +20,9 @@ import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
+import org.apache.log4j.Level;
 import org.json.JSONArray;
+import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
@@ -27,10 +33,19 @@ import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.SubscriptionControls;
+import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -82,6 +97,80 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 	}
 
+	public String subscribe(SubscriptionType subscription) {
+		String queryName = subscription.getQueryName();
+		String subscriptionID = subscription.getSubscriptionID();
+		String dest = subscription.getDest();
+		String cronExpression = subscription.getCronExpression();
+		String eventType = subscription.getEventType();
+		String GE_eventTime = subscription.getGE_eventTime();
+		String LT_eventTime = subscription.getLT_eventTime();
+		String GE_recordTime = subscription.getGE_recordTime();
+		String LT_recordTime = subscription.getLT_recordTime();
+		String EQ_action = subscription.getEQ_action();
+		String EQ_bizStep = subscription.getEQ_bizStep();
+		String EQ_disposition = subscription.getEQ_disposition();
+		String EQ_readPoint = subscription.getEQ_readPoint();
+		String WD_readPoint = subscription.getWD_readPoint();
+		String EQ_bizLocation = subscription.getEQ_bizLocation();
+		String WD_bizLocation = subscription.getWD_bizLocation();
+		String EQ_bizTransaction_type = subscription
+				.getEQ_bizTransaction_type();
+		String EQ_source_type = subscription.getEQ_source_type();
+		String EQ_destination_type = subscription.getEQ_destination_type();
+		String EQ_transformationID = subscription.getEQ_transformationID();
+		String MATCH_epc = subscription.getMATCH_epc();
+		String MATCH_parentID = subscription.getMATCH_parentID();
+		String MATCH_inputEPC = subscription.getMATCH_inputEPC();
+		String MATCH_outputEPC = subscription.getMATCH_outputEPC();
+		String MATCH_anyEPC = subscription.getMATCH_anyEPC();
+		String MATCH_epcClass = subscription.getMATCH_epcClass();
+		String MATCH_inputEPCClass = subscription.getMATCH_inputEPCClass();
+		String MATCH_outputEPCClass = subscription.getMATCH_outputEPCClass();
+		String MATCH_anyEPCClass = subscription.getMATCH_anyEPCClass();
+		String EQ_quantity = subscription.getEQ_quantity();
+		String GT_quantity = subscription.getGT_quantity();
+		String GE_quantity = subscription.getGE_quantity();
+		String LT_quantity = subscription.getLT_quantity();
+		String LE_quantity = subscription.getLE_quantity();
+		String EQ_fieldname = subscription.getEQ_fieldname();
+		String GT_fieldname = subscription.getGT_fieldname();
+		String GE_fieldname = subscription.getGE_fieldname();
+		String LT_fieldname = subscription.getLT_fieldname();
+		String LE_fieldname = subscription.getLE_fieldname();
+		String EQ_ILMD_fieldname = subscription.getEQ_ILMD_fieldname();
+		String GT_ILMD_fieldname = subscription.getGT_ILMD_fieldname();
+		String GE_ILMD_fieldname = subscription.getGE_ILMD_fieldname();
+		String LT_ILMD_fieldname = subscription.getLT_ILMD_fieldname();
+		String LE_ILMD_fieldname = subscription.getLE_ILMD_fieldname();
+		String EXIST_fieldname = subscription.getEXIST_fieldname();
+		String EXIST_ILMD_fieldname = subscription.getEXIST_ILMD_fieldname();
+		String HASATTR_fieldname = subscription.getHASATTR_fieldname();
+		String EQATTR_fieldname_attrname = subscription
+				.getEQATTR_fieldname_attrname();
+		String orderBy = subscription.getOrderBy();
+		String orderDirection = subscription.getOrderDirection();
+		String eventCountLimit = subscription.getEventCountLimit();
+		String maxEventCount = subscription.getMaxEventCount();
+
+		String result = subscribe(queryName, subscriptionID, dest,
+				cronExpression, eventType, GE_eventTime, LT_eventTime,
+				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
+				EQ_destination_type, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, EQ_fieldname, GT_fieldname,
+				GE_fieldname, LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+		return result;
+	}
+
 	/**
 	 * Registers a subscriber for a previously defined query having the
 	 * specified name. The params argument provides the values to be used for
@@ -103,30 +192,183 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * not have a destination pre-arranged for the caller, or does not permit
 	 * this usage, it SHALL raise an InvalidURIException.
 	 */
+	@RequestMapping(value = "/Subscribe/{queryName}/{subscriptionID}", method = RequestMethod.GET)
+	@ResponseBody
+	public String subscribe(@PathVariable String queryName,
+			@PathVariable String subscriptionID, @RequestParam String dest,
+			@RequestParam String cronExpression,
+			@RequestParam(required = false) String eventType,
+			@RequestParam(required = false) String GE_eventTime,
+			@RequestParam(required = false) String LT_eventTime,
+			@RequestParam(required = false) String GE_recordTime,
+			@RequestParam(required = false) String LT_recordTime,
+			@RequestParam(required = false) String EQ_action,
+			@RequestParam(required = false) String EQ_bizStep,
+			@RequestParam(required = false) String EQ_disposition,
+			@RequestParam(required = false) String EQ_readPoint,
+			@RequestParam(required = false) String WD_readPoint,
+			@RequestParam(required = false) String EQ_bizLocation,
+			@RequestParam(required = false) String WD_bizLocation,
+			@RequestParam(required = false) String EQ_bizTransaction_type,
+			@RequestParam(required = false) String EQ_source_type,
+			@RequestParam(required = false) String EQ_destination_type,
+			@RequestParam(required = false) String EQ_transformationID,
+			@RequestParam(required = false) String MATCH_epc,
+			@RequestParam(required = false) String MATCH_parentID,
+			@RequestParam(required = false) String MATCH_inputEPC,
+			@RequestParam(required = false) String MATCH_outputEPC,
+			@RequestParam(required = false) String MATCH_anyEPC,
+			@RequestParam(required = false) String MATCH_epcClass,
+			@RequestParam(required = false) String MATCH_inputEPCClass,
+			@RequestParam(required = false) String MATCH_outputEPCClass,
+			@RequestParam(required = false) String MATCH_anyEPCClass,
+			@RequestParam(required = false) String EQ_quantity,
+			@RequestParam(required = false) String GT_quantity,
+			@RequestParam(required = false) String GE_quantity,
+			@RequestParam(required = false) String LT_quantity,
+			@RequestParam(required = false) String LE_quantity,
+			@RequestParam(required = false) String EQ_fieldname,
+			@RequestParam(required = false) String GT_fieldname,
+			@RequestParam(required = false) String GE_fieldname,
+			@RequestParam(required = false) String LT_fieldname,
+			@RequestParam(required = false) String LE_fieldname,
+			@RequestParam(required = false) String EQ_ILMD_fieldname,
+			@RequestParam(required = false) String GT_ILMD_fieldname,
+			@RequestParam(required = false) String GE_ILMD_fieldname,
+			@RequestParam(required = false) String LT_ILMD_fieldname,
+			@RequestParam(required = false) String LE_ILMD_fieldname,
+			@RequestParam(required = false) String EXIST_fieldname,
+			@RequestParam(required = false) String EXIST_ILMD_fieldname,
+			@RequestParam(required = false) String HASATTR_fieldname,
+			@RequestParam(required = false) String EQATTR_fieldname_attrname,
+			@RequestParam(required = false) String orderBy,
+			@RequestParam(required = false) String orderDirection,
+			@RequestParam(required = false) String eventCountLimit,
+			@RequestParam(required = false) String maxEventCount) {
+
+		if (!queryName.equals("SimpleEventQuery"))
+			return "Unavailable Query Name";
+
+		// cron Example
+		// 0/10 * * * * ? : every 10 second
+
+		// Add Schedule with Query
+		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+
+		// Manage Subscription Persistently
+		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+
+		String retString = "SubscriptionID : " + subscriptionID
+				+ " is successfully triggered. ";
+		return retString;
+	}
+
+	/**
+	 * @author Jack Jaewook Byun
+	 * 
+	 *         Reason of deprecation : EPCIS v1.1 spec's QuerySchedule is not
+	 *         described in fine-grained manner. This description seems refering
+	 *         to 'Unix-cron'-like expression, but not describing seemlessly.
+	 * 
+	 */
+	@Deprecated
 	@Override
 	public void subscribe(String queryName, QueryParams params, URI dest,
 			SubscriptionControls controls, String subscriptionID) {
-		
-		
+
 	}
 
 	/**
 	 * Removes a previously registered subscription having the specified
 	 * subscriptionID.
 	 */
+	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	@Override
-	public void unsubscribe(String subscriptionID) {
-		// TODO Auto-generated method stub
+	public void unsubscribe(@PathVariable String subscriptionID) {
+	
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+		
+		// Its size should be 0 or 1
+		List<SubscriptionType> subscriptions = mongoOperation.find(new Query(
+				Criteria.where("subscriptionID").is(subscriptionID)),
+				SubscriptionType.class);		
 
+		for(int i = 0 ; i < subscriptions.size() ;i++)
+		{
+			SubscriptionType subscription = subscriptions.get(i);
+			// Remove from current Quartz
+			removeScheduleFromQuartz(subscription);
+			// Remove from DB list
+			removeScheduleFromDB(subscription);
+		}
 	}
 
 	/**
 	 * Returns a list of all subscriptionIDs currently subscribed to the
 	 * specified named query.
 	 */
+	@SuppressWarnings("resource")
+	@RequestMapping(value = "/SubscriptionIDs/{queryName}", method = RequestMethod.GET)
+	@ResponseBody
+	public String getSubscriptionIDsREST(@PathVariable String queryName) {
+		
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+		
+		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
+				Criteria.where("queryName").is(queryName)),
+				SubscriptionType.class);		
+		
+		JSONArray retArray = new JSONArray();
+		for(int i = 0 ; i < allSubscription.size() ;i++)
+		{
+			SubscriptionType subscription = allSubscription.get(i);
+			retArray.put(subscription.getSubscriptionID());
+		}
+		return retArray.toString(1);
+	}
+	
+	/**
+	 * Alternatively use public String getSubscriptionIDsREST(String queryName)
+	 */
+	@Deprecated
 	@Override
-	public List<String> getSubscriptionIDs(String queryName) {
-		// TODO Auto-generated method stub
+	public List<String> getSubscriptionIDs(String queryName)
+	{
+		ConfigurationServlet.logger.log(Level.WARN, "Alternatively use public String getSubscriptionIDsREST(String queryName)");
 		return null;
 	}
 
@@ -266,7 +508,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			for (int i = 0; i < criteriaList.size(); i++) {
 				searchQuery.addCriteria(criteriaList.get(i));
 			}
-			
+
 			// Sort and Limit Query
 			searchQuery = makeSortAndLimitQuery(searchQuery, orderBy,
 					orderDirection, eventCountLimit, maxEventCount);
@@ -630,6 +872,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				query.limit(eventCount);
 			} catch (NumberFormatException nfe) {
 				isNumberFormatException = true;
+				ConfigurationServlet.logger.log(Level.ERROR, nfe.toString());
 			}
 		}
 
@@ -1198,9 +1441,367 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 **/
 
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
 		return criteriaList;
+	}
+
+	public void addScheduleToQuartz(SubscriptionType subscription) {
+		try {
+			JobDataMap map = new JobDataMap();
+			map.put("queryName", subscription.getQueryName());
+			map.put("subscriptionID", subscription.getSubscriptionID());
+			map.put("dest", subscription.getDest());
+			map.put("cronExpression", subscription.getCronExpression());
+
+			if (subscription.getEventType() != null)
+				map.put("eventType", subscription.getEventType());
+			if (subscription.getGE_eventTime() != null)
+				map.put("GE_eventTime", subscription.getGE_eventTime());
+			if (subscription.getLT_eventTime() != null)
+				map.put("LT_eventTime", subscription.getLT_eventTime());
+			if (subscription.getGE_recordTime() != null)
+				map.put("GE_recordTime", subscription.getGE_recordTime());
+			if (subscription.getLT_recordTime() != null)
+				map.put("LT_recordTime", subscription.getLT_recordTime());
+			if (subscription.getEQ_action() != null)
+				map.put("EQ_action", subscription.getEQ_action());
+			if (subscription.getEQ_bizStep() != null)
+				map.put("EQ_bizStep", subscription.getEQ_bizStep());
+			if (subscription.getEQ_disposition() != null)
+				map.put("EQ_disposition", subscription.getEQ_disposition());
+			if (subscription.getEQ_readPoint() != null)
+				map.put("EQ_readPoint", subscription.getEQ_readPoint());
+			if (subscription.getWD_readPoint() != null)
+				map.put("WD_readPoint", subscription.getWD_readPoint());
+			if (subscription.getEQ_bizLocation() != null)
+				map.put("EQ_bizLocation", subscription.getEQ_bizLocation());
+			if (subscription.getWD_bizLocation() != null)
+				map.put("WD_bizLocation", subscription.getWD_bizLocation());
+			if (subscription.getEQ_bizTransaction_type() != null)
+				map.put("EQ_bizTransaction_type", subscription.getEQ_bizTransaction_type());
+			if (subscription.getEQ_source_type() != null)
+				map.put("EQ_source_type", subscription.getEQ_source_type());
+			if (subscription.getEQ_destination_type() != null)
+				map.put("EQ_destination_type", subscription.getEQ_destination_type());
+			if (subscription.getEQ_transformationID() != null)
+				map.put("EQ_transformationID", subscription.getEQ_transformationID());
+			if (subscription.getMATCH_epc() != null)
+				map.put("MATCH_epc", subscription.getMATCH_epc());
+			if (subscription.getMATCH_parentID() != null)
+				map.put("MATCH_parentID", subscription.getMATCH_parentID());
+			if (subscription.getMATCH_inputEPC() != null)
+				map.put("MATCH_inputEPC", subscription.getMATCH_inputEPC());
+			if (subscription.getMATCH_outputEPC() != null)
+				map.put("MATCH_outputEPC", subscription.getMATCH_outputEPC());
+			if (subscription.getMATCH_anyEPC() != null)
+				map.put("MATCH_anyEPC", subscription.getMATCH_anyEPC());
+			if (subscription.getMATCH_epcClass() != null)
+				map.put("MATCH_epcClass", subscription.getMATCH_epcClass());
+			if (subscription.getMATCH_inputEPCClass() != null)
+				map.put("MATCH_inputEPCClass", subscription.getMATCH_inputEPCClass());
+			if (subscription.getMATCH_outputEPCClass() != null)
+				map.put("MATCH_outputEPCClass", subscription.getMATCH_outputEPCClass());
+			if (subscription.getMATCH_anyEPCClass() != null)
+				map.put("MATCH_anyEPCClass", subscription.getMATCH_anyEPCClass());
+			if (subscription.getEQ_quantity() != null)
+				map.put("EQ_quantity", subscription.getEQ_quantity());
+			if (subscription.getGT_quantity() != null)
+				map.put("GT_quantity", subscription.getGT_quantity());
+			if (subscription.getGE_quantity() != null)
+				map.put("GE_quantity", subscription.getGE_quantity());
+			if (subscription.getLT_quantity() != null)
+				map.put("LT_quantity", subscription.getLT_quantity());
+			if (subscription.getLE_quantity() != null)
+				map.put("LE_quantity", subscription.getLE_quantity());
+
+			if (subscription.getEQ_fieldname() != null)
+				map.put("EQ_fieldname", subscription.getEQ_fieldname());
+			if (subscription.getGT_fieldname() != null)
+				map.put("GT_fieldname", subscription.getGT_fieldname());
+			if (subscription.getGE_fieldname() != null)
+				map.put("GE_fieldname", subscription.getGE_fieldname());
+			if (subscription.getLT_fieldname() != null)
+				map.put("LT_fieldname", subscription.getLT_fieldname());
+			if (subscription.getLE_fieldname() != null)
+				map.put("LE_fieldname", subscription.getLE_fieldname());
+
+			if (subscription.getEQ_ILMD_fieldname() != null)
+				map.put("EQ_ILMD_fieldname", subscription.getEQ_ILMD_fieldname());
+			if (subscription.getGT_ILMD_fieldname() != null)
+				map.put("GT_ILMD_fieldname", subscription.getGT_ILMD_fieldname());
+			if (subscription.getGE_ILMD_fieldname() != null)
+				map.put("GE_ILMD_fieldname", subscription.getGE_ILMD_fieldname());
+			if (subscription.getLT_ILMD_fieldname() != null)
+				map.put("LT_ILMD_fieldname", subscription.getLT_ILMD_fieldname());
+			if (subscription.getLE_ILMD_fieldname() != null)
+				map.put("LE_ILMD_fieldname", subscription.getLE_ILMD_fieldname());
+
+			if (subscription.getEXIST_fieldname() != null)
+				map.put("EXIST_fieldname", subscription.getEXIST_fieldname());
+			if (subscription.getEXIST_ILMD_fieldname() != null)
+				map.put("EXIST_ILMD_fieldname", subscription.getEXIST_ILMD_fieldname());
+			if (subscription.getHASATTR_fieldname() != null)
+				map.put("HASATTR_fieldname", subscription.getHASATTR_fieldname());
+			if (subscription.getEQATTR_fieldname_attrname() != null)
+				map.put("EQATTR_fieldname_attrname", subscription.getEQATTR_fieldname_attrname());
+			if (subscription.getOrderBy() != null)
+				map.put("orderBy", subscription.getOrderBy());
+			if (subscription.getOrderDirection() != null)
+				map.put("orderDirection", subscription.getOrderDirection());
+			if (subscription.getEventCountLimit() != null)
+				map.put("eventCountLimit", subscription.getEventCountLimit());
+			if (subscription.getMaxEventCount() != null)
+				map.put("maxEventCount", subscription.getMaxEventCount());
+
+			JobDetail job = newJob(SubscriptionTask.class)
+					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).setJobData(map)
+					.build();
+
+			Trigger trigger = newTrigger()
+					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).startNow()
+					.withSchedule(cronSchedule(subscription.getCronExpression()))
+					.forJob(subscription.getSubscriptionID(), subscription.getQueryName()).build();
+
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+					"classpath:QuartzConfig.xml");
+			Scheduler sched = (Scheduler) context
+					.getBean("schedulerFactoryBean");
+
+			if (sched.isStarted() != true)
+				sched.start();
+
+			sched.scheduleJob(job, trigger);
+		} catch (SchedulerException e) {
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+		}
+	}
+	
+	
+	@SuppressWarnings("resource")
+	public void addScheduleToQuartz(String queryName, String subscriptionID,
+			String dest, String cronExpression, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_bizTransaction_type, String EQ_source_type,
+			String EQ_destination_type, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
+			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
+			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
+			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
+			String EXIST_fieldname, String EXIST_ILMD_fieldname,
+			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount) {
+		try {
+			JobDataMap map = new JobDataMap();
+			map.put("queryName", queryName);
+			map.put("subscriptionID", subscriptionID);
+			map.put("dest", dest);
+			map.put("cronExpression", cronExpression);
+
+			if (eventType != null)
+				map.put("eventType", eventType);
+			if (GE_eventTime != null)
+				map.put("GE_eventTime", GE_eventTime);
+			if (LT_eventTime != null)
+				map.put("LT_eventTime", LT_eventTime);
+			if (GE_recordTime != null)
+				map.put("GE_recordTime", GE_recordTime);
+			if (LT_recordTime != null)
+				map.put("LT_recordTime", LT_recordTime);
+			if (EQ_action != null)
+				map.put("EQ_action", EQ_action);
+			if (EQ_bizStep != null)
+				map.put("EQ_bizStep", EQ_bizStep);
+			if (EQ_disposition != null)
+				map.put("EQ_disposition", EQ_disposition);
+			if (EQ_readPoint != null)
+				map.put("EQ_readPoint", EQ_readPoint);
+			if (WD_readPoint != null)
+				map.put("WD_readPoint", WD_readPoint);
+			if (EQ_bizLocation != null)
+				map.put("EQ_bizLocation", EQ_bizLocation);
+			if (WD_bizLocation != null)
+				map.put("WD_bizLocation", WD_bizLocation);
+			if (EQ_bizTransaction_type != null)
+				map.put("EQ_bizTransaction_type", EQ_bizTransaction_type);
+			if (EQ_source_type != null)
+				map.put("EQ_source_type", EQ_source_type);
+			if (EQ_destination_type != null)
+				map.put("EQ_destination_type", EQ_destination_type);
+			if (EQ_transformationID != null)
+				map.put("EQ_transformationID", EQ_transformationID);
+			if (MATCH_epc != null)
+				map.put("MATCH_epc", MATCH_epc);
+			if (MATCH_parentID != null)
+				map.put("MATCH_parentID", MATCH_parentID);
+			if (MATCH_inputEPC != null)
+				map.put("MATCH_inputEPC", MATCH_inputEPC);
+			if (MATCH_outputEPC != null)
+				map.put("MATCH_outputEPC", MATCH_outputEPC);
+			if (MATCH_anyEPC != null)
+				map.put("MATCH_anyEPC", MATCH_anyEPC);
+			if (MATCH_epcClass != null)
+				map.put("MATCH_epcClass", MATCH_epcClass);
+			if (MATCH_inputEPCClass != null)
+				map.put("MATCH_inputEPCClass", MATCH_inputEPCClass);
+			if (MATCH_outputEPCClass != null)
+				map.put("MATCH_outputEPCClass", MATCH_outputEPCClass);
+			if (MATCH_anyEPCClass != null)
+				map.put("MATCH_anyEPCClass", MATCH_anyEPCClass);
+			if (EQ_quantity != null)
+				map.put("EQ_quantity", EQ_quantity);
+			if (GT_quantity != null)
+				map.put("GT_quantity", GT_quantity);
+			if (GE_quantity != null)
+				map.put("GE_quantity", GE_quantity);
+			if (LT_quantity != null)
+				map.put("LT_quantity", LT_quantity);
+			if (LE_quantity != null)
+				map.put("LE_quantity", LE_quantity);
+
+			if (EQ_fieldname != null)
+				map.put("EQ_fieldname", EQ_fieldname);
+			if (GT_fieldname != null)
+				map.put("GT_fieldname", GT_fieldname);
+			if (GE_fieldname != null)
+				map.put("GE_fieldname", GE_fieldname);
+			if (LT_fieldname != null)
+				map.put("LT_fieldname", LT_fieldname);
+			if (LE_fieldname != null)
+				map.put("LE_fieldname", LE_fieldname);
+
+			if (EQ_ILMD_fieldname != null)
+				map.put("EQ_ILMD_fieldname", EQ_ILMD_fieldname);
+			if (GT_ILMD_fieldname != null)
+				map.put("GT_ILMD_fieldname", GT_ILMD_fieldname);
+			if (GE_ILMD_fieldname != null)
+				map.put("GE_ILMD_fieldname", GE_ILMD_fieldname);
+			if (LT_ILMD_fieldname != null)
+				map.put("LT_ILMD_fieldname", LT_ILMD_fieldname);
+			if (LE_ILMD_fieldname != null)
+				map.put("LE_ILMD_fieldname", LE_ILMD_fieldname);
+
+			if (EXIST_fieldname != null)
+				map.put("EXIST_fieldname", EXIST_fieldname);
+			if (EXIST_ILMD_fieldname != null)
+				map.put("EXIST_ILMD_fieldname", EXIST_ILMD_fieldname);
+			if (HASATTR_fieldname != null)
+				map.put("HASATTR_fieldname", HASATTR_fieldname);
+			if (EQATTR_fieldname_attrname != null)
+				map.put("EQATTR_fieldname_attrname", EQATTR_fieldname_attrname);
+			if (orderBy != null)
+				map.put("orderBy", orderBy);
+			if (orderDirection != null)
+				map.put("orderDirection", orderDirection);
+			if (eventCountLimit != null)
+				map.put("eventCountLimit", eventCountLimit);
+			if (maxEventCount != null)
+				map.put("maxEventCount", maxEventCount);
+
+			JobDetail job = newJob(SubscriptionTask.class)
+					.withIdentity(subscriptionID, queryName).setJobData(map)
+					.storeDurably(false).build();
+
+			Trigger trigger = newTrigger()
+					.withIdentity(subscriptionID, queryName).startNow()
+					.withSchedule(cronSchedule(cronExpression))
+					.build();
+
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+					"classpath:QuartzConfig.xml");
+			Scheduler sched = (Scheduler) context
+					.getBean("schedulerFactoryBean");
+
+			if (sched.isStarted() != true)
+				sched.start();
+
+			sched.scheduleJob(job, trigger);
+		} catch (SchedulerException e) {
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+		}
+	}
+
+	@SuppressWarnings("resource")
+	public boolean addScheduleToDB(String queryName, String subscriptionID,
+			String dest, String cronExpression, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_bizTransaction_type, String EQ_source_type,
+			String EQ_destination_type, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
+			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
+			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
+			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
+			String EXIST_fieldname, String EXIST_ILMD_fieldname,
+			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount) {
+		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
+				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
+				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
+				EQ_destination_type, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, EQ_fieldname, GT_fieldname,
+				GE_fieldname, LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		List<SubscriptionType> existenceTest = mongoOperation.find(new Query(
+				Criteria.where("subscriptionID").is(subscriptionID)),
+				SubscriptionType.class);
+		if (existenceTest.size() != 0)
+			return false;
+		if (existenceTest.size() == 0)
+			mongoOperation.save(st);
+		return true;
+	}
+	
+	@SuppressWarnings("resource")
+	public void removeScheduleFromQuartz(SubscriptionType subscription)
+	{
+		try {
+			ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+					"classpath:QuartzConfig.xml");
+			Scheduler sched = (Scheduler) context
+					.getBean("schedulerFactoryBean");
+			JobKey jk = new JobKey(subscription.getSubscriptionID(), subscription.getQueryName());
+			TriggerKey tk = new TriggerKey(subscription.getSubscriptionID(), subscription.getQueryName());
+			sched.unscheduleJob(tk);
+			sched.deleteJob(jk);
+			sched.interrupt(jk);
+			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: " + subscription + " is successfully removed from scheduler");;
+		} catch (SchedulerException e) {
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+		}
+	}
+	public void removeScheduleFromDB(SubscriptionType subscription)
+	{
+		
 	}
 }
