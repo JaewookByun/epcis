@@ -33,6 +33,7 @@ public class ConfigurationServlet extends HttpServlet {
 	public static String backend;
 	public static Logger logger;
 	public static String webInfoPath;
+	public static boolean isCaptureVerfificationOn;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -68,7 +69,7 @@ public class ConfigurationServlet extends HttpServlet {
 		ConfigurationServlet.logger = Logger.getRootLogger();
 		String path = servletConfig.getServletContext().getRealPath("/WEB-INF");
 		try {
-			// Set up Backend
+			// Get Configuration.json
 			File file = new File(path + "/Configuration.json");
 			FileReader fileReader = new FileReader(file);
 			BufferedReader reader = new BufferedReader(fileReader);
@@ -80,10 +81,12 @@ public class ConfigurationServlet extends HttpServlet {
 			}
 			reader.close();
 			JSONObject json = new JSONObject(data);
+
+			// Set up Backend
 			String backend = json.getString("backend");
 			if (backend == null) {
 				ConfigurationServlet.logger
-						.info("Backend is null, please restart the service");
+						.error("Backend is null, please make sure Configuration.json is correct, and restart.");
 			} else {
 				ConfigurationServlet.backend = backend;
 				ConfigurationServlet.logger.info("Backend - "
@@ -92,6 +95,24 @@ public class ConfigurationServlet extends HttpServlet {
 			ConfigurationServlet.webInfoPath = servletConfig
 					.getServletContext().getRealPath("/WEB-INF");
 
+			// Set up capture_verification
+			String captureVerification = json.getString("capture_verification");
+			if( captureVerification == null ) {
+				ConfigurationServlet.logger
+				.error("capture_verification is null, please make sure Configuration.json is correct, and restart.");
+			}
+			captureVerification = captureVerification.trim();
+			if( captureVerification.equals("on") ) {
+				ConfigurationServlet.isCaptureVerfificationOn = true;
+				ConfigurationServlet.logger.info("Capture_Verification - ON ");
+			}
+			else if( captureVerification.equals("off") ){
+				ConfigurationServlet.isCaptureVerfificationOn = false;
+				ConfigurationServlet.logger.info("Capture_Verification - OFF ");
+			} else {
+				ConfigurationServlet.logger
+				.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");			
+			}
 		} catch (Exception ex) {
 			ConfigurationServlet.logger.error(ex.toString());
 		}
