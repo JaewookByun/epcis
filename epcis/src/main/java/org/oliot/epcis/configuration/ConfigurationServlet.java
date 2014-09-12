@@ -17,15 +17,20 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 
 /**
- * Servlet implementation class ConfigurationServlet
- */
-/**
  * Copyright (C) 2014 KAIST RESL
  *
- * This file is part of Oliot (oliot.org).
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
  *
- * @author Jack Jaewook Byun, Ph.D student Korea Advanced Institute of Science
- *         and Technology Real-time Embedded System Laboratory(RESL)
+ * @author Jack Jaewook Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
  *         bjw0829@kaist.ac.kr
  */
 public class ConfigurationServlet extends HttpServlet {
@@ -97,21 +102,20 @@ public class ConfigurationServlet extends HttpServlet {
 
 			// Set up capture_verification
 			String captureVerification = json.getString("capture_verification");
-			if( captureVerification == null ) {
+			if (captureVerification == null) {
 				ConfigurationServlet.logger
-				.error("capture_verification is null, please make sure Configuration.json is correct, and restart.");
+						.error("capture_verification is null, please make sure Configuration.json is correct, and restart.");
 			}
 			captureVerification = captureVerification.trim();
-			if( captureVerification.equals("on") ) {
+			if (captureVerification.equals("on")) {
 				ConfigurationServlet.isCaptureVerfificationOn = true;
 				ConfigurationServlet.logger.info("Capture_Verification - ON ");
-			}
-			else if( captureVerification.equals("off") ){
+			} else if (captureVerification.equals("off")) {
 				ConfigurationServlet.isCaptureVerfificationOn = false;
 				ConfigurationServlet.logger.info("Capture_Verification - OFF ");
 			} else {
 				ConfigurationServlet.logger
-				.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");			
+						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
 		} catch (Exception ex) {
 			ConfigurationServlet.logger.error(ex.toString());
