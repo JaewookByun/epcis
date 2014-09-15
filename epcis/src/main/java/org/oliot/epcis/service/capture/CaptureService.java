@@ -21,6 +21,7 @@ import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
+import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.context.ApplicationContext;
@@ -110,6 +111,19 @@ public class CaptureService implements CoreCaptureService {
 			ConfigurationServlet.logger.info(" Event Saved ");
 		}
 	}
+	
+	@SuppressWarnings("resource")
+	@Override
+	public void capture(SensorEventType event) {
+		if (ConfigurationServlet.backend.equals("MongoDB")) {
+			ApplicationContext ctx = new GenericXmlApplicationContext(
+					"classpath:MongoConfig.xml");
+			MongoOperations mongoOperation = (MongoOperations) ctx
+					.getBean("mongoTemplate");
+			mongoOperation.save(event);
+			ConfigurationServlet.logger.info(" Event Saved ");
+		}
+	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -147,7 +161,11 @@ public class CaptureService implements CoreCaptureService {
 				capture((TransformationEventType) event);
 			} else if (event instanceof QuantityEventType) {
 				capture((QuantityEventType) event);
+			} else if (event instanceof SensorEventType){
+				capture((SensorEventType) event);
 			}
 		}
 	}
+
+	
 }

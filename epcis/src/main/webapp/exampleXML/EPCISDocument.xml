@@ -9,12 +9,8 @@
 			<SensorEvent>
 				<eventTime>2013-12-31T12:00:00</eventTime>
 				<recordTime>2013-12-31T12:00:01</recordTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<finishTime>2001-12-31T12:00:00</finishTime>
-				<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
-				<baseExtension>
-					<ANY-ELEMENT />
-				</baseExtension>
-
 				<action>ADD</action>
 				<bizStep>http://tempuri.org</bizStep>
 				<disposition>http://tempuri.org</disposition>
@@ -31,16 +27,16 @@
 					</extension>
 				</bizLocation>
 				<bizTransactionList>
-					<bizTransaction type="http://tempuri.org">http://tempuri.org</bizTransaction>
+					<bizTransaction type="garbage">http://tempuri.org</bizTransaction>
 				</bizTransactionList>
-				<targetObject>http://tempuri.org</targetObject>
-				<targetArea>targetArea</targetArea>
+				<targetObject>urn:id:epc:sgtin:0.0.1</targetObject>
+				<targetArea>urn:id:epc:sgln:0.0.1</targetArea>
 				<sensingList>
 					<sensingElement>
-						<epc>epc</epc>
-						<type>type</type>
-						<value>value</value>
-						<uom>http://tempuri.org</uom>
+						<epc>urn:id:epc:sgtin:0.1.1</epc>
+						<type>ecg</type>
+						<value>1,2,1,2,1,2,1,2,1,2,2,3,2,1,2,3,2,1,2,3,1,2,3,1,1,1,2,3,2,2</value>
+						<uom>volt</uom>
 					</sensingElement>
 				</sensingList>
 				<extension>

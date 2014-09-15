@@ -72,7 +72,7 @@ public class Capture implements ServletContextAware {
 				InputStream validateStream = getXMLDocumentInputStream(isString);
 				// Parsing and Validating data
 				String xsdPath = servletContext.getRealPath("/wsdl");
-				xsdPath += "/EPCglobal-epcis-1_1_jack.xsd";
+				xsdPath += "/EPCglobal-epcis-1_2_jack.xsd";
 				boolean isValidated = validate(validateStream, xsdPath);
 				if (isValidated == false) {
 					return;

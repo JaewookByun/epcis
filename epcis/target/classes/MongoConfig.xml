@@ -44,6 +44,12 @@
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.QuantityEventReadConverter" />
 			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.SensorEventWriteConverter" />
+			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.SensorEventReadConverter" />
+			</mongo:converter>
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
 
