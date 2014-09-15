@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<epcis:EPCISDocument creationDate="2001-12-31T12:00:00"
+	schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org"
+	xmlns:epcis="axis.epcis.oliot.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-1_2_jack.xsd ">
+	<EPCISBody>
+		<EventList>
+			<SensorEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+				<baseExtension>
+					<ANY-ELEMENT />
+				</baseExtension>
+				<finishTime>2001-12-31T12:00:00</finishTime>
+				<action>ADD</action>
+				<bizStep>http://tempuri.org</bizStep>
+				<disposition>http://tempuri.org</disposition>
+				<readPoint>
+					<id>http://tempuri.org</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>http://tempuri.org</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="http://tempuri.org">http://tempuri.org
+					</bizTransaction>
+				</bizTransactionList>
+				<targetObject>http://tempuri.org</targetObject>
+				<targetArea>targetArea</targetArea>
+				<sensingList>
+					<sensingElement>
+						<epc>epc</epc>
+						<type>type</type>
+						<value>value</value>
+						<uom>http://tempuri.org</uom>
+					</sensingElement>
+				</sensingList>
+				<extension>
+					<ANY-ELEMENT />
+				</extension>
+			</SensorEvent>
+		</EventList>
+		<extension>
+			<ANY-ELEMENT />
+		</extension>
+	</EPCISBody>
+	<extension>
+		<ANY-ELEMENT />
+	</extension>
+</epcis:EPCISDocument>
