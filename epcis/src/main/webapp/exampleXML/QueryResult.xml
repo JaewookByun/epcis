@@ -1,68 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<epcisq:EPCISQueryDocument creationDate="2001-12-31T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org" xmlns:epcis="axis.epcis.oliot.org" xmlns:epcismd="masterdata.axis.epcis.oliot.org" xmlns:epcisq="query.axis.epcis.oliot.org" xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="query.axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-query-1_1.xsd axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-1_1_jack.xsd epcglobal.axis.epcis.oliot.org ../wsdl/EPCglobal.xsd">
-  <EPCISBody>
-    <epcisq:QueryResults>
-      <queryName>queryName</queryName>
-      <subscriptionID>subscriptionID</subscriptionID>
-      <resultsBody>
-        <EventList>
-          <ObjectEvent>
-            <eventTime>2001-12-31T12:00:00</eventTime>
-            <recordTime>2001-12-31T12:00:00</recordTime>
-            <eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
-            <epcList>
-              <epc>epc</epc>
-            </epcList>
-            <action>ADD</action>
-            <bizStep>http://tempuri.org</bizStep>
-            <disposition>http://tempuri.org</disposition>
-            <readPoint>
-              <id>http://tempuri.org</id>
-              <extension>
-             		<any/>	
-              </extension>
-            </readPoint>
-            <bizLocation>
-              <id>http://tempuri.org</id>
-              <extension>
-                	<any/>
-              </extension>
-            </bizLocation>
-            <bizTransactionList>
-              <bizTransaction type="http://tempuri.org">http://tempuri.org</bizTransaction>
-            </bizTransactionList>
-            <extension>
-              <quantityList>
-                <quantityElement>
-                  <epcClass>http://tempuri.org</epcClass>
-                  <quantity>0.0</quantity>
-                  <uom>http://tempuri.org</uom>
-                </quantityElement>
-              </quantityList>
-              <sourceList>
-                <source type="http://tempuri.org">http://tempuri.org</source>
-              </sourceList>
-              <destinationList>
-                <destination type="http://tempuri.org">http://tempuri.org</destination>
-              </destinationList>
-              <ilmd>
-                <extension>
-                  	<any/>
-                </extension>
-              </ilmd>
-              <extension>
-                	<any/>
-              </extension>
-            </extension>
-          </ObjectEvent>
-        </EventList>
-      </resultsBody>
-      <extension>
-        <any/>
-      </extension>
-    </epcisq:QueryResults>
-  </EPCISBody>
-  <extension>
-    <any/>
-  </extension>
+<epcisq:EPCISQueryDocument creationDate="2001-12-31T12:00:00"
+	schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org"
+	xmlns:epcis="axis.epcis.oliot.org" xmlns:epcismd="masterdata.axis.epcis.oliot.org"
+	xmlns:epcisq="query.axis.epcis.oliot.org"
+	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="query.axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-query-1_1.xsd axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-1_1_jack.xsd epcglobal.axis.epcis.oliot.org ../wsdl/EPCglobal.xsd">
+	<EPCISBody>
+		<epcisq:QueryResults>
+			<queryName>queryName</queryName>
+			<subscriptionID>subscriptionID</subscriptionID>
+			<resultsBody>
+				<EventList>
+					<ObjectEvent>
+						<eventTime>2001-12-31T12:00:00</eventTime>
+						<recordTime>2001-12-31T12:00:00</recordTime>
+						<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+						<epcList>
+							<epc>epc</epc>
+						</epcList>
+						<action>ADD</action>
+						<bizStep>http://tempuri.org</bizStep>
+						<disposition>http://tempuri.org</disposition>
+						<readPoint>
+							<id>http://tempuri.org</id>
+							<extension>
+								<any />
+							</extension>
+						</readPoint>
+						<bizLocation>
+							<id>http://tempuri.org</id>
+							<extension>
+								<any />
+							</extension>
+						</bizLocation>
+						<bizTransactionList>
+							<bizTransaction type="http://tempuri.org">http://tempuri.org</bizTransaction>
+						</bizTransactionList>
+						<extension>
+							<quantityList>
+								<quantityElement>
+									<epcClass>http://tempuri.org</epcClass>
+									<quantity>0.0</quantity>
+									<uom>http://tempuri.org</uom>
+								</quantityElement>
+							</quantityList>
+							<sourceList>
+								<source type="http://tempuri.org">http://tempuri.org</source>
+							</sourceList>
+							<destinationList>
+								<destination type="http://tempuri.org">http://tempuri.org</destination>
+							</destinationList>
+							<ilmd>
+								<extension>
+									<any />
+								</extension>
+							</ilmd>
+							<extension>
+								<any />
+							</extension>
+						</extension>
+					</ObjectEvent>
+				</EventList>
+			</resultsBody>
+			<extension>
+				<any />
+			</extension>
+		</epcisq:QueryResults>
+	</EPCISBody>
+	<extension>
+		<any />
+	</extension>
 </epcisq:EPCISQueryDocument>
