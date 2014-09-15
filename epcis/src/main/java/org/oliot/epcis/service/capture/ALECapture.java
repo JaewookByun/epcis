@@ -113,7 +113,7 @@ public class ALECapture implements ServletContextAware {
 
 			// Event Type branch
 			if (eventType.equals("AggregationEvent")) {
-				// TODO:
+
 			} else if (eventType.equals("ObjectEvent")) {
 				List<ObjectEventType> objectEventArray = makeObjectEvent(
 						ecReports, request);
@@ -123,11 +123,11 @@ public class ALECapture implements ServletContextAware {
 					capture.capture(oet);
 				}
 			} else if (eventType.equals("QuantityEvent")) {
-				// TODO:
+
 			} else if (eventType.equals("TransactionEvent")) {
-				// TODO:
+
 			} else if (eventType.equals("TransformationEvent")) {
-				// TODO:
+
 			}
 		} catch (IOException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
