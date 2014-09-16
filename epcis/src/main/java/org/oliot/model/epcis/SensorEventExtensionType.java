@@ -82,7 +82,15 @@ public class SensorEventExtensionType {
         return this.any;
     }
 
-    /**
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
+	/**
      * Gets a map that contains attributes that aren't bound to any typed property on this class.
      * 
      * <p>

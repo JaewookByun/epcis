@@ -10,7 +10,7 @@
 				<eventTime>2013-12-31T12:00:00</eventTime>
 				<recordTime>2013-12-31T12:00:01</recordTime>
 				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
-				<finishTime>2001-12-31T12:00:00</finishTime>
+				<finishTime>2001-12-31T12:00:02</finishTime>
 				<action>ADD</action>
 				<bizStep>http://tempuri.org</bizStep>
 				<disposition>http://tempuri.org</disposition>

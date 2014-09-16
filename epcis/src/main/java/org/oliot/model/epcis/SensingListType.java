@@ -71,4 +71,8 @@ public class SensingListType {
         return this.sensingElement;
     }
 
+	public void setSensingElement(List<SensingElementType> sensingElement) {
+		this.sensingElement = sensingElement;
+	}
+
 }
