@@ -18,10 +18,14 @@ import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SensingElementType;
 import org.oliot.model.epcis.SensingListType;
+import org.oliot.model.epcis.Sensor;
 import org.oliot.model.epcis.SensorEventExtensionType;
 import org.oliot.model.epcis.SensorEventType;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -52,6 +56,7 @@ import com.mongodb.DBObject;
 public class SensorEventWriteConverter implements
 		Converter<SensorEventType, DBObject> {
 
+	@SuppressWarnings("resource")
 	public DBObject convert(SensorEventType sensorEventType) {
 
 		DBObject dbo = new BasicDBObject();
@@ -219,24 +224,38 @@ public class SensorEventWriteConverter implements
 			}
 			dbo.put("bizTransactionList", bizTranList);
 		}
-		if( sensorEventType.getSensingList() != null )
-		{
+		if (sensorEventType.getSensingList() != null) {
 			SensingListType slt = sensorEventType.getSensingList();
 			List<SensingElementType> setList = slt.getSensingElement();
-			List<DBObject> sensingList = new ArrayList<DBObject>();
-			for(int i = 0 ; i < setList.size() ;i++)
-			{
-				DBObject sensingElement = new BasicDBObject();
+			List<String> sensingList = new ArrayList<String>();
+			ApplicationContext ctx = new GenericXmlApplicationContext(
+					"classpath:MongoConfig.xml");
+			MongoOperations mongoOperation = (MongoOperations) ctx
+					.getBean("mongoTemplate");
+			for (int i = 0; i < setList.size(); i++) {
 				SensingElementType set = setList.get(i);
-				if(set.getEpc() != null)
-					sensingElement.put("epc", set.getEpc().getValue());
-				if(set.getType() != null)
-					sensingElement.put("type", set.getType());
-				if(set.getUom() != null)
-					sensingElement.put("uom", set.getUom());
-				if(set.getValue() != null )
-					sensingElement.put("value", set.getValue());
-				sensingList.add(sensingElement);
+				Sensor sensor = new Sensor();
+				if (set.getEpc() != null) {
+					sensor.setEpc(set.getEpc().getValue());
+					sensingList.add(set.getEpc().getValue());
+				}
+				if (set.getType() != null)
+					sensor.setType(set.getType());
+				if (set.getUom() != null)
+					sensor.setUom(set.getUom());
+				if (set.getValue() != null)
+					sensor.setValue(set.getValue());
+
+				if (sensorEventType.getEventTime() != null)
+					sensor.setStartTime(sensorEventType.getEventTime()
+							.toGregorianCalendar().getTimeInMillis());
+				if (sensorEventType.getEventTimeZoneOffset() != null)
+					sensor.setEventTimeZoneOffset(sensorEventType
+							.getEventTimeZoneOffset());
+				if (sensorEventType.getFinishTime() != null)
+					sensor.setFinishTime(sensorEventType.getFinishTime()
+							.toGregorianCalendar().getTimeInMillis());
+				mongoOperation.save(sensor);
 			}
 			dbo.put("sensingList", sensingList);
 		}
