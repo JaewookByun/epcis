@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 
 import org.oliot.model.epcis.ObjectEventType;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -38,7 +39,7 @@ import com.mongodb.DBObject;
 @RequestMapping("/querytest")
 public class QueryTest {
 	
-	@SuppressWarnings({ "unused", "resource" })
+	@SuppressWarnings({ "unused" })
 	@RequestMapping(value = "/a", method = RequestMethod.GET)
 	@ResponseBody
 	public String getTest()
@@ -55,7 +56,7 @@ public class QueryTest {
 		Query q = new Query();
 		q.addCriteria(c);
 		List<ObjectEventType> ddd = mongoOperation.find(q, ObjectEventType.class);
-		
+		((AbstractApplicationContext) ctx).close();
 		System.out.println();
 		return null;
 	}

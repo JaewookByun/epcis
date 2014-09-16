@@ -42,6 +42,7 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -317,7 +318,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * Removes a previously registered subscription having the specified
 	 * subscriptionID.
 	 */
-	@SuppressWarnings("resource")
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	@Override
 	public void unsubscribe(@PathVariable String subscriptionID) {
@@ -338,13 +338,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			// Remove from DB list
 			removeScheduleFromDB(mongoOperation, subscription);
 		}
+		((AbstractApplicationContext) ctx).close();
 	}
 
 	/**
 	 * Returns a list of all subscriptionIDs currently subscribed to the
 	 * specified named query.
 	 */
-	@SuppressWarnings("resource")
 	@RequestMapping(value = "/SubscriptionIDs/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
@@ -363,6 +363,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			SubscriptionType subscription = allSubscription.get(i);
 			retArray.put(subscription.getSubscriptionID());
 		}
+		((AbstractApplicationContext) ctx).close();
 		return retArray.toString(1);
 	}
 
@@ -378,7 +379,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		return null;
 	}
 
-	@SuppressWarnings({ "resource", "rawtypes", "unchecked" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String poll(@PathVariable String queryName,
@@ -700,7 +701,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				eventObjects.add(element);
 			}
 		}
-
+		((AbstractApplicationContext) ctx).close();
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
@@ -1797,6 +1798,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 				+ subscriptionID + " is added to DB. ");
+		((AbstractApplicationContext) ctx).close();
 		return true;
 	}
 
