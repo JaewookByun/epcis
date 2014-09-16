@@ -237,7 +237,8 @@ public class SensorEventWriteConverter implements
 				Sensor sensor = new Sensor();
 				if (set.getEpc() != null) {
 					sensor.setEpc(set.getEpc().getValue());
-					sensingList.add(set.getEpc().getValue());
+					if( !sensingList.contains(set.getEpc().getValue()))
+						sensingList.add(set.getEpc().getValue());
 				}
 				if (set.getType() != null)
 					sensor.setType(set.getType());

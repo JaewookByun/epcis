@@ -2,5 +2,5 @@
 	"_backend" : "Backend Database : (MongoDB|...|...)",
 	"backend" : "MongoDB",
 	"_capture_verification" : "(on|off)",
-	"capture_verification" : "on"
+	"capture_verification" : "off"
 }
