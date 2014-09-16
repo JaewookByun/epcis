@@ -18,6 +18,7 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
 
@@ -79,7 +80,6 @@ public class SubscriptionServlet extends HttpServlet {
 		System.out.println(xmlString);
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void init() {
 
@@ -103,6 +103,7 @@ public class SubscriptionServlet extends HttpServlet {
 				SubscriptionType subscription = allSubscription.get(i);
 				queryService.addScheduleToQuartz(subscription);
 			}
+			((AbstractApplicationContext) ctx).close();
 		} catch (SchedulerException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}

@@ -33,6 +33,7 @@ import org.oliot.model.epcis.Sensor;
 import org.oliot.model.epcis.SensorEventExtensionType;
 import org.oliot.model.epcis.SensorEventType;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
@@ -72,7 +73,6 @@ import com.mongodb.DBObject;
 public class SensorEventReadConverter implements
 		Converter<DBObject, SensorEventType> {
 
-	@SuppressWarnings("resource")
 	public SensorEventType convert(DBObject dbObject) {
 		try {
 			SensorEventType sensorEventType = new SensorEventType();
@@ -335,6 +335,7 @@ public class SensorEventReadConverter implements
 				}
 				slt.setSensingElement(setList);
 				sensorEventType.setSensingList(slt);
+				((AbstractApplicationContext) ctx).close();
 			}
 			// extension
 			if (dbObject.get("extension") != null) {

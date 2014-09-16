@@ -25,6 +25,7 @@ import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
 
@@ -47,7 +48,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
  */
 public class CaptureService implements CoreCaptureService {
 
-	@SuppressWarnings({ "resource" })
+	@SuppressWarnings({ })
 	@Override
 	public void capture(AggregationEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -57,10 +58,10 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 
-	@SuppressWarnings("resource")
 	@Override
 	public void capture(ObjectEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -70,10 +71,11 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 
-	@SuppressWarnings({ "resource" })
+	@SuppressWarnings({ })
 	@Override
 	public void capture(QuantityEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -83,10 +85,11 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 
-	@SuppressWarnings({ "resource" })
+	@SuppressWarnings({ })
 	@Override
 	public void capture(TransactionEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -96,10 +99,11 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 
-	@SuppressWarnings({ "resource" })
+	@SuppressWarnings({ })
 	@Override
 	public void capture(TransformationEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -109,10 +113,10 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 	
-	@SuppressWarnings("resource")
 	@Override
 	public void capture(SensorEventType event) {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -122,6 +126,7 @@ public class CaptureService implements CoreCaptureService {
 					.getBean("mongoTemplate");
 			mongoOperation.save(event);
 			ConfigurationServlet.logger.info(" Event Saved ");
+			((AbstractApplicationContext) ctx).close();
 		}
 	}
 

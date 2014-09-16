@@ -22,6 +22,7 @@ import org.oliot.model.epcis.Sensor;
 import org.oliot.model.epcis.SensorEventExtensionType;
 import org.oliot.model.epcis.SensorEventType;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
@@ -56,7 +57,6 @@ import com.mongodb.DBObject;
 public class SensorEventWriteConverter implements
 		Converter<SensorEventType, DBObject> {
 
-	@SuppressWarnings("resource")
 	public DBObject convert(SensorEventType sensorEventType) {
 
 		DBObject dbo = new BasicDBObject();
@@ -258,6 +258,7 @@ public class SensorEventWriteConverter implements
 				mongoOperation.save(sensor);
 			}
 			dbo.put("sensingList", sensingList);
+			((AbstractApplicationContext) ctx).close();
 		}
 
 		// Extension
