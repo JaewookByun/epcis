@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.query.restlike;
 
 import java.util.List;
 import java.util.regex.Pattern;

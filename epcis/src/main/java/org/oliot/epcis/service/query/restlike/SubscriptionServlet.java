@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.query.restlike;
 
 import java.io.IOException;
 import java.io.InputStream;

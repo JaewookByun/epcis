@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.query.restlike;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
