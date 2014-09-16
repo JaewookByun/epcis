@@ -15,7 +15,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,6 +45,9 @@ import org.oliot.model.epcis.ObjectEventExtension2Type;
 import org.oliot.model.epcis.ObjectEventExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.ReadPointType;
+import org.oliot.model.epcis.SensingElementType;
+import org.oliot.model.epcis.SensingListType;
+import org.oliot.model.epcis.SensorEventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,7 +95,7 @@ public class ALECapture implements ServletContextAware {
 			// Get ECReport
 			InputStream is = request.getInputStream();
 			ECReports ecReports;
-			
+
 			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
 				String xmlDocumentString = getXMLDocumentString(is);
 				InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
@@ -107,7 +112,7 @@ public class ALECapture implements ServletContextAware {
 				InputStream ecReportStream = getXMLDocumentInputStream(xmlDocumentString);
 				ConfigurationServlet.logger.info(" ECReport : Validated ");
 				ecReports = JAXB.unmarshal(ecReportStream, ECReports.class);
-			}else {
+			} else {
 				ecReports = JAXB.unmarshal(is, ECReports.class);
 			}
 
@@ -128,6 +133,14 @@ public class ALECapture implements ServletContextAware {
 
 			} else if (eventType.equals("TransformationEvent")) {
 
+			} else if (eventType.equals("SensorEvent")) {
+				List<SensorEventType> sensorEventArray = makeSensorEvent(
+						ecReports, request);
+				for (int i = 0; i < sensorEventArray.size(); i++) {
+					SensorEventType set = sensorEventArray.get(i);
+					CaptureService capture = new CaptureService();
+					capture.capture(set);
+				}
 			}
 		} catch (IOException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
@@ -137,6 +150,149 @@ public class ALECapture implements ServletContextAware {
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
+	}
+
+	private List<SensorEventType> makeSensorEvent(ECReports ecReports,
+			HttpServletRequest request) {
+		List<SensorEventType> setList = new ArrayList<SensorEventType>();
+		List<ECReport> ecReportList = ecReports.getReports().getReport();
+		for (int i = 0; i < ecReportList.size(); i++) {
+			ECReport ecReport = ecReportList.get(i);
+			if (ecReport.getGroup() == null)
+				continue;
+			List<ECReportGroup> ecReportGroups = ecReport.getGroup();
+			for (int j = 0; j < ecReportGroups.size(); j++) {
+				ECReportGroup ecReportGroup = ecReportGroups.get(j);
+				if (ecReportGroup.getGroupList() == null)
+					continue;
+				ECReportGroupList ecReportGroupList = ecReportGroup
+						.getGroupList();
+				List<ECReportGroupListMember> members = ecReportGroupList
+						.getMember();
+				for (int k = 0; k < members.size(); k++) {
+					ECReportGroupListMember member = members.get(k);
+					SensorEventType set = makeBaseSensorEvent(ecReports,
+							request);
+					SensingListType slt = new SensingListType();
+					List<SensingElementType> seList = new ArrayList<SensingElementType>();
+
+					if (member.getExtension() == null)
+						continue;
+					if (member.getExtension().getFieldList() == null)
+						continue;
+					FieldList fieldList = member.getExtension().getFieldList();
+					List<ECReportMemberField> fields = fieldList.getField();
+					for (int l = 0; l < fields.size(); l++) {
+						ECReportMemberField field = fields.get(l);
+						if (field.getName() != null && field.getValue() != null) {
+							SensingElementType se = new SensingElementType();
+							se.setEpc(new EPC(member.getEpc().getValue()));
+							se.setType(field.getName());
+							se.setValue(field.getValue());
+							seList.add(se);
+						}
+					}
+					slt.setSensingElement(seList);
+					set.setSensingList(slt);
+					setList.add(set);
+				}
+			}
+		}
+		return setList;
+	}
+
+	private SensorEventType makeBaseSensorEvent(ECReports ecReports,
+			HttpServletRequest request) {
+		try {
+			SensorEventType set = new SensorEventType();
+			// get extra param : action
+			String actionString = request.getParameter("action");
+			// Mandatory Field : Default - OBSERVE
+			ActionType actionType;
+			if (actionString == null)
+				actionType = ActionType.OBSERVE;
+			else
+				actionType = ActionType.valueOf(actionString);
+			// Optional Field
+			String bizStep = request.getParameter("bizStep");
+			// Optional Field
+			String disposition = request.getParameter("disposition");
+			// Optional Field
+			String readPoint = request.getParameter("readPoint");
+			// Optional Field
+			String bizLocation = request.getParameter("bizLocation");
+			// Optional Field
+			String targetObject = request.getParameter("targetObject");
+			// Optional field
+			String targetArea = request.getParameter("targetArea");
+			// Optional field (msec)
+			String duration = request.getParameter("duration");
+			if (duration != null)
+				duration = duration.trim();
+
+			XMLGregorianCalendar eventTime = getEventTime(ecReports);
+			XMLGregorianCalendar finishTime = (XMLGregorianCalendar) eventTime
+					.clone();
+			GregorianCalendar recordCalendar = new GregorianCalendar();
+			DatatypeFactory df = DatatypeFactory.newInstance();
+			XMLGregorianCalendar recordTime = df
+					.newXMLGregorianCalendar(recordCalendar);
+
+			String eventTimeZoneOffset;
+			if (eventTime.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
+				eventTimeZoneOffset = "540";
+			} else {
+				eventTimeZoneOffset = String.valueOf(eventTime.getTimezone());
+			}
+
+			if (duration != null) {
+				Duration du = DatatypeFactory.newInstance().newDuration(
+						"PT" + duration + "S");
+				finishTime.add(du);
+			}
+
+			// Null Reports Check
+			boolean isNull = isReportNull(ecReports);
+			if (isNull == true) {
+				return null;
+			}
+
+			// Start to make EPCIS Object
+			if (eventTime != null)
+				set.setEventTime(eventTime);
+			if (eventTimeZoneOffset != null)
+				set.setEventTimeZoneOffset(eventTimeZoneOffset);
+			if (finishTime != null)
+				set.setFinishTime(finishTime);
+			if (recordTime != null)
+				set.setRecordTime(recordTime);
+			if (actionType != null)
+				set.setAction(actionType);
+			if (bizStep != null)
+				set.setBizStep(bizStep);
+			if (bizLocation != null) {
+				BusinessLocationType blt = new BusinessLocationType();
+				blt.setId(bizLocation);
+				set.setBizLocation(blt);
+			}
+			if (disposition != null)
+				set.setDisposition(disposition);
+			if (readPoint != null) {
+				ReadPointType rpt = new ReadPointType();
+				rpt.setId(readPoint);
+				set.setReadPoint(rpt);
+			}
+			if (targetObject != null) {
+				set.setTargetObject(targetObject);
+			}
+			if (targetArea != null) {
+				set.setTargetArea(targetArea);
+			}
+			return set;
+		} catch (DatatypeConfigurationException e) {
+			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			return null;
+		}
 	}
 
 	private List<ObjectEventType> makeObjectEvent(ECReports ecReports,
