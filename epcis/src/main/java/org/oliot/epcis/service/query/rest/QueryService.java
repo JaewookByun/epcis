@@ -77,6 +77,7 @@ public class QueryService {
 	 *            &from=2007-12-02T21:32:52&until=2007-12-02T21:35:55
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	@RequestMapping(value = "/{epc}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getResource(@PathVariable String epc,

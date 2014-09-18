@@ -1,6 +1,7 @@
 package org.oliot.epcis.serde;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -104,9 +105,12 @@ public class AggregationEventWriteConverter implements
 		if (aggregationEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
 					aggregationEventType.getEventTimeZoneOffset());
-		if (aggregationEventType.getRecordTime() != null)
-			dbo.put("recordTime", aggregationEventType.getRecordTime()
-					.toGregorianCalendar().getTimeInMillis());
+		
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		dbo.put("recordTime", recordTimeMilis);
+
 		if (aggregationEventType.getParentID() != null)
 			dbo.put("parentID", aggregationEventType.getParentID());
 		if (aggregationEventType.getChildEPCs() != null) {

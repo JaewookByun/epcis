@@ -1,6 +1,7 @@
 package org.oliot.epcis.serde;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -102,9 +103,10 @@ public class TransformationEventWriteConverter implements
 		if (transformationEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
 					transformationEventType.getEventTimeZoneOffset());
-		if (transformationEventType.getRecordTime() != null)
-			dbo.put("recordTime", transformationEventType.getRecordTime()
-					.toGregorianCalendar().getTimeInMillis());
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		dbo.put("recordTime", recordTimeMilis);
 		if (transformationEventType.getInputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getInputEPCList();
 			List<EPC> epcList = epcs.getEpc();

@@ -1,6 +1,7 @@
 package org.oliot.epcis.serde;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -104,9 +105,10 @@ public class SensorEventWriteConverter implements
 		if (sensorEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
 					sensorEventType.getEventTimeZoneOffset());
-		if (sensorEventType.getRecordTime() != null)
-			dbo.put("recordTime", sensorEventType.getRecordTime()
-					.toGregorianCalendar().getTimeInMillis());
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		dbo.put("recordTime", recordTimeMilis);
 		if (sensorEventType.getFinishTime() != null)
 			dbo.put("finishTime", sensorEventType.getFinishTime()
 					.toGregorianCalendar().getTimeInMillis());
@@ -237,7 +239,7 @@ public class SensorEventWriteConverter implements
 				Sensor sensor = new Sensor();
 				if (set.getEpc() != null) {
 					sensor.setEpc(set.getEpc().getValue());
-					if( !sensingList.contains(set.getEpc().getValue()))
+					if (!sensingList.contains(set.getEpc().getValue()))
 						sensingList.add(set.getEpc().getValue());
 				}
 				if (set.getType() != null)
