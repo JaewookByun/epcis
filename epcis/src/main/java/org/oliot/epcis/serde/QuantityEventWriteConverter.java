@@ -1,6 +1,7 @@
 package org.oliot.epcis.serde;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +28,6 @@ import org.w3c.dom.NamedNodeMap;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -96,9 +96,12 @@ public class QuantityEventWriteConverter implements
 		if (quantityEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
 					quantityEventType.getEventTimeZoneOffset());
-		if (quantityEventType.getRecordTime() != null)
-			dbo.put("recordTime", quantityEventType.getRecordTime()
-					.toGregorianCalendar().getTimeInMillis());
+		
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		dbo.put("recordTime", recordTimeMilis);
+		
 		if (quantityEventType.getEpcClass() != null)
 			dbo.put("epcClass", quantityEventType.getEpcClass());
 		dbo.put("quantity", quantityEventType.getQuantity());

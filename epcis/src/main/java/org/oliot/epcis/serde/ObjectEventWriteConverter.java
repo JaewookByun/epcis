@@ -1,6 +1,7 @@
 package org.oliot.epcis.serde;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +36,6 @@ import org.w3c.dom.NamedNodeMap;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -104,9 +104,12 @@ public class ObjectEventWriteConverter implements
 		if (objectEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
 					objectEventType.getEventTimeZoneOffset());
-		if (objectEventType.getRecordTime() != null)
-			dbo.put("recordTime", objectEventType.getRecordTime()
-					.toGregorianCalendar().getTimeInMillis());
+		
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		dbo.put("recordTime", recordTimeMilis);
+		
 		if (objectEventType.getEpcList() != null) {
 			EPCListType epcs = objectEventType.getEpcList();
 			List<EPC> epcList = epcs.getEpc();
