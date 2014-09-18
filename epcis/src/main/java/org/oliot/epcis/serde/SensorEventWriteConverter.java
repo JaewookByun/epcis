@@ -302,6 +302,8 @@ public class SensorEventWriteConverter implements
 		dbo.put("extension", extension);
 		return dbo;
 	}
+	
+	
 
 	public DBObject getDBObjectFromMessageElement(MessageElement any) {
 		NamedNodeMap attributes = any.getAttributes();

@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 
@@ -36,7 +38,6 @@ import org.w3c.dom.NamedNodeMap;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -102,10 +103,17 @@ public class AggregationEventWriteConverter implements
 		if (aggregationEventType.getEventTime() != null)
 			dbo.put("eventTime", aggregationEventType.getEventTime()
 					.toGregorianCalendar().getTimeInMillis());
-		if (aggregationEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					aggregationEventType.getEventTimeZoneOffset());
-		
+		if (aggregationEventType.getEventTimeZoneOffset() != null) {
+
+			String timeZone = aggregationEventType.getEventTimeZoneOffset();
+			if (!isCorrectTimeZone(timeZone)) {
+				System.out.println("not correct");
+			} else {
+				System.out.println("correct");
+				dbo.put("eventTimeZoneOffset",
+						aggregationEventType.getEventTimeZoneOffset());
+			}
+		}
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
@@ -321,6 +329,15 @@ public class AggregationEventWriteConverter implements
 		}
 		dbo.put("extension", extension);
 		return dbo;
+	}
+
+	public boolean isCorrectTimeZone(String timeZone) {
+		// /^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$/
+		Pattern pattern = Pattern
+				.compile("/^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$/");
+		Matcher matcher = pattern.matcher(timeZone);
+
+		return matcher.matches();
 	}
 
 	public DBObject getDBObjectFromMessageElement(MessageElement any) {
