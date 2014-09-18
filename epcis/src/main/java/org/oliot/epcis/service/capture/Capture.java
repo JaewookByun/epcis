@@ -86,15 +86,13 @@ public class Capture implements ServletContextAware {
 
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisDocument);
-				ConfigurationServlet.logger
-				.info(" EPCIS Document : Captured ");
+				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
 			} else {
 				EPCISDocumentType epcisDocument = JAXB.unmarshal(is,
 						EPCISDocumentType.class);
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisDocument);
-				ConfigurationServlet.logger
-				.info(" EPCIS Document : Captured ");
+				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
 			}
 
 		} catch (IOException e) {
@@ -146,4 +144,5 @@ public class Capture implements ServletContextAware {
 			return false;
 		}
 	}
+
 }

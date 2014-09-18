@@ -12,7 +12,6 @@
 package org.oliot.epcis.service.capture;
 
 import java.util.List;
-
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
@@ -48,9 +47,18 @@ import org.springframework.data.mongodb.core.MongoOperations;
  */
 public class CaptureService implements CoreCaptureService {
 
-	@SuppressWarnings({ })
+	@SuppressWarnings({})
 	@Override
 	public void capture(AggregationEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -64,6 +72,15 @@ public class CaptureService implements CoreCaptureService {
 
 	@Override
 	public void capture(ObjectEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -75,9 +92,18 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({ })
+	@SuppressWarnings({})
 	@Override
 	public void capture(QuantityEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -89,9 +115,18 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({ })
+	@SuppressWarnings({})
 	@Override
 	public void capture(TransactionEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -103,9 +138,18 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({ })
+	@SuppressWarnings({})
 	@Override
 	public void capture(TransformationEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -116,9 +160,18 @@ public class CaptureService implements CoreCaptureService {
 			((AbstractApplicationContext) ctx).close();
 		}
 	}
-	
+
 	@Override
 	public void capture(SensorEventType event) {
+
+		// General Exception Handling
+		// M6
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!isCorrectTimeZone(timeZone)) {
+			ConfigurationServlet.logger.error("Req. M6 Error");
+			return;
+		}
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
@@ -145,7 +198,7 @@ public class CaptureService implements CoreCaptureService {
 				.getEventList();
 		List<Object> eventList = eventListType
 				.getObjectEventOrAggregationEventOrQuantityEvent();
-		
+
 		/*
 		 * JAXBElement<EPCISEventListExtensionType>
 		 * JAXBElement<TransactionEventType> Object
@@ -166,11 +219,18 @@ public class CaptureService implements CoreCaptureService {
 				capture((TransformationEventType) event);
 			} else if (event instanceof QuantityEventType) {
 				capture((QuantityEventType) event);
-			} else if (event instanceof SensorEventType){
+			} else if (event instanceof SensorEventType) {
 				capture((SensorEventType) event);
 			}
 		}
 	}
 
-	
+	public boolean isCorrectTimeZone(String timeZone) {
+
+		boolean isMatch = timeZone
+				.matches("^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$");
+
+		return isMatch;
+	}
+
 }
