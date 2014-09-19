@@ -12,9 +12,11 @@
 package org.oliot.epcis.service.capture;
 
 import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EventListType;
@@ -23,6 +25,7 @@ import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.tdt.SimplePureIdentityFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
@@ -52,11 +55,35 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(AggregationEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
+		}
+
+		// Mandatory Field: Action
+		if (event.getAction() == null) {
+			ConfigurationServlet.logger
+					.error("Aggregation Event should have 'Action' field ");
+			return;
+		}
+		// M13
+		if (event.getAction() == ActionType.ADD
+				|| event.getAction() == ActionType.DELETE) {
+			if (event.getParentID() == null) {
+				ConfigurationServlet.logger.error("Req. M13 Error");
+				return;
+			}
+		}
+		// M10
+		String parentID = event.getParentID();
+		if (parentID != null) {
+
+			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
+				ConfigurationServlet.logger.error("Req. M10 Error");
+				return;
+			}
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -74,10 +101,10 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(ObjectEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
 		}
 
@@ -97,10 +124,10 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(QuantityEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
 		}
 
@@ -120,11 +147,21 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(TransactionEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
+		}
+
+		// M14
+		String parentID = event.getParentID();
+		if (parentID != null) {
+
+			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
+				ConfigurationServlet.logger.error("Req. M14 Error");
+				return;
+			}
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
@@ -143,10 +180,10 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(TransformationEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
 		}
 
@@ -165,10 +202,10 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(SensorEventType event) {
 
 		// General Exception Handling
-		// M6
+		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M6 Error");
+			ConfigurationServlet.logger.error("Req. M7 Error");
 			return;
 		}
 
