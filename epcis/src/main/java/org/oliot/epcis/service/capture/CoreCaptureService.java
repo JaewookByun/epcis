@@ -2,11 +2,13 @@ package org.oliot.epcis.service.capture;
 
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
+import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.VocabularyType;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -39,4 +41,8 @@ public interface CoreCaptureService {
 	public void capture(SensorEventType event);
 	
 	public void capture(EPCISDocumentType epcisDocument);
+	
+	public void capture(VocabularyType vocabulary);
+	
+	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument);
 }

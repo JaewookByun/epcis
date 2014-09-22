@@ -7,7 +7,8 @@
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
-	<bean id="capture" class="org.oliot.epcis.service.capture.Capture"></bean>
+	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
+	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.restlike.QueryService"></bean>
 	<bean id="querytest" class="org.oliot.epcis.service.query.restlike.QueryTest"></bean>
 	<bean id="restQuery" class="org.oliot.epcis.service.query.rest.QueryService"></bean>

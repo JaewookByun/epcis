@@ -19,12 +19,15 @@ import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
+import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.VocabularyListType;
+import org.oliot.model.epcis.VocabularyType;
 import org.oliot.tdt.SimplePureIdentityFilter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -269,5 +272,45 @@ public class CaptureService implements CoreCaptureService {
 
 		return isMatch;
 	}
+	
+	@Override
+	public void capture(VocabularyType vocabulary) {
+		
+		if (ConfigurationServlet.backend.equals("MongoDB")) {
+			ApplicationContext ctx = new GenericXmlApplicationContext(
+					"classpath:MongoConfig.xml");
+			MongoOperations mongoOperation = (MongoOperations) ctx
+					.getBean("mongoTemplate");
+			mongoOperation.save(vocabulary);
+			ConfigurationServlet.logger.info(" Vocabulary Saved ");
+			((AbstractApplicationContext) ctx).close();
+		}		
+	}
 
+	@Override
+	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
+
+		if (epcisMasterDataDocument.getEPCISBody() == null) {
+			ConfigurationServlet.logger.info(" There is no DocumentBody ");
+			return;
+		}
+
+		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null )
+		{
+			ConfigurationServlet.logger.info(" There is no Vocabulary List ");
+			return;
+		}
+		
+		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
+
+		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
+		
+		for( int i = 0 ; i < vocabularyTypeList.size() ; i++ )
+		{
+			VocabularyType vocabulary = vocabularyTypeList.get(i);
+			capture(vocabulary);
+		}
+	}
+
+	
 }

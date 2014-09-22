@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
@@ -20,6 +21,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+
+import org.springframework.data.mongodb.core.mapping.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -51,6 +54,7 @@ import org.w3c.dom.Element;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "VocabularyType", namespace = "masterdata.epcis.oliot.org", propOrder = {
 		"vocabularyElementList", "extension", "any" })
+@Document(collection="MasterData")
 public class VocabularyType {
 
 	@XmlElement(name = "VocabularyElementList")
@@ -63,6 +67,14 @@ public class VocabularyType {
 	protected String type;
 	@XmlAnyAttribute
 	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
 
 	/**
 	 * Gets the value of the vocabularyElementList property.
