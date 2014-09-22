@@ -50,6 +50,12 @@
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.SensorEventReadConverter" />
 			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.MasterDataWriteConverter" />
+			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.MasterDataReadConverter" />
+			</mongo:converter>
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
 

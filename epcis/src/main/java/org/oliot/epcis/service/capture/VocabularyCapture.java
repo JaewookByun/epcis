@@ -20,7 +20,7 @@ import javax.xml.validation.Validator;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.model.epcis.EPCISDocumentType;
+import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,9 +45,8 @@ import org.xml.sax.SAXException;
  *         bjw0829@kaist.ac.kr
  */
 @Controller
-@RequestMapping("/capture")
-public class Capture implements ServletContextAware {
-
+@RequestMapping("/vocabularyCapture")
+public class VocabularyCapture implements ServletContextAware {
 	@Autowired
 	ServletContext servletContext;
 
@@ -62,7 +61,7 @@ public class Capture implements ServletContextAware {
 		try {
 
 			ConfigurationServlet.logger
-					.info(" EPCIS Document Capture Started.... ");
+					.info(" EPCIS Masterdata Document Capture Started.... ");
 
 			// Get Input Stream
 			InputStream is = request.getInputStream();
@@ -72,7 +71,7 @@ public class Capture implements ServletContextAware {
 				InputStream validateStream = getXMLDocumentInputStream(isString);
 				// Parsing and Validating data
 				String xsdPath = servletContext.getRealPath("/wsdl");
-				xsdPath += "/EPCglobal-epcis-1_2_jack.xsd";
+				xsdPath += "/EPCglobal-epcis-masterdata-1_1_jack.xsd";
 				boolean isValidated = validate(validateStream, xsdPath);
 				if (isValidated == false) {
 					return;
@@ -80,19 +79,19 @@ public class Capture implements ServletContextAware {
 
 				InputStream epcisStream = getXMLDocumentInputStream(isString);
 				ConfigurationServlet.logger
-						.info(" EPCIS Document : Validated ");
-				EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
-						EPCISDocumentType.class);
+						.info(" EPCIS Masterdata Document : Validated ");
+				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
+						EPCISMasterDataDocumentType.class);
 
 				CaptureService cs = new CaptureService();
-				cs.capture(epcisDocument);
-				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
+				cs.capture(epcisMasterDataDocument);
+				ConfigurationServlet.logger.info(" EPCIS Masterdata Document : Captured ");
 			} else {
-				EPCISDocumentType epcisDocument = JAXB.unmarshal(is,
-						EPCISDocumentType.class);
+				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(is,
+						EPCISMasterDataDocumentType.class);
 				CaptureService cs = new CaptureService();
-				cs.capture(epcisDocument);
-				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
+				cs.capture(epcisMasterDataDocument);
+				ConfigurationServlet.logger.info(" EPCIS Masterdata Document : Captured ");
 			}
 
 		} catch (IOException e) {
@@ -144,5 +143,4 @@ public class Capture implements ServletContextAware {
 			return false;
 		}
 	}
-
 }

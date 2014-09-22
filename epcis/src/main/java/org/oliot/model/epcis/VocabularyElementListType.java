@@ -73,4 +73,8 @@ public class VocabularyElementListType {
 		return this.vocabularyElement;
 	}
 
+	public void setVocabularyElement(List<VocabularyElementType> vocabularyElement) {
+		this.vocabularyElement = vocabularyElement;
+	}
+
 }

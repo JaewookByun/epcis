@@ -36,6 +36,8 @@ import org.oliot.model.epcis.SubscriptionControls;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.VocabularyListType;
+import org.oliot.model.epcis.VocabularyType;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
@@ -160,6 +162,15 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String orderDirection = subscription.getOrderDirection();
 		String eventCountLimit = subscription.getEventCountLimit();
 		String maxEventCount = subscription.getMaxEventCount();
+		String vocabularyName = subscription.getVocabularyName();
+		boolean includeAttributes = subscription.isIncludeAttributes();
+		boolean includeChildren = subscription.isIncludeChildren();
+		String attributeNames = subscription.getAttributeNames();
+		String EQ_name = subscription.geteQ_name();
+		String WD_name = subscription.getwD_name();
+		String HASATTR = subscription.gethASATTR();
+		String EQATTR_attrname = subscription.geteQATTR_attrname();
+		String maxElementCount = subscription.getMaxElementCount();
 
 		String result = subscribe(queryName, subscriptionID, dest,
 				cronExpression, eventType, GE_eventTime, LT_eventTime,
@@ -175,7 +186,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
+				includeAttributes, includeChildren, attributeNames, EQ_name,
+				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+
 		return result;
 	}
 
@@ -252,7 +266,17 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount) {
+			@RequestParam(required = false) String maxEventCount,
+
+			@RequestParam(required = false) String vocabularyName,
+			@RequestParam(required = true) boolean includeAttributes,
+			@RequestParam(required = true) boolean includeChildren,
+			@RequestParam(required = false) String attributeNames,
+			@RequestParam(required = false) String EQ_name,
+			@RequestParam(required = false) String WD_name,
+			@RequestParam(required = false) String HASATTR,
+			@RequestParam(required = false) String EQATTR_attrname,
+			@RequestParam(required = false) String maxElementCount) {
 
 		if (!queryName.equals("SimpleEventQuery"))
 			return "Unavailable Query Name";
@@ -275,7 +299,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
+				includeAttributes, includeChildren, attributeNames, EQ_name,
+				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
 
 		// Manage Subscription Persistently
 		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
@@ -292,7 +318,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
+				includeAttributes, includeChildren, attributeNames, EQ_name,
+				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
 
 		String retString = "SubscriptionID : " + subscriptionID
 				+ " is successfully triggered. ";
@@ -379,60 +407,32 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		return null;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
-	@ResponseBody
-	public String poll(@PathVariable String queryName,
-			@RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime,
-			@RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime,
-			@RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action,
-			@RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition,
-			@RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint,
-			@RequestParam(required = false) String EQ_bizLocation,
-			@RequestParam(required = false) String WD_bizLocation,
-			@RequestParam(required = false) String EQ_bizTransaction_type,
-			@RequestParam(required = false) String EQ_source_type,
-			@RequestParam(required = false) String EQ_destination_type,
-			@RequestParam(required = false) String EQ_transformationID,
-			@RequestParam(required = false) String MATCH_epc,
-			@RequestParam(required = false) String MATCH_parentID,
-			@RequestParam(required = false) String MATCH_inputEPC,
-			@RequestParam(required = false) String MATCH_outputEPC,
-			@RequestParam(required = false) String MATCH_anyEPC,
-			@RequestParam(required = false) String MATCH_epcClass,
-			@RequestParam(required = false) String MATCH_inputEPCClass,
-			@RequestParam(required = false) String MATCH_outputEPCClass,
-			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity,
-			@RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity,
-			@RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String EQ_fieldname,
-			@RequestParam(required = false) String GT_fieldname,
-			@RequestParam(required = false) String GE_fieldname,
-			@RequestParam(required = false) String LT_fieldname,
-			@RequestParam(required = false) String LE_fieldname,
-			@RequestParam(required = false) String EQ_ILMD_fieldname,
-			@RequestParam(required = false) String GT_ILMD_fieldname,
-			@RequestParam(required = false) String GE_ILMD_fieldname,
-			@RequestParam(required = false) String LT_ILMD_fieldname,
-			@RequestParam(required = false) String LE_ILMD_fieldname,
-			@RequestParam(required = false) String EXIST_fieldname,
-			@RequestParam(required = false) String EXIST_ILMD_fieldname,
-			@RequestParam(required = false) String HASATTR_fieldname,
-			@RequestParam(required = false) String EQATTR_fieldname_attrname,
-			@RequestParam(required = false) String orderBy,
-			@RequestParam(required = false) String orderDirection,
-			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount) {
-		if (!queryName.equals("SimpleEventQuery"))
-			return "Unavailable Query Name";
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String pollEventQuery(String queryName, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_bizTransaction_type, String EQ_source_type,
+			String EQ_destination_type, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
+			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
+			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
+			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
+			String EXIST_fieldname, String EXIST_ILMD_fieldname,
+			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount,
+
+			String vocabularyName, boolean includeAttributes,
+			boolean includeChildren, String attributeNames, String EQ_name,
+			String WD_name, String HASATTR, String EQATTR_attrname,
+			String maxElementCount) {
 
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
@@ -707,6 +707,167 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		return sw.toString();
 	}
 
+	public String pollMasterDataQuery(String queryName, String eventType,
+			String gE_eventTime, String lT_eventTime, String gE_recordTime,
+			String lT_recordTime, String eQ_action, String eQ_bizStep,
+			String eQ_disposition, String eQ_readPoint, String wD_readPoint,
+			String eQ_bizLocation, String wD_bizLocation,
+			String eQ_bizTransaction_type, String eQ_source_type,
+			String eQ_destination_type, String eQ_transformationID,
+			String mATCH_epc, String mATCH_parentID, String mATCH_inputEPC,
+			String mATCH_outputEPC, String mATCH_anyEPC, String mATCH_epcClass,
+			String mATCH_inputEPCClass, String mATCH_outputEPCClass,
+			String mATCH_anyEPCClass, String eQ_quantity, String gT_quantity,
+			String gE_quantity, String lT_quantity, String lE_quantity,
+			String eQ_fieldname, String gT_fieldname, String gE_fieldname,
+			String lT_fieldname, String lE_fieldname, String eQ_ILMD_fieldname,
+			String gT_ILMD_fieldname, String gE_ILMD_fieldname,
+			String lT_ILMD_fieldname, String lE_ILMD_fieldname,
+			String eXIST_fieldname, String eXIST_ILMD_fieldname,
+			String hASATTR_fieldname, String eQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount, String vocabularyName,
+			boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name,
+			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+
+		// Make Base Result Document
+		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
+
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		List<Criteria> criteriaList = makeCritera(vocabularyName,
+				includeAttributes, includeChildren, attributeNames, eQ_name,
+				wD_name, hASATTR, eQATTR_attrname, maxElementCount);
+
+		Query query = new Query();
+		for (int i = 0; i < criteriaList.size(); i++) {
+			query.addCriteria(criteriaList.get(i));
+		}
+
+		List<VocabularyType> vList = mongoOperation.find(query,
+				VocabularyType.class);
+
+		// TODO: Filter Should be implemented
+
+		QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
+				.getQueryResults().getResultsBody();
+
+		VocabularyListType vlt = new VocabularyListType();
+		vlt.setVocabulary(vList);
+		qbt.setVocabularyList(vlt);
+
+		((AbstractApplicationContext) ctx).close();
+		StringWriter sw = new StringWriter();
+		JAXB.marshal(epcisQueryDocumentType, sw);
+		return sw.toString();
+	}
+
+	@SuppressWarnings({})
+	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
+	@ResponseBody
+	public String poll(@PathVariable String queryName,
+			@RequestParam(required = false) String eventType,
+			@RequestParam(required = false) String GE_eventTime,
+			@RequestParam(required = false) String LT_eventTime,
+			@RequestParam(required = false) String GE_recordTime,
+			@RequestParam(required = false) String LT_recordTime,
+			@RequestParam(required = false) String EQ_action,
+			@RequestParam(required = false) String EQ_bizStep,
+			@RequestParam(required = false) String EQ_disposition,
+			@RequestParam(required = false) String EQ_readPoint,
+			@RequestParam(required = false) String WD_readPoint,
+			@RequestParam(required = false) String EQ_bizLocation,
+			@RequestParam(required = false) String WD_bizLocation,
+			@RequestParam(required = false) String EQ_bizTransaction_type,
+			@RequestParam(required = false) String EQ_source_type,
+			@RequestParam(required = false) String EQ_destination_type,
+			@RequestParam(required = false) String EQ_transformationID,
+			@RequestParam(required = false) String MATCH_epc,
+			@RequestParam(required = false) String MATCH_parentID,
+			@RequestParam(required = false) String MATCH_inputEPC,
+			@RequestParam(required = false) String MATCH_outputEPC,
+			@RequestParam(required = false) String MATCH_anyEPC,
+			@RequestParam(required = false) String MATCH_epcClass,
+			@RequestParam(required = false) String MATCH_inputEPCClass,
+			@RequestParam(required = false) String MATCH_outputEPCClass,
+			@RequestParam(required = false) String MATCH_anyEPCClass,
+			@RequestParam(required = false) String EQ_quantity,
+			@RequestParam(required = false) String GT_quantity,
+			@RequestParam(required = false) String GE_quantity,
+			@RequestParam(required = false) String LT_quantity,
+			@RequestParam(required = false) String LE_quantity,
+			@RequestParam(required = false) String EQ_fieldname,
+			@RequestParam(required = false) String GT_fieldname,
+			@RequestParam(required = false) String GE_fieldname,
+			@RequestParam(required = false) String LT_fieldname,
+			@RequestParam(required = false) String LE_fieldname,
+			@RequestParam(required = false) String EQ_ILMD_fieldname,
+			@RequestParam(required = false) String GT_ILMD_fieldname,
+			@RequestParam(required = false) String GE_ILMD_fieldname,
+			@RequestParam(required = false) String LT_ILMD_fieldname,
+			@RequestParam(required = false) String LE_ILMD_fieldname,
+			@RequestParam(required = false) String EXIST_fieldname,
+			@RequestParam(required = false) String EXIST_ILMD_fieldname,
+			@RequestParam(required = false) String HASATTR_fieldname,
+			@RequestParam(required = false) String EQATTR_fieldname_attrname,
+			@RequestParam(required = false) String orderBy,
+			@RequestParam(required = false) String orderDirection,
+			@RequestParam(required = false) String eventCountLimit,
+			@RequestParam(required = false) String maxEventCount,
+
+			@RequestParam(required = false) String vocabularyName,
+			@RequestParam(required = true) boolean includeAttributes,
+			@RequestParam(required = true) boolean includeChildren,
+			@RequestParam(required = false) String attributeNames,
+			@RequestParam(required = false) String EQ_name,
+			@RequestParam(required = false) String WD_name,
+			@RequestParam(required = false) String HASATTR,
+			@RequestParam(required = false) String EQATTR_attrname,
+			@RequestParam(required = false) String maxElementCount) {
+		if (queryName.equals("SimpleEventQuery"))
+			return pollEventQuery(queryName, eventType, GE_eventTime,
+					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
+					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
+					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
+					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
+					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
+					EQATTR_fieldname_attrname, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, vocabularyName,
+					includeAttributes, includeChildren, attributeNames,
+					EQ_name, WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+
+		if (queryName.equals("SimpleMasterDataQuery"))
+			return pollMasterDataQuery(queryName, eventType, GE_eventTime,
+					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
+					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
+					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
+					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
+					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
+					EQATTR_fieldname_attrname, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, vocabularyName,
+					includeAttributes, includeChildren, attributeNames,
+					EQ_name, WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+		return "";
+	}
+
 	/**
 	 * Invokes a previously defined query having the specified name, returning
 	 * the results. The params argument provides the values to be used for any
@@ -749,6 +910,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	public List<String> getQueryNames() {
 		List<String> queryNames = new ArrayList<String>();
 		queryNames.add("SimpleEventQuery");
+		queryNames.add("SimpleMasterDataQuery");
 		return queryNames;
 	}
 
@@ -884,6 +1046,42 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 
 		return query;
+	}
+
+	public List<Criteria> makeCritera(String vocabularyName,
+			boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name,
+			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+
+		List<Criteria> criteriaList = new ArrayList<Criteria>();
+
+		/**
+		 * If specified, only vocabulary elements drawn from one of the
+		 * specified vocabularies will be included in the results. Each element
+		 * of the specified list is the formal URI name for a vocabulary; e.g.,
+		 * one of the URIs specified in the table at the end of Section 7.2. If
+		 * omitted, all vocabularies are considered.
+		 */
+
+		if (vocabularyName != null) {
+			String[] vocNameArray = vocabularyName.split(",");
+			List<String> subStringList = new ArrayList<String>();
+			for (int i = 0; i < vocNameArray.length; i++) {
+				String vocNameString = vocNameArray[i].trim();
+				subStringList.add(vocNameString);
+			}
+			if (subStringList != null)
+				criteriaList.add(Criteria.where("type").in(subStringList));
+		}
+
+		/**
+		 * If true, the results will include attribute names and values for
+		 * matching vocabulary elements. If false, attribute names and values
+		 * will not be included in the result.
+		 */
+
+		return criteriaList;
+
 	}
 
 	public List<Criteria> makeCriteria(String GE_eventTime,
@@ -1613,7 +1811,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, String vocabularyName,
+			boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name,
+			String hASATTR, String eQATTR_attrname, String maxElementCount) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -1720,6 +1921,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("eventCountLimit", eventCountLimit);
 			if (maxEventCount != null)
 				map.put("maxEventCount", maxEventCount);
+			if (vocabularyName != null)
+				map.put("vocabularyName", vocabularyName);
 
 			JobDetail job = newJob(SubscriptionTask.class)
 					.withIdentity(subscriptionID, queryName).setJobData(map)
@@ -1767,7 +1970,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, String vocabularyName,
+			boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name,
+			String hASATTR, String eQATTR_attrname, String maxElementCount) {
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
 				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
 				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
@@ -1782,7 +1988,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
+				includeAttributes, includeChildren, attributeNames, eQ_name,
+				wD_name, hASATTR, eQATTR_attrname, maxElementCount);
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx

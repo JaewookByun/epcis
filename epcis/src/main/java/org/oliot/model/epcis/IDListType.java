@@ -79,6 +79,14 @@ public class IDListType {
 		return this.id;
 	}
 
+	public void setId(List<String> id) {
+		this.id = id;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
 	/**
 	 * Gets a map that contains attributes that aren't bound to any typed
 	 * property on this class.

@@ -109,7 +109,8 @@ public class SubscriptionTask implements Job {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				orderDirection, eventCountLimit, maxEventCount, null, false,
+				false, null, null, null, null, null, null);
 
 		try {
 			URL url = new URL(dest);
