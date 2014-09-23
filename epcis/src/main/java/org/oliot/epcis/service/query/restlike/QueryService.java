@@ -1155,7 +1155,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 	}
 
-	@SuppressWarnings({ "unused" })
+	@SuppressWarnings({})
 	public List<Criteria> makeCriteria(String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -1798,9 +1798,170 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 						criteriaList.add(criteria);
 					}
 				}
-
 				boolean isExtraParam = isExtraParameter(paramName);
 
+				if (isExtraParam == true) {
+
+					/**
+					 * EQ_fieldname: This is not a single parameter, but a
+					 * family of parameters. If a parameter of this form is
+					 * specified, the result will only include events that (a)
+					 * have a field named fieldname whose type is either String
+					 * or a vocabulary type; and where (b) the value of that
+					 * field matches one of the values specified in this
+					 * parameter. Fieldname is the fully qualified name of an
+					 * extension field. The name of an extension field is an XML
+					 * qname; that is, a pair consisting of an XML namespace URI
+					 * and a name. The name of the corresponding query parameter
+					 * is constructed by concatenating the following: the string
+					 * EQ_, the namespace URI for the extension field, a pound
+					 * sign (#), and the name of the extension field.
+					 */
+					if (paramName.startsWith("EQ_")) {
+						String type = paramName
+								.substring(3, paramName.length());
+						List<String> subObjList = new ArrayList<String>();
+						for (int i = 0; i < paramValues.length; i++) {
+							String val = paramValues[i].trim();
+							subObjList.add(val);
+						}
+						Criteria criteria = new Criteria();
+						if (eventType.equals("AggregationEvent")
+								|| eventType.equals("ObjectEvent")
+								|| eventType.equals("TransactionEvent")) {
+							criteria.orOperator(
+									Criteria.where(
+											"extension.extension.any." + type)
+											.in(subObjList),
+									Criteria.where(
+											"extension.extension.otherAttributes."
+													+ type).in(subObjList));
+							criteriaList.add(criteria);
+						}
+						if (eventType.equals("QuantityEvent")
+								|| eventType.equals("TransformationEvent")
+								|| eventType.equals("SensorEvent")) {
+							criteria.orOperator(
+									Criteria.where("extension.any." + type).in(
+											subObjList),
+									Criteria.where(
+											"extension.otherAttributes." + type)
+											.in(subObjList));
+							criteriaList.add(criteria);
+						}
+					}
+
+					/**
+					 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described
+					 * above, but may be applied to a field of type Int, Float,
+					 * or Time. The result will include events that (a) have a
+					 * field named fieldname; and where (b) the type of the
+					 * field matches the type of this parameter (Int, Float, or
+					 * Time); and where (c) the value of the field is greater
+					 * than the specified value. Fieldname is constructed as for
+					 * EQ_fieldname.
+					 */
+
+					if (paramName.startsWith("GT_")
+							|| paramName.startsWith("GE_")
+							|| paramName.startsWith("LT_")
+							|| paramName.startsWith("LE_")) {
+						String type = paramName
+								.substring(3, paramName.length());
+						// Already error handled
+						String value = paramValues[0];
+						Criteria criteria = new Criteria();
+						if (eventType.equals("AggregationEvent")
+								|| eventType.equals("ObjectEvent")
+								|| eventType.equals("TransactionEvent")) {
+							if (paramName.startsWith("GT_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.extension.any."
+														+ type).gt(value),
+										Criteria.where(
+												"extension.extension.otherAttributes."
+														+ type).gt(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("GE_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.extension.any."
+														+ type).gte(value),
+										Criteria.where(
+												"extension.extension.otherAttributes."
+														+ type).gte(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("LT_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.extension.any."
+														+ type).lt(value),
+										Criteria.where(
+												"extension.extension.otherAttributes."
+														+ type).lt(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("LE_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.extension.any."
+														+ type).lte(value),
+										Criteria.where(
+												"extension.extension.otherAttributes."
+														+ type).lte(value));
+								criteriaList.add(criteria);
+							}
+						}
+						if (eventType.equals("QuantityEvent")
+								|| eventType.equals("TransformationEvent")
+								|| eventType.equals("SensorEvent")) {
+							if (paramName.startsWith("GT_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.any."
+														+ type).gt(value),
+										Criteria.where(
+												"extension.otherAttributes."
+														+ type).gt(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("GE_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.any."
+														+ type).gte(value),
+										Criteria.where(
+												"extension.otherAttributes."
+														+ type).gte(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("LT_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.any."
+														+ type).lt(value),
+										Criteria.where(
+												"extension.otherAttributes."
+														+ type).lt(value));
+								criteriaList.add(criteria);
+							}
+							if (paramName.startsWith("LE_")) {
+								criteria.orOperator(
+										Criteria.where(
+												"extension.any."
+														+ type).lte(value),
+										Criteria.where(
+												"extension.otherAttributes."
+														+ type).lte(value));
+								criteriaList.add(criteria);
+							}
+						}
+					}
+
+				}
 			}
 
 		} catch (ParseException e) {
@@ -1821,10 +1982,15 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			return false;
 		if (paramName.contains("bizLocation"))
 			return false;
-
-		// pending
-
-		return false;
+		if (paramName.contains("bizTransaction"))
+			return false;
+		if (paramName.contains("source"))
+			return false;
+		if (paramName.contains("destination"))
+			return false;
+		if (paramName.contains("transformationID"))
+			return false;
+		return true;
 	}
 
 	public void addScheduleToQuartz(SubscriptionType subscription) {
