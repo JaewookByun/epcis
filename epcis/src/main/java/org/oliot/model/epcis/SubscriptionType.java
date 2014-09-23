@@ -8,7 +8,17 @@ public class SubscriptionType {
 	private String subscriptionID;
 	private String dest;
 	private String cronExpression;
+	private boolean reportIfEmpty;
 	private String eventType;
+
+	public boolean isReportIfEmpty() {
+		return reportIfEmpty;
+	}
+
+	public void setReportIfEmpty(boolean reportIfEmpty) {
+		this.reportIfEmpty = reportIfEmpty;
+	}
+
 	private String GE_eventTime;
 	private String LT_eventTime;
 	private String GE_recordTime;
@@ -56,15 +66,6 @@ public class SubscriptionType {
 	private String orderDirection;
 	private String eventCountLimit;
 	private String maxEventCount;
-	private String vocabularyName;
-	private boolean includeAttributes;
-	private boolean includeChildren;
-	private String attributeNames;
-	private String eQ_name;
-	private String wD_name;
-	private String hASATTR;
-	private String eQATTR_attrname;
-	private String maxElementCount;
 
 	public SubscriptionType(String queryName, String subscriptionID,
 			String dest, String cronExpression, String eventType,
@@ -86,10 +87,7 @@ public class SubscriptionType {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+			String maxEventCount) {
 		this.queryName = queryName;
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
@@ -135,87 +133,6 @@ public class SubscriptionType {
 		this.orderDirection = orderDirection;
 		this.eventCountLimit = eventCountLimit;
 		this.maxEventCount = maxEventCount;
-		this.vocabularyName = vocabularyName;
-		this.includeAttributes = includeAttributes;
-		this.includeChildren = includeChildren;
-		this.attributeNames = attributeNames;
-		this.eQ_name = eQ_name;
-		this.wD_name = wD_name;
-		this.hASATTR = hASATTR;
-		this.eQATTR_attrname = eQATTR_attrname;
-		this.maxElementCount = maxElementCount;
-	}
-
-	public String getVocabularyName() {
-		return vocabularyName;
-	}
-
-	public void setVocabularyName(String vocabularyName) {
-		this.vocabularyName = vocabularyName;
-	}
-
-	public boolean isIncludeAttributes() {
-		return includeAttributes;
-	}
-
-	public void setIncludeAttributes(boolean includeAttributes) {
-		this.includeAttributes = includeAttributes;
-	}
-
-	public boolean isIncludeChildren() {
-		return includeChildren;
-	}
-
-	public void setIncludeChildren(boolean includeChildren) {
-		this.includeChildren = includeChildren;
-	}
-
-	public String getAttributeNames() {
-		return attributeNames;
-	}
-
-	public void setAttributeNames(String attributeNames) {
-		this.attributeNames = attributeNames;
-	}
-
-	public String geteQ_name() {
-		return eQ_name;
-	}
-
-	public void seteQ_name(String eQ_name) {
-		this.eQ_name = eQ_name;
-	}
-
-	public String getwD_name() {
-		return wD_name;
-	}
-
-	public void setwD_name(String wD_name) {
-		this.wD_name = wD_name;
-	}
-
-	public String gethASATTR() {
-		return hASATTR;
-	}
-
-	public void sethASATTR(String hASATTR) {
-		this.hASATTR = hASATTR;
-	}
-
-	public String geteQATTR_attrname() {
-		return eQATTR_attrname;
-	}
-
-	public void seteQATTR_attrname(String eQATTR_attrname) {
-		this.eQATTR_attrname = eQATTR_attrname;
-	}
-
-	public String getMaxElementCount() {
-		return maxElementCount;
-	}
-
-	public void setMaxElementCount(String maxElementCount) {
-		this.maxElementCount = maxElementCount;
 	}
 
 	public String getQueryName() {
