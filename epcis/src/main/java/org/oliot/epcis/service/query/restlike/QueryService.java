@@ -92,19 +92,9 @@ import com.mongodb.DBObject;
 @RequestMapping("/query")
 public class QueryService implements CoreQueryService, ServletContextAware {
 
-	// Due to Created JAXB is not Throwable and need to send Exception to the
-	// Result
-	@SuppressWarnings("unused")
-	private boolean isQueryParameterException;
-	// Not EPC Spec
-	@SuppressWarnings("unused")
-	private boolean isNumberFormatException;
 	@Autowired
 	ServletContext servletContext;
 
-	/**
-	 * 
-	 */
 	@Autowired
 	private HttpServletRequest request;
 
@@ -151,21 +141,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String GE_quantity = subscription.getGE_quantity();
 		String LT_quantity = subscription.getLT_quantity();
 		String LE_quantity = subscription.getLE_quantity();
-		String EQ_fieldname = subscription.getEQ_fieldname();
-		String GT_fieldname = subscription.getGT_fieldname();
-		String GE_fieldname = subscription.getGE_fieldname();
-		String LT_fieldname = subscription.getLT_fieldname();
-		String LE_fieldname = subscription.getLE_fieldname();
-		String EQ_ILMD_fieldname = subscription.getEQ_ILMD_fieldname();
-		String GT_ILMD_fieldname = subscription.getGT_ILMD_fieldname();
-		String GE_ILMD_fieldname = subscription.getGE_ILMD_fieldname();
-		String LT_ILMD_fieldname = subscription.getLT_ILMD_fieldname();
-		String LE_ILMD_fieldname = subscription.getLE_ILMD_fieldname();
-		String EXIST_fieldname = subscription.getEXIST_fieldname();
-		String EXIST_ILMD_fieldname = subscription.getEXIST_ILMD_fieldname();
-		String HASATTR_fieldname = subscription.getHASATTR_fieldname();
-		String EQATTR_fieldname_attrname = subscription
-				.getEQATTR_fieldname_attrname();
 		String orderBy = subscription.getOrderBy();
 		String orderDirection = subscription.getOrderDirection();
 		String eventCountLimit = subscription.getEventCountLimit();
@@ -180,13 +155,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 				MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-				GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-				EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-				LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-				GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-				EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-				EQATTR_fieldname_attrname, orderBy, orderDirection,
-				eventCountLimit, maxEventCount);
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
 
 		return result;
 	}
@@ -204,12 +174,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 
@@ -224,12 +188,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
 		}
@@ -255,12 +215,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount);
 
 		// Manage Subscription Persistently
 		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
@@ -272,12 +228,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount);
 
 		String retString = "SubscriptionID : " + subscriptionID
 				+ " is successfully triggered. ";
@@ -341,20 +293,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String GE_quantity,
 			@RequestParam(required = false) String LT_quantity,
 			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String EQ_fieldname,
-			@RequestParam(required = false) String GT_fieldname,
-			@RequestParam(required = false) String GE_fieldname,
-			@RequestParam(required = false) String LT_fieldname,
-			@RequestParam(required = false) String LE_fieldname,
-			@RequestParam(required = false) String EQ_ILMD_fieldname,
-			@RequestParam(required = false) String GT_ILMD_fieldname,
-			@RequestParam(required = false) String GE_ILMD_fieldname,
-			@RequestParam(required = false) String LT_ILMD_fieldname,
-			@RequestParam(required = false) String LE_ILMD_fieldname,
-			@RequestParam(required = false) String EXIST_fieldname,
-			@RequestParam(required = false) String EXIST_ILMD_fieldname,
-			@RequestParam(required = false) String HASATTR_fieldname,
-			@RequestParam(required = false) String EQATTR_fieldname_attrname,
 			@RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
@@ -378,7 +316,9 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 		// M46
 		if (queryName.equals("SimpleMasterDataQuery")) {
-			return makeErrorResult("SimpleMasterDataQuery is not available in subscription method", SubscribeNotPermittedException.class);
+			return makeErrorResult(
+					"SimpleMasterDataQuery is not available in subscription method",
+					SubscribeNotPermittedException.class);
 		}
 
 		String retString = "";
@@ -393,12 +333,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 		}
 
 		return retString;
@@ -496,12 +431,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 
@@ -600,12 +529,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 
@@ -620,12 +543,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
 		}
@@ -699,12 +618,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -743,12 +657,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -783,12 +692,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -824,12 +728,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -866,12 +765,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -899,12 +793,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 
 		// M44
-		if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
-			((AbstractApplicationContext) ctx).close();
-			return makeErrorResult("Violate maxEventCount",
-					QueryTooLargeException.class);
+		if (maxEventCount != null) {
+			if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
+				((AbstractApplicationContext) ctx).close();
+				return makeErrorResult("Violate maxEventCount",
+						QueryTooLargeException.class);
+			}
 		}
-
 		((AbstractApplicationContext) ctx).close();
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
@@ -914,7 +809,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	public String pollMasterDataQuery(String queryName, String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+			String hASATTR, String maxElementCount) {
 
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
@@ -926,7 +821,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 		List<Criteria> criteriaList = makeCritera(vocabularyName,
 				includeAttributes, includeChildren, attributeNames, eQ_name,
-				wD_name, hASATTR, eQATTR_attrname, maxElementCount);
+				wD_name, hASATTR, maxElementCount);
 
 		Query query = new Query();
 		for (int i = 0; i < criteriaList.size(); i++) {
@@ -936,8 +831,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		List<VocabularyType> vList = mongoOperation.find(query,
 				VocabularyType.class);
 
-		// TODO: Filter Should be implemented
-
 		QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
 				.getQueryResults().getResultsBody();
 
@@ -946,23 +839,20 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		qbt.setVocabularyList(vlt);
 
 		((AbstractApplicationContext) ctx).close();
-		
+
 		// M47
-		if( maxElementCount != null )
-		{
-			try{
+		if (maxElementCount != null) {
+			try {
 				int maxElement = Integer.parseInt(maxElementCount);
-				if( vList.size() > maxElement )
-				{
-					return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+				if (vList.size() > maxElement) {
+					return makeErrorResult("Too Large Master Data result",
+							QueryTooLargeException.class);
 				}
-			}catch( NumberFormatException e )
-			{
-				
+			} catch (NumberFormatException e) {
+
 			}
 		}
-		
-		
+
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
@@ -1002,20 +892,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String GE_quantity,
 			@RequestParam(required = false) String LT_quantity,
 			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String EQ_fieldname,
-			@RequestParam(required = false) String GT_fieldname,
-			@RequestParam(required = false) String GE_fieldname,
-			@RequestParam(required = false) String LT_fieldname,
-			@RequestParam(required = false) String LE_fieldname,
-			@RequestParam(required = false) String EQ_ILMD_fieldname,
-			@RequestParam(required = false) String GT_ILMD_fieldname,
-			@RequestParam(required = false) String GE_ILMD_fieldname,
-			@RequestParam(required = false) String LT_ILMD_fieldname,
-			@RequestParam(required = false) String LE_ILMD_fieldname,
-			@RequestParam(required = false) String EXIST_fieldname,
-			@RequestParam(required = false) String EXIST_ILMD_fieldname,
-			@RequestParam(required = false) String HASATTR_fieldname,
-			@RequestParam(required = false) String EQATTR_fieldname_attrname,
 			@RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
@@ -1028,8 +904,11 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String EQ_name,
 			@RequestParam(required = false) String WD_name,
 			@RequestParam(required = false) String HASATTR,
-			@RequestParam(required = false) String EQATTR_attrname,
 			@RequestParam(required = false) String maxElementCount) {
+
+//		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
+//				.getRequestAttributes()).getRequest();
+//		Enumeration<String> names = request.getParameterNames();
 
 		// M24
 		if (queryName == null) {
@@ -1049,17 +928,12 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount);
 
 		if (queryName.equals("SimpleMasterDataQuery"))
 			return pollMasterDataQuery(queryName, vocabularyName,
 					includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+					EQ_name, WD_name, HASATTR, maxElementCount);
 		return "";
 	}
 
@@ -1235,7 +1109,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				int eventCount = Integer.parseInt(eventCountLimit);
 				query.limit(eventCount);
 			} catch (NumberFormatException nfe) {
-				isNumberFormatException = true;
 				ConfigurationServlet.logger.log(Level.ERROR, nfe.toString());
 			}
 		}
@@ -1246,7 +1119,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	public List<Criteria> makeCritera(String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+			String hASATTR, String maxElementCount) {
 
 		List<Criteria> criteriaList = new ArrayList<Criteria>();
 
@@ -1291,12 +1164,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 
@@ -1406,7 +1273,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					if (!eqActionString.equals("ADD")
 							&& !eqActionString.equals("OBSERVE")
 							&& !eqActionString.equals("DELETE")) {
-						isQueryParameterException = true;
 					}
 					if (eqActionString.equals("ADD")
 							|| eqActionString.equals("OBSERVE")
@@ -1907,45 +1773,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("LT_quantity", subscription.getLT_quantity());
 			if (subscription.getLE_quantity() != null)
 				map.put("LE_quantity", subscription.getLE_quantity());
-
-			if (subscription.getEQ_fieldname() != null)
-				map.put("EQ_fieldname", subscription.getEQ_fieldname());
-			if (subscription.getGT_fieldname() != null)
-				map.put("GT_fieldname", subscription.getGT_fieldname());
-			if (subscription.getGE_fieldname() != null)
-				map.put("GE_fieldname", subscription.getGE_fieldname());
-			if (subscription.getLT_fieldname() != null)
-				map.put("LT_fieldname", subscription.getLT_fieldname());
-			if (subscription.getLE_fieldname() != null)
-				map.put("LE_fieldname", subscription.getLE_fieldname());
-
-			if (subscription.getEQ_ILMD_fieldname() != null)
-				map.put("EQ_ILMD_fieldname",
-						subscription.getEQ_ILMD_fieldname());
-			if (subscription.getGT_ILMD_fieldname() != null)
-				map.put("GT_ILMD_fieldname",
-						subscription.getGT_ILMD_fieldname());
-			if (subscription.getGE_ILMD_fieldname() != null)
-				map.put("GE_ILMD_fieldname",
-						subscription.getGE_ILMD_fieldname());
-			if (subscription.getLT_ILMD_fieldname() != null)
-				map.put("LT_ILMD_fieldname",
-						subscription.getLT_ILMD_fieldname());
-			if (subscription.getLE_ILMD_fieldname() != null)
-				map.put("LE_ILMD_fieldname",
-						subscription.getLE_ILMD_fieldname());
-
-			if (subscription.getEXIST_fieldname() != null)
-				map.put("EXIST_fieldname", subscription.getEXIST_fieldname());
-			if (subscription.getEXIST_ILMD_fieldname() != null)
-				map.put("EXIST_ILMD_fieldname",
-						subscription.getEXIST_ILMD_fieldname());
-			if (subscription.getHASATTR_fieldname() != null)
-				map.put("HASATTR_fieldname",
-						subscription.getHASATTR_fieldname());
-			if (subscription.getEQATTR_fieldname_attrname() != null)
-				map.put("EQATTR_fieldname_attrname",
-						subscription.getEQATTR_fieldname_attrname());
 			if (subscription.getOrderBy() != null)
 				map.put("orderBy", subscription.getOrderBy());
 			if (subscription.getOrderDirection() != null)
@@ -1999,12 +1826,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 		try {
@@ -2074,37 +1895,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("LT_quantity", LT_quantity);
 			if (LE_quantity != null)
 				map.put("LE_quantity", LE_quantity);
-
-			if (EQ_fieldname != null)
-				map.put("EQ_fieldname", EQ_fieldname);
-			if (GT_fieldname != null)
-				map.put("GT_fieldname", GT_fieldname);
-			if (GE_fieldname != null)
-				map.put("GE_fieldname", GE_fieldname);
-			if (LT_fieldname != null)
-				map.put("LT_fieldname", LT_fieldname);
-			if (LE_fieldname != null)
-				map.put("LE_fieldname", LE_fieldname);
-
-			if (EQ_ILMD_fieldname != null)
-				map.put("EQ_ILMD_fieldname", EQ_ILMD_fieldname);
-			if (GT_ILMD_fieldname != null)
-				map.put("GT_ILMD_fieldname", GT_ILMD_fieldname);
-			if (GE_ILMD_fieldname != null)
-				map.put("GE_ILMD_fieldname", GE_ILMD_fieldname);
-			if (LT_ILMD_fieldname != null)
-				map.put("LT_ILMD_fieldname", LT_ILMD_fieldname);
-			if (LE_ILMD_fieldname != null)
-				map.put("LE_ILMD_fieldname", LE_ILMD_fieldname);
-
-			if (EXIST_fieldname != null)
-				map.put("EXIST_fieldname", EXIST_fieldname);
-			if (EXIST_ILMD_fieldname != null)
-				map.put("EXIST_ILMD_fieldname", EXIST_ILMD_fieldname);
-			if (HASATTR_fieldname != null)
-				map.put("HASATTR_fieldname", HASATTR_fieldname);
-			if (EQATTR_fieldname_attrname != null)
-				map.put("EQATTR_fieldname_attrname", EQATTR_fieldname_attrname);
 			if (orderBy != null)
 				map.put("orderBy", orderBy);
 			if (orderDirection != null)
@@ -2153,12 +1943,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
@@ -2170,12 +1954,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
 				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
 				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, EQ_fieldname, GT_fieldname,
-				GE_fieldname, LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				LT_quantity, LE_quantity, orderBy, orderDirection,
+				eventCountLimit, maxEventCount);
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -2266,8 +2046,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			JAXB.marshal(retDoc, sw);
 			return sw.toString();
 		}
-		if (type == SubscribeNotPermittedException.class )
-		{
+		if (type == SubscribeNotPermittedException.class) {
 			SubscribeNotPermittedException e = new SubscribeNotPermittedException();
 			e.setReason(err);
 			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();

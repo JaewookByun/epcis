@@ -74,43 +74,26 @@ public class SubscriptionTask implements Job {
 		String GE_quantity = map.getString("GE_quantity");
 		String LT_quantity = map.getString("LT_quantity");
 		String LE_quantity = map.getString("LE_quantity");
-		String EQ_fieldname = map.getString("EQ_fieldname");
-		String GT_fieldname = map.getString("GT_fieldname");
-		String GE_fieldname = map.getString("GE_fieldname");
-		String LT_fieldname = map.getString("LT_fieldname");
-		String LE_fieldname = map.getString("LE_fieldname");
-		String EQ_ILMD_fieldname = map.getString("EQ_ILMD_fieldname");
-		String GT_ILMD_fieldname = map.getString("GT_ILMD_fieldname");
-		String GE_ILMD_fieldname = map.getString("GE_ILMD_fieldname");
-		String LT_ILMD_fieldname = map.getString("LT_ILMD_fieldname");
-		String LE_ILMD_fieldname = map.getString("LE_ILMD_fieldname");
-		String EXIST_fieldname = map.getString("EXIST_fieldname");
-		String EXIST_ILMD_fieldname = map.getString("EXIST_ILMD_fieldname");
-		String HASATTR_fieldname = map.getString("HASATTR_fieldname");
-		String EQATTR_fieldname_attrname = map
-				.getString("EQATTR_fieldname_attrname");
 		String orderBy = map.getString("orderBy");
 		String orderDirection = map.getString("orderDirection");
 		String eventCountLimit = map.getString(" eventCountLimit");
 		String maxEventCount = map.getString("maxEventCount");
 
 		QueryService queryService = new QueryService();
-		String pollResult = queryService.poll(queryName, eventType,
-				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, null, false,
-				false, null, null, null, null, null, null);
+		String pollResult = queryService
+				.poll(queryName, eventType, GE_eventTime, LT_eventTime,
+						GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+						EQ_disposition, EQ_readPoint, WD_readPoint,
+						EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
+						EQ_source_type, EQ_destination_type,
+						EQ_transformationID, MATCH_epc, MATCH_parentID,
+						MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+						MATCH_epcClass, MATCH_inputEPCClass,
+						MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+						GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+						orderBy, orderDirection, eventCountLimit,
+						maxEventCount, null, false, false, null, null, null,
+						null, null);
 
 		try {
 			URL url = new URL(dest);
