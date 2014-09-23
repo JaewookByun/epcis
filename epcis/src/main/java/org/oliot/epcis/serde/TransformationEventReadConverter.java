@@ -494,7 +494,6 @@ public class TransformationEventReadConverter implements
 					}
 					tfeet.setOtherAttributes(otherAttributes);
 				}
-				//
 				transformationEventType.setExtension(tfeet);
 			}
 			return transformationEventType;
