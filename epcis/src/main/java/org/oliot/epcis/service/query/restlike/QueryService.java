@@ -13,7 +13,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
@@ -64,6 +67,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static org.quartz.TriggerKey.*;
 import static org.quartz.JobKey.*;
@@ -122,10 +127,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String WD_readPoint = subscription.getWD_readPoint();
 		String EQ_bizLocation = subscription.getEQ_bizLocation();
 		String WD_bizLocation = subscription.getWD_bizLocation();
-		String EQ_bizTransaction_type = subscription
-				.getEQ_bizTransaction_type();
-		String EQ_source_type = subscription.getEQ_source_type();
-		String EQ_destination_type = subscription.getEQ_destination_type();
 		String EQ_transformationID = subscription.getEQ_transformationID();
 		String MATCH_epc = subscription.getMATCH_epc();
 		String MATCH_parentID = subscription.getMATCH_parentID();
@@ -145,18 +146,18 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String orderDirection = subscription.getOrderDirection();
 		String eventCountLimit = subscription.getEventCountLimit();
 		String maxEventCount = subscription.getMaxEventCount();
+		Map<String, String[]> paramMap = subscription.getParamMap();
 
 		String result = subscribe(queryName, subscriptionID, dest,
 				cronExpression, reportIfEmpty, eventType, GE_eventTime,
 				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-				EQ_source_type, EQ_destination_type, EQ_transformationID,
-				MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-				MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-				GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
-				orderDirection, eventCountLimit, maxEventCount);
+				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, orderBy, orderDirection,
+				eventCountLimit, maxEventCount, paramMap);
 
 		return result;
 	}
@@ -167,15 +168,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
 			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -183,13 +183,12 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
 				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
 				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
 				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount);
+				maxEventCount, paramMap);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
 		}
@@ -210,26 +209,24 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
 				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount);
+				maxEventCount, paramMap);
 
 		// Manage Subscription Persistently
 		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
 				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
 				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount);
+				maxEventCount, paramMap);
 
 		String retString = "SubscriptionID : " + subscriptionID
 				+ " is successfully triggered. ";
@@ -275,9 +272,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String WD_readPoint,
 			@RequestParam(required = false) String EQ_bizLocation,
 			@RequestParam(required = false) String WD_bizLocation,
-			@RequestParam(required = false) String EQ_bizTransaction_type,
-			@RequestParam(required = false) String EQ_source_type,
-			@RequestParam(required = false) String EQ_destination_type,
 			@RequestParam(required = false) String EQ_transformationID,
 			@RequestParam(required = false) String MATCH_epc,
 			@RequestParam(required = false) String MATCH_parentID,
@@ -296,8 +290,17 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount) {
+			@RequestParam(required = false) String maxEventCount,
+			Map<String, String[]> extMap) {
 
+		Map<String, String[]> paramMap;
+		if (extMap == null) {
+			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
+					.getRequestAttributes()).getRequest();
+			paramMap = request.getParameterMap();
+		} else {
+			paramMap = extMap;
+		}
 		// M20 : Throw an InvalidURIException for an incorrect dest argument in
 		// the subscribe method in EPCIS Query Control Interface
 		try {
@@ -327,13 +330,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					cronExpression, eventType, GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
 					EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-					WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
-					EQ_destination_type, EQ_transformationID, MATCH_epc,
+					WD_bizLocation, EQ_transformationID, MATCH_epc,
 					MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 		}
 
 		return retString;
@@ -424,15 +427,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String GE_recordTime, String LT_recordTime, String EQ_action,
 			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
 			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 
 		// M27
 		try {
@@ -512,7 +514,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					"One of eventCountLimit and maxEventCount should be omitted",
 					QueryParameterException.class);
 		}
-
 		return null;
 	}
 
@@ -522,15 +523,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
 			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -538,13 +538,12 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
 				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
 				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
 				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount);
+				maxEventCount, paramMap);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
 		}
@@ -612,13 +611,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -651,13 +650,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -686,13 +685,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -722,13 +721,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -759,13 +758,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -874,9 +873,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String WD_readPoint,
 			@RequestParam(required = false) String EQ_bizLocation,
 			@RequestParam(required = false) String WD_bizLocation,
-			@RequestParam(required = false) String EQ_bizTransaction_type,
-			@RequestParam(required = false) String EQ_source_type,
-			@RequestParam(required = false) String EQ_destination_type,
 			@RequestParam(required = false) String EQ_transformationID,
 			@RequestParam(required = false) String MATCH_epc,
 			@RequestParam(required = false) String MATCH_parentID,
@@ -904,12 +900,19 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String EQ_name,
 			@RequestParam(required = false) String WD_name,
 			@RequestParam(required = false) String HASATTR,
-			@RequestParam(required = false) String maxElementCount) {
+			@RequestParam(required = false) String maxElementCount,
+			Map<String, String[]> extMap) {
 
-//		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
-//				.getRequestAttributes()).getRequest();
-//		Enumeration<String> names = request.getParameterNames();
-
+		Map<String, String[]> paramMap = new HashMap<String, String[]>();
+		if (extMap == null) {
+			if (RequestContextHolder.getRequestAttributes() != null) {
+				HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
+						.getRequestAttributes()).getRequest();
+				paramMap = request.getParameterMap();
+			}
+		} else {
+			paramMap = extMap;
+		}
 		// M24
 		if (queryName == null) {
 			// It is not possible, automatically filtered by URI param
@@ -922,13 +925,13 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			return pollEventQuery(queryName, eventType, GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
 					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount);
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					paramMap);
 
 		if (queryName.equals("SimpleMasterDataQuery"))
 			return pollMasterDataQuery(queryName, vocabularyName,
@@ -1152,20 +1155,19 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 	}
 
+	@SuppressWarnings({ "unused" })
 	public List<Criteria> makeCriteria(String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
 			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_bizTransaction_type,
-			String EQ_source_type, String EQ_destination_type,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
+			String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 
 		List<Criteria> criteriaList = new ArrayList<Criteria>();
 		try {
@@ -1687,16 +1689,50 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			 **/
 
 			/**
-			 * Implementation Pending
-			 * 
-			 * *_fieldname
-			 * 
-			 **/
+			 * EQ_fieldname: This is not a single parameter, but a family of
+			 * parameters. If a parameter of this form is specified, the result
+			 * will only include events that (a) have a field named fieldname
+			 * whose type is either String or a vocabulary type; and where (b)
+			 * the value of that field matches one of the values specified in
+			 * this parameter. Fieldname is the fully qualified name of an
+			 * extension field. The name of an extension field is an XML qname;
+			 * that is, a pair consisting of an XML namespace URI and a name.
+			 * The name of the corresponding query parameter is constructed by
+			 * concatenating the following: the string EQ_, the namespace URI
+			 * for the extension field, a pound sign (#), and the name of the
+			 * extension field.
+			 */
+
+			Iterator<String> paramIter = paramMap.keySet().iterator();
+			while (paramIter.hasNext()) {
+				String paramName = paramIter.next();
+				String[] paramValues = paramMap.get(paramName);
+				boolean isExtraParam = isExtraParameter(paramName);
+
+			}
 
 		} catch (ParseException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		}
 		return criteriaList;
+	}
+
+	private boolean isExtraParameter(String paramName) {
+
+		if (paramName.contains("action"))
+			return false;
+		if (paramName.contains("bizStep"))
+			return false;
+		if (paramName.contains("disposition"))
+			return false;
+		if (paramName.contains("readPoint"))
+			return false;
+		if (paramName.contains("bizLocation"))
+			return false;
+
+		// pending
+
+		return false;
 	}
 
 	public void addScheduleToQuartz(SubscriptionType subscription) {
@@ -1731,14 +1767,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("EQ_bizLocation", subscription.getEQ_bizLocation());
 			if (subscription.getWD_bizLocation() != null)
 				map.put("WD_bizLocation", subscription.getWD_bizLocation());
-			if (subscription.getEQ_bizTransaction_type() != null)
-				map.put("EQ_bizTransaction_type",
-						subscription.getEQ_bizTransaction_type());
-			if (subscription.getEQ_source_type() != null)
-				map.put("EQ_source_type", subscription.getEQ_source_type());
-			if (subscription.getEQ_destination_type() != null)
-				map.put("EQ_destination_type",
-						subscription.getEQ_destination_type());
 			if (subscription.getEQ_transformationID() != null)
 				map.put("EQ_transformationID",
 						subscription.getEQ_transformationID());
@@ -1819,15 +1847,14 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
 			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -1859,12 +1886,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("EQ_bizLocation", EQ_bizLocation);
 			if (WD_bizLocation != null)
 				map.put("WD_bizLocation", WD_bizLocation);
-			if (EQ_bizTransaction_type != null)
-				map.put("EQ_bizTransaction_type", EQ_bizTransaction_type);
-			if (EQ_source_type != null)
-				map.put("EQ_source_type", EQ_source_type);
-			if (EQ_destination_type != null)
-				map.put("EQ_destination_type", EQ_destination_type);
 			if (EQ_transformationID != null)
 				map.put("EQ_transformationID", EQ_transformationID);
 			if (MATCH_epc != null)
@@ -1903,7 +1924,8 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("eventCountLimit", eventCountLimit);
 			if (maxEventCount != null)
 				map.put("maxEventCount", maxEventCount);
-
+			if (paramMap != null)
+				map.put("paramMap", paramMap);
 			JobDetail job = newJob(SubscriptionTask.class)
 					.withIdentity(subscriptionID, queryName).setJobData(map)
 					.storeDurably(false).build();
@@ -1936,26 +1958,25 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
 			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
+
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
 				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
 				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
 				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
-				EQ_destination_type, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, orderBy, orderDirection,
-				eventCountLimit, maxEventCount);
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
+				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, paramMap);
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx

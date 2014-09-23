@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
@@ -36,6 +37,7 @@ public class SubscriptionTask implements Job {
 	 * Whenever execute method invoked according to the cron expression Query
 	 * the database and send the result to the destination.
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void execute(JobExecutionContext context)
 			throws JobExecutionException {
@@ -56,9 +58,6 @@ public class SubscriptionTask implements Job {
 		String WD_readPoint = map.getString("WD_readPoint");
 		String EQ_bizLocation = map.getString("EQ_bizLocation");
 		String WD_bizLocation = map.getString("WD_bizLocation");
-		String EQ_bizTransaction_type = map.getString("EQ_bizTransaction_type");
-		String EQ_source_type = map.getString("EQ_source_type");
-		String EQ_destination_type = map.getString("EQ_destination_type");
 		String EQ_transformationID = map.getString("EQ_transformationID");
 		String MATCH_epc = map.getString("MATCH_epc");
 		String MATCH_parentID = map.getString("MATCH_parentID");
@@ -78,14 +77,15 @@ public class SubscriptionTask implements Job {
 		String orderDirection = map.getString("orderDirection");
 		String eventCountLimit = map.getString(" eventCountLimit");
 		String maxEventCount = map.getString("maxEventCount");
-
+		Map<String, String[]> paramMap = (Map<String,String[]>)map.get("paramMap");
+		
+		
 		QueryService queryService = new QueryService();
 		String pollResult = queryService
 				.poll(queryName, eventType, GE_eventTime, LT_eventTime,
 						GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
 						EQ_disposition, EQ_readPoint, WD_readPoint,
-						EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-						EQ_source_type, EQ_destination_type,
+						EQ_bizLocation, WD_bizLocation,
 						EQ_transformationID, MATCH_epc, MATCH_parentID,
 						MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
 						MATCH_epcClass, MATCH_inputEPCClass,
@@ -93,7 +93,7 @@ public class SubscriptionTask implements Job {
 						GT_quantity, GE_quantity, LT_quantity, LE_quantity,
 						orderBy, orderDirection, eventCountLimit,
 						maxEventCount, null, false, false, null, null, null,
-						null, null);
+						null, null, paramMap);
 
 		try {
 			URL url = new URL(dest);
