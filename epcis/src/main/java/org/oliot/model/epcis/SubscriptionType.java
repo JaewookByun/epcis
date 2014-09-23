@@ -48,20 +48,6 @@ public class SubscriptionType {
 	private String GE_quantity;
 	private String LT_quantity;
 	private String LE_quantity;
-	private String EQ_fieldname;
-	private String GT_fieldname;
-	private String GE_fieldname;
-	private String LT_fieldname;
-	private String LE_fieldname;
-	private String EQ_ILMD_fieldname;
-	private String GT_ILMD_fieldname;
-	private String GE_ILMD_fieldname;
-	private String LT_ILMD_fieldname;
-	private String LE_ILMD_fieldname;
-	private String EXIST_fieldname;
-	private String EXIST_ILMD_fieldname;
-	private String HASATTR_fieldname;
-	private String EQATTR_fieldname_attrname;
 	private String orderBy;
 	private String orderDirection;
 	private String eventCountLimit;
@@ -80,12 +66,6 @@ public class SubscriptionType {
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
-			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
-			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
-			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
-			String EXIST_fieldname, String EXIST_ILMD_fieldname,
-			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
 			String maxEventCount) {
 		this.queryName = queryName;
@@ -115,20 +95,6 @@ public class SubscriptionType {
 		this.GE_quantity = GE_quantity;
 		this.LT_quantity = LT_quantity;
 		this.LE_quantity = LE_quantity;
-		this.EQ_fieldname = EQ_fieldname;
-		this.GT_fieldname = GT_fieldname;
-		this.GE_fieldname = GE_fieldname;
-		this.LT_fieldname = LT_fieldname;
-		this.LE_fieldname = LE_fieldname;
-		this.EQ_ILMD_fieldname = EQ_ILMD_fieldname;
-		this.GT_ILMD_fieldname = GT_ILMD_fieldname;
-		this.GE_ILMD_fieldname = GE_ILMD_fieldname;
-		this.LT_ILMD_fieldname = LT_ILMD_fieldname;
-		this.LE_ILMD_fieldname = LE_ILMD_fieldname;
-		this.EXIST_fieldname = EXIST_fieldname;
-		this.EXIST_ILMD_fieldname = EXIST_ILMD_fieldname;
-		this.HASATTR_fieldname = HASATTR_fieldname;
-		this.EQATTR_fieldname_attrname = EQATTR_fieldname_attrname;
 		this.orderBy = orderBy;
 		this.orderDirection = orderDirection;
 		this.eventCountLimit = eventCountLimit;
@@ -405,118 +371,6 @@ public class SubscriptionType {
 
 	public void setLE_quantity(String lE_quantity) {
 		LE_quantity = lE_quantity;
-	}
-
-	public String getEQ_fieldname() {
-		return EQ_fieldname;
-	}
-
-	public void setEQ_fieldname(String eQ_fieldname) {
-		EQ_fieldname = eQ_fieldname;
-	}
-
-	public String getGT_fieldname() {
-		return GT_fieldname;
-	}
-
-	public void setGT_fieldname(String gT_fieldname) {
-		GT_fieldname = gT_fieldname;
-	}
-
-	public String getGE_fieldname() {
-		return GE_fieldname;
-	}
-
-	public void setGE_fieldname(String gE_fieldname) {
-		GE_fieldname = gE_fieldname;
-	}
-
-	public String getLT_fieldname() {
-		return LT_fieldname;
-	}
-
-	public void setLT_fieldname(String lT_fieldname) {
-		LT_fieldname = lT_fieldname;
-	}
-
-	public String getLE_fieldname() {
-		return LE_fieldname;
-	}
-
-	public void setLE_fieldname(String lE_fieldname) {
-		LE_fieldname = lE_fieldname;
-	}
-
-	public String getEQ_ILMD_fieldname() {
-		return EQ_ILMD_fieldname;
-	}
-
-	public void setEQ_ILMD_fieldname(String eQ_ILMD_fieldname) {
-		EQ_ILMD_fieldname = eQ_ILMD_fieldname;
-	}
-
-	public String getGT_ILMD_fieldname() {
-		return GT_ILMD_fieldname;
-	}
-
-	public void setGT_ILMD_fieldname(String gT_ILMD_fieldname) {
-		GT_ILMD_fieldname = gT_ILMD_fieldname;
-	}
-
-	public String getGE_ILMD_fieldname() {
-		return GE_ILMD_fieldname;
-	}
-
-	public void setGE_ILMD_fieldname(String gE_ILMD_fieldname) {
-		GE_ILMD_fieldname = gE_ILMD_fieldname;
-	}
-
-	public String getLT_ILMD_fieldname() {
-		return LT_ILMD_fieldname;
-	}
-
-	public void setLT_ILMD_fieldname(String lT_ILMD_fieldname) {
-		LT_ILMD_fieldname = lT_ILMD_fieldname;
-	}
-
-	public String getLE_ILMD_fieldname() {
-		return LE_ILMD_fieldname;
-	}
-
-	public void setLE_ILMD_fieldname(String lE_ILMD_fieldname) {
-		LE_ILMD_fieldname = lE_ILMD_fieldname;
-	}
-
-	public String getEXIST_fieldname() {
-		return EXIST_fieldname;
-	}
-
-	public void setEXIST_fieldname(String eXIST_fieldname) {
-		EXIST_fieldname = eXIST_fieldname;
-	}
-
-	public String getEXIST_ILMD_fieldname() {
-		return EXIST_ILMD_fieldname;
-	}
-
-	public void setEXIST_ILMD_fieldname(String eXIST_ILMD_fieldname) {
-		EXIST_ILMD_fieldname = eXIST_ILMD_fieldname;
-	}
-
-	public String getHASATTR_fieldname() {
-		return HASATTR_fieldname;
-	}
-
-	public void setHASATTR_fieldname(String hASATTR_fieldname) {
-		HASATTR_fieldname = hASATTR_fieldname;
-	}
-
-	public String getEQATTR_fieldname_attrname() {
-		return EQATTR_fieldname_attrname;
-	}
-
-	public void setEQATTR_fieldname_attrname(String eQATTR_fieldname_attrname) {
-		EQATTR_fieldname_attrname = eQATTR_fieldname_attrname;
 	}
 
 	public String getOrderBy() {
