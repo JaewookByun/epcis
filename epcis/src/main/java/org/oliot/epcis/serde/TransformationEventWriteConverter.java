@@ -329,7 +329,6 @@ public class TransformationEventWriteConverter implements
 			
 		}
 		
-		
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (transformationEventType.getExtension() != null) {

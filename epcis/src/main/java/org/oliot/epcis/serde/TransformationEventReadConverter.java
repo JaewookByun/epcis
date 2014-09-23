@@ -26,6 +26,8 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.ILMDExtensionType;
+import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
@@ -420,6 +422,35 @@ public class TransformationEventReadConverter implements
 				dlt.setDestination(sdtList);
 				transformationEventType.setDestinationList(dlt);
 			}
+
+			if (dbObject.get("ilmd") != null) {
+				ILMDType ilmd = new ILMDType();
+				ILMDExtensionType ilmdExtension = new ILMDExtensionType();
+
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("ilmd");
+				Iterator<String> anyKeysIter = anyObject.keySet().iterator();
+				List<Object> elementList = new ArrayList<Object>();
+				while (anyKeysIter.hasNext()) {
+					String anyKey = anyKeysIter.next();
+					String value = anyObject.get(anyKey).toString();
+					if (anyKey != null && value != null) {
+						DocumentBuilderFactory dbf = DocumentBuilderFactory
+								.newInstance();
+						DocumentBuilder builder = dbf.newDocumentBuilder();
+						Document doc = builder.newDocument();
+
+						Node node = doc.createElement("value");
+						node.setTextContent(value);
+						Element element = doc.createElement(anyKey);
+						element.appendChild(node);
+						elementList.add(element);
+					}
+				}
+				ilmdExtension.setAny(elementList);
+				ilmd.setExtension(ilmdExtension);
+				transformationEventType.setIlmd(ilmd);
+			}
+
 			// extension
 			if (dbObject.get("extension") != null) {
 				TransformationEventExtensionType tfeet = new TransformationEventExtensionType();
