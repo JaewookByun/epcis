@@ -144,7 +144,7 @@
 			<ObjectEvent>
 				<eventTime>2001-12-31T12:00:00</eventTime>
 				<recordTime>2001-12-31T12:00:00</recordTime>
-				<eventTimeZoneOffset>eventTimeZoneOffset</eventTimeZoneOffset>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<baseExtension>
 					<base1>base1</base1>
 					<base2>base2</base2>
@@ -173,6 +173,12 @@
 				<bizTransactionList>
 					<bizTransaction type="bbhg">zcvzcvzcvzcxv</bizTransaction>
 				</bizTransactionList>
+				<ilmd>
+					<extension>
+						<a>isPosslbe</a>
+						<b>real</b>
+					</extension>
+				</ilmd>
 				<extension>
 					<quantityList>
 						<quantityElement>
