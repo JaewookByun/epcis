@@ -18,6 +18,8 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.ILMDExtensionType;
+import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
 import org.oliot.model.epcis.ObjectEventExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
@@ -231,6 +233,31 @@ public class ObjectEventWriteConverter implements
 				}
 			}
 			dbo.put("bizTransactionList", bizTranList);
+		}
+		
+		if (objectEventType.getIlmd() != null )
+		{
+			ILMDType ilmd = objectEventType.getIlmd();
+			if( ilmd.getExtension() != null )
+			{
+				ILMDExtensionType ilmdExtension = ilmd.getExtension();
+				Map<String, String> map2Save = new HashMap<String, String>();
+				List<Object> objList = ilmdExtension.getAny();
+				for (int i = 0; i < objList.size(); i++) {
+					Object obj = objList.get(i);
+					if (obj instanceof Element) {
+						Element element = (Element) obj;
+						if (element.getFirstChild() != null) {
+							String name = element.getLocalName();
+							String value = element.getFirstChild()
+									.getTextContent();
+							map2Save.put(name, value);
+						}
+					}
+				}
+				if (map2Save != null)
+					dbo.put("ilmd", map2Save);
+			}
 		}
 		// Extension
 		DBObject extension = new BasicDBObject();
