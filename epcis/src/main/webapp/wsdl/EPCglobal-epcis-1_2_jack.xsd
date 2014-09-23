@@ -400,6 +400,8 @@
 						type="epcis:BusinessLocationType" />
 					<xsd:element minOccurs="0" name="bizTransactionList"
 						type="epcis:BusinessTransactionListType" />
+						<!-- Omitted -->
+					<xsd:element minOccurs="0" name="ilmd" type="epcis:ILMDType" />
 					<xsd:element minOccurs="0" name="extension"
 						type="epcis:ObjectEventExtensionType" />
 					<xsd:any maxOccurs="unbounded" minOccurs="0" namespace="##other"
