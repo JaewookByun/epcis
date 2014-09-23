@@ -436,7 +436,9 @@ public class ObjectEventReadConverter implements
 					//
 					oeet.setExtension(oee2t);
 				}
+				objectEventType.setExtension(oeet);
 			}
+			
 			return objectEventType;
 		} catch (DatatypeConfigurationException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());

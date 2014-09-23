@@ -441,6 +441,7 @@ public class AggregationEventReadConverter implements
 					//
 					aeet.setExtension(aee2t);
 				}
+				aggregationEventType.setExtension(aeet);
 			}
 			return aggregationEventType;
 		} catch (DatatypeConfigurationException e) {
