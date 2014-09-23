@@ -1,5 +1,7 @@
 package org.oliot.model.epcis;
 
+import java.util.Map;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "Subscription")
@@ -30,9 +32,6 @@ public class SubscriptionType {
 	private String WD_readPoint;
 	private String EQ_bizLocation;
 	private String WD_bizLocation;
-	private String EQ_bizTransaction_type;
-	private String EQ_source_type;
-	private String EQ_destination_type;
 	private String EQ_transformationID;
 	private String MATCH_epc;
 	private String MATCH_parentID;
@@ -52,6 +51,15 @@ public class SubscriptionType {
 	private String orderDirection;
 	private String eventCountLimit;
 	private String maxEventCount;
+	private Map<String, String[]> paramMap;
+
+	public Map<String, String[]> getParamMap() {
+		return paramMap;
+	}
+
+	public void setParamMap(Map<String, String[]> paramMap) {
+		this.paramMap = paramMap;
+	}
 
 	public SubscriptionType(String queryName, String subscriptionID,
 			String dest, String cronExpression, String eventType,
@@ -59,15 +67,14 @@ public class SubscriptionType {
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
 			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_bizTransaction_type, String EQ_source_type,
-			String EQ_destination_type, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount) {
+			String maxEventCount, Map<String, String[]> paramMap) {
 		this.queryName = queryName;
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
@@ -81,7 +88,6 @@ public class SubscriptionType {
 		this.EQ_bizStep = EQ_bizStep;
 		this.EQ_disposition = EQ_disposition;
 		this.WD_bizLocation = WD_bizLocation;
-		this.EQ_bizTransaction_type = EQ_bizTransaction_type;
 		this.EQ_transformationID = EQ_transformationID;
 		this.MATCH_epc = MATCH_epc;
 		this.MATCH_parentID = MATCH_parentID;
@@ -99,6 +105,7 @@ public class SubscriptionType {
 		this.orderDirection = orderDirection;
 		this.eventCountLimit = eventCountLimit;
 		this.maxEventCount = maxEventCount;
+		this.paramMap = paramMap;
 	}
 
 	public String getQueryName() {
@@ -227,30 +234,6 @@ public class SubscriptionType {
 
 	public void setWD_bizLocation(String wD_bizLocation) {
 		WD_bizLocation = wD_bizLocation;
-	}
-
-	public String getEQ_bizTransaction_type() {
-		return EQ_bizTransaction_type;
-	}
-
-	public void setEQ_bizTransaction_type(String eQ_bizTransaction_type) {
-		EQ_bizTransaction_type = eQ_bizTransaction_type;
-	}
-
-	public String getEQ_source_type() {
-		return EQ_source_type;
-	}
-
-	public void setEQ_source_type(String eQ_source_type) {
-		EQ_source_type = eQ_source_type;
-	}
-
-	public String getEQ_destination_type() {
-		return EQ_destination_type;
-	}
-
-	public void setEQ_destination_type(String eQ_destination_type) {
-		EQ_destination_type = eQ_destination_type;
 	}
 
 	public String getEQ_transformationID() {
