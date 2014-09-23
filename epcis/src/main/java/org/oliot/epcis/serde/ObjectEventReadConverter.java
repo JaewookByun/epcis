@@ -48,7 +48,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-
 /**
  * Copyright (C) 2014 KAIST RESL
  *
@@ -331,7 +330,7 @@ public class ObjectEventReadConverter implements
 				ilmd.setExtension(ilmdExtension);
 				objectEventType.setIlmd(ilmd);
 			}
-			
+
 			// Extension Field
 			if (dbObject.get("extension") != null) {
 				ObjectEventExtensionType oeet = new ObjectEventExtensionType();
@@ -463,12 +462,11 @@ public class ObjectEventReadConverter implements
 						}
 						oee2t.setOtherAttributes(otherAttributes);
 					}
-					//
 					oeet.setExtension(oee2t);
 				}
 				objectEventType.setExtension(oeet);
 			}
-			
+
 			return objectEventType;
 		} catch (DatatypeConfigurationException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
