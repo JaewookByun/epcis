@@ -5,7 +5,9 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,12 +29,17 @@ import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
+import org.oliot.model.epcis.InvalidURIException;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
+import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
+import org.oliot.model.epcis.QueryTooLargeException;
+import org.oliot.model.epcis.SubscribeNotPermittedException;
 import org.oliot.model.epcis.SubscriptionControls;
+import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
@@ -112,6 +119,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String subscriptionID = subscription.getSubscriptionID();
 		String dest = subscription.getDest();
 		String cronExpression = subscription.getCronExpression();
+		boolean reportIfEmpty = subscription.isReportIfEmpty();
 		String eventType = subscription.getEventType();
 		String GE_eventTime = subscription.getGE_eventTime();
 		String LT_eventTime = subscription.getLT_eventTime();
@@ -162,35 +170,118 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		String orderDirection = subscription.getOrderDirection();
 		String eventCountLimit = subscription.getEventCountLimit();
 		String maxEventCount = subscription.getMaxEventCount();
-		String vocabularyName = subscription.getVocabularyName();
-		boolean includeAttributes = subscription.isIncludeAttributes();
-		boolean includeChildren = subscription.isIncludeChildren();
-		String attributeNames = subscription.getAttributeNames();
-		String EQ_name = subscription.geteQ_name();
-		String WD_name = subscription.getwD_name();
-		String HASATTR = subscription.gethASATTR();
-		String EQATTR_attrname = subscription.geteQATTR_attrname();
-		String maxElementCount = subscription.getMaxElementCount();
 
 		String result = subscribe(queryName, subscriptionID, dest,
-				cronExpression, eventType, GE_eventTime, LT_eventTime,
-				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
-				EQ_destination_type, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, EQ_fieldname, GT_fieldname,
-				GE_fieldname, LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				cronExpression, reportIfEmpty, eventType, GE_eventTime,
+				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+				EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
+				EQ_source_type, EQ_destination_type, EQ_transformationID,
+				MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+				MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+				EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
+				LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
+				GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
+				EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
+				EQATTR_fieldname_attrname, orderBy, orderDirection,
+				eventCountLimit, maxEventCount);
+
+		return result;
+	}
+
+	public String subscribeEventQuery(String queryName, String subscriptionID,
+			String dest, String cronExpression, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_bizTransaction_type, String EQ_source_type,
+			String EQ_destination_type, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
+			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
+			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
+			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
+			String EXIST_fieldname, String EXIST_ILMD_fieldname,
+			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount) {
+
+		// M27 - query params' constraint
+		// M39 - query params' constraint
+		String reason = checkConstraintSimpleEventQuery(queryName, eventType,
+				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+				WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-				includeAttributes, includeChildren, attributeNames, EQ_name,
-				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+				orderDirection, eventCountLimit, maxEventCount);
+		if (reason != null) {
+			return makeErrorResult(reason, QueryParameterException.class);
+		}
 
-		return result;
+		// cron Example
+		// 0/10 * * * * ? : every 10 second
+
+		// M30
+		try {
+			cronSchedule(cronExpression);
+		} catch (RuntimeException e) {
+			return makeErrorResult(e.toString(),
+					SubscriptionControlsException.class);
+		}
+
+		// Add Schedule with Query
+		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+
+		// Manage Subscription Persistently
+		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+
+		String retString = "SubscriptionID : " + subscriptionID
+				+ " is successfully triggered. ";
+		return retString;
 	}
 
 	/**
@@ -219,6 +310,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	public String subscribe(@PathVariable String queryName,
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
+			@RequestParam boolean reportIfEmpty,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
 			@RequestParam(required = false) String LT_eventTime,
@@ -266,64 +358,49 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount,
+			@RequestParam(required = false) String maxEventCount) {
 
-			@RequestParam(required = false) String vocabularyName,
-			@RequestParam(required = true) boolean includeAttributes,
-			@RequestParam(required = true) boolean includeChildren,
-			@RequestParam(required = false) String attributeNames,
-			@RequestParam(required = false) String EQ_name,
-			@RequestParam(required = false) String WD_name,
-			@RequestParam(required = false) String HASATTR,
-			@RequestParam(required = false) String EQATTR_attrname,
-			@RequestParam(required = false) String maxElementCount) {
+		// M20 : Throw an InvalidURIException for an incorrect dest argument in
+		// the subscribe method in EPCIS Query Control Interface
+		try {
+			new URL(dest);
+		} catch (MalformedURLException e) {
+			return makeErrorResult(e.toString(), InvalidURIException.class);
+		}
 
-		if (!queryName.equals("SimpleEventQuery"))
-			return "Unavailable Query Name";
+		// M24 : Virtual Error Handling
+		// Automatically processed by URI param
+		if (dest == null || cronExpression == null) {
+			return makeErrorResult(
+					"Fill the mandatory field in subscribe method",
+					QueryParameterException.class);
+		}
 
-		// cron Example
-		// 0/10 * * * * ? : every 10 second
+		// M46
+		if (queryName.equals("SimpleMasterDataQuery")) {
+			return makeErrorResult("SimpleMasterDataQuery is not available in subscription method", SubscribeNotPermittedException.class);
+		}
 
-		// Add Schedule with Query
-		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
-				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-				includeAttributes, includeChildren, attributeNames, EQ_name,
-				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+		String retString = "";
+		if (queryName.equals("SimpleEventQuery")) {
+			retString = subscribeEventQuery(queryName, subscriptionID, dest,
+					cronExpression, eventType, GE_eventTime, LT_eventTime,
+					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+					EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_bizTransaction_type, EQ_source_type,
+					EQ_destination_type, EQ_transformationID, MATCH_epc,
+					MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
+					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
+					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
+					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
+					EQATTR_fieldname_attrname, orderBy, orderDirection,
+					eventCountLimit, maxEventCount);
+		}
 
-		// Manage Subscription Persistently
-		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
-				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
-				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
-				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
-				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
-				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-				includeAttributes, includeChildren, attributeNames, EQ_name,
-				WD_name, HASATTR, EQATTR_attrname, maxElementCount);
-
-		String retString = "SubscriptionID : " + subscriptionID
-				+ " is successfully triggered. ";
 		return retString;
 	}
 
@@ -407,6 +484,109 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		return null;
 	}
 
+	public String checkConstraintSimpleEventQuery(String queryName,
+			String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
+			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_bizTransaction_type, String EQ_source_type,
+			String EQ_destination_type, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String EQ_fieldname, String GT_fieldname, String GE_fieldname,
+			String LT_fieldname, String LE_fieldname, String EQ_ILMD_fieldname,
+			String GT_ILMD_fieldname, String GE_ILMD_fieldname,
+			String LT_ILMD_fieldname, String LE_ILMD_fieldname,
+			String EXIST_fieldname, String EXIST_ILMD_fieldname,
+			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount) {
+
+		// M27
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			if (GE_eventTime != null)
+				sdf.parse(GE_eventTime);
+			if (LT_eventTime != null)
+				sdf.parse(LT_eventTime);
+			if (GE_recordTime != null)
+				sdf.parse(GE_recordTime);
+			if (LT_recordTime != null)
+				sdf.parse(LT_recordTime);
+		} catch (ParseException e) {
+			return makeErrorResult(e.toString(), QueryParameterException.class);
+		}
+
+		// M27
+		if (orderBy != null) {
+			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
+				return makeErrorResult(
+						"orderBy should be eventTime or recordTime",
+						QueryParameterException.class);
+			}
+			if (orderDirection != null) {
+				if (!orderDirection.equals("ASC")
+						&& !orderDirection.equals("DESC")) {
+					return makeErrorResult(
+							"orderDirection should be ASC or DESC",
+							QueryParameterException.class);
+				}
+			}
+		}
+
+		// M27
+		if (eventCountLimit != null) {
+			try {
+				int c = Integer.parseInt(eventCountLimit);
+				if (c <= 0) {
+					return makeErrorResult(
+							"eventCount should be natural number",
+							QueryParameterException.class);
+				}
+			} catch (NumberFormatException e) {
+				return makeErrorResult("eventCount: " + e.toString(),
+						QueryParameterException.class);
+			}
+		}
+
+		// M27
+		if (maxEventCount != null) {
+			try {
+				int c = Integer.parseInt(maxEventCount);
+				if (c <= 0) {
+					return makeErrorResult(
+							"maxEventCount should be natural number",
+							QueryParameterException.class);
+				}
+			} catch (NumberFormatException e) {
+				return makeErrorResult("maxEventCount: " + e.toString(),
+						QueryParameterException.class);
+			}
+		}
+
+		// M39
+		if (EQ_action != null) {
+			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE")
+					&& !EQ_action.equals("DELETE")) {
+				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE",
+						QueryParameterException.class);
+			}
+		}
+
+		// M42
+		if (eventCountLimit != null && maxEventCount != null) {
+			return makeErrorResult(
+					"One of eventCountLimit and maxEventCount should be omitted",
+					QueryParameterException.class);
+		}
+
+		return null;
+	}
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String pollEventQuery(String queryName, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
@@ -427,12 +607,28 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount,
+			String maxEventCount) {
 
-			String vocabularyName, boolean includeAttributes,
-			boolean includeChildren, String attributeNames, String EQ_name,
-			String WD_name, String HASATTR, String EQATTR_attrname,
-			String maxElementCount) {
+		// M27 - query params' constraint
+		// M39 - query params' constraint
+		String reason = checkConstraintSimpleEventQuery(queryName, eventType,
+				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+				WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_bizTransaction_type, EQ_source_type, EQ_destination_type,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, EQ_fieldname, GT_fieldname, GE_fieldname,
+				LT_fieldname, LE_fieldname, EQ_ILMD_fieldname,
+				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
+				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
+				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
+				orderDirection, eventCountLimit, maxEventCount);
+		if (reason != null) {
+			return makeErrorResult(reason, QueryParameterException.class);
+		}
 
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
@@ -701,32 +897,21 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				eventObjects.add(element);
 			}
 		}
+
+		// M44
+		if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
+			((AbstractApplicationContext) ctx).close();
+			return makeErrorResult("Violate maxEventCount",
+					QueryTooLargeException.class);
+		}
+
 		((AbstractApplicationContext) ctx).close();
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
 	}
 
-	public String pollMasterDataQuery(String queryName, String eventType,
-			String gE_eventTime, String lT_eventTime, String gE_recordTime,
-			String lT_recordTime, String eQ_action, String eQ_bizStep,
-			String eQ_disposition, String eQ_readPoint, String wD_readPoint,
-			String eQ_bizLocation, String wD_bizLocation,
-			String eQ_bizTransaction_type, String eQ_source_type,
-			String eQ_destination_type, String eQ_transformationID,
-			String mATCH_epc, String mATCH_parentID, String mATCH_inputEPC,
-			String mATCH_outputEPC, String mATCH_anyEPC, String mATCH_epcClass,
-			String mATCH_inputEPCClass, String mATCH_outputEPCClass,
-			String mATCH_anyEPCClass, String eQ_quantity, String gT_quantity,
-			String gE_quantity, String lT_quantity, String lE_quantity,
-			String eQ_fieldname, String gT_fieldname, String gE_fieldname,
-			String lT_fieldname, String lE_fieldname, String eQ_ILMD_fieldname,
-			String gT_ILMD_fieldname, String gE_ILMD_fieldname,
-			String lT_ILMD_fieldname, String lE_ILMD_fieldname,
-			String eXIST_fieldname, String eXIST_ILMD_fieldname,
-			String hASATTR_fieldname, String eQATTR_fieldname_attrname,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, String vocabularyName,
+	public String pollMasterDataQuery(String queryName, String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
 			String hASATTR, String eQATTR_attrname, String maxElementCount) {
@@ -761,6 +946,23 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		qbt.setVocabularyList(vlt);
 
 		((AbstractApplicationContext) ctx).close();
+		
+		// M47
+		if( maxElementCount != null )
+		{
+			try{
+				int maxElement = Integer.parseInt(maxElementCount);
+				if( vList.size() > maxElement )
+				{
+					return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+				}
+			}catch( NumberFormatException e )
+			{
+				
+			}
+		}
+		
+		
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
@@ -820,14 +1022,23 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			@RequestParam(required = false) String maxEventCount,
 
 			@RequestParam(required = false) String vocabularyName,
-			@RequestParam(required = true) boolean includeAttributes,
-			@RequestParam(required = true) boolean includeChildren,
+			@RequestParam(required = false) boolean includeAttributes,
+			@RequestParam(required = false) boolean includeChildren,
 			@RequestParam(required = false) String attributeNames,
 			@RequestParam(required = false) String EQ_name,
 			@RequestParam(required = false) String WD_name,
 			@RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String EQATTR_attrname,
 			@RequestParam(required = false) String maxElementCount) {
+
+		// M24
+		if (queryName == null) {
+			// It is not possible, automatically filtered by URI param
+			return makeErrorResult(
+					"queryName is mandatory field in poll method",
+					QueryParameterException.class);
+		}
+
 		if (queryName.equals("SimpleEventQuery"))
 			return pollEventQuery(queryName, eventType, GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
@@ -843,26 +1054,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
 					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
 					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, vocabularyName,
-					includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, EQATTR_attrname, maxElementCount);
+					eventCountLimit, maxEventCount);
 
 		if (queryName.equals("SimpleMasterDataQuery"))
-			return pollMasterDataQuery(queryName, eventType, GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_bizTransaction_type,
-					EQ_source_type, EQ_destination_type, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_fieldname, GT_fieldname, GE_fieldname, LT_fieldname,
-					LE_fieldname, EQ_ILMD_fieldname, GT_ILMD_fieldname,
-					GE_ILMD_fieldname, LT_ILMD_fieldname, LE_ILMD_fieldname,
-					EXIST_fieldname, EXIST_ILMD_fieldname, HASATTR_fieldname,
-					EQATTR_fieldname_attrname, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, vocabularyName,
+			return pollMasterDataQuery(queryName, vocabularyName,
 					includeAttributes, includeChildren, attributeNames,
 					EQ_name, WD_name, HASATTR, EQATTR_attrname, maxElementCount);
 		return "";
@@ -1811,10 +2006,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+			String maxEventCount) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -1921,8 +2113,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				map.put("eventCountLimit", eventCountLimit);
 			if (maxEventCount != null)
 				map.put("maxEventCount", maxEventCount);
-			if (vocabularyName != null)
-				map.put("vocabularyName", vocabularyName);
 
 			JobDetail job = newJob(SubscriptionTask.class)
 					.withIdentity(subscriptionID, queryName).setJobData(map)
@@ -1970,10 +2160,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			String EXIST_fieldname, String EXIST_ILMD_fieldname,
 			String HASATTR_fieldname, String EQATTR_fieldname_attrname,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String eQATTR_attrname, String maxElementCount) {
+			String maxEventCount) {
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
 				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
 				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
@@ -1988,9 +2175,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				GT_ILMD_fieldname, GE_ILMD_fieldname, LT_ILMD_fieldname,
 				LE_ILMD_fieldname, EXIST_fieldname, EXIST_ILMD_fieldname,
 				HASATTR_fieldname, EQATTR_fieldname_attrname, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-				includeAttributes, includeChildren, attributeNames, eQ_name,
-				wD_name, hASATTR, eQATTR_attrname, maxElementCount);
+				orderDirection, eventCountLimit, maxEventCount);
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -2033,5 +2218,66 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 				SubscriptionType.class);
 		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 				+ subscription + " is removed from DB");
+	}
+
+	@SuppressWarnings("rawtypes")
+	public String makeErrorResult(String err, Class type) {
+		if (type == InvalidURIException.class) {
+			InvalidURIException e = new InvalidURIException();
+			e.setReason(err);
+			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();
+			EPCISQueryBodyType retBody = new EPCISQueryBodyType();
+			retBody.setInvalidURIException(e);
+			retDoc.setEPCISBody(retBody);
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(retDoc, sw);
+			return sw.toString();
+		}
+		if (type == QueryParameterException.class) {
+			QueryParameterException e = new QueryParameterException();
+			e.setReason(err);
+			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();
+			EPCISQueryBodyType retBody = new EPCISQueryBodyType();
+			retBody.setQueryParameterException(e);
+			retDoc.setEPCISBody(retBody);
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(retDoc, sw);
+			return sw.toString();
+		}
+		if (type == SubscriptionControlsException.class) {
+			SubscriptionControlsException e = new SubscriptionControlsException();
+			e.setReason(err);
+			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();
+			EPCISQueryBodyType retBody = new EPCISQueryBodyType();
+			retBody.setSubscriptionControlsException(e);
+			retDoc.setEPCISBody(retBody);
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(retDoc, sw);
+			return sw.toString();
+		}
+		if (type == QueryTooLargeException.class) {
+			QueryTooLargeException e = new QueryTooLargeException();
+			e.setReason(err);
+			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();
+			EPCISQueryBodyType retBody = new EPCISQueryBodyType();
+			retBody.setQueryTooLargeException(e);
+			retDoc.setEPCISBody(retBody);
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(retDoc, sw);
+			return sw.toString();
+		}
+		if (type == SubscribeNotPermittedException.class )
+		{
+			SubscribeNotPermittedException e = new SubscribeNotPermittedException();
+			e.setReason(err);
+			EPCISQueryDocumentType retDoc = new EPCISQueryDocumentType();
+			EPCISQueryBodyType retBody = new EPCISQueryBodyType();
+			retBody.setSubscribeNotPermittedException(e);
+			retDoc.setEPCISBody(retBody);
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(retDoc, sw);
+			return sw.toString();
+		}
+		return null;
 	}
 }
