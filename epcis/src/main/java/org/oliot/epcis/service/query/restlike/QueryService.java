@@ -608,16 +608,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 
 		if (toGetAggregationEvent == true) {
 			// Criteria
-			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			List<Criteria> criteriaList = makeCriteria("AggregationEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -647,16 +647,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		// For Each Event Type!
 		if (toGetObjectEvent == true) {
 			// Criteria
-			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			List<Criteria> criteriaList = makeCriteria("ObjectEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -682,16 +682,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 		if (toGetQuantityEvent == true) {
 			// Criteria
-			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			List<Criteria> criteriaList = makeCriteria("QuantityEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -718,16 +718,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 		if (toGetTransactionEvent == true) {
 			// Criteria
-			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			List<Criteria> criteriaList = makeCriteria("TransactionEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -755,16 +755,16 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 		if (toGetTransformationEvent == true) {
 			// Criteria
-			List<Criteria> criteriaList = makeCriteria(GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			List<Criteria> criteriaList = makeCriteria("TransformationEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Make Query
 			Query searchQuery = new Query();
@@ -904,7 +904,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			Map<String, String[]> extMap) {
 
 		Map<String, String[]> paramMap = new HashMap<String, String[]>();
-		if (extMap == null) {
+		if (extMap == null || extMap.size() == 0) {
 			if (RequestContextHolder.getRequestAttributes() != null) {
 				HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
 						.getRequestAttributes()).getRequest();
@@ -1156,7 +1156,7 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	}
 
 	@SuppressWarnings({ "unused" })
-	public List<Criteria> makeCriteria(String GE_eventTime,
+	public List<Criteria> makeCriteria(String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
 			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
@@ -1707,6 +1707,98 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 			while (paramIter.hasNext()) {
 				String paramName = paramIter.next();
 				String[] paramValues = paramMap.get(paramName);
+
+				/**
+				 * EQ_bizTransaction_type: This is not a single parameter, but a
+				 * family of parameters. If a parameter of this form is
+				 * specified, the result will only include events that (a)
+				 * include a bizTransactionList; (b) where the business
+				 * transaction list includes an entry whose type subfield is
+				 * equal to type extracted from the name of this parameter; and
+				 * (c) where the bizTransaction subfield of that entry is equal
+				 * to one of the values specified in this parameter.
+				 */
+				if (paramName.contains("EQ_bizTransaction_")) {
+					String type = paramName.substring(18, paramName.length());
+					List<DBObject> subObjList = new ArrayList<DBObject>();
+					for (int i = 0; i < paramValues.length; i++) {
+						String val = paramValues[i].trim();
+						DBObject dbo = new BasicDBObject();
+						dbo.put(type, val);
+						subObjList.add(dbo);
+					}
+					Criteria criteria = Criteria.where("bizTransactionList")
+							.in(subObjList);
+					criteriaList.add(criteria);
+				}
+
+				/**
+				 * EQ_source_type: This is not a single parameter, but a family
+				 * of parameters. If a parameter of this form is specified, the
+				 * result will only include events that (a) include a
+				 * sourceList; (b) where the source list includes an entry whose
+				 * type subfield is equal to type extracted from the name of
+				 * this parameter; and (c) where the source subfield of that
+				 * entry is equal to one of the values specified in this
+				 * parameter.
+				 */
+
+				if (paramName.contains("EQ_source_")) {
+					String type = paramName.substring(10, paramName.length());
+					List<DBObject> subObjList = new ArrayList<DBObject>();
+					for (int i = 0; i < paramValues.length; i++) {
+						String val = paramValues[i].trim();
+						DBObject dbo = new BasicDBObject();
+						dbo.put(type, val);
+						subObjList.add(dbo);
+					}
+					if (eventType.equals("AggregationEvent")
+							|| eventType.equals("ObjectEvent")
+							|| eventType.equals("TransactionEvent")) {
+						Criteria criteria = Criteria.where(
+								"extension.sourceList").in(subObjList);
+						criteriaList.add(criteria);
+					}
+					if (eventType.equals("TransformationEvent")) {
+						Criteria criteria = Criteria.where("sourceList").in(
+								subObjList);
+						criteriaList.add(criteria);
+					}
+				}
+
+				/**
+				 * EQ_destination_type: This is not a single parameter, but a
+				 * family of parameters. If a parameter of this form is
+				 * specified, the result will only include events that (a)
+				 * include a destinationList; (b) where the destination list
+				 * includes an entry whose type subfield is equal to type
+				 * extracted from the name of this parameter; and (c) where the
+				 * destination subfield of that entry is equal to one of the
+				 * values specified in this parameter.
+				 */
+				if (paramName.contains("EQ_destination_")) {
+					String type = paramName.substring(15, paramName.length());
+					List<DBObject> subObjList = new ArrayList<DBObject>();
+					for (int i = 0; i < paramValues.length; i++) {
+						String val = paramValues[i].trim();
+						DBObject dbo = new BasicDBObject();
+						dbo.put(type, val);
+						subObjList.add(dbo);
+					}
+					if (eventType.equals("AggregationEvent")
+							|| eventType.equals("ObjectEvent")
+							|| eventType.equals("TransactionEvent")) {
+						Criteria criteria = Criteria.where(
+								"extension.destinationList").in(subObjList);
+						criteriaList.add(criteria);
+					}
+					if (eventType.equals("TransformationEvent")) {
+						Criteria criteria = Criteria.where("destinationList")
+								.in(subObjList);
+						criteriaList.add(criteria);
+					}
+				}
+
 				boolean isExtraParam = isExtraParameter(paramName);
 
 			}

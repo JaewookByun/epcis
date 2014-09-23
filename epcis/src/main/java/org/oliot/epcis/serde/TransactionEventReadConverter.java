@@ -439,6 +439,7 @@ public class TransactionEventReadConverter implements
 					//
 					teet.setExtension(tee2t);
 				}
+				transactionEventType.setExtension(teet);
 			}
 			return transactionEventType;
 		} catch (DatatypeConfigurationException e) {
