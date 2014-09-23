@@ -334,7 +334,8 @@
 				</destinationList>
 				<ilmd>
 					<extension>
-						<ANY-ELEMENT />
+						<a>isPosslbe</a>
+						<b>real</b>
 					</extension>
 				</ilmd>
 				<extension>
