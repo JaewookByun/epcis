@@ -10,9 +10,17 @@
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
-	<bean id="querytest" class="org.oliot.epcis.service.query.mongodb.restlike.MongoQueryTest"></bean>
-	<bean id="restQuery" class="org.oliot.epcis.service.query.mongodb.rest.MongoQueryService"></bean>
+	
+	<bean id="restQuery"
+		class="org.oliot.epcis.service.query.mongodb.MongoRESTQueryService"></bean>
 
+	<!--  For TEST -->
+	<bean id="soaptest"
+	    class="org.oliot.epcis.service.query.SoapTest"></bean>
+	<bean id="querytest"
+		class="org.oliot.epcis.service.query.mongodb.MongoQueryTest"></bean>
+	
+	
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix" value="/WEB-INF/view/"></property>

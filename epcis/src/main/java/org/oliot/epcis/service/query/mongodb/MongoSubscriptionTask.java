@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb.restlike;
+package org.oliot.epcis.service.query.mongodb;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

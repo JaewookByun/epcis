@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.epcis.service.query.mongodb.restlike.MongoSubscription;
+import org.oliot.epcis.service.query.mongodb.MongoSubscription;
 
 /**
  * Servlet implementation class SubscriptionServlet

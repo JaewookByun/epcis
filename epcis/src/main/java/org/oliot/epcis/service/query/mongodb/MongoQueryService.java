@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb.restlike;
+package org.oliot.epcis.service.query.mongodb;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -6,6 +6,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,11 +34,14 @@ import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.InvalidURIException;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
+import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParameterException;
+import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.oliot.model.epcis.SubscribeNotPermittedException;
+import org.oliot.model.epcis.SubscriptionControls;
 import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
@@ -191,6 +195,174 @@ public class MongoQueryService {
 		return retString;
 	}
 
+	// Soap Query Adaptor
+	public void subscribe(String queryName, QueryParams params, URI dest,
+			SubscriptionControls controls, String subscriptionID) {
+
+		List<QueryParam> queryParamList = params.getParam();
+		String destStr = dest.toString();
+
+		String eventType = null;
+		String GE_eventTime = null;
+		String LT_eventTime = null;
+		String GE_recordTime = null;
+		String LT_recordTime = null;
+		String EQ_action = null;
+		String EQ_bizStep = null;
+		String EQ_disposition = null;
+		String EQ_readPoint = null;
+		String WD_readPoint = null;
+		String EQ_bizLocation = null;
+		String WD_bizLocation = null;
+		String EQ_transformationID = null;
+		String MATCH_epc = null;
+		String MATCH_parentID = null;
+		String MATCH_inputEPC = null;
+		String MATCH_outputEPC = null;
+		String MATCH_anyEPC = null;
+		String MATCH_epcClass = null;
+		String MATCH_inputEPCClass = null;
+		String MATCH_outputEPCClass = null;
+		String MATCH_anyEPCClass = null;
+		String EQ_quantity = null;
+		String GT_quantity = null;
+		String GE_quantity = null;
+		String LT_quantity = null;
+		String LE_quantity = null;
+		String orderBy = null;
+		String orderDirection = null;
+		String eventCountLimit = null;
+		String maxEventCount = null;
+		String cronExpression = null;
+		boolean reportIfEmpty = false;
+
+		Map<String, String[]> extMap = new HashMap<String, String[]>();
+		for (int i = 0; i < queryParamList.size(); i++) {
+
+			QueryParam qp = queryParamList.get(i);
+			String name = qp.getName();
+			String value = (String) qp.getValue();
+
+			if (name.equals("cronExpression")) {
+				cronExpression = value;
+				continue;
+			} else if (name.equals("reportIfEmpty")) {
+				if (value.equals("true"))
+					reportIfEmpty = true;
+				else
+					reportIfEmpty = false;
+				continue;
+			} else if (name.equals("eventType")) {
+				eventType = value;
+				continue;
+			} else if (name.equals("GE_eventTime")) {
+				GE_eventTime = value;
+				continue;
+			} else if (name.equals("LT_eventTime")) {
+				LT_eventTime = value;
+				continue;
+			} else if (name.equals("GE_recordTime")) {
+				GE_recordTime = value;
+				continue;
+			} else if (name.equals("LT_recordTime")) {
+				LT_recordTime = value;
+				continue;
+			} else if (name.equals("EQ_action")) {
+				EQ_action = value;
+				continue;
+			} else if (name.equals("EQ_bizStep")) {
+				EQ_bizStep = value;
+				continue;
+			} else if (name.equals("EQ_disposition")) {
+				EQ_disposition = value;
+				continue;
+			} else if (name.equals("EQ_readPoint")) {
+				EQ_readPoint = value;
+				continue;
+			} else if (name.equals("WD_readPoint")) {
+				WD_readPoint = value;
+				continue;
+			} else if (name.equals("EQ_bizLocation")) {
+				EQ_bizLocation = value;
+				continue;
+			} else if (name.equals("WD_bizLocation")) {
+				WD_bizLocation = value;
+				continue;
+			} else if (name.equals("EQ_transformationID")) {
+				EQ_transformationID = value;
+				continue;
+			} else if (name.equals("MATCH_epc")) {
+				MATCH_epc = value;
+				continue;
+			} else if (name.equals("MATCH_parentID")) {
+				MATCH_parentID = value;
+				continue;
+			} else if (name.equals("MATCH_inputEPC")) {
+				MATCH_inputEPC = value;
+				continue;
+			} else if (name.equals("MATCH_outputEPC")) {
+				MATCH_outputEPC = value;
+				continue;
+			} else if (name.equals("MATCH_anyEPC")) {
+				MATCH_anyEPC = value;
+				continue;
+			} else if (name.equals("MATCH_epcClass")) {
+				MATCH_epcClass = value;
+				continue;
+			} else if (name.equals("MATCH_inputEPCClass")) {
+				MATCH_inputEPCClass = value;
+				continue;
+			} else if (name.equals("MATCH_outputEPCClass")) {
+				MATCH_outputEPCClass = value;
+				continue;
+			} else if (name.equals("MATCH_anyEPCClass")) {
+				MATCH_anyEPCClass = value;
+				continue;
+			} else if (name.equals("EQ_quantity")) {
+				EQ_quantity = value;
+				continue;
+			} else if (name.equals("GT_quantity")) {
+				GT_quantity = value;
+				continue;
+			} else if (name.equals("GE_quantity")) {
+				GE_quantity = value;
+				continue;
+			} else if (name.equals("LT_quantity")) {
+				LT_quantity = value;
+				continue;
+			} else if (name.equals("LE_quantity")) {
+				LE_quantity = value;
+				continue;
+			} else if (name.equals("orderBy")) {
+				orderBy = value;
+				continue;
+			} else if (name.equals("orderDirection")) {
+				orderDirection = value;
+				continue;
+			} else if (name.equals("eventCountLimit")) {
+				eventCountLimit = value;
+				continue;
+			} else if (name.equals("maxEventCount")) {
+				maxEventCount = value;
+				continue;
+			} else {
+				extMap.put(name, new String[] { value });
+			}
+		}
+
+		subscribe(queryName, subscriptionID, destStr, cronExpression,
+				reportIfEmpty, eventType, GE_eventTime, LT_eventTime,
+				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
+				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, extMap);
+
+	}
+
 	public String subscribe(String queryName, String subscriptionID,
 			String dest, String cronExpression, boolean reportIfEmpty,
 			String eventType, String GE_eventTime, String LT_eventTime,
@@ -294,6 +466,24 @@ public class MongoQueryService {
 		}
 		((AbstractApplicationContext) ctx).close();
 		return retArray.toString(1);
+	}
+
+	public List<String> getSubscriptionIDs(String queryName) {
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
+				Criteria.where("queryName").is(queryName)),
+				SubscriptionType.class);
+		List<String> retList = new ArrayList<String>();
+		for (int i = 0; i < allSubscription.size(); i++) {
+			SubscriptionType subscription = allSubscription.get(i);
+			retList.add(subscription.getSubscriptionID());
+		}
+		((AbstractApplicationContext) ctx).close();
+		return retList;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -634,6 +824,197 @@ public class MongoQueryService {
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
+	}
+
+	// Soap Service Adaptor
+	public String poll(String queryName, QueryParams queryParams) {
+		List<QueryParam> queryParamList = queryParams.getParam();
+
+		String eventType = null;
+		String GE_eventTime = null;
+		String LT_eventTime = null;
+		String GE_recordTime = null;
+		String LT_recordTime = null;
+		String EQ_action = null;
+		String EQ_bizStep = null;
+		String EQ_disposition = null;
+		String EQ_readPoint = null;
+		String WD_readPoint = null;
+		String EQ_bizLocation = null;
+		String WD_bizLocation = null;
+		String EQ_transformationID = null;
+		String MATCH_epc = null;
+		String MATCH_parentID = null;
+		String MATCH_inputEPC = null;
+		String MATCH_outputEPC = null;
+		String MATCH_anyEPC = null;
+		String MATCH_epcClass = null;
+		String MATCH_inputEPCClass = null;
+		String MATCH_outputEPCClass = null;
+		String MATCH_anyEPCClass = null;
+		String EQ_quantity = null;
+		String GT_quantity = null;
+		String GE_quantity = null;
+		String LT_quantity = null;
+		String LE_quantity = null;
+		String orderBy = null;
+		String orderDirection = null;
+		String eventCountLimit = null;
+		String maxEventCount = null;
+		String vocabularyName = null;
+		boolean includeAttributes = false;
+		boolean includeChildren = false;
+		String attributeNames = null;
+		String EQ_name = null;
+		String WD_name = null;
+		String HASATTR = null;
+		String maxElementCount = null;
+		Map<String, String[]> extMap = new HashMap<String, String[]>();
+		for (int i = 0; i < queryParamList.size(); i++) {
+
+			QueryParam qp = queryParamList.get(i);
+			String name = qp.getName();
+			String value = (String) qp.getValue();
+
+			if (name.equals("eventType")) {
+				eventType = value;
+				continue;
+			} else if (name.equals("GE_eventTime")) {
+				GE_eventTime = value;
+				continue;
+			} else if (name.equals("LT_eventTime")) {
+				LT_eventTime = value;
+				continue;
+			} else if (name.equals("GE_recordTime")) {
+				GE_recordTime = value;
+				continue;
+			} else if (name.equals("LT_recordTime")) {
+				LT_recordTime = value;
+				continue;
+			} else if (name.equals("EQ_action")) {
+				EQ_action = value;
+				continue;
+			} else if (name.equals("EQ_bizStep")) {
+				EQ_bizStep = value;
+				continue;
+			} else if (name.equals("EQ_disposition")) {
+				EQ_disposition = value;
+				continue;
+			} else if (name.equals("EQ_readPoint")) {
+				EQ_readPoint = value;
+				continue;
+			} else if (name.equals("WD_readPoint")) {
+				WD_readPoint = value;
+				continue;
+			} else if (name.equals("EQ_bizLocation")) {
+				EQ_bizLocation = value;
+				continue;
+			} else if (name.equals("WD_bizLocation")) {
+				WD_bizLocation = value;
+				continue;
+			} else if (name.equals("EQ_transformationID")) {
+				EQ_transformationID = value;
+				continue;
+			} else if (name.equals("MATCH_epc")) {
+				MATCH_epc = value;
+				continue;
+			} else if (name.equals("MATCH_parentID")) {
+				MATCH_parentID = value;
+				continue;
+			} else if (name.equals("MATCH_inputEPC")) {
+				MATCH_inputEPC = value;
+				continue;
+			} else if (name.equals("MATCH_outputEPC")) {
+				MATCH_outputEPC = value;
+				continue;
+			} else if (name.equals("MATCH_anyEPC")) {
+				MATCH_anyEPC = value;
+				continue;
+			} else if (name.equals("MATCH_epcClass")) {
+				MATCH_epcClass = value;
+				continue;
+			} else if (name.equals("MATCH_inputEPCClass")) {
+				MATCH_inputEPCClass = value;
+				continue;
+			} else if (name.equals("MATCH_outputEPCClass")) {
+				MATCH_outputEPCClass = value;
+				continue;
+			} else if (name.equals("MATCH_anyEPCClass")) {
+				MATCH_anyEPCClass = value;
+				continue;
+			} else if (name.equals("EQ_quantity")) {
+				EQ_quantity = value;
+				continue;
+			} else if (name.equals("GT_quantity")) {
+				GT_quantity = value;
+				continue;
+			} else if (name.equals("GE_quantity")) {
+				GE_quantity = value;
+				continue;
+			} else if (name.equals("LT_quantity")) {
+				LT_quantity = value;
+				continue;
+			} else if (name.equals("LE_quantity")) {
+				LE_quantity = value;
+				continue;
+			} else if (name.equals("orderBy")) {
+				orderBy = value;
+				continue;
+			} else if (name.equals("orderDirection")) {
+				orderDirection = value;
+				continue;
+			} else if (name.equals("eventCountLimit")) {
+				eventCountLimit = value;
+				continue;
+			} else if (name.equals("maxEventCount")) {
+				maxEventCount = value;
+				continue;
+			} else if (name.equals("vocabularyName")) {
+				vocabularyName = value;
+				continue;
+			} else if (name.equals("includeAttributes")) {
+				if (value.equals("true"))
+					includeAttributes = true;
+				else
+					includeAttributes = false;
+				continue;
+			} else if (name.equals("includeChildren")) {
+				if (value.equals("true"))
+					includeChildren = true;
+				else
+					includeChildren = false;
+				continue;
+			} else if (name.equals("attributeNames")) {
+				attributeNames = value;
+				continue;
+			} else if (name.equals("EQ_name")) {
+				EQ_name = value;
+				continue;
+			} else if (name.equals("WD_name")) {
+				WD_name = value;
+				continue;
+			} else if (name.equals("HASATTR")) {
+				HASATTR = value;
+				continue;
+			} else if (name.equals("maxElementCount")) {
+				maxElementCount = value;
+				continue;
+			} else {
+				extMap.put(name, new String[] { value });
+			}
+		}
+
+		return poll(queryName, eventType, GE_eventTime, LT_eventTime,
+				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
+				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, vocabularyName, includeAttributes,
+				includeChildren, attributeNames, EQ_name, WD_name, HASATTR,
+				maxElementCount, extMap);
 	}
 
 	public String poll(@PathVariable String queryName, String eventType,

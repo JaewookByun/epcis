@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb.rest;
+package org.oliot.epcis.service.query.mongodb;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 @RequestMapping("/rest")
-public class MongoQueryService {
+public class MongoRESTQueryService {
 
 	/**
 	 * Return the resource indicating {epc} Time range can be adjustable

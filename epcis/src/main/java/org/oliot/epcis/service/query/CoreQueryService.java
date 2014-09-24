@@ -1,7 +1,10 @@
-package org.oliot.epcis.service.query.mongodb.soap;
+package org.oliot.epcis.service.query;
 
 import java.net.URI;
 import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
 
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
@@ -24,19 +27,33 @@ import org.oliot.model.epcis.SubscriptionControls;
  * 
  *         bjw0829@kaist.ac.kr
  */
+
+/**
+ * Endpoint Service Interface
+ */
+@WebService
 public interface CoreQueryService {
+
+	@WebMethod
 	public void subscribe(String queryName, QueryParams params, URI dest,
 			SubscriptionControls controls, String subscriptionID);
 
+	@WebMethod
 	public void unsubscribe(String subscriptionID);
 
+	@WebMethod
 	public QueryResults poll(String queryName, QueryParams params);
 
+	@WebMethod
 	public List<String> getQueryNames();
 
+	@WebMethod
 	public List<String> getSubscriptionIDs(String queryName);
 
+	@WebMethod
 	public String getStandardVersion();
 
+	@WebMethod
 	public String getVendorVersion();
+
 }

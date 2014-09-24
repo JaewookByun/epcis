@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb.restlike;
+package org.oliot.epcis.service.query.mongodb;
 
 import java.util.List;
 import java.util.regex.Pattern;
