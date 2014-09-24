@@ -16,6 +16,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -29,10 +30,6 @@ import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
 import org.oliot.tdt.SimplePureIdentityFilter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -90,13 +87,8 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -112,13 +104,8 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -135,13 +122,8 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -168,13 +150,8 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -191,13 +168,8 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -213,14 +185,19 @@ public class CaptureService implements CoreCaptureService {
 		}
 
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(event);
-			ConfigurationServlet.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
 		}
+	}
+	
+	@Override
+	public void capture(VocabularyType vocabulary) {
+		
+		if (ConfigurationServlet.backend.equals("MongoDB")) {
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(vocabulary);
+		}
+		
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -271,20 +248,6 @@ public class CaptureService implements CoreCaptureService {
 				.matches("^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$");
 
 		return isMatch;
-	}
-	
-	@Override
-	public void capture(VocabularyType vocabulary) {
-		
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			mongoOperation.save(vocabulary);
-			ConfigurationServlet.logger.info(" Vocabulary Saved ");
-			((AbstractApplicationContext) ctx).close();
-		}		
 	}
 
 	@Override
