@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.restlike;
+package org.oliot.epcis.service.query.mongodb.restlike;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import org.quartz.JobExecutionException;
  * 
  *         bjw0829@kaist.ac.kr
  */
-public class SubscriptionTask implements Job {
+public class MongoSubscriptionTask implements Job {
 
 	/**
 	 * Whenever execute method invoked according to the cron expression Query
@@ -80,7 +80,7 @@ public class SubscriptionTask implements Job {
 		Map<String, String[]> paramMap = (Map<String,String[]>)map.get("paramMap");
 		
 		
-		QueryService queryService = new QueryService();
+		MongoQueryService queryService = new MongoQueryService();
 		String pollResult = queryService
 				.poll(queryName, eventType, GE_eventTime, LT_eventTime,
 						GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,

@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.soap;
+package org.oliot.epcis.service.query.mongodb.soap;
 
 import java.net.URI;
 import java.util.List;

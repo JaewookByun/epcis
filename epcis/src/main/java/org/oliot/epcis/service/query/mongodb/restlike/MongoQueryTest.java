@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.restlike;
+package org.oliot.epcis.service.query.mongodb.restlike;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -37,7 +37,7 @@ import com.mongodb.DBObject;
  */
 @Controller
 @RequestMapping("/querytest")
-public class QueryTest {
+public class MongoQueryTest {
 	
 	@SuppressWarnings({ "unused" })
 	@RequestMapping(value = "/a", method = RequestMethod.GET)

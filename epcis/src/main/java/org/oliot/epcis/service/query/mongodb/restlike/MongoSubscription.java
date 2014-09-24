@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.restlike;
+package org.oliot.epcis.service.query.mongodb.restlike;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,17 +39,15 @@ import org.springframework.data.mongodb.core.MongoOperations;
  * 
  *         bjw0829@kaist.ac.kr
  */
-public class SubscriptionServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-
+public class MongoSubscription {
+	
 	static SchedulerFactory schedFact;
-
 	static Scheduler sched;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
-	public SubscriptionServlet() {
+	public MongoSubscription() {
 		super();
 	}
 
@@ -80,7 +78,6 @@ public class SubscriptionServlet extends HttpServlet {
 		System.out.println(xmlString);
 	}
 
-	@Override
 	public void init() {
 
 		try {
@@ -96,7 +93,7 @@ public class SubscriptionServlet extends HttpServlet {
 
 			List<SubscriptionType> allSubscription = mongoOperation
 					.findAll(SubscriptionType.class);
-			QueryService queryService = new QueryService();
+			MongoQueryService queryService = new MongoQueryService();
 			ConfigurationServlet.logger.log(Level.INFO,
 					"Loading pre-existing subscription");
 			for (int i = 0; i < allSubscription.size(); i++) {

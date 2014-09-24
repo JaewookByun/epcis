@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.restlike;
+package org.oliot.epcis.service.query.mongodb.restlike;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
@@ -49,7 +48,6 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
@@ -57,13 +55,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -73,38 +65,7 @@ import static org.quartz.JobKey.*;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-/**
- * Copyright (C) 2014 KAIST RESL
- *
- * This project is part of Oliot (oliot.org), pursuing the implementation of
- * Electronic Product Code Information Service(EPCIS) v1.1 specification in
- * EPCglobal.
- * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
- * 
- *
- * @author Jack Jaewook Byun, Ph.D student
- * 
- *         Korea Advanced Institute of Science and Technology (KAIST)
- * 
- *         Real-time Embedded System Laboratory(RESL)
- * 
- *         bjw0829@kaist.ac.kr
- */
-@Controller
-@RequestMapping("/query")
-public class QueryService implements ServletContextAware {
-
-	@Autowired
-	ServletContext servletContext;
-
-	@Autowired
-	private HttpServletRequest request;
-
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-
-	}
+public class MongoQueryService {
 
 	public String subscribe(SubscriptionType subscription) {
 		String queryName = subscription.getQueryName();
@@ -230,65 +191,20 @@ public class QueryService implements ServletContextAware {
 		return retString;
 	}
 
-	/**
-	 * Registers a subscriber for a previously defined query having the
-	 * specified name. The params argument provides the values to be used for
-	 * any named parameters defined by the query. The dest parameter specifies a
-	 * destination where results from the query are to be delivered, via the
-	 * Query Callback Interface. The dest parameter is a URI that both
-	 * identifies a specific binding of the Query Callback Interface to use and
-	 * specifies addressing information. The controls parameter controls how the
-	 * subscription is to be processed; in particular, it specifies the
-	 * conditions under which the query is to be invoked (e.g., specifying a
-	 * periodic schedule). The subscriptionID is an arbitrary string that is
-	 * copied into every response delivered to the specified destination, and
-	 * otherwise not interpreted by the EPCIS service. The client may use the
-	 * subscriptionID to identify from which subscription a given result was
-	 * generated, especially when several subscriptions are made to the same
-	 * destination. The dest argument MAY be null or empty, in which case
-	 * results are delivered to a pre-arranged destination based on the
-	 * authenticated identity of the caller. If the EPCIS implementation does
-	 * not have a destination pre-arranged for the caller, or does not permit
-	 * this usage, it SHALL raise an InvalidURIException.
-	 */
-	@RequestMapping(value = "/Subscribe/{queryName}/{subscriptionID}", method = RequestMethod.GET)
-	@ResponseBody
-	public String subscribe(@PathVariable String queryName,
-			@PathVariable String subscriptionID, @RequestParam String dest,
-			@RequestParam String cronExpression,
-			@RequestParam boolean reportIfEmpty,
-			@RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime,
-			@RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime,
-			@RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action,
-			@RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition,
-			@RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint,
-			@RequestParam(required = false) String EQ_bizLocation,
-			@RequestParam(required = false) String WD_bizLocation,
-			@RequestParam(required = false) String EQ_transformationID,
-			@RequestParam(required = false) String MATCH_epc,
-			@RequestParam(required = false) String MATCH_parentID,
-			@RequestParam(required = false) String MATCH_inputEPC,
-			@RequestParam(required = false) String MATCH_outputEPC,
-			@RequestParam(required = false) String MATCH_anyEPC,
-			@RequestParam(required = false) String MATCH_epcClass,
-			@RequestParam(required = false) String MATCH_inputEPCClass,
-			@RequestParam(required = false) String MATCH_outputEPCClass,
-			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity,
-			@RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity,
-			@RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String orderBy,
-			@RequestParam(required = false) String orderDirection,
-			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount,
-			Map<String, String[]> extMap) {
+	public String subscribe(String queryName, String subscriptionID,
+			String dest, String cronExpression, boolean reportIfEmpty,
+			String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
+			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount, Map<String, String[]> extMap) {
 
 		Map<String, String[]> paramMap;
 		if (extMap == null) {
@@ -339,12 +255,7 @@ public class QueryService implements ServletContextAware {
 		return retString;
 	}
 
-	/**
-	 * Removes a previously registered subscription having the specified
-	 * subscriptionID.
-	 */
-	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
-	public void unsubscribe(@PathVariable String subscriptionID) {
+	public void unsubscribe(String subscriptionID) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -365,12 +276,6 @@ public class QueryService implements ServletContextAware {
 		((AbstractApplicationContext) ctx).close();
 	}
 
-	/**
-	 * Returns a list of all subscriptionIDs currently subscribed to the
-	 * specified named query.
-	 */
-	@RequestMapping(value = "/SubscriptionIDs/{queryName}", method = RequestMethod.GET)
-	@ResponseBody
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
 
 		ApplicationContext ctx = new GenericXmlApplicationContext(
@@ -389,101 +294,6 @@ public class QueryService implements ServletContextAware {
 		}
 		((AbstractApplicationContext) ctx).close();
 		return retArray.toString(1);
-	}
-
-	public String checkConstraintSimpleEventQuery(String queryName,
-			String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action,
-			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
-			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
-
-		// M27
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			if (GE_eventTime != null)
-				sdf.parse(GE_eventTime);
-			if (LT_eventTime != null)
-				sdf.parse(LT_eventTime);
-			if (GE_recordTime != null)
-				sdf.parse(GE_recordTime);
-			if (LT_recordTime != null)
-				sdf.parse(LT_recordTime);
-		} catch (ParseException e) {
-			return makeErrorResult(e.toString(), QueryParameterException.class);
-		}
-
-		// M27
-		if (orderBy != null) {
-			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
-				return makeErrorResult(
-						"orderBy should be eventTime or recordTime",
-						QueryParameterException.class);
-			}
-			if (orderDirection != null) {
-				if (!orderDirection.equals("ASC")
-						&& !orderDirection.equals("DESC")) {
-					return makeErrorResult(
-							"orderDirection should be ASC or DESC",
-							QueryParameterException.class);
-				}
-			}
-		}
-
-		// M27
-		if (eventCountLimit != null) {
-			try {
-				int c = Integer.parseInt(eventCountLimit);
-				if (c <= 0) {
-					return makeErrorResult(
-							"eventCount should be natural number",
-							QueryParameterException.class);
-				}
-			} catch (NumberFormatException e) {
-				return makeErrorResult("eventCount: " + e.toString(),
-						QueryParameterException.class);
-			}
-		}
-
-		// M27
-		if (maxEventCount != null) {
-			try {
-				int c = Integer.parseInt(maxEventCount);
-				if (c <= 0) {
-					return makeErrorResult(
-							"maxEventCount should be natural number",
-							QueryParameterException.class);
-				}
-			} catch (NumberFormatException e) {
-				return makeErrorResult("maxEventCount: " + e.toString(),
-						QueryParameterException.class);
-			}
-		}
-
-		// M39
-		if (EQ_action != null) {
-			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE")
-					&& !EQ_action.equals("DELETE")) {
-				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE",
-						QueryParameterException.class);
-			}
-		}
-
-		// M42
-		if (eventCountLimit != null && maxEventCount != null) {
-			return makeErrorResult(
-					"One of eventCountLimit and maxEventCount should be omitted",
-					QueryParameterException.class);
-		}
-		return null;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -826,50 +636,23 @@ public class QueryService implements ServletContextAware {
 		return sw.toString();
 	}
 
-	@SuppressWarnings({})
-	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
-	@ResponseBody
-	public String poll(@PathVariable String queryName,
-			@RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime,
-			@RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime,
-			@RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action,
-			@RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition,
-			@RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint,
-			@RequestParam(required = false) String EQ_bizLocation,
-			@RequestParam(required = false) String WD_bizLocation,
-			@RequestParam(required = false) String EQ_transformationID,
-			@RequestParam(required = false) String MATCH_epc,
-			@RequestParam(required = false) String MATCH_parentID,
-			@RequestParam(required = false) String MATCH_inputEPC,
-			@RequestParam(required = false) String MATCH_outputEPC,
-			@RequestParam(required = false) String MATCH_anyEPC,
-			@RequestParam(required = false) String MATCH_epcClass,
-			@RequestParam(required = false) String MATCH_inputEPCClass,
-			@RequestParam(required = false) String MATCH_outputEPCClass,
-			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity,
-			@RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity,
-			@RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String orderBy,
-			@RequestParam(required = false) String orderDirection,
-			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount,
+	public String poll(@PathVariable String queryName, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount,
 
-			@RequestParam(required = false) String vocabularyName,
-			@RequestParam(required = false) boolean includeAttributes,
-			@RequestParam(required = false) boolean includeChildren,
-			@RequestParam(required = false) String attributeNames,
-			@RequestParam(required = false) String EQ_name,
-			@RequestParam(required = false) String WD_name,
-			@RequestParam(required = false) String HASATTR,
-			@RequestParam(required = false) String maxElementCount,
+			String vocabularyName, boolean includeAttributes,
+			boolean includeChildren, String attributeNames, String EQ_name,
+			String WD_name, String HASATTR, String maxElementCount,
 			Map<String, String[]> extMap) {
 
 		Map<String, String[]> paramMap = new HashMap<String, String[]>();
@@ -909,69 +692,98 @@ public class QueryService implements ServletContextAware {
 		return "";
 	}
 
-	/**
-	 * [REST Version of getQueryNames] Returns a list of all query names
-	 * available for use with the subscribe and poll methods. This includes all
-	 * pre- defined queries provided by the implementation, including those
-	 * specified in Section 8.2.7.
-	 * 
-	 * @return JSONArray of query names ( String )
-	 */
-	@RequestMapping(value = "/QueryNames", method = RequestMethod.GET)
-	@ResponseBody
-	public String getQueryNamesREST() {
-		JSONArray jsonArray = new JSONArray();
-		List<String> queryNames = getQueryNames();
-		for (int i = 0; i < queryNames.size(); i++) {
-			jsonArray.put(queryNames.get(i));
+	private String checkConstraintSimpleEventQuery(String queryName,
+			String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
+			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount, Map<String, String[]> paramMap) {
+
+		// M27
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			if (GE_eventTime != null)
+				sdf.parse(GE_eventTime);
+			if (LT_eventTime != null)
+				sdf.parse(LT_eventTime);
+			if (GE_recordTime != null)
+				sdf.parse(GE_recordTime);
+			if (LT_recordTime != null)
+				sdf.parse(LT_recordTime);
+		} catch (ParseException e) {
+			return makeErrorResult(e.toString(), QueryParameterException.class);
 		}
-		return jsonArray.toString(1);
-	}
 
-	/**
-	 * Returns a list of all query names available for use with the subscribe
-	 * and poll methods. This includes all pre- defined queries provided by the
-	 * implementation, including those specified in Section 8.2.7.
-	 */
-	public List<String> getQueryNames() {
-		List<String> queryNames = new ArrayList<String>();
-		queryNames.add("SimpleEventQuery");
-		queryNames.add("SimpleMasterDataQuery");
-		return queryNames;
-	}
+		// M27
+		if (orderBy != null) {
+			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
+				return makeErrorResult(
+						"orderBy should be eventTime or recordTime",
+						QueryParameterException.class);
+			}
+			if (orderDirection != null) {
+				if (!orderDirection.equals("ASC")
+						&& !orderDirection.equals("DESC")) {
+					return makeErrorResult(
+							"orderDirection should be ASC or DESC",
+							QueryParameterException.class);
+				}
+			}
+		}
 
-	/**
-	 * Returns a string that identifies what version of the specification this
-	 * implementation complies with. The possible values for this string are
-	 * defined by GS1. An implementation SHALL return a string corresponding to
-	 * a version of this specification to which the implementation fully
-	 * complies, and SHOULD return the string corresponding to the latest
-	 * version to which it complies. To indicate compliance with this Version
-	 * 1.1 of the EPCIS specification, the implementation SHALL return the
-	 * string 1.1.
-	 */
-	@RequestMapping(value = "/StandardVersion", method = RequestMethod.GET)
-	@ResponseBody
-	public String getStandardVersion() {
-		return "1.1";
-	}
+		// M27
+		if (eventCountLimit != null) {
+			try {
+				int c = Integer.parseInt(eventCountLimit);
+				if (c <= 0) {
+					return makeErrorResult(
+							"eventCount should be natural number",
+							QueryParameterException.class);
+				}
+			} catch (NumberFormatException e) {
+				return makeErrorResult("eventCount: " + e.toString(),
+						QueryParameterException.class);
+			}
+		}
 
-	/**
-	 * Returns a string that identifies what vendor extensions this
-	 * implementation provides. The possible values of this string and their
-	 * meanings are vendor-defined, except that the empty string SHALL indicate
-	 * that the implementation implements only standard functionality with no
-	 * vendor extensions. When an implementation chooses to return a non-empty
-	 * string, the value returned SHALL be a URI where the vendor is the owning
-	 * authority. For example, this may be an HTTP URL whose authority portion
-	 * is a domain name owned by the vendor, a URN having a URN namespace
-	 * identifier issued to the vendor by IANA, an OID URN whose initial path is
-	 * a Private Enterprise Number assigned to the vendor, etc.
-	 */
-	@RequestMapping(value = "/VendorVersion", method = RequestMethod.GET)
-	@ResponseBody
-	public String getVendorVersion() {
-		// It is not a version of Vendor
+		// M27
+		if (maxEventCount != null) {
+			try {
+				int c = Integer.parseInt(maxEventCount);
+				if (c <= 0) {
+					return makeErrorResult(
+							"maxEventCount should be natural number",
+							QueryParameterException.class);
+				}
+			} catch (NumberFormatException e) {
+				return makeErrorResult("maxEventCount: " + e.toString(),
+						QueryParameterException.class);
+			}
+		}
+
+		// M39
+		if (EQ_action != null) {
+			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE")
+					&& !EQ_action.equals("DELETE")) {
+				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE",
+						QueryParameterException.class);
+			}
+		}
+
+		// M42
+		if (eventCountLimit != null && maxEventCount != null) {
+			return makeErrorResult(
+					"One of eventCountLimit and maxEventCount should be omitted",
+					QueryParameterException.class);
+		}
 		return null;
 	}
 
@@ -994,7 +806,7 @@ public class QueryService implements ServletContextAware {
 		return epcisQueryDocumentType;
 	}
 
-	public Query makeSortAndLimitQuery(Query query, String orderBy,
+	private Query makeSortAndLimitQuery(Query query, String orderBy,
 			String orderDirection, String eventCountLimit, String maxEventCount) {
 		/**
 		 * orderBy : If specified, names a single field that will be used to
@@ -1071,7 +883,7 @@ public class QueryService implements ServletContextAware {
 		return query;
 	}
 
-	public List<Criteria> makeCritera(String vocabularyName,
+	private List<Criteria> makeCritera(String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
 			String hASATTR, String maxElementCount) {
@@ -1107,8 +919,7 @@ public class QueryService implements ServletContextAware {
 
 	}
 
-	@SuppressWarnings({})
-	public List<Criteria> makeCriteria(String eventType, String GE_eventTime,
+	private List<Criteria> makeCriteria(String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
 			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
@@ -1872,9 +1683,8 @@ public class QueryService implements ServletContextAware {
 								|| eventType.equals("SensorEvent")) {
 							if (paramName.startsWith("GT_")) {
 								criteria.orOperator(
-										Criteria.where(
-												"extension.any."
-														+ type).gt(value),
+										Criteria.where("extension.any." + type)
+												.gt(value),
 										Criteria.where(
 												"extension.otherAttributes."
 														+ type).gt(value));
@@ -1882,9 +1692,8 @@ public class QueryService implements ServletContextAware {
 							}
 							if (paramName.startsWith("GE_")) {
 								criteria.orOperator(
-										Criteria.where(
-												"extension.any."
-														+ type).gte(value),
+										Criteria.where("extension.any." + type)
+												.gte(value),
 										Criteria.where(
 												"extension.otherAttributes."
 														+ type).gte(value));
@@ -1892,9 +1701,8 @@ public class QueryService implements ServletContextAware {
 							}
 							if (paramName.startsWith("LT_")) {
 								criteria.orOperator(
-										Criteria.where(
-												"extension.any."
-														+ type).lt(value),
+										Criteria.where("extension.any." + type)
+												.lt(value),
 										Criteria.where(
 												"extension.otherAttributes."
 														+ type).lt(value));
@@ -1902,9 +1710,8 @@ public class QueryService implements ServletContextAware {
 							}
 							if (paramName.startsWith("LE_")) {
 								criteria.orOperator(
-										Criteria.where(
-												"extension.any."
-														+ type).lte(value),
+										Criteria.where("extension.any." + type)
+												.lte(value),
 										Criteria.where(
 												"extension.otherAttributes."
 														+ type).lte(value));
@@ -2020,7 +1827,7 @@ public class QueryService implements ServletContextAware {
 			if (subscription.getMaxEventCount() != null)
 				map.put("maxEventCount", subscription.getMaxEventCount());
 
-			JobDetail job = newJob(SubscriptionTask.class)
+			JobDetail job = newJob(MongoSubscriptionTask.class)
 					.withIdentity(subscription.getSubscriptionID(),
 							subscription.getQueryName()).setJobData(map)
 					.build();
@@ -2040,9 +1847,9 @@ public class QueryService implements ServletContextAware {
 			// Scheduler sched = (Scheduler) context
 			// .getBean("schedulerFactoryBean");
 
-			if (SubscriptionServlet.sched.isStarted() != true)
-				SubscriptionServlet.sched.start();
-			SubscriptionServlet.sched.scheduleJob(job, trigger);
+			if (MongoSubscription.sched.isStarted() != true)
+				MongoSubscription.sched.start();
+			MongoSubscription.sched.scheduleJob(job, trigger);
 			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 					+ subscription.getSubscriptionID()
 					+ " is added to quartz scheduler. ");
@@ -2051,7 +1858,7 @@ public class QueryService implements ServletContextAware {
 		}
 	}
 
-	public void addScheduleToQuartz(String queryName, String subscriptionID,
+	private void addScheduleToQuartz(String queryName, String subscriptionID,
 			String dest, String cronExpression, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
@@ -2136,7 +1943,7 @@ public class QueryService implements ServletContextAware {
 				map.put("maxEventCount", maxEventCount);
 			if (paramMap != null)
 				map.put("paramMap", paramMap);
-			JobDetail job = newJob(SubscriptionTask.class)
+			JobDetail job = newJob(MongoSubscriptionTask.class)
 					.withIdentity(subscriptionID, queryName).setJobData(map)
 					.storeDurably(false).build();
 
@@ -2150,9 +1957,9 @@ public class QueryService implements ServletContextAware {
 			// Scheduler sched = (Scheduler) context
 			// .getBean("schedulerFactoryBean");
 
-			if (SubscriptionServlet.sched.isStarted() != true)
-				SubscriptionServlet.sched.start();
-			SubscriptionServlet.sched.scheduleJob(job, trigger);
+			if (MongoSubscription.sched.isStarted() != true)
+				MongoSubscription.sched.start();
+			MongoSubscription.sched.scheduleJob(job, trigger);
 
 			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 					+ subscriptionID + " is added to quartz scheduler. ");
@@ -2162,7 +1969,7 @@ public class QueryService implements ServletContextAware {
 	}
 
 	@SuppressWarnings("resource")
-	public boolean addScheduleToDB(String queryName, String subscriptionID,
+	private boolean addScheduleToDB(String queryName, String subscriptionID,
 			String dest, String cronExpression, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
@@ -2206,12 +2013,12 @@ public class QueryService implements ServletContextAware {
 		return true;
 	}
 
-	public void removeScheduleFromQuartz(SubscriptionType subscription) {
+	private void removeScheduleFromQuartz(SubscriptionType subscription) {
 		try {
-			SubscriptionServlet.sched.unscheduleJob(triggerKey(
+			MongoSubscription.sched.unscheduleJob(triggerKey(
 					subscription.getSubscriptionID(),
 					subscription.getQueryName()));
-			SubscriptionServlet.sched.deleteJob(jobKey(
+			MongoSubscription.sched.deleteJob(jobKey(
 					subscription.getSubscriptionID(),
 					subscription.getQueryName()));
 			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
@@ -2221,7 +2028,7 @@ public class QueryService implements ServletContextAware {
 		}
 	}
 
-	public void removeScheduleFromDB(MongoOperations mongoOperation,
+	private void removeScheduleFromDB(MongoOperations mongoOperation,
 			SubscriptionType subscription) {
 		mongoOperation.remove(
 				new Query(Criteria.where("subscriptionID").is(
@@ -2232,7 +2039,7 @@ public class QueryService implements ServletContextAware {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public String makeErrorResult(String err, Class type) {
+	private String makeErrorResult(String err, Class type) {
 		if (type == InvalidURIException.class) {
 			InvalidURIException e = new InvalidURIException();
 			e.setReason(err);
