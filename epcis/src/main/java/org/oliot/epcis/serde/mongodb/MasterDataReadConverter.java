@@ -1,4 +1,4 @@
-package org.oliot.epcis.serde;
+package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.HashMap;

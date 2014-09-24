@@ -1,4 +1,4 @@
-package org.oliot.epcis.serde;
+package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -14,22 +14,20 @@ import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
-import org.oliot.model.epcis.DestinationListType;
-import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
-import org.oliot.model.epcis.EPCListType;
-import org.oliot.model.epcis.ILMDExtensionType;
-import org.oliot.model.epcis.ILMDType;
-import org.oliot.model.epcis.QuantityElementType;
-import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
-import org.oliot.model.epcis.SourceDestType;
-import org.oliot.model.epcis.SourceListType;
-import org.oliot.model.epcis.TransformationEventExtensionType;
-import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.SensingElementType;
+import org.oliot.model.epcis.SensingListType;
+import org.oliot.model.epcis.Sensor;
+import org.oliot.model.epcis.SensorEventExtensionType;
+import org.oliot.model.epcis.SensorEventType;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
@@ -57,14 +55,15 @@ import com.mongodb.DBObject;
  */
 @Component
 @WritingConverter
-public class TransformationEventWriteConverter implements
-		Converter<TransformationEventType, DBObject> {
+public class SensorEventWriteConverter implements
+		Converter<SensorEventType, DBObject> {
 
-	public DBObject convert(TransformationEventType transformationEventType) {
+	public DBObject convert(SensorEventType sensorEventType) {
 
 		DBObject dbo = new BasicDBObject();
-		if (transformationEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = transformationEventType
+
+		if (sensorEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType baseExtensionType = sensorEventType
 					.getBaseExtension();
 			DBObject baseExtension = new BasicDBObject();
 			if (baseExtensionType.getAny() != null) {
@@ -99,47 +98,32 @@ public class TransformationEventWriteConverter implements
 			}
 			dbo.put("baseExtension", baseExtension);
 		}
-		if (transformationEventType.getEventTime() != null)
-			dbo.put("eventTime", transformationEventType.getEventTime()
+
+		if (sensorEventType.getEventTime() != null)
+			dbo.put("eventTime", sensorEventType.getEventTime()
 					.toGregorianCalendar().getTimeInMillis());
-		if (transformationEventType.getEventTimeZoneOffset() != null)
+		if (sensorEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
-					transformationEventType.getEventTimeZoneOffset());
+					sensorEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", recordTimeMilis);
-		if (transformationEventType.getInputEPCList() != null) {
-			EPCListType epcs = transformationEventType.getInputEPCList();
-			List<EPC> epcList = epcs.getEpc();
-			List<DBObject> epcDBList = new ArrayList<DBObject>();
-
-			for (int i = 0; i < epcList.size(); i++) {
-				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
-				epcDBList.add(epcDB);
-			}
-			dbo.put("inputEPCList", epcDBList);
-		}
-		if (transformationEventType.getOutputEPCList() != null) {
-			EPCListType epcs = transformationEventType.getOutputEPCList();
-			List<EPC> epcList = epcs.getEpc();
-			List<DBObject> epcDBList = new ArrayList<DBObject>();
-
-			for (int i = 0; i < epcList.size(); i++) {
-				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
-				epcDBList.add(epcDB);
-			}
-			dbo.put("outputEPCList", epcDBList);
-		}
-		if (transformationEventType.getBizStep() != null)
-			dbo.put("bizStep", transformationEventType.getBizStep());
-		if (transformationEventType.getDisposition() != null)
-			dbo.put("disposition", transformationEventType.getDisposition());
-		if (transformationEventType.getReadPoint() != null) {
-			ReadPointType readPointType = transformationEventType
-					.getReadPoint();
+		if (sensorEventType.getFinishTime() != null)
+			dbo.put("finishTime", sensorEventType.getFinishTime()
+					.toGregorianCalendar().getTimeInMillis());
+		if (sensorEventType.getAction() != null)
+			dbo.put("action", sensorEventType.getAction().name());
+		if (sensorEventType.getTargetObject() != null)
+			dbo.put("targetObject", sensorEventType.getTargetObject());
+		if (sensorEventType.getTargetArea() != null)
+			dbo.put("targetArea", sensorEventType.getTargetArea());
+		if (sensorEventType.getBizStep() != null)
+			dbo.put("bizStep", sensorEventType.getBizStep());
+		if (sensorEventType.getDisposition() != null)
+			dbo.put("disposition", sensorEventType.getDisposition());
+		if (sensorEventType.getReadPoint() != null) {
+			ReadPointType readPointType = sensorEventType.getReadPoint();
 			DBObject readPoint = new BasicDBObject();
 			if (readPointType.getId() != null)
 				readPoint.put("id", readPointType.getId());
@@ -180,8 +164,8 @@ public class TransformationEventWriteConverter implements
 			readPoint.put("extension", extension);
 			dbo.put("readPoint", readPoint);
 		}
-		if (transformationEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = transformationEventType
+		if (sensorEventType.getBizLocation() != null) {
+			BusinessLocationType bizLocationType = sensorEventType
 					.getBizLocation();
 			DBObject bizLocation = new BasicDBObject();
 			if (bizLocationType.getId() != null)
@@ -224,8 +208,8 @@ public class TransformationEventWriteConverter implements
 			dbo.put("bizLocation", bizLocation);
 		}
 
-		if (transformationEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = transformationEventType
+		if (sensorEventType.getBizTransactionList() != null) {
+			BusinessTransactionListType bizListType = sensorEventType
 					.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType
 					.getBizTransaction();
@@ -242,98 +226,48 @@ public class TransformationEventWriteConverter implements
 			}
 			dbo.put("bizTransactionList", bizTranList);
 		}
-
-		if (transformationEventType.getInputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType
-					.getInputQuantityList();
-			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			List<DBObject> quantityList = new ArrayList<DBObject>();
-			for (int i = 0; i < qetList.size(); i++) {
-				DBObject quantity = new BasicDBObject();
-				QuantityElementType qet = qetList.get(i);
-				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
-				quantity.put("quantity", qet.getQuantity());
-				if (qet.getUom() != null)
-					quantity.put("uom", qet.getUom().toString());
-				quantityList.add(quantity);
-			}
-			dbo.put("inputQuantityList", quantityList);
-		}
-		if (transformationEventType.getOutputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType
-					.getOutputQuantityList();
-			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			List<DBObject> quantityList = new ArrayList<DBObject>();
-			for (int i = 0; i < qetList.size(); i++) {
-				DBObject quantity = new BasicDBObject();
-				QuantityElementType qet = qetList.get(i);
-				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
-				quantity.put("quantity", qet.getQuantity());
-				if (qet.getUom() != null)
-					quantity.put("uom", qet.getUom().toString());
-				quantityList.add(quantity);
-			}
-			dbo.put("outputQuantityList", quantityList);
-		}
-		if (transformationEventType.getSourceList() != null) {
-			SourceListType sdtl = transformationEventType.getSourceList();
-			List<SourceDestType> sdtList = sdtl.getSource();
-			List<DBObject> dbList = new ArrayList<DBObject>();
-			for (int i = 0; i < sdtList.size(); i++) {
-				SourceDestType sdt = sdtList.get(i);
-				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
-				dbList.add(dbObj);
-			}
-			dbo.put("sourceList", dbList);
-		}
-		if (transformationEventType.getDestinationList() != null) {
-			DestinationListType sdtl = transformationEventType
-					.getDestinationList();
-			List<SourceDestType> sdtList = sdtl.getDestination();
-			List<DBObject> dbList = new ArrayList<DBObject>();
-			for (int i = 0; i < sdtList.size(); i++) {
-				SourceDestType sdt = sdtList.get(i);
-				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
-				dbList.add(dbObj);
-			}
-			dbo.put("destinationList", dbList);
-		}
-
-		if (transformationEventType.getIlmd() != null )
-		{
-			ILMDType ilmd = transformationEventType.getIlmd();
-			if( ilmd.getExtension() != null )
-			{
-				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				List<Object> objList = ilmdExtension.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getLocalName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
-						}
-					}
+		if (sensorEventType.getSensingList() != null) {
+			SensingListType slt = sensorEventType.getSensingList();
+			List<SensingElementType> setList = slt.getSensingElement();
+			List<String> sensingList = new ArrayList<String>();
+			ApplicationContext ctx = new GenericXmlApplicationContext(
+					"classpath:MongoConfig.xml");
+			MongoOperations mongoOperation = (MongoOperations) ctx
+					.getBean("mongoTemplate");
+			for (int i = 0; i < setList.size(); i++) {
+				SensingElementType set = setList.get(i);
+				Sensor sensor = new Sensor();
+				if (set.getEpc() != null) {
+					sensor.setEpc(set.getEpc().getValue());
+					if (!sensingList.contains(set.getEpc().getValue()))
+						sensingList.add(set.getEpc().getValue());
 				}
-				if (map2Save != null)
-					dbo.put("ilmd", map2Save);
+				if (set.getType() != null)
+					sensor.setType(set.getType());
+				if (set.getUom() != null)
+					sensor.setUom(set.getUom());
+				if (set.getValue() != null)
+					sensor.setValue(set.getValue());
+
+				if (sensorEventType.getEventTime() != null)
+					sensor.setStartTime(sensorEventType.getEventTime()
+							.toGregorianCalendar().getTimeInMillis());
+				if (sensorEventType.getEventTimeZoneOffset() != null)
+					sensor.setEventTimeZoneOffset(sensorEventType
+							.getEventTimeZoneOffset());
+				if (sensorEventType.getFinishTime() != null)
+					sensor.setFinishTime(sensorEventType.getFinishTime()
+							.toGregorianCalendar().getTimeInMillis());
+				mongoOperation.save(sensor);
 			}
-			
+			dbo.put("sensingList", sensingList);
+			((AbstractApplicationContext) ctx).close();
 		}
-		
+
 		// Extension
 		DBObject extension = new BasicDBObject();
-		if (transformationEventType.getExtension() != null) {
-			TransformationEventExtensionType oee = transformationEventType
-					.getExtension();
+		if (sensorEventType.getExtension() != null) {
+			SensorEventExtensionType oee = sensorEventType.getExtension();
 			if (oee.getAny() != null) {
 				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = oee.getAny();
@@ -368,6 +302,8 @@ public class TransformationEventWriteConverter implements
 		dbo.put("extension", extension);
 		return dbo;
 	}
+	
+	
 
 	public DBObject getDBObjectFromMessageElement(MessageElement any) {
 		NamedNodeMap attributes = any.getAttributes();

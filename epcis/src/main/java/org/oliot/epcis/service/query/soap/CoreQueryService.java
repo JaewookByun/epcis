@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.restlike;
+package org.oliot.epcis.service.query.soap;
 
 import java.net.URI;
 import java.util.List;

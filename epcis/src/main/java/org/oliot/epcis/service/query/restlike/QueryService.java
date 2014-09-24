@@ -6,7 +6,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,12 +35,10 @@ import org.oliot.model.epcis.InvalidURIException;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.QueryParameterException;
-import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.oliot.model.epcis.SubscribeNotPermittedException;
-import org.oliot.model.epcis.SubscriptionControls;
 import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
@@ -95,7 +92,7 @@ import com.mongodb.DBObject;
  */
 @Controller
 @RequestMapping("/query")
-public class QueryService implements CoreQueryService, ServletContextAware {
+public class QueryService implements ServletContextAware {
 
 	@Autowired
 	ServletContext servletContext;
@@ -343,26 +340,10 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	}
 
 	/**
-	 * @author Jack Jaewook Byun
-	 * 
-	 *         Reason of deprecation : EPCIS v1.1 spec's QuerySchedule is not
-	 *         described in fine-grained manner. This description seems refering
-	 *         to 'Unix-cron'-like expression, but not describing seemlessly.
-	 * 
-	 */
-	@Deprecated
-	@Override
-	public void subscribe(String queryName, QueryParams params, URI dest,
-			SubscriptionControls controls, String subscriptionID) {
-
-	}
-
-	/**
 	 * Removes a previously registered subscription having the specified
 	 * subscriptionID.
 	 */
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
-	@Override
 	public void unsubscribe(@PathVariable String subscriptionID) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
@@ -408,18 +389,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 		}
 		((AbstractApplicationContext) ctx).close();
 		return retArray.toString(1);
-	}
-
-	/**
-	 * Alternatively use public String getSubscriptionIDsREST(String queryName)
-	 */
-	@Deprecated
-	@Override
-	public List<String> getSubscriptionIDs(String queryName) {
-		ConfigurationServlet.logger
-				.log(Level.WARN,
-						"Alternatively use public String getSubscriptionIDsREST(String queryName)");
-		return null;
 	}
 
 	public String checkConstraintSimpleEventQuery(String queryName,
@@ -941,20 +910,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	}
 
 	/**
-	 * Invokes a previously defined query having the specified name, returning
-	 * the results. The params argument provides the values to be used for any
-	 * named parameters defined by the query.
-	 * 
-	 * @author jack Since var 'Query Param' is just key-value pairs this method
-	 *         is better to be parameter of http servlet request
-	 * @deprecated
-	 */
-	@Override
-	public QueryResults poll(String queryName, QueryParams params) {
-		return null;
-	}
-
-	/**
 	 * [REST Version of getQueryNames] Returns a list of all query names
 	 * available for use with the subscribe and poll methods. This includes all
 	 * pre- defined queries provided by the implementation, including those
@@ -978,7 +933,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * and poll methods. This includes all pre- defined queries provided by the
 	 * implementation, including those specified in Section 8.2.7.
 	 */
-	@Override
 	public List<String> getQueryNames() {
 		List<String> queryNames = new ArrayList<String>();
 		queryNames.add("SimpleEventQuery");
@@ -996,7 +950,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * 1.1 of the EPCIS specification, the implementation SHALL return the
 	 * string 1.1.
 	 */
-	@Override
 	@RequestMapping(value = "/StandardVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public String getStandardVersion() {
@@ -1015,7 +968,6 @@ public class QueryService implements CoreQueryService, ServletContextAware {
 	 * identifier issued to the vendor by IANA, an OID URN whose initial path is
 	 * a Private Enterprise Number assigned to the vendor, etc.
 	 */
-	@Override
 	@RequestMapping(value = "/VendorVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public String getVendorVersion() {

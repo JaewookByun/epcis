@@ -1,4 +1,4 @@
-package org.oliot.epcis.serde;
+package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -15,9 +15,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.axis.message.MessageElement;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -26,23 +26,20 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
-import org.oliot.model.epcis.ILMDExtensionType;
-import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
-import org.oliot.model.epcis.TransformationEventExtensionType;
-import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.TransactionEventExtension2Type;
+import org.oliot.model.epcis.TransactionEventExtensionType;
+import org.oliot.model.epcis.TransactionEventType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import com.mongodb.BasicDBList;
@@ -68,24 +65,24 @@ import com.mongodb.DBObject;
  */
 @Component
 @ReadingConverter
-public class TransformationEventReadConverter implements
-		Converter<DBObject, TransformationEventType> {
+public class TransactionEventReadConverter implements
+		Converter<DBObject, TransactionEventType> {
 
-	public TransformationEventType convert(DBObject dbObject) {
+	public TransactionEventType convert(DBObject dbObject) {
 		try {
-			TransformationEventType transformationEventType = new TransformationEventType();
+			TransactionEventType transactionEventType = new TransactionEventType();
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
-				transformationEventType.setEventTime(xmlEventTime);
+				transactionEventType.setEventTime(xmlEventTime);
 			}
 			if (dbObject.get("eventTimeZoneOffset") != null) {
 				String eventTimeZoneOffset = (String) dbObject
 						.get("eventTimeZoneOffset");
-				transformationEventType
+				transactionEventType
 						.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
@@ -94,45 +91,36 @@ public class TransformationEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
-				transformationEventType.setRecordTime(xmlRecordTime);
+				transactionEventType.setRecordTime(xmlRecordTime);
 			}
-			if (dbObject.get("inputEPCList") != null) {
-				BasicDBList epcListM = (BasicDBList) dbObject
-						.get("inputEPCList");
-				EPCListType epcListType = new EPCListType();
-				List<EPC> epcs = new ArrayList<EPC>();
-				for (int i = 0; i < epcListM.size(); i++) {
-					EPC epc = new EPC();
-					BasicDBObject epcObject = (BasicDBObject) epcListM.get(i);
-					epc.setValue(epcObject.getString("epc"));
-					epcs.add(epc);
-				}
-				epcListType.setEpc(epcs);
-				transformationEventType.setInputEPCList(epcListType);
-			}
-			if (dbObject.get("outputEPCList") != null) {
-				BasicDBList epcListM = (BasicDBList) dbObject
-						.get("outputEPCList");
-				EPCListType epcListType = new EPCListType();
-				List<EPC> epcs = new ArrayList<EPC>();
-				for (int i = 0; i < epcListM.size(); i++) {
-					EPC epc = new EPC();
-					BasicDBObject epcObject = (BasicDBObject) epcListM.get(i);
-					epc.setValue(epcObject.getString("epc"));
-					epcs.add(epc);
-				}
-				epcListType.setEpc(epcs);
-				transformationEventType.setOutputEPCList(epcListType);
-			}
-			if (dbObject.get("transformationID") != null)
-				transformationEventType.setTransformationID(dbObject.get(
-						"transformationID").toString());
-			if (dbObject.get("bizStep") != null)
-				transformationEventType.setBizStep(dbObject.get("bizStep")
+			if (dbObject.get("parentID") != null)
+				transactionEventType.setParentID(dbObject.get("parentID")
 						.toString());
-			if (dbObject.get("disposition") != null)
-				transformationEventType.setDisposition(dbObject.get(
-						"disposition").toString());
+			if (dbObject.get("epcList") != null) {
+				BasicDBList epcListM = (BasicDBList) dbObject.get("epcList");
+				EPCListType epcListType = new EPCListType();
+				List<EPC> epcs = new ArrayList<EPC>();
+				for (int i = 0; i < epcListM.size(); i++) {
+					EPC epc = new EPC();
+					BasicDBObject epcObject = (BasicDBObject) epcListM.get(i);
+					epc.setValue(epcObject.getString("epc"));
+					epcs.add(epc);
+				}
+				epcListType.setEpc(epcs);
+				transactionEventType.setEpcList(epcListType);
+			}
+			if (dbObject.get("action") != null) {
+				transactionEventType.setAction(ActionType.fromValue(dbObject
+						.get("action").toString()));
+			}
+			if (dbObject.get("bizStep") != null) {
+				transactionEventType.setBizStep(dbObject.get("bizStep")
+						.toString());
+			}
+			if (dbObject.get("disposition") != null) {
+				transactionEventType.setDisposition(dbObject.get("disposition")
+						.toString());
+			}
 			if (dbObject.get("baseExtension") != null) {
 				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
 				BasicDBObject baseExtension = (BasicDBObject) dbObject
@@ -175,7 +163,7 @@ public class TransformationEventReadConverter implements
 					}
 					eeet.setOtherAttributes(otherAttributes);
 				}
-				transformationEventType.setBaseExtension(eeet);
+				transactionEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("readPoint") != null) {
 				BasicDBObject readPointObject = (BasicDBObject) dbObject
@@ -231,7 +219,7 @@ public class TransformationEventReadConverter implements
 					//
 					readPointType.setExtension(rpet);
 				}
-				transformationEventType.setReadPoint(readPointType);
+				transactionEventType.setReadPoint(readPointType);
 			}
 			// BusinessLocation
 			if (dbObject.get("bizLocation") != null) {
@@ -289,7 +277,7 @@ public class TransformationEventReadConverter implements
 					//
 					bizLocationType.setExtension(blet);
 				}
-				transformationEventType.setBizLocation(bizLocationType);
+				transactionEventType.setBizLocation(bizLocationType);
 			}
 			if (dbObject.get("bizTransactionList") != null) {
 				BasicDBList bizTranList = (BasicDBList) dbObject
@@ -314,189 +302,146 @@ public class TransformationEventReadConverter implements
 						bizTranArrayList.add(btt);
 				}
 				btlt.setBizTransaction(bizTranArrayList);
-				transformationEventType.setBizTransactionList(btlt);
+				transactionEventType.setBizTransactionList(btlt);
 			}
 
-			// Quantity
-			if (dbObject.get("inputQuantityList") != null) {
-				QuantityListType qlt = new QuantityListType();
-				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BasicDBList quantityDBList = (BasicDBList) dbObject
-						.get("inputQuantityList");
-				for (int i = 0; i < quantityDBList.size(); i++) {
-					QuantityElementType qet = new QuantityElementType();
-					BasicDBObject quantityDBObject = (BasicDBObject) quantityDBList
-							.get(i);
-					Object epcClassObject = quantityDBObject.get("epcClass");
-					Object quantity = quantityDBObject.get("quantity");
-					Object uom = quantityDBObject.get("uom");
-					if (epcClassObject != null && quantity != null
-							&& uom != null) {
-						qet.setEpcClass(epcClassObject.toString());
-						double quantityDouble = (double) quantity;
-						qet.setQuantity((float) quantityDouble);
-						qet.setUom(uom.toString());
-						qetList.add(qet);
-					}
-				}
-				qlt.setQuantityElement(qetList);
-				transformationEventType.setInputQuantityList(qlt);
-			}
-			if (dbObject.get("outputQuantityList") != null) {
-				QuantityListType qlt = new QuantityListType();
-				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BasicDBList quantityDBList = (BasicDBList) dbObject
-						.get("outputQuantityList");
-				for (int i = 0; i < quantityDBList.size(); i++) {
-					QuantityElementType qet = new QuantityElementType();
-					BasicDBObject quantityDBObject = (BasicDBObject) quantityDBList
-							.get(i);
-					Object epcClassObject = quantityDBObject.get("epcClass");
-					Object quantity = quantityDBObject.get("quantity");
-					Object uom = quantityDBObject.get("uom");
-					if (epcClassObject != null && quantity != null
-							&& uom != null) {
-						qet.setEpcClass(epcClassObject.toString());
-						double quantityDouble = (double) quantity;
-						qet.setQuantity((float) quantityDouble);
-						qet.setUom(uom.toString());
-						qetList.add(qet);
-					}
-				}
-				qlt.setQuantityElement(qetList);
-				transformationEventType.setOutputQuantityList(qlt);
-			}
-			// SourceList
-			if (dbObject.get("sourceList") != null) {
-				// Source Dest Type : Key / Value
-				SourceListType slt = new SourceListType();
-				List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
-				BasicDBList sourceDBList = (BasicDBList) dbObject
-						.get("sourceList");
-				for (int i = 0; i < sourceDBList.size(); i++) {
-					BasicDBObject sdObject = (BasicDBObject) sourceDBList
-							.get(i);
-					// DBObject, key and value
-					SourceDestType sdt = new SourceDestType();
-					Iterator<String> keyIter = sdObject.keySet().iterator();
-					// at most one bizTran
-					if (keyIter.hasNext()) {
-						String key = keyIter.next();
-						String value = sdObject.getString(key);
-						if (key != null && value != null) {
-							sdt.setType(key);
-							sdt.setValue(value);
-						}
-					}
-					if (sdt != null)
-						sdtList.add(sdt);
-				}
-				slt.setSource(sdtList);
-				transformationEventType.setSourceList(slt);
-			}
-			// DestinationList
-			if (dbObject.get("destinationList") != null) {
-				// Source Dest Type : Key / Value
-				DestinationListType dlt = new DestinationListType();
-				List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
-				BasicDBList destinationDBList = (BasicDBList) dbObject
-						.get("destinationList");
-				for (int i = 0; i < destinationDBList.size(); i++) {
-					BasicDBObject sdObject = (BasicDBObject) destinationDBList
-							.get(i);
-					// DBObject, key and value
-					SourceDestType sdt = new SourceDestType();
-					Iterator<String> keyIter = sdObject.keySet().iterator();
-					// at most one bizTran
-					if (keyIter.hasNext()) {
-						String key = keyIter.next();
-						String value = sdObject.getString(key);
-						if (key != null && value != null) {
-							sdt.setType(key);
-							sdt.setValue(value);
-						}
-					}
-					if (sdt != null)
-						sdtList.add(sdt);
-				}
-				dlt.setDestination(sdtList);
-				transformationEventType.setDestinationList(dlt);
-			}
-
-			if (dbObject.get("ilmd") != null) {
-				ILMDType ilmd = new ILMDType();
-				ILMDExtensionType ilmdExtension = new ILMDExtensionType();
-
-				BasicDBObject anyObject = (BasicDBObject) dbObject.get("ilmd");
-				Iterator<String> anyKeysIter = anyObject.keySet().iterator();
-				List<Object> elementList = new ArrayList<Object>();
-				while (anyKeysIter.hasNext()) {
-					String anyKey = anyKeysIter.next();
-					String value = anyObject.get(anyKey).toString();
-					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
-						DocumentBuilder builder = dbf.newDocumentBuilder();
-						Document doc = builder.newDocument();
-
-						Node node = doc.createElement("value");
-						node.setTextContent(value);
-						Element element = doc.createElement(anyKey);
-						element.appendChild(node);
-						elementList.add(element);
-					}
-				}
-				ilmdExtension.setAny(elementList);
-				ilmd.setExtension(ilmdExtension);
-				transformationEventType.setIlmd(ilmd);
-			}
-
-			// extension
+			// Extension Field
 			if (dbObject.get("extension") != null) {
-				TransformationEventExtensionType tfeet = new TransformationEventExtensionType();
-				BasicDBObject extension = (BasicDBObject) dbObject
+				TransactionEventExtensionType teet = new TransactionEventExtensionType();
+				BasicDBObject extObject = (BasicDBObject) dbObject
 						.get("extension");
-				if (extension.get("any") != null) {
-					BasicDBObject anyObject = (BasicDBObject) extension
-							.get("any");
-					Iterator<String> anyKeysIter = anyObject.keySet()
-							.iterator();
-					List<Object> elementList = new ArrayList<Object>();
-					while (anyKeysIter.hasNext()) {
-						String anyKey = anyKeysIter.next();
-						String value = anyObject.get(anyKey).toString();
-						if (anyKey != null && value != null) {
-							DocumentBuilderFactory dbf = DocumentBuilderFactory
-									.newInstance();
-							DocumentBuilder builder = dbf.newDocumentBuilder();
-							Document doc = builder.newDocument();
-
-							Node node = doc.createElement("value");
-							node.setTextContent(value);
-							Element element = doc.createElement(anyKey);
-							element.appendChild(node);
-							elementList.add(element);
+				// Quantity
+				if (extObject.get("quantityList") != null) {
+					QuantityListType qlt = new QuantityListType();
+					List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
+					BasicDBList quantityDBList = (BasicDBList) extObject
+							.get("quantityList");
+					for (int i = 0; i < quantityDBList.size(); i++) {
+						QuantityElementType qet = new QuantityElementType();
+						BasicDBObject quantityDBObject = (BasicDBObject) quantityDBList
+								.get(i);
+						Object epcClassObject = quantityDBObject
+								.get("epcClass");
+						Object quantity = quantityDBObject.get("quantity");
+						Object uom = quantityDBObject.get("uom");
+						if (epcClassObject != null && quantity != null
+								&& uom != null) {
+							qet.setEpcClass(epcClassObject.toString());
+							double quantityDouble = (double) quantity;
+							qet.setQuantity((float) quantityDouble);
+							qet.setUom(uom.toString());
+							qetList.add(qet);
 						}
 					}
-					tfeet.setAny(elementList);
+					qlt.setQuantityElement(qetList);
+					teet.setQuantityList(qlt);
 				}
-				if (extension.get("otherAttributes") != null) {
-					Map<QName, String> otherAttributes = new HashMap<QName, String>();
-					BasicDBObject otherAttributeObject = (BasicDBObject) extension
-							.get("otherAttributes");
-					Iterator<String> otherKeysIter = otherAttributeObject
-							.keySet().iterator();
-					while (otherKeysIter.hasNext()) {
-						String anyKey = otherKeysIter.next();
-						String value = otherAttributeObject.get(anyKey)
-								.toString();
-						otherAttributes.put(new QName("", anyKey), value);
+				// SourceList
+				if (extObject.get("sourceList") != null) {
+					// Source Dest Type : Key / Value
+					SourceListType slt = new SourceListType();
+					List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
+					BasicDBList sourceDBList = (BasicDBList) extObject
+							.get("sourceList");
+					for (int i = 0; i < sourceDBList.size(); i++) {
+						BasicDBObject sdObject = (BasicDBObject) sourceDBList
+								.get(i);
+						// DBObject, key and value
+						SourceDestType sdt = new SourceDestType();
+						Iterator<String> keyIter = sdObject.keySet().iterator();
+						// at most one bizTran
+						if (keyIter.hasNext()) {
+							String key = keyIter.next();
+							String value = sdObject.getString(key);
+							if (key != null && value != null) {
+								sdt.setType(key);
+								sdt.setValue(value);
+							}
+						}
+						if (sdt != null)
+							sdtList.add(sdt);
 					}
-					tfeet.setOtherAttributes(otherAttributes);
+					slt.setSource(sdtList);
+					teet.setSourceList(slt);
 				}
-				transformationEventType.setExtension(tfeet);
+				// DestinationList
+				if (extObject.get("destinationList") != null) {
+					// Source Dest Type : Key / Value
+					DestinationListType dlt = new DestinationListType();
+					List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
+					BasicDBList destinationDBList = (BasicDBList) extObject
+							.get("destinationList");
+					for (int i = 0; i < destinationDBList.size(); i++) {
+						BasicDBObject sdObject = (BasicDBObject) destinationDBList
+								.get(i);
+						// DBObject, key and value
+						SourceDestType sdt = new SourceDestType();
+						Iterator<String> keyIter = sdObject.keySet().iterator();
+						// at most one bizTran
+						if (keyIter.hasNext()) {
+							String key = keyIter.next();
+							String value = sdObject.getString(key);
+							if (key != null && value != null) {
+								sdt.setType(key);
+								sdt.setValue(value);
+							}
+						}
+						if (sdt != null)
+							sdtList.add(sdt);
+					}
+					dlt.setDestination(sdtList);
+					teet.setDestinationList(dlt);
+				}
+				// extension2
+				if (extObject.get("extension") != null) {
+					TransactionEventExtension2Type tee2t = new TransactionEventExtension2Type();
+					BasicDBObject extension = (BasicDBObject) extObject
+							.get("extension");
+					if (extension.get("any") != null) {
+						BasicDBObject anyObject = (BasicDBObject) extension
+								.get("any");
+						Iterator<String> anyKeysIter = anyObject.keySet()
+								.iterator();
+						List<Object> elementList = new ArrayList<Object>();
+						while (anyKeysIter.hasNext()) {
+							String anyKey = anyKeysIter.next();
+							String value = anyObject.get(anyKey).toString();
+							if (anyKey != null && value != null) {
+								DocumentBuilderFactory dbf = DocumentBuilderFactory
+										.newInstance();
+								DocumentBuilder builder = dbf
+										.newDocumentBuilder();
+								Document doc = builder.newDocument();
+
+								Node node = doc.createElement("value");
+								node.setTextContent(value);
+								Element element = doc.createElement(anyKey);
+								element.appendChild(node);
+								elementList.add(element);
+							}
+						}
+						tee2t.setAny(elementList);
+					}
+					if (extension.get("otherAttributes") != null) {
+						Map<QName, String> otherAttributes = new HashMap<QName, String>();
+						BasicDBObject otherAttributeObject = (BasicDBObject) extension
+								.get("otherAttributes");
+						Iterator<String> otherKeysIter = otherAttributeObject
+								.keySet().iterator();
+						while (otherKeysIter.hasNext()) {
+							String anyKey = otherKeysIter.next();
+							String value = otherAttributeObject.get(anyKey)
+									.toString();
+							otherAttributes.put(new QName("", anyKey), value);
+						}
+						tee2t.setOtherAttributes(otherAttributes);
+					}
+					//
+					teet.setExtension(tee2t);
+				}
+				transactionEventType.setExtension(teet);
 			}
-			return transformationEventType;
+			return transactionEventType;
 		} catch (DatatypeConfigurationException e) {
 			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
 		} catch (ParserConfigurationException e) {
@@ -504,18 +449,4 @@ public class TransformationEventReadConverter implements
 		}
 		return null;
 	}
-
-	public DBObject getDBObjectFromMessageElement(MessageElement any) {
-		NamedNodeMap attributes = any.getAttributes();
-		DBObject attrObject = new BasicDBObject();
-		for (int i = 0; i < attributes.getLength(); i++) {
-			Attr attr = (Attr) attributes.item(i);
-
-			String attrName = attr.getNodeName();
-			String attrValue = attr.getNodeValue();
-			attrObject.put(attrName, attrValue);
-		}
-		return attrObject;
-	}
-
 }

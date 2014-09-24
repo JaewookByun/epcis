@@ -1,4 +1,4 @@
-package org.oliot.epcis.serde;
+package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -18,17 +18,15 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
-import org.oliot.model.epcis.ILMDExtensionType;
-import org.oliot.model.epcis.ILMDType;
-import org.oliot.model.epcis.ObjectEventExtension2Type;
-import org.oliot.model.epcis.ObjectEventExtensionType;
-import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
+import org.oliot.model.epcis.TransactionEventExtension2Type;
+import org.oliot.model.epcis.TransactionEventExtensionType;
+import org.oliot.model.epcis.TransactionEventType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
@@ -58,14 +56,14 @@ import com.mongodb.DBObject;
  */
 @Component
 @WritingConverter
-public class ObjectEventWriteConverter implements
-		Converter<ObjectEventType, DBObject> {
+public class TransactionEventWriteConverter implements
+		Converter<TransactionEventType, DBObject> {
 
-	public DBObject convert(ObjectEventType objectEventType) {
+	public DBObject convert(TransactionEventType transactionEventType) {
 
 		DBObject dbo = new BasicDBObject();
-		if (objectEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = objectEventType
+		if (transactionEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType baseExtensionType = transactionEventType
 					.getBaseExtension();
 			DBObject baseExtension = new BasicDBObject();
 			if (baseExtensionType.getAny() != null) {
@@ -100,20 +98,20 @@ public class ObjectEventWriteConverter implements
 			}
 			dbo.put("baseExtension", baseExtension);
 		}
-		if (objectEventType.getEventTime() != null)
-			dbo.put("eventTime", objectEventType.getEventTime()
+		if (transactionEventType.getEventTime() != null)
+			dbo.put("eventTime", transactionEventType.getEventTime()
 					.toGregorianCalendar().getTimeInMillis());
-		if (objectEventType.getEventTimeZoneOffset() != null)
+		if (transactionEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset",
-					objectEventType.getEventTimeZoneOffset());
-		
+					transactionEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", recordTimeMilis);
-		
-		if (objectEventType.getEpcList() != null) {
-			EPCListType epcs = objectEventType.getEpcList();
+		if (transactionEventType.getParentID() != null)
+			dbo.put("parentID", transactionEventType.getParentID());
+		if (transactionEventType.getEpcList() != null) {
+			EPCListType epcs = transactionEventType.getEpcList();
 			List<EPC> epcList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 
@@ -124,14 +122,14 @@ public class ObjectEventWriteConverter implements
 			}
 			dbo.put("epcList", epcDBList);
 		}
-		if (objectEventType.getAction() != null)
-			dbo.put("action", objectEventType.getAction().name());
-		if (objectEventType.getBizStep() != null)
-			dbo.put("bizStep", objectEventType.getBizStep());
-		if (objectEventType.getDisposition() != null)
-			dbo.put("disposition", objectEventType.getDisposition());
-		if (objectEventType.getReadPoint() != null) {
-			ReadPointType readPointType = objectEventType.getReadPoint();
+		if (transactionEventType.getAction() != null)
+			dbo.put("action", transactionEventType.getAction().name());
+		if (transactionEventType.getBizStep() != null)
+			dbo.put("bizStep", transactionEventType.getBizStep());
+		if (transactionEventType.getDisposition() != null)
+			dbo.put("disposition", transactionEventType.getDisposition());
+		if (transactionEventType.getReadPoint() != null) {
+			ReadPointType readPointType = transactionEventType.getReadPoint();
 			DBObject readPoint = new BasicDBObject();
 			if (readPointType.getId() != null)
 				readPoint.put("id", readPointType.getId());
@@ -172,8 +170,8 @@ public class ObjectEventWriteConverter implements
 			readPoint.put("extension", extension);
 			dbo.put("readPoint", readPoint);
 		}
-		if (objectEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = objectEventType
+		if (transactionEventType.getBizLocation() != null) {
+			BusinessLocationType bizLocationType = transactionEventType
 					.getBizLocation();
 			DBObject bizLocation = new BasicDBObject();
 			if (bizLocationType.getId() != null)
@@ -216,8 +214,8 @@ public class ObjectEventWriteConverter implements
 			dbo.put("bizLocation", bizLocation);
 		}
 
-		if (objectEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = objectEventType
+		if (transactionEventType.getBizTransactionList() != null) {
+			BusinessTransactionListType bizListType = transactionEventType
 					.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType
 					.getBizTransaction();
@@ -234,35 +232,11 @@ public class ObjectEventWriteConverter implements
 			}
 			dbo.put("bizTransactionList", bizTranList);
 		}
-		
-		if (objectEventType.getIlmd() != null )
-		{
-			ILMDType ilmd = objectEventType.getIlmd();
-			if( ilmd.getExtension() != null )
-			{
-				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				List<Object> objList = ilmdExtension.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getLocalName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
-						}
-					}
-				}
-				if (map2Save != null)
-					dbo.put("ilmd", map2Save);
-			}
-		}
 		// Extension
 		DBObject extension = new BasicDBObject();
-		if (objectEventType.getExtension() != null) {
-			ObjectEventExtensionType oee = objectEventType.getExtension();
+		if (transactionEventType.getExtension() != null) {
+			TransactionEventExtensionType oee = transactionEventType
+					.getExtension();
 			if (oee.getQuantityList() != null) {
 				QuantityListType qetl = oee.getQuantityList();
 				List<QuantityElementType> qetList = qetl.getQuantityElement();
@@ -304,7 +278,8 @@ public class ObjectEventWriteConverter implements
 				extension.put("destinationList", dbList);
 			}
 			if (oee.getExtension() != null) {
-				ObjectEventExtension2Type extension2Type = oee.getExtension();
+				TransactionEventExtension2Type extension2Type = oee
+						.getExtension();
 				DBObject extension2 = new BasicDBObject();
 				if (extension2Type.getAny() != null) {
 					Map<String, String> map2Save = new HashMap<String, String>();
