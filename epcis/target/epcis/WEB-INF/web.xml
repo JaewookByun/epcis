@@ -50,6 +50,13 @@
 		<servlet-class>org.oliot.epcis.service.query.SubscriptionServlet</servlet-class>
 		<load-on-startup>2</load-on-startup>
 	</servlet>
+	<servlet>
+		<servlet-name>MessageQueueServlet</servlet-name>
+		<display-name>MessageQueueServlet</display-name>
+		<description></description>
+		<servlet-class>org.oliot.epcis.service.capture.CaptureMQServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
 
 	<servlet-mapping>
 		<servlet-name>ConfigurationServlet</servlet-name>
@@ -72,6 +79,10 @@
 	<servlet-mapping>
 		<servlet-name>SubscriptionServlet</servlet-name>
 		<url-pattern>/SubscriptionServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>MessageQueueServlet</servlet-name>
+		<url-pattern>/MessageQueueServlet</url-pattern>
 	</servlet-mapping>
 
 
