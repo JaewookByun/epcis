@@ -39,6 +39,10 @@ public class ConfigurationServlet extends HttpServlet {
 	public static Logger logger;
 	public static String webInfoPath;
 	public static boolean isCaptureVerfificationOn;
+	public static boolean isMessageQueueOn;
+	public static int numCaptureListener;
+	public static String MQCaptureQueue;
+	public static String MQQueryExchange;
 
 	/**
 	 * @see HttpServlet#HttpServlet()
@@ -114,6 +118,41 @@ public class ConfigurationServlet extends HttpServlet {
 				ConfigurationServlet.logger
 						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
+
+			// Set up Message Queue
+			String message_queue = json.getString("message_queue");
+			if (message_queue.equals("on")) {			
+				ConfigurationServlet.isMessageQueueOn = true;
+				ConfigurationServlet.logger.info("Message Queue - ON ");
+			} else if( message_queue.equals("on")) {
+				ConfigurationServlet.isMessageQueueOn = false;
+				ConfigurationServlet.logger.info("Message Queue - OFF ");
+			} else {
+				ConfigurationServlet.logger
+				.error("message_queue should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
+			String numListener = json.getString("message_queue_capture_listener");
+			MQCaptureQueue = json.getString("message_queue_capture_name");
+			if( isMessageQueueOn == true && ( numListener == null || MQCaptureQueue == null )){
+				ConfigurationServlet.logger
+				.error("if message_queue on, number of capture listener should be described, please make sure Configuration.json is correct, and restart.");
+			}else{
+				try
+				{
+					numCaptureListener = Integer.parseInt(numListener);
+				}catch( NumberFormatException e )
+				{
+					ConfigurationServlet.logger
+					.error("number of capture listener should be integer, please make sure Configuration.json is correct, and restart.");
+				}
+			}
+			MQQueryExchange = json.getString("message_queue_exchange_query");
+			if( isMessageQueueOn == true && MQQueryExchange == null )
+			{
+				ConfigurationServlet.logger
+				.error("if message_queue on, query exchange should be described, please make sure Configuration.json is correct, and restart.");
+			}
+
 		} catch (Exception ex) {
 			ConfigurationServlet.logger.error(ex.toString());
 		}
