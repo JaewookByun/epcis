@@ -9,11 +9,10 @@
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
+	<bean id="rest" class="org.oliot.epcis.service.query.RESTQueryService"></bean>
+	<bean id="subscribe" class="org.oliot.epcis.service.query.RESTSubscribeService"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
 	
-	<bean id="restQuery"
-		class="org.oliot.epcis.service.query.mongodb.MongoRESTQueryService"></bean>
-
 	<!--  For TEST -->
 	<bean id="soaptest"
 	    class="org.oliot.epcis.service.query.SoapTest"></bean>

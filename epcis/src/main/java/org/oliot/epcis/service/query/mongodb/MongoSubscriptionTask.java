@@ -2,13 +2,21 @@ package org.oliot.epcis.service.query.mongodb;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import javax.xml.bind.JAXB;
+
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.model.epcis.EPCISQueryDocumentType;
+import org.oliot.model.epcis.ImplementationException;
+import org.oliot.model.epcis.QueryResults;
+import org.oliot.model.epcis.QueryTooLargeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -95,6 +103,39 @@ public class MongoSubscriptionTask implements Job {
 						maxEventCount, null, false, false, null, null, null,
 						null, null, paramMap);
 
+		EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(
+				pollResult), EPCISQueryDocumentType.class);
+		
+		String resultString = "";
+		
+		if (resultXML != null
+				&& resultXML.getEPCISBody() != null
+				&& resultXML.getEPCISBody().getQueryTooLargeException() != null ) {
+			QueryTooLargeException e = resultXML.getEPCISBody().getQueryTooLargeException();
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(e, sw);
+			resultString = sw.toString();
+		}else if (resultXML != null
+				&& resultXML.getEPCISBody() != null
+				&& resultXML.getEPCISBody().getImplementationException() != null ) {
+			ImplementationException e = resultXML.getEPCISBody().getImplementationException();
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(e, sw);
+			resultString = sw.toString();
+		}else if (resultXML != null
+				&& resultXML.getEPCISBody() != null
+				&& resultXML.getEPCISBody().getQueryResults() != null
+				&& resultXML.getEPCISBody().getQueryResults()
+						.getResultsBody() != null) {
+			QueryResults queryResults = new QueryResults();
+			queryResults.setQueryName(queryName);
+			queryResults.setResultsBody(resultXML.getEPCISBody()
+					.getQueryResults().getResultsBody());
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(queryResults, sw);
+			resultString = sw.toString();
+		}
+		
 		try {
 			URL url = new URL(dest);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -102,9 +143,9 @@ public class MongoSubscriptionTask implements Job {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			conn.setRequestProperty("Content-Length",
-					"" + Integer.toString(pollResult.getBytes().length));
+					"" + Integer.toString(resultString.getBytes().length));
 			DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
-			wr.writeBytes(pollResult);
+			wr.writeBytes(resultString);
 			wr.flush();
 			wr.close();
 			int x = conn.getResponseCode();
