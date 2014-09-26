@@ -85,5 +85,4 @@
 		<url-pattern>/MessageQueueServlet</url-pattern>
 	</servlet-mapping>
 
-
 </web-app>

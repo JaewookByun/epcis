@@ -55,9 +55,6 @@ public class CaptureMQServlet extends HttpServlet {
 			ConfigurationServlet.logger
 			.info("Message Queue Service - Capture Queue Name: "
 					+ ConfigurationServlet.MQCaptureQueue);
-			ConfigurationServlet.logger
-					.info("Message Queue Service - Query Exchange: "
-							+ ConfigurationServlet.MQQueryExchange);
 			
 			// Message Queue Initialization
 			ConnectionFactory connectionFactory = new CachingConnectionFactory();

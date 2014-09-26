@@ -48,7 +48,7 @@
 		<display-name>SubscriptionServlet</display-name>
 		<description></description>
 		<servlet-class>org.oliot.epcis.service.query.SubscriptionServlet</servlet-class>
-		<load-on-startup>2</load-on-startup>
+		<load-on-startup>3</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>MessageQueueServlet</servlet-name>
@@ -84,6 +84,5 @@
 		<servlet-name>MessageQueueServlet</servlet-name>
 		<url-pattern>/MessageQueueServlet</url-pattern>
 	</servlet-mapping>
-
 
 </web-app>
