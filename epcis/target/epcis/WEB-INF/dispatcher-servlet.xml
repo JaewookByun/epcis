@@ -9,16 +9,9 @@
 	<bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean>
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
-	<bean id="rest" class="org.oliot.epcis.service.query.RESTQueryService"></bean>
-	<bean id="subscribe" class="org.oliot.epcis.service.query.RESTSubscribeService"></bean>
+	<bean id="resource" class="org.oliot.epcis.service.rest.Resource"></bean>
+	<bean id="subscription" class="org.oliot.epcis.service.rest.Subscription"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
-	
-	<!--  For TEST -->
-	<bean id="soaptest"
-	    class="org.oliot.epcis.service.query.SoapTest"></bean>
-	<bean id="querytest"
-		class="org.oliot.epcis.service.query.mongodb.MongoQueryTest"></bean>
-	
 	
 	<bean id="viewResolver"
 		class="org.springframework.web.servlet.view.InternalResourceViewResolver">

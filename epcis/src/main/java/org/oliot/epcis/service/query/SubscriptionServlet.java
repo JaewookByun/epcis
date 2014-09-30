@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.epcis.service.query.mongodb.MongoRESTSubscription;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
 
 /**
@@ -61,10 +60,6 @@ public class SubscriptionServlet extends HttpServlet {
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			MongoSubscription ms = new MongoSubscription();
 			ms.init();
-			if (ConfigurationServlet.isMessageQueueOn == true) {
-				MongoRESTSubscription msRest = new MongoRESTSubscription();
-				msRest.init();
-			}
 		} else if (ConfigurationServlet.backend.equals("Cassandra")) {
 
 		} else if (ConfigurationServlet.backend.equals("MySQL")) {
