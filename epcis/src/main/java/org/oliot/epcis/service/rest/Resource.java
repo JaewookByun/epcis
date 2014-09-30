@@ -1,20 +1,21 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.rest;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.epcis.service.query.mongodb.MongoRESTQueryService;
+import org.oliot.epcis.service.rest.mongodb.MongoRESTQueryService;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
-@RequestMapping("/rest")
-public class RESTQueryService {
+@RequestMapping("/resource")
+public class Resource {
 
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/{target}", method = RequestMethod.GET)
 	@ResponseBody
-	public String getEPCResource(@RequestParam(required = false) String target,
+	public String getEPCResource(@PathVariable String target,
 			@RequestParam(required = false) String targetType,
 			@RequestParam(required = false) String from,
 			@RequestParam(required = false) String until) {
@@ -30,9 +31,7 @@ public class RESTQueryService {
 		}
 		return result;
 	}
-
-	@RequestMapping(value = "/one", method = RequestMethod.GET)
-	@ResponseBody
+	
 	public String getEPCResourceOne(
 			@RequestParam(required = false) String target,
 			@RequestParam(required = false) String targetType) {

@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb;
+package org.oliot.epcis.service.rest.mongodb;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -23,7 +23,6 @@ import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.RESTSubscriptionType;
 import org.oliot.model.epcis.SensingElementType;
 import org.oliot.model.epcis.SensorEventType;
-import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
@@ -232,10 +231,10 @@ public class MongoRESTQueryService {
 			String target = subscription.getTarget();
 			String cronExpression = subscription.getCronExpression();
 
-			MongoSubscription.sched.unscheduleJob(triggerKey(destURL,
+			MongoRESTSubscription.sched.unscheduleJob(triggerKey(destURL,
 					targetType + "," + target + "," + cronExpression));
-			MongoSubscription.sched.deleteJob(jobKey(destURL, targetType + ","
-					+ target + "," + cronExpression));
+			MongoRESTSubscription.sched.deleteJob(jobKey(destURL, targetType
+					+ "," + target + "," + cronExpression));
 			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 					+ subscription + " is removed from scheduler");
 		} catch (SchedulerException e) {
@@ -250,7 +249,7 @@ public class MongoRESTQueryService {
 		mongoOperation.remove(
 				new Query(Criteria.where("subscriptionID").is(
 						subscription.getSubscriptionID())),
-				SubscriptionType.class);
+				RESTSubscriptionType.class);
 		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
 				+ subscription + " is removed from DB");
 	}

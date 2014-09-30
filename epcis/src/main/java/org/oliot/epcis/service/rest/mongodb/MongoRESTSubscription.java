@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb;
+package org.oliot.epcis.service.rest.mongodb;
 
 import java.util.List;
 

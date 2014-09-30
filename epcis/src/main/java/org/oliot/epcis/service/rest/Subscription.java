@@ -1,10 +1,10 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.rest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.epcis.service.query.mongodb.MongoRESTQueryService;
+import org.oliot.epcis.service.rest.mongodb.MongoRESTQueryService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +16,7 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 
 @Controller
 @RequestMapping("/subscription")
-public class RESTSubscribeService {
+public class Subscription {
 
 	@RequestMapping(value = "/{subscriptionID}", method = RequestMethod.POST)
 	@ResponseBody
