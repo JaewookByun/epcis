@@ -162,12 +162,12 @@ public class MongoRESTQueryService {
 					if (fromTime != 0) {
 						DBObject sub = new BasicDBObject();
 						sub.put("$gte", fromTime);
-						subQuery.put("eventTime", sub);
+						subQuery.put("startTime", sub);
 					}
 					if (untilTime != 0) {
 						DBObject sub = new BasicDBObject();
 						sub.put("$lte", untilTime);
-						subQuery.put("eventTime", sub);
+						subQuery.put("finishTime", sub);
 					}
 					DBObject subFields = new BasicDBObject();
 					subFields.put("type", true);

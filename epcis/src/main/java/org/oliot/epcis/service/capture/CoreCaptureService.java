@@ -1,14 +1,10 @@
 package org.oliot.epcis.service.capture;
 
-import org.oliot.model.epcis.AggregationEventType;
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
-import org.oliot.model.epcis.ObjectEventType;
-import org.oliot.model.epcis.QuantityEventType;
-import org.oliot.model.epcis.SensorEventType;
-import org.oliot.model.epcis.TransactionEventType;
-import org.oliot.model.epcis.TransformationEventType;
-import org.oliot.model.epcis.VocabularyType;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -27,22 +23,12 @@ import org.oliot.model.epcis.VocabularyType;
  * 
  *         bjw0829@kaist.ac.kr
  */
+@WebService
 public interface CoreCaptureService {
-	public void capture(AggregationEventType event);
 
-	public void capture(ObjectEventType event);
-
-	public void capture(QuantityEventType event);
-
-	public void capture(TransactionEventType event);
-
-	public void capture(TransformationEventType event);
-
-	public void capture(SensorEventType event);
-	
+	@WebMethod(operationName="EventCapture")
 	public void capture(EPCISDocumentType epcisDocument);
-	
-	public void capture(VocabularyType vocabulary);
-	
+
+	@WebMethod(operationName="VocabularyCapture")
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument);
 }
