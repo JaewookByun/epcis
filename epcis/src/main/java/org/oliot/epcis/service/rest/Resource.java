@@ -3,7 +3,6 @@ package org.oliot.epcis.service.rest;
 import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.epcis.service.rest.mongodb.MongoRESTQueryService;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,10 +12,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping("/resource")
 public class Resource {
 
-	@RequestMapping(value = "/{target}", method = RequestMethod.GET)
+	@RequestMapping(method = RequestMethod.GET)
 	@ResponseBody
-	public String getEPCResource(@PathVariable String target,
-			@RequestParam(required = false) String targetType,
+	public String getEPCResource(@RequestParam(required = true) String target,
+			@RequestParam(required = true) String targetType,
 			@RequestParam(required = false) String from,
 			@RequestParam(required = false) String until) {
 

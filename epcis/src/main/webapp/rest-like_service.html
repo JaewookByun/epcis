@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>EPCIS REST-Like Web Service</title>
+</head>
+<body>
+	<table border="1">
+		<thead>
+			<tr>
+				<td colspan="2">EPCIS Capture Service</td>
+			</tr>
+			<tr>
+				<td>Method Name</td>
+				<td>Description</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Event Capture</td>
+				<td>Description: This service allows you to store your EPCIS
+					Document into your backend storage (e.g. Mongo DB)<br> Method:
+					post <br> Contents: raw-xml-text, complying with <a
+					href="http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-schema-20140520/EPCglobal-epcis-1_1.xsd">EPCIS
+						v1.1 XML Schema</a> <br> Example URL:
+					http://{base-url}:{base-port}/epcis/Service/eventCapture<br>
+					Example EPCIS Document: <a href="./exampleXML/EPCISDocument.xml">Example
+						of EPCISDocument</a>
+				</td>
+			</tr>
+			<tr>
+				<td>Vocabulary Capture</td>
+				<td>Description: This service allows you to store your EPCIS
+					Master Data Document into your backend storage (e.g. Mongo DB)<br>
+					Method: post <br> Contents: raw-xml-text, complying with <a
+					href="http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-schema-20140520/EPCglobal-epcis-1_1.xsd">EPCIS
+						v1.1 XML Schema</a><br> Example URL:
+					http://{base-url}:{base-port}/epcis/Service/vocabularyCapture<br>
+					Example EPCIS Master Data Document: <a
+					href="./exampleXML/EPCISMasterDataDocument.xml">Example of
+						EPCIS Master Data Document</a>
+				</td>
+			</tr>
+			<tr>
+				<td>ALE Event Capture</td>
+				<td>Description: This service allows you to store your ECReport
+					into your backend storage after converting it to EPCIS Document<br>
+					Method: post <br> Contents: raw-xml-text, complying with <a
+					href="http://www.gs1.org/gsmp/kc/epcglobal/ale/ale_1_1-schemas-20071202/EPCglobal-ale-1_1-ale.xsd">ALE
+						v1.1 XML Schema</a><br> Example URL:
+					http://{base-url}:{base-port}/epcis/Service/aleCapture<br>
+					Example ALE ECReport: <a href="./exampleXML/ALEReport.xml">Example
+						of ALE ECReport</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<br>
+	<table border="1">
+		<thead>
+			<tr>
+				<td colspan="2">EPCIS Query Service</td>
+			</tr>
+			<tr>
+				<td>Method Name</td>
+				<td>Description</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>GetStandardVersion</td>
+				<td>Description: Return the standard version of EPCIS<br>
+					URL:
+					http://{base-url}:{base-port}/epcis/Service/query/StandardVersion <br>
+					Additional Parameters: Null
+				</td>
+			</tr>
+			<tr>
+				<td>GetVendorVersion</td>
+				<td>Description: Return the vendor specific version of EPCIS<br>
+					URL:
+					http://{base-url}:{base-port}/epcis/Service/query/VendorVersion <br>
+					Additional Parameters: Null
+				</td>
+			</tr>
+			<tr>
+				<td>GetQueryNames</td>
+				<td>Description: Return a list of all query names available<br>
+					URL: http://{base-url}:{base-port}/epcis/Service/query/QueryNames <br>
+					Additional Parameters: Null <br> Return: [ {queryNames} ]
+				</td>
+			</tr>
+			<tr>
+				<td>Poll</td>
+				<td>Description: Return events stored in repository in interest
+					immediately<br> URL:
+					http://{base-url}:{base-port}/epcis/Service/query//Poll/{queryName}
+					<br> Additional Parameters: <br> eventType : Comma
+					separated event type (e.g. ObjectEvent) <br> (GE|LT)_eventTime
+					: yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br> (GE|LT)_recordTime :
+					yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br> EQ_action : Comma separated
+					action (e.g. ADD) <br> EQ_bizStep : Comma separated bizStep <br>
+					EQ_disposition : Comma separated disposition <br>
+					(EQ|WD)_readPoint : Comma separated readPoint <br>
+					(EQ|WD)_bizLocation : Comma separated bizLocation <br>
+					EQ_transformationID : Comma separated transformationID <br>
+					MATCH_(epc|parentID|inputEPC|outputEPC|anyEPC) : Comma separated
+					EPC <br>
+					MATCH_(epcClass|inputEPCClass|outputEPCClass|anyEPCClass) : Comma
+					separated EPC Class <br> orderBy : Field used by sorting (e.g.
+					eventTime) <br> orderDirection : ASC, DESC (default) <br>
+					eventCountLimit : return specified number of events <br>
+					maxEventCount : yield error if # of events exceeds specified number
+					<br> vocabularyName : Comma separated vocabularyName <br>
+					includeAttributes : whether including attributes or not <br>
+					includeChildren : whether including children or not <br>
+					attributeNames : Comma separated attribute names, result only will
+					include specified list of names <br> (EQ|WD)_name : Comma
+					separated attribute names <br> HASATTR : Comma separated
+					attribute names <br> maxElementCount : yield error if # of
+					events exceeds specified number
+				</td>
+			</tr>
+			<tr>
+				<td>GetSubscriptionIDs</td>
+				<td>Description: Returns a list of all subscriptionIDs
+					currently subscribed to the specified named query.<br> URL:
+					http://{base-url}:{base-port}/epcis/Service/query/SubscriptionIDs/{queryName}
+					<br> Additional Parameters: Null <br> Return: [
+					{SubscriptionIDs} ]
+				</td>
+			</tr>
+			<tr>
+				<td>Subscribe</td>
+				<td>Description: Registers a subscriber for a previously
+					defined query having the specified name. <br> URL:
+					http://{base-url}:{base-port}/epcis/Service/query/Subscribe/{queryName}/{subscriptionID}
+					<br> Additional Parameters: <br> dest : Callback URL <br>
+					cronExpression : <a
+					href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
+						CronTrigger Tutorial</a> <br>
+				</td>
+			</tr>
+			<tr>
+				<td>Unsubscribe</td>
+				<td>Description: Removes a previously registered subscription
+					having the specified subscriptionID. <br> URL:
+					http://{base-url}:{base-port}/epcis/Service/query/Unsubscribe/{subscriptionID}
+					<br> Additional Parameters: null
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</body>
+</html>

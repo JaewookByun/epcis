@@ -50,8 +50,6 @@ import org.oliot.tdt.SimplePureIdentityFilter;
  */
 public class CaptureService implements CoreCaptureService {
 
-	@SuppressWarnings({})
-	@Override
 	public void capture(AggregationEventType event) {
 
 		// General Exception Handling
@@ -92,7 +90,6 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@Override
 	public void capture(ObjectEventType event) {
 
 		// General Exception Handling
@@ -109,8 +106,6 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({})
-	@Override
 	public void capture(QuantityEventType event) {
 
 		// General Exception Handling
@@ -127,8 +122,6 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({})
-	@Override
 	public void capture(TransactionEventType event) {
 
 		// General Exception Handling
@@ -155,8 +148,6 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@SuppressWarnings({})
-	@Override
 	public void capture(TransformationEventType event) {
 
 		// General Exception Handling
@@ -173,7 +164,6 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	@Override
 	public void capture(SensorEventType event) {
 
 		// General Exception Handling
@@ -189,15 +179,14 @@ public class CaptureService implements CoreCaptureService {
 			m.capture(event);
 		}
 	}
-	
-	@Override
+
 	public void capture(VocabularyType vocabulary) {
-		
+
 		if (ConfigurationServlet.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(vocabulary);
 		}
-		
+
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -258,22 +247,21 @@ public class CaptureService implements CoreCaptureService {
 			return;
 		}
 
-		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null )
-		{
+		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
 			ConfigurationServlet.logger.info(" There is no Vocabulary List ");
 			return;
 		}
-		
-		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
 
-		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
-		
-		for( int i = 0 ; i < vocabularyTypeList.size() ; i++ )
-		{
+		VocabularyListType vocabularyListType = epcisMasterDataDocument
+				.getEPCISBody().getVocabularyList();
+
+		List<VocabularyType> vocabularyTypeList = vocabularyListType
+				.getVocabulary();
+
+		for (int i = 0; i < vocabularyTypeList.size(); i++) {
 			VocabularyType vocabulary = vocabularyTypeList.get(i);
 			capture(vocabulary);
 		}
 	}
 
-	
 }

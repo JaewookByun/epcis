@@ -1,6 +1,5 @@
 package org.oliot.epcis.service.capture;
 
-import javax.jws.WebMethod;
 import javax.jws.WebService;
 
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -23,12 +22,19 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
  * 
  *         bjw0829@kaist.ac.kr
  */
-@WebService
-public interface CoreCaptureService {
+@WebService(endpointInterface = "org.oliot.epcis.service.capture.CoreCaptureService")
+public class SoapCaptureService implements CoreCaptureService {
 
-	@WebMethod(operationName="EventCapture")
-	public void capture(EPCISDocumentType epcisDocument);
+	@Override
+	public void capture(EPCISDocumentType epcisDocument) {
+		CaptureService cs = new CaptureService();
+		cs.capture(epcisDocument);
+	}
 
-	@WebMethod(operationName="VocabularyCapture")
-	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument);
+	@Override
+	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
+		CaptureService cs = new CaptureService();
+		cs.capture(epcisMasterDataDocument);
+	}
+
 }
