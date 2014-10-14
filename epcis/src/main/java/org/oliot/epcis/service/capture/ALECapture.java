@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -238,12 +237,7 @@ public class ALECapture implements ServletContextAware {
 			XMLGregorianCalendar recordTime = df
 					.newXMLGregorianCalendar(recordCalendar);
 
-			String eventTimeZoneOffset;
-			if (eventTime.getTimezone() == DatatypeConstants.FIELD_UNDEFINED) {
-				eventTimeZoneOffset = "540";
-			} else {
-				eventTimeZoneOffset = String.valueOf(eventTime.getTimezone());
-			}
+			String eventTimeZoneOffset = makeTimeZoneString(eventTime.getTimezone());
 
 			if (duration != null) {
 				Duration du = DatatypeFactory.newInstance().newDuration(
@@ -495,6 +489,22 @@ public class ALECapture implements ServletContextAware {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public String makeTimeZoneString(int timeZone)
+	{
+		String retString = "";
+		timeZone = timeZone/60;
+		
+		if( timeZone >= 0 )
+		{
+			retString = String.format("+%02d:00", timeZone);
+		}else
+		{
+			timeZone = Math.abs(timeZone);
+			retString = String.format("-%02d:00", timeZone);
+		}
+		return retString;
 	}
 
 }
