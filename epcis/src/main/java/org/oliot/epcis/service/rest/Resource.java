@@ -1,28 +1,25 @@
 package org.oliot.epcis.service.rest;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.List;
-
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.oliot.epcis.configuration.ConfigurationServlet;
-import org.oliot.epcis.service.capture.CaptureService;
 import org.oliot.epcis.service.rest.mongodb.MongoRESTQueryService;
-import org.oliot.model.epcis.EPC;
-import org.oliot.model.epcis.SensingElementType;
-import org.oliot.model.epcis.SensingListType;
-import org.oliot.model.epcis.SensorEventType;
 import org.oliot.tdt.SimplePureIdentityFilter;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -32,7 +29,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
  * EPCglobal.
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
- *
+ * 네
+ * 
  * @author Jack Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
@@ -68,12 +66,12 @@ public class Resource {
 	@ResponseBody
 	public String putEPCResource(@RequestParam(required = true) String target,
 			@RequestParam(required = true) String targetType,
-			@RequestParam(required = false) String eventTime,
-			@RequestParam(required = false) String finishTime,
-			@RequestParam(required = false) String sensorEPC,
-			@RequestParam(required = false) String sensorType,
-			@RequestParam(required = false) String sensorValue) {
+			@RequestParam(required = false) Long eventTime,
+			@RequestParam(required = false) Long finishTime,
+			@RequestParam Map<String, String> params) {
 
+		DBObject dbObject = new BasicDBObject();
+		
 		if (!SimplePureIdentityFilter.isPureIdentity(target)) {
 			return "targetObject or targetArea should follow Pure Identity Form";
 		}
@@ -81,57 +79,86 @@ public class Resource {
 		if (!targetType.equals("Object") && !targetType.equals("Area")) {
 			return "targetType should be Object or Area";
 		}
-
-		CaptureService cs = new CaptureService();
-		SensorEventType event = new SensorEventType();
-
-		if (targetType.equals("Object")) {
-			event.setTargetObject(target);
-		} else if (targetType.equals("Area")) {
-			event.setTargetArea(target);
+		
+		// Processing target
+		if( targetType.equals("Object"))
+		{
+			dbObject.put("targetObject", target);
 		}
-
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			if (eventTime != null) {
-				GregorianCalendar eventCalendar = new GregorianCalendar();
-				eventCalendar.setTime(sdf.parse(eventTime));
-				XMLGregorianCalendar xmlEventTime = DatatypeFactory
-						.newInstance().newXMLGregorianCalendar(eventCalendar);
-				event.setEventTime(xmlEventTime);
-				event.setEventTimeZoneOffset(eventTime.substring(eventTime
-						.length() - 6));
-			} else {
-				GregorianCalendar eventCalendar = new GregorianCalendar();
-				XMLGregorianCalendar xmlEventTime = DatatypeFactory
-						.newInstance().newXMLGregorianCalendar(eventCalendar);
-				event.setEventTime(xmlEventTime);
-				event.setEventTimeZoneOffset(makeTimeZoneString(xmlEventTime
-						.getTimezone()));
-			}
-			if (finishTime != null) {
-				GregorianCalendar finishCalendar = new GregorianCalendar();
-				finishCalendar.setTime(sdf.parse(finishTime));
-				XMLGregorianCalendar xmlFinishTime = DatatypeFactory
-						.newInstance().newXMLGregorianCalendar(finishCalendar);
-				event.setFinishTime(xmlFinishTime);
-			}
-		} catch (ParseException e) {
-			return e.toString();
-		} catch (DatatypeConfigurationException e) {
-			return e.toString();
+		else
+		{
+			dbObject.put("targetArea", target);
 		}
-		SensingElementType sensingElement = new SensingElementType();
-		sensingElement.setEpc(new EPC(sensorEPC));
-		sensingElement.setType(sensorType);
-		sensingElement.setValue(sensorValue);
-		List<SensingElementType> setList = new ArrayList<SensingElementType>();
-		setList.add(sensingElement);
-		SensingListType slt = new SensingListType();
-		slt.setSensingElement(setList);
-		event.setSensingList(slt);
-		cs.capture(event);
+		
+		// Processing Time
+		if( eventTime == null )
+		{
+			long time = new GregorianCalendar().getTimeInMillis();
+			dbObject.put("eventTime", time);
+			dbObject.put("finishTime", time);
+		}
+		else if( eventTime != null && finishTime == null )
+		{
+			dbObject.put("eventTime", eventTime.longValue());
+			dbObject.put("finishTime", eventTime.longValue());
+		}
+		else if( eventTime != null && finishTime != null )
+		{
+			dbObject.put("eventTime", eventTime.longValue());
+			dbObject.put("finishTime", finishTime.longValue());
+		}
+		
+		// Retrieve sensor values
+		// 
+		Iterator<String> paramIter = params.keySet().iterator();
+		
+		while( paramIter.hasNext() )
+		{
+			String key =  paramIter.next();
+			
+			//filters
+			if( key.equals("targetType") || key.equals("target") || key.equals("eventTime") || key.equals("finishTime"))
+			{
+				continue;
+			}
+			
+			String value = params.get(key);
+			// Supported Type : int -> long -> float -> double --> string
+			
+			try{
+				dbObject.put(key, Integer.parseInt(value));
+			}catch( NumberFormatException e1 )
+			{
+				try{
+					dbObject.put(key, Long.parseLong(value));
+				}catch( NumberFormatException e2 )
+				{
+					try{
+						dbObject.put(key, Float.parseFloat(value));
+					}catch( NumberFormatException e3 )
+					{
+						try{
+							dbObject.put(key, Double.parseDouble(value));
+						}catch( NumberFormatException e4)
+						{
+							dbObject.put(key, value);
+						}						
+					}
+				}
+			}
+		}
+		
+		
+		
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		DBCollection collection = mongoOperation.getCollection("Context");
+		collection.insert(dbObject);
+		((AbstractApplicationContext) ctx).close();
+
 		return "Event Captured";
 	}
 
@@ -151,16 +178,5 @@ public class Resource {
 		return result;
 	}
 
-	public String makeTimeZoneString(int timeZone) {
-		String retString = "";
-		timeZone = timeZone / 60;
-
-		if (timeZone >= 0) {
-			retString = String.format("+%02d:00", timeZone);
-		} else {
-			timeZone = Math.abs(timeZone);
-			retString = String.format("-%02d:00", timeZone);
-		}
-		return retString;
-	}
+	
 }
