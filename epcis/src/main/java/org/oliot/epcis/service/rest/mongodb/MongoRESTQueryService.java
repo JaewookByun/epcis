@@ -18,11 +18,8 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Level;
-import org.json.JSONObject;
 import org.oliot.epcis.configuration.ConfigurationServlet;
 import org.oliot.model.epcis.RESTSubscriptionType;
-import org.oliot.model.epcis.SensingElementType;
-import org.oliot.model.epcis.SensorEventType;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
@@ -30,7 +27,6 @@ import org.quartz.Trigger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -182,7 +178,10 @@ public class MongoRESTQueryService {
 						if (subResult.get("type").equals("time")
 								|| subResult.get("type").equals("did"))
 							continue;
-
+						if( subResult.get("type") == null || subResult.get("value") == null )
+						{
+							continue;
+						}
 						subResult.put(subResult.get("type").toString(),
 								subResult.get("value").toString());
 						subResult.removeField("type");
@@ -344,34 +343,58 @@ public class MongoRESTQueryService {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 
-		Query query = new Query();
-		query.addCriteria(Criteria.where(targetType).is(target));
-		query.with(new Sort(Sort.Direction.DESC, "eventTime"));
-
-		SensorEventType sensorEvent = mongoOperation.findOne(query,
-				SensorEventType.class);
-		if (sensorEvent.getSensingList() != null) {
-			if (sensorEvent.getSensingList().getSensingElement() != null) {
-				List<SensingElementType> setList = sensorEvent.getSensingList()
-						.getSensingElement();
-				String startTime = sensorEvent.getEventTime().toString();
-				String finishTime = sensorEvent.getFinishTime().toString();
-				JSONObject jObj = new JSONObject();
-				for (int i = 0; i < setList.size(); i++) {
-					SensingElementType set = setList.get(i);
-					if (set.getType() == null || set.getValue() == null)
-						continue;
-					if (set.getType().equals("time")
-							|| set.getType().equals("did"))
-						continue;
-					jObj.put(set.getType(), set.getValue());
-					jObj.put("startTime", startTime);
-					jObj.put("finishTime", finishTime);
+		DBCollection collection = mongoOperation.getCollection("SensorEvent");
+		DBCollection sensorCollection = mongoOperation.getCollection("Sensor");
+		
+		if (collection != null) {
+			DBObject query = new BasicDBObject();
+			query.put(targetType, target);
+			DBObject fields = new BasicDBObject();
+			fields.put("targetObject", true);
+			fields.put("targetArea", true);
+			fields.put("sensingList", true);
+			fields.put("_id", false);
+			DBCursor cursor = collection.find(query, fields);
+			cursor.sort((DBObject)new BasicDBObject().put("eventTime", new Integer(1)));
+			BasicDBList sensingDBList = new BasicDBList();
+			if (cursor.hasNext()) {
+				DBObject base = cursor.next();
+				BasicDBList sensingList = (BasicDBList) base.get("sensingList");
+				for (int i = 0; i < sensingList.size(); i++) {
+					String sensorEPC = sensingList.get(i).toString();
+					DBObject subQuery = new BasicDBObject();
+					subQuery.put("epc", sensorEPC);
+					DBObject subFields = new BasicDBObject();
+					subFields.put("type", true);
+					subFields.put("value", true);
+					subFields.put("startTime", true);
+					subFields.put("finishTime", true);
+					subFields.put("_id", false);
+					DBCursor subCursor = sensorCollection.find(subQuery,
+							subFields);
+					subCursor.sort((DBObject)new BasicDBObject().put("finishTime", new Integer(1)));
+					if (subCursor.hasNext()) {
+						DBObject subResult = subCursor.next();
+						if (subResult.get("type").equals("time")
+								|| subResult.get("type").equals("did"))
+							continue;
+						if( subResult.get("type") == null || subResult.get("value") == null )
+						{
+							continue;
+						}
+						subResult.put(subResult.get("type").toString(),
+								subResult.get("value").toString());
+						subResult.removeField("type");
+						subResult.removeField("value");
+						sensingDBList.add(subResult);
+					}
 				}
-				resultString = jObj.toString(1);
 			}
+			resultString = sensingDBList.toString();
 		}
+
 		((AbstractApplicationContext) ctx).close();
+	
 		return resultString;
 	}
 
