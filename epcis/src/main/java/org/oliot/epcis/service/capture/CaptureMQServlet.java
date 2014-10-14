@@ -54,25 +54,25 @@ public class CaptureMQServlet extends HttpServlet {
 							+ ConfigurationServlet.numCaptureListener);
 			ConfigurationServlet.logger
 			.info("Message Queue Service - Capture Queue Name: "
-					+ ConfigurationServlet.MQCaptureQueue);
+					+ ConfigurationServlet.captureQueue);
 			
 			// Message Queue Initialization
 			ConnectionFactory connectionFactory = new CachingConnectionFactory();
 			AmqpAdmin admin = new RabbitAdmin(connectionFactory);
-			boolean isExistQueue = admin.deleteQueue(ConfigurationServlet.MQCaptureQueue);
+			boolean isExistQueue = admin.deleteQueue(ConfigurationServlet.captureQueue);
 			if( isExistQueue == true )
 			{
 				ConfigurationServlet.logger
 				.info("Capture Queue Initialized");
 			}
-			Queue queue = new Queue(ConfigurationServlet.MQCaptureQueue);
+			Queue queue = new Queue(ConfigurationServlet.captureQueue);
 			admin.declareQueue(queue);
 			
 			for(int i = 0 ; i < ConfigurationServlet.numCaptureListener ; i ++ )
 			{
 				SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 				container.setConnectionFactory(connectionFactory);
-				container.setQueueNames(ConfigurationServlet.MQCaptureQueue);
+				container.setQueueNames(ConfigurationServlet.captureQueue);
 				CaptureMQListener listener = new CaptureMQListener();
 				container.setMessageListener(listener);
 				container.start();

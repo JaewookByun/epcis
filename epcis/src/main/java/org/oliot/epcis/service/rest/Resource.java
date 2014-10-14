@@ -29,8 +29,6 @@ import com.mongodb.DBObject;
  * EPCglobal.
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
- * 네
- * 
  * @author Jack Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
@@ -147,8 +145,6 @@ public class Resource {
 				}
 			}
 		}
-		
-		
 		
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
