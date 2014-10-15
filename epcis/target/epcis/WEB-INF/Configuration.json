@@ -15,7 +15,7 @@
 	"message_queue_capture_listener" : "5",
 	
 	"_message_queue_exchange_query" : "[exchange_name of query interface]",
-	"message_queue_exchange_query" : "epcis_query"
+	"message_queue_exchange_query" : "epcis_query",
 	
 	
 	"_rest_message_queue" : "(on|off) - should have message_queue_exchange_capture and message_queue_exchange_query if on",
