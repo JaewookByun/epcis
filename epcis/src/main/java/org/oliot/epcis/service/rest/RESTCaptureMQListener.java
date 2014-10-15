@@ -54,37 +54,37 @@ public class RESTCaptureMQListener implements MessageListener {
 			}
 
 			// Process time
-
-			String eventTime = jsonObject.getString("eventTime");
-			String finishTime = jsonObject.getString("finishTime");
-
-			if (eventTime == null) {
+			if (jsonObject.isNull("eventTime") == true) {
 				long time = new GregorianCalendar().getTimeInMillis();
 				jsonObject.put("eventTime", time);
 				jsonObject.put("finishTime", time);
-			} else if (eventTime != null && finishTime == null) {
-				Long eventLong = Long.parseLong(eventTime);
-				jsonObject.put("eventTime", eventLong.longValue());
-				jsonObject.put("finishTime", eventLong.longValue());
-			} else if (eventTime != null && finishTime != null) {
-				Long eventLong = Long.parseLong(eventTime);
-				Long finishLong = Long.parseLong(finishTime);
-				if (eventLong > finishLong) {
+			} else if (jsonObject.isNull("eventTime") == false && jsonObject.isNull("finishTime") == true) {
+				Long eventTime = jsonObject.getLong("eventTime");
+				jsonObject.put("eventTime", eventTime.longValue());
+				jsonObject.put("finishTime", eventTime.longValue());
+			} else if (jsonObject.isNull("eventTime") == false && jsonObject.isNull("finishTime") == false ) {
+				
+				Long eventTime = jsonObject.getLong("eventTime");
+				Long finishTime = jsonObject.getLong("finishTime");
+				
+				if (eventTime > finishTime) {
 					ConfigurationServlet.logger
 							.error("eventTime should be larger than finishTime");
 					return;
 				}
-				jsonObject.put("eventTime", eventLong.longValue());
-				jsonObject.put("finishTime", finishLong.longValue());
+				jsonObject.put("eventTime", eventTime.longValue());
+				jsonObject.put("finishTime", finishTime.longValue());
 			}
 			ApplicationContext ctx = new GenericXmlApplicationContext(
 					"classpath:MongoConfig.xml");
 			MongoOperations mongoOperation = (MongoOperations) ctx
 					.getBean("mongoTemplate");
 
+			//DBCollection collection = mongoOperation.getCollection("Context");
 			DBCollection collection = mongoOperation.getCollection("Context");
 			DBObject dbObject = (DBObject) JSON.parse(jsonObject.toString());
 			collection.insert(dbObject);
+			System.out.println(dbObject.toString() + " saved ");
 			((AbstractApplicationContext) ctx).close();
 
 		} catch (UnsupportedEncodingException e) {
