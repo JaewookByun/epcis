@@ -8,7 +8,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.json.JSONArray;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -112,7 +112,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String maxEventCount,
 			Map<String, String[]> extMap) {
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.subscribe(queryName, subscriptionID, dest,
 					cronExpression, reportIfEmpty, eventType, GE_eventTime,
@@ -125,9 +125,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
 					orderBy, orderDirection, eventCountLimit, maxEventCount,
 					extMap);
-		} else if (ConfigurationServlet.backend.equals("Cassandra")) {
+		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
-		} else if (ConfigurationServlet.backend.equals("MySQL")) {
+		} else if (Configuration.backend.equals("MySQL")) {
 			return null;
 		}
 
@@ -141,12 +141,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	public void unsubscribe(@PathVariable String subscriptionID) {
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			mongoQueryService.unsubscribe(subscriptionID);
-		} else if (ConfigurationServlet.backend.equals("Cassandra")) {
+		} else if (Configuration.backend.equals("Cassandra")) {
 
-		} else if (ConfigurationServlet.backend.equals("MySQL")) {
+		} else if (Configuration.backend.equals("MySQL")) {
 
 		}
 
@@ -160,12 +160,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@ResponseBody
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.getSubscriptionIDsREST(queryName);
-		} else if (ConfigurationServlet.backend.equals("Cassandra")) {
+		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
-		} else if (ConfigurationServlet.backend.equals("MySQL")) {
+		} else if (Configuration.backend.equals("MySQL")) {
 			return null;
 		}
 
@@ -217,7 +217,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String maxElementCount,
 			Map<String, String[]> extMap) {
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.poll(queryName, eventType, GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
@@ -231,9 +231,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 					vocabularyName, includeAttributes, includeChildren,
 					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
 					extMap);
-		} else if (ConfigurationServlet.backend.equals("Cassandra")) {
+		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
-		} else if (ConfigurationServlet.backend.equals("MySQL")) {
+		} else if (Configuration.backend.equals("MySQL")) {
 			return null;
 		}
 

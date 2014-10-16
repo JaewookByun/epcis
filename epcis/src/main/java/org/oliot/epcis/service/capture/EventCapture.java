@@ -19,7 +19,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.DocumentIdentification;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.StandardBusinessDocumentHeader;
@@ -63,12 +63,12 @@ public class EventCapture implements ServletContextAware {
 
 		try {
 
-			ConfigurationServlet.logger
+			Configuration.logger
 					.info(" EPCIS Document Capture Started.... ");
 
 			// Get Input Stream
 			InputStream is = request.getInputStream();
-			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
+			if (Configuration.isCaptureVerfificationOn == true) {
 				String isString = getInputStream(is);
 
 				InputStream validateStream = getXMLDocumentInputStream(isString);
@@ -83,7 +83,7 @@ public class EventCapture implements ServletContextAware {
 				}
 
 				InputStream epcisStream = getXMLDocumentInputStream(isString);
-				ConfigurationServlet.logger
+				Configuration.logger
 						.info(" EPCIS Document : Validated ");
 				EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
 						EPCISDocumentType.class);
@@ -96,14 +96,14 @@ public class EventCapture implements ServletContextAware {
 						StandardBusinessDocumentHeader header = epcisDocument.getEPCISHeader().getStandardBusinessDocumentHeader();
 						if( header.getHeaderVersion() == null || !header.getHeaderVersion().equals("1.1"))
 						{
-							ConfigurationServlet.logger
+							Configuration.logger
 							.error(" HeaderVersion should 1.1 if use SBDH ");
 							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 							return;
 						}
 						if( header.getDocumentIdentification() == null )
 						{
-							ConfigurationServlet.logger
+							Configuration.logger
 							.error(" DocumentIdentification should exist if use SBDH ");
 							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 							return;
@@ -112,21 +112,21 @@ public class EventCapture implements ServletContextAware {
 							DocumentIdentification docID = header.getDocumentIdentification();
 							if( docID.getStandard() == null | !docID.getStandard().equals("EPCglobal") )
 							{
-								ConfigurationServlet.logger
+								Configuration.logger
 								.error(" DocumentIdentification/Standard should EPCglobal if use SBDH ");
 								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 								return;
 							}
 							if( docID.getType() == null || (!docID.getType().equals("Events") && !docID.getType().equals("MasterData")) )
 							{
-								ConfigurationServlet.logger
+								Configuration.logger
 								.error(" DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH ");
 								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 								return;
 							}
 							if( docID.getTypeVersion() == null | !docID.getTypeVersion().equals("1.1"))
 							{
-								ConfigurationServlet.logger
+								Configuration.logger
 								.error(" DocumentIdentification/TypeVersion should 1.1 if use SBDH ");
 								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 								return;
@@ -138,19 +138,19 @@ public class EventCapture implements ServletContextAware {
 				
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisDocument);
-				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
+				Configuration.logger.info(" EPCIS Document : Captured ");
 				response.setStatus(HttpServletResponse.SC_ACCEPTED);
 			} else {
 				EPCISDocumentType epcisDocument = JAXB.unmarshal(is,
 						EPCISDocumentType.class);
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisDocument);
-				ConfigurationServlet.logger.info(" EPCIS Document : Captured ");
+				Configuration.logger.info(" EPCIS Document : Captured ");
 				response.setStatus(HttpServletResponse.SC_ACCEPTED);
 			}
 
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 	}
@@ -192,10 +192,10 @@ public class EventCapture implements ServletContextAware {
 			validator.validate(xmlSource);
 			return true;
 		} catch (SAXException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		}
 	}

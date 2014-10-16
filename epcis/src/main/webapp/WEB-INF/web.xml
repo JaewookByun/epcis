@@ -5,30 +5,25 @@
 <web-app>
 	<display-name>Oliot EPCIS 1.1</display-name>
 
+
+	<!-- CXF -->
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/beans.xml</param-value>
 	</context-param>
 
 	<listener>
-      <listener-class>
-         org.springframework.web.context.ContextLoaderListener
-      </listener-class>
-   </listener>
-   
+		<listener-class>
+			org.springframework.web.context.ContextLoaderListener
+		</listener-class>
+	</listener>
+
+	<!-- Web Service Initialization , Configuration, Termination -->
 	<listener>
-      <listener-class>
-         org.oliot.epcis.configuration.EPCISContextListener
-      </listener-class>
-   </listener>
-	
-	<servlet>
-		<servlet-name>ConfigurationServlet</servlet-name>
-		<display-name>ConfigurationServlet</display-name>
-		<description></description>
-		<servlet-class>org.oliot.epcis.configuration.ConfigurationServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
+		<listener-class>
+			org.oliot.epcis.configuration.Configuration
+		</listener-class>
+	</listener>
 
 	<!-- CXF Web Service -->
 	<servlet>
@@ -49,45 +44,15 @@
 			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
 	</servlet>
 
-	<servlet>
-		<servlet-name>SubscriptionServlet</servlet-name>
-		<display-name>SubscriptionServlet</display-name>
-		<description></description>
-		<servlet-class>org.oliot.epcis.service.query.SubscriptionServlet</servlet-class>
-		<load-on-startup>3</load-on-startup>
-	</servlet>
-	<servlet>
-		<servlet-name>MessageQueueServlet</servlet-name>
-		<display-name>MessageQueueServlet</display-name>
-		<description></description>
-		<servlet-class>org.oliot.epcis.service.capture.CaptureMQServlet</servlet-class>
-		<load-on-startup>2</load-on-startup>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>ConfigurationServlet</servlet-name>
-		<url-pattern>/configuration</url-pattern>
-	</servlet-mapping>
-
 	<!-- CXF Web Service -->
 	<servlet-mapping>
 		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/webservice/*</url-pattern>
 	</servlet-mapping>
 
-
 	<!-- Spring Framework MVC -->
-
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
 		<url-pattern>/Service/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>SubscriptionServlet</servlet-name>
-		<url-pattern>/SubscriptionServlet</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>MessageQueueServlet</servlet-name>
-		<url-pattern>/MessageQueueServlet</url-pattern>
 	</servlet-mapping>
 </web-app>

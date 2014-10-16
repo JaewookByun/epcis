@@ -16,7 +16,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -443,9 +443,9 @@ public class TransactionEventReadConverter implements
 			}
 			return transactionEventType;
 		} catch (DatatypeConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		} catch (ParserConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return null;
 	}
