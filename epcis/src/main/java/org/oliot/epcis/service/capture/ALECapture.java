@@ -364,6 +364,7 @@ public class ALECapture implements ServletContextAware {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private ObjectEventType makeBaseObjectEvent(ECReports ecReports,
 			HttpServletRequest request) {
 
@@ -387,14 +388,21 @@ public class ALECapture implements ServletContextAware {
 			String bizLocation = request.getParameter("bizLocation");
 
 			XMLGregorianCalendar eventTime = getEventTime(ecReports);
-
+			
+			String eventTimeZoneOffset = null;
+			
+			if(eventTime.getTimezone() == -2147483648)
+			{
+				GregorianCalendar cal = new GregorianCalendar();
+				eventTimeZoneOffset = makeTimeZoneString(cal.getTime().getTimezoneOffset());			
+			}else{
+				eventTimeZoneOffset = makeTimeZoneString(eventTime.getTimezone());
+			}
+			
 			GregorianCalendar recordCalendar = new GregorianCalendar();
 			DatatypeFactory df = DatatypeFactory.newInstance();
 			XMLGregorianCalendar recordTime = df
 					.newXMLGregorianCalendar(recordCalendar);
-
-			String eventTimeZoneOffset = String
-					.valueOf(eventTime.getTimezone());
 
 			// Null Reports Check
 			boolean isNull = isReportNull(ecReports);

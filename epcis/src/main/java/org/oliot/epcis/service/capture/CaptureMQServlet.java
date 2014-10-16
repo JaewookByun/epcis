@@ -1,6 +1,8 @@
 package org.oliot.epcis.service.capture;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,14 +20,16 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 /**
  * Servlet implementation class MessageQueueServlet
  */
-public class CaptureMQServlet extends HttpServlet {
+public class CaptureMQServlet extends HttpServlet{
 	private static final long serialVersionUID = 1L;
-
+	public static List<SimpleMessageListenerContainer> MQContainerList;
+	
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
 	public CaptureMQServlet() {
 		super();
+		MQContainerList = new ArrayList<SimpleMessageListenerContainer>();
 	}
 
 	/**
@@ -76,9 +80,12 @@ public class CaptureMQServlet extends HttpServlet {
 				CaptureMQListener listener = new CaptureMQListener();
 				container.setMessageListener(listener);
 				container.start();
+				MQContainerList.add(container);
 				ConfigurationServlet.logger
 				.info("Message Queue Service - Capture Listener " + (i+1) + " started");
 			}
+			
 		}
 	}
+
 }

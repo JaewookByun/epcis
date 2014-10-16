@@ -118,7 +118,8 @@
 					include specified list of names <br> (EQ|WD)_name : Comma
 					separated attribute names <br> HASATTR : Comma separated
 					attribute names <br> maxElementCount : yield error if # of
-					events exceeds specified number
+					events exceeds specified number<br> <br>e.g.<a
+					href="http://{base-url}:{base-port}/epcis/Service/query/Poll/SimpleEventQuery?MATCH_EPC=urn:epc:id:sgtin:1.1.1">Link</a>
 				</td>
 			</tr>
 			<tr>
@@ -138,7 +139,9 @@
 					<br> Additional Parameters: <br> dest : Callback URL <br>
 					cronExpression : <a
 					href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
-						CronTrigger Tutorial</a> <br>
+						CronTrigger Tutorial</a> <br> <br>e.g. <a
+					href="http://{base-url}:{base-port}/epcis/Service/query/Subscribe/SimpleEventQuery/3?MATCH_EPC=urn:epc:id:sgtin:1.1.1&cronExpression=0/10
+					* * * * ?&dest=http://localhost:8888/epcis/SubscriptionServlet">Link</a>
 				</td>
 			</tr>
 			<tr>

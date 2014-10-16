@@ -2,7 +2,8 @@
 <!DOCTYPE ECReports>
 <ns2:ECReports terminationCondition="WhenDataAvailable"
 	totalMilliseconds="4972" ALEID="ETHZ-ALE2028272805" date="2014-08-11T19:57:59.717+09:00"
-	specName="test" xmlns:ns2="urn:epcglobal:ale:xsd:1">
+	specName="test" xmlns:ns2="urn:epcglobal:ale:xsd:1" schemaVersion="1.1"
+	creationDate="2001-12-31T12:00:00">
 	<reports>
 		<report reportName="report1">
 			<group>
