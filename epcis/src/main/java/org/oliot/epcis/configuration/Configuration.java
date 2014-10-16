@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.capture.CaptureMQListener;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
-import org.quartz.SchedulerException;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -61,18 +60,7 @@ public class Configuration implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-		try {
-			if (MongoSubscription.sched.isStarted()) {
-				MongoSubscription.sched.shutdown();
-			}
-
-			for (int i = 0; i < MQContainerList.size(); i++) {
-				MQContainerList.get(i).destroy();
-			}
-
-		} catch (SchedulerException e) {
-			e.printStackTrace();
-		}
+	
 	}
 
 	@Override
