@@ -15,7 +15,7 @@ import java.util.List;
 
 import javax.xml.bind.JAXBElement;
 
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
@@ -56,13 +56,13 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
 		// Mandatory Field: Action
 		if (event.getAction() == null) {
-			ConfigurationServlet.logger
+			Configuration.logger
 					.error("Aggregation Event should have 'Action' field ");
 			return;
 		}
@@ -70,7 +70,7 @@ public class CaptureService implements CoreCaptureService {
 		if (event.getAction() == ActionType.ADD
 				|| event.getAction() == ActionType.DELETE) {
 			if (event.getParentID() == null) {
-				ConfigurationServlet.logger.error("Req. M13 Error");
+				Configuration.logger.error("Req. M13 Error");
 				return;
 			}
 		}
@@ -79,12 +79,12 @@ public class CaptureService implements CoreCaptureService {
 		if (parentID != null) {
 
 			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
-				ConfigurationServlet.logger.error("Req. M10 Error");
+				Configuration.logger.error("Req. M10 Error");
 				return;
 			}
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -96,11 +96,11 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -112,11 +112,11 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -128,7 +128,7 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
@@ -137,12 +137,12 @@ public class CaptureService implements CoreCaptureService {
 		if (parentID != null) {
 
 			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
-				ConfigurationServlet.logger.error("Req. M14 Error");
+				Configuration.logger.error("Req. M14 Error");
 				return;
 			}
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -154,11 +154,11 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -170,11 +170,11 @@ public class CaptureService implements CoreCaptureService {
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
 		if (!isCorrectTimeZone(timeZone)) {
-			ConfigurationServlet.logger.error("Req. M7 Error");
+			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
@@ -182,7 +182,7 @@ public class CaptureService implements CoreCaptureService {
 
 	public void capture(VocabularyType vocabulary) {
 
-		if (ConfigurationServlet.backend.equals("MongoDB")) {
+		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(vocabulary);
 		}
@@ -193,11 +193,11 @@ public class CaptureService implements CoreCaptureService {
 	@Override
 	public void capture(EPCISDocumentType epcisDocument) {
 		if (epcisDocument.getEPCISBody() == null) {
-			ConfigurationServlet.logger.info(" There is no DocumentBody ");
+			Configuration.logger.info(" There is no DocumentBody ");
 			return;
 		}
 		if (epcisDocument.getEPCISBody().getEventList() == null) {
-			ConfigurationServlet.logger.info(" There is no EventList ");
+			Configuration.logger.info(" There is no EventList ");
 			return;
 		}
 		EventListType eventListType = epcisDocument.getEPCISBody()
@@ -243,12 +243,12 @@ public class CaptureService implements CoreCaptureService {
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
 
 		if (epcisMasterDataDocument.getEPCISBody() == null) {
-			ConfigurationServlet.logger.info(" There is no DocumentBody ");
+			Configuration.logger.info(" There is no DocumentBody ");
 			return;
 		}
 
 		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
-			ConfigurationServlet.logger.info(" There is no Vocabulary List ");
+			Configuration.logger.info(" There is no Vocabulary List ");
 			return;
 		}
 

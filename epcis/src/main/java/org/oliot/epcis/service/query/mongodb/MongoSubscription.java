@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -57,7 +57,7 @@ public class MongoSubscription {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		ConfigurationServlet.logger.log(Level.WARN,
+		Configuration.logger.log(Level.WARN,
 				"SubscriptionServlet.doGet do nothing");
 	}
 
@@ -67,7 +67,7 @@ public class MongoSubscription {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		ConfigurationServlet.logger.log(Level.WARN,
+		Configuration.logger.log(Level.WARN,
 				"SubscriptionServlet.doPost do nothing");
 
 		// Test DoPost for the callback result
@@ -94,7 +94,7 @@ public class MongoSubscription {
 			List<SubscriptionType> allSubscription = mongoOperation
 					.findAll(SubscriptionType.class);
 			MongoQueryService queryService = new MongoQueryService();
-			ConfigurationServlet.logger.log(Level.INFO,
+			Configuration.logger.log(Level.INFO,
 					"Loading pre-existing subscription");
 			for (int i = 0; i < allSubscription.size(); i++) {
 				SubscriptionType subscription = allSubscription.get(i);
@@ -102,7 +102,7 @@ public class MongoSubscription {
 			}
 			((AbstractApplicationContext) ctx).close();
 		} catch (SchedulerException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 
 	}

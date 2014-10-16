@@ -6,7 +6,7 @@
 	"capture_verification" : "on",
 	
 	"_message_queue" : "(on|off) - should have message_queue_exchange_capture and message_queue_exchange_query if on",
-	"message_queue" : "off",
+	"message_queue" : "on",
 	
 	"_message_queue_capture_name" : "[name of capture queue]",
 	"message_queue_capture_name" : "epcis_capture",

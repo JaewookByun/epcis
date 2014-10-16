@@ -12,7 +12,7 @@ import java.util.Map;
 import javax.xml.bind.JAXB;
 
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
 import org.oliot.model.epcis.QueryResults;
@@ -152,9 +152,9 @@ public class MongoSubscriptionTask implements Job {
 			System.out.println(x);
 			conn.disconnect();
 		} catch (MalformedURLException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 
 	}

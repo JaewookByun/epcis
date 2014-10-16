@@ -28,7 +28,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.ale.ECReport;
 import org.oliot.model.ale.ECReportGroup;
 import org.oliot.model.ale.ECReportGroupList;
@@ -84,7 +84,7 @@ public class ALECapture implements ServletContextAware {
 	public void post(HttpServletRequest request, HttpServletResponse response) {
 
 		try {
-			ConfigurationServlet.logger.info(" ECReport Capture Started.... ");
+			Configuration.logger.info(" ECReport Capture Started.... ");
 			// Identifying what the event type is
 			String eventType = request.getParameter("eventType");
 			// Default Event Type
@@ -95,7 +95,7 @@ public class ALECapture implements ServletContextAware {
 			InputStream is = request.getInputStream();
 			ECReports ecReports;
 
-			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
+			if (Configuration.isCaptureVerfificationOn == true) {
 				String xmlDocumentString = getXMLDocumentString(is);
 				InputStream validateStream = getXMLDocumentInputStream(xmlDocumentString);
 				// Parsing and Validating data
@@ -103,13 +103,13 @@ public class ALECapture implements ServletContextAware {
 				xsdPath += "/EPCglobal-ale-1_1-ale.xsd";
 				boolean isValidated = validate(validateStream, xsdPath);
 				if (isValidated == false) {
-					ConfigurationServlet.logger
+					Configuration.logger
 							.info(" ECReport : Verification Failed ");
 					return;
 				}
 
 				InputStream ecReportStream = getXMLDocumentInputStream(xmlDocumentString);
-				ConfigurationServlet.logger.info(" ECReport : Validated ");
+				Configuration.logger.info(" ECReport : Validated ");
 				ecReports = JAXB.unmarshal(ecReportStream, ECReports.class);
 			} else {
 				ecReports = JAXB.unmarshal(is, ECReports.class);
@@ -142,7 +142,7 @@ public class ALECapture implements ServletContextAware {
 				}
 			}
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -284,7 +284,7 @@ public class ALECapture implements ServletContextAware {
 			}
 			return set;
 		} catch (DatatypeConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return null;
 		}
 	}
@@ -359,7 +359,7 @@ public class ALECapture implements ServletContextAware {
 			}
 			return oetList;
 		} catch (ParserConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return null;
 		}
 	}
@@ -435,7 +435,7 @@ public class ALECapture implements ServletContextAware {
 			}
 			return oet;
 		} catch (DatatypeConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return null;
 		}
 	}
@@ -451,10 +451,10 @@ public class ALECapture implements ServletContextAware {
 			validator.validate(xmlSource);
 			return true;
 		} catch (SAXException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		}
 	}

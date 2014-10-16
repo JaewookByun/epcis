@@ -19,7 +19,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -60,12 +60,12 @@ public class VocabularyCapture implements ServletContextAware {
 
 		try {
 
-			ConfigurationServlet.logger
+			Configuration.logger
 					.info(" EPCIS Masterdata Document Capture Started.... ");
 
 			// Get Input Stream
 			InputStream is = request.getInputStream();
-			if (ConfigurationServlet.isCaptureVerfificationOn == true) {
+			if (Configuration.isCaptureVerfificationOn == true) {
 				String isString = getInputStream(is);
 
 				InputStream validateStream = getXMLDocumentInputStream(isString);
@@ -78,24 +78,24 @@ public class VocabularyCapture implements ServletContextAware {
 				}
 
 				InputStream epcisStream = getXMLDocumentInputStream(isString);
-				ConfigurationServlet.logger
+				Configuration.logger
 						.info(" EPCIS Masterdata Document : Validated ");
 				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
 						EPCISMasterDataDocumentType.class);
 
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisMasterDataDocument);
-				ConfigurationServlet.logger.info(" EPCIS Masterdata Document : Captured ");
+				Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 			} else {
 				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(is,
 						EPCISMasterDataDocumentType.class);
 				CaptureService cs = new CaptureService();
 				cs.capture(epcisMasterDataDocument);
-				ConfigurationServlet.logger.info(" EPCIS Masterdata Document : Captured ");
+				Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 			}
 
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -136,10 +136,10 @@ public class VocabularyCapture implements ServletContextAware {
 			validator.validate(xmlSource);
 			return true;
 		} catch (SAXException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (IOException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		}
 	}

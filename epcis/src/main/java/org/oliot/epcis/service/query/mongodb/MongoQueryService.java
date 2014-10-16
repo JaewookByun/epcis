@@ -26,7 +26,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Level;
 import org.json.JSONArray;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
@@ -1257,7 +1257,7 @@ public class MongoQueryService {
 				int eventCount = Integer.parseInt(eventCountLimit);
 				query.limit(eventCount);
 			} catch (NumberFormatException nfe) {
-				ConfigurationServlet.logger.log(Level.ERROR, nfe.toString());
+				Configuration.logger.log(Level.ERROR, nfe.toString());
 			}
 		}
 
@@ -2105,7 +2105,7 @@ public class MongoQueryService {
 			}
 
 		} catch (ParseException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return criteriaList;
 	}
@@ -2231,11 +2231,11 @@ public class MongoQueryService {
 			if (MongoSubscription.sched.isStarted() != true)
 				MongoSubscription.sched.start();
 			MongoSubscription.sched.scheduleJob(job, trigger);
-			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+			Configuration.logger.log(Level.INFO, "Subscription ID: "
 					+ subscription.getSubscriptionID()
 					+ " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -2342,10 +2342,10 @@ public class MongoQueryService {
 				MongoSubscription.sched.start();
 			MongoSubscription.sched.scheduleJob(job, trigger);
 
-			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+			Configuration.logger.log(Level.INFO, "Subscription ID: "
 					+ subscriptionID + " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -2388,7 +2388,7 @@ public class MongoQueryService {
 		if (existenceTest.size() == 0)
 			mongoOperation.save(st);
 
-		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+		Configuration.logger.log(Level.INFO, "Subscription ID: "
 				+ subscriptionID + " is added to DB. ");
 		((AbstractApplicationContext) ctx).close();
 		return true;
@@ -2402,10 +2402,10 @@ public class MongoQueryService {
 			MongoSubscription.sched.deleteJob(jobKey(
 					subscription.getSubscriptionID(),
 					subscription.getQueryName()));
-			ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+			Configuration.logger.log(Level.INFO, "Subscription ID: "
 					+ subscription + " is removed from scheduler");
 		} catch (SchedulerException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
@@ -2415,7 +2415,7 @@ public class MongoQueryService {
 				new Query(Criteria.where("subscriptionID").is(
 						subscription.getSubscriptionID())),
 				SubscriptionType.class);
-		ConfigurationServlet.logger.log(Level.INFO, "Subscription ID: "
+		Configuration.logger.log(Level.INFO, "Subscription ID: "
 				+ subscription + " is removed from DB");
 	}
 

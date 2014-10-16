@@ -1,6 +1,6 @@
 package org.oliot.epcis.service.capture.mongodb;
 
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
@@ -22,7 +22,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	
@@ -33,7 +33,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	
@@ -44,7 +44,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	
@@ -55,7 +55,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	public void capture(TransformationEventType event)
@@ -65,7 +65,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	public void capture(SensorEventType event)
@@ -75,7 +75,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(event);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 	
@@ -86,7 +86,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(vocabulary);
-		ConfigurationServlet.logger.info(" Event Saved ");
+		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 }

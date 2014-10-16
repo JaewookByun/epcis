@@ -12,7 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
-import org.oliot.epcis.configuration.ConfigurationServlet;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.IDListType;
 import org.oliot.model.epcis.VocabularyElementListType;
@@ -226,7 +226,7 @@ public class MasterDataReadConverter implements
 			}
 			return vt;
 		} catch (ParserConfigurationException e) {
-			ConfigurationServlet.logger.log(Level.ERROR, e.toString());
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return null;
 	}
