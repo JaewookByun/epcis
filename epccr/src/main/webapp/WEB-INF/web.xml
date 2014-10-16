@@ -1,0 +1,42 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+	<display-name>Oliot EPCCR 1.0</display-name>
+
+	<servlet>
+		<servlet-name>ConfigurationServlet</servlet-name>
+		<display-name>ConfigurationServlet</display-name>
+		<description></description>
+		<servlet-class>org.oliot.epcis.configuration.ConfigurationServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<!-- Spring Framework MVC -->
+	<servlet>
+		<servlet-name>dispatcher</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<!-- <init-param> <param-name>contextConfigLocation</param-name> <param-value> 
+			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
+	</servlet>
+
+	<servlet>
+		<servlet-name>RESTMQServlet</servlet-name>
+		<display-name>RESTMQServlet</display-name>
+		<description></description>
+		<servlet-class>org.oliot.epcis.service.rest.RESTMQServlet</servlet-class>
+		<load-on-startup>2</load-on-startup>
+	</servlet>
+
+	<!-- Spring Framework MVC -->
+
+	<servlet-mapping>
+		<servlet-name>dispatcher</servlet-name>
+		<url-pattern>/Service/*</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>RESTMQServlet</servlet-name>
+		<url-pattern>/RESTMQServlet</url-pattern>
+	</servlet-mapping>
+</web-app>
