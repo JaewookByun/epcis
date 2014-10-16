@@ -41,8 +41,8 @@ import org.springframework.data.mongodb.core.MongoOperations;
  */
 public class MongoSubscription {
 	
-	static SchedulerFactory schedFact;
-	static Scheduler sched;
+	public static SchedulerFactory schedFact;
+	public static Scheduler sched;
 
 	/**
 	 * @see HttpServlet#HttpServlet()

@@ -156,40 +156,6 @@ public class ConfigurationServlet extends HttpServlet {
 				ConfigurationServlet.logger
 						.error("if message_queue on, query exchange should be described, please make sure Configuration.json is correct, and restart.");
 			}
-
-			// Set up REST Message Queue
-			String rest_message_queue = json.getString("rest_message_queue");
-			if (rest_message_queue.equals("on")) {
-				ConfigurationServlet.isRestMessageQueueOn = true;
-				ConfigurationServlet.logger.info("REST Message Queue - ON ");
-			} else if (rest_message_queue.equals("off")) {
-				ConfigurationServlet.isRestMessageQueueOn = false;
-				ConfigurationServlet.logger.info("REST Message Queue - OFF ");
-			} else {
-				ConfigurationServlet.logger
-						.error("rest_message_queue should be (on|off), please make sure Configuration.json is correct, and restart.");
-			}
-			String numRestListener = json
-					.getString("rest_message_queue_capture_listener");
-			restCaptureQueue = json.getString("rest_message_queue_capture_name");
-			if (isRestMessageQueueOn == true
-					&& (numRestListener == null || restCaptureQueue == null)) {
-				ConfigurationServlet.logger
-						.error("if rest_message_queue on, number of capture listener should be described, please make sure Configuration.json is correct, and restart.");
-			} else {
-				try {
-					numRestCaptureListener = Integer.parseInt(numRestListener);
-				} catch (NumberFormatException e) {
-					ConfigurationServlet.logger
-							.error("number of rest capture listener should be integer, please make sure Configuration.json is correct, and restart.");
-				}
-			}
-			restQueryExchange = json.getString("rest_message_queue_exchange_query");
-			if (isRestMessageQueueOn == true && restQueryExchange == null) {
-				ConfigurationServlet.logger
-						.error("if rest_message_queue on, query exchange should be described, please make sure Configuration.json is correct, and restart.");
-			}
-
 		} catch (Exception ex) {
 			ConfigurationServlet.logger.error(ex.toString());
 		}

@@ -78,7 +78,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	public String subscribe(@PathVariable String queryName,
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
-			@RequestParam boolean reportIfEmpty,
+			@RequestParam(required = false) boolean reportIfEmpty,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
 			@RequestParam(required = false) String LT_eventTime,

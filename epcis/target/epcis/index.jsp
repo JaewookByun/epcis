@@ -18,10 +18,6 @@
 				<td>REST-Like Web Service</td>
 				<td><a href="./rest-like_service.html">EPCIS v1.1 compatible REST-Like Web Service</a></td>
 			</tr>
-			<tr>
-				<td>REST Web Service</td>
-				<td><a href="./rest_service.html">RESTful Web Service towards Resource Oriented Architecture</a></td>
-			</tr>
 		</tbody>
 	</table>
 </body>
