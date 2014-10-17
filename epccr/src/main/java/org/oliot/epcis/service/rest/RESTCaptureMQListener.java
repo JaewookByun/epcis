@@ -83,7 +83,7 @@ public class RESTCaptureMQListener implements MessageListener {
 			DBCollection collection = mongoOperation.getCollection("Context");
 			DBObject dbObject = (DBObject) JSON.parse(jsonObject.toString());
 			collection.insert(dbObject);
-			System.out.println(dbObject.toString() + " saved ");
+			System.out.println(new GregorianCalendar().getTime().toString() + " saved ");
 			((AbstractApplicationContext) ctx).close();
 
 		} catch (UnsupportedEncodingException e) {
