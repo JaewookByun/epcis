@@ -39,7 +39,7 @@ public class CaptureClientTest {
 		map.put("DummyFloat", 36.132);
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", map);
+		cc.send("urn:epc:id:sgtin:111111111111.1.1", map);
 		cc.close();
 	}
 	
@@ -56,7 +56,7 @@ public class CaptureClientTest {
 		map.put("DummyFloat", 36.132);
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", map);
+		cc.send("urn:epc:id:sgtin:111111111112.1.1", map);
 		cc.close();
 	}
 	
@@ -74,7 +74,7 @@ public class CaptureClientTest {
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
 		GregorianCalendar cal = new GregorianCalendar();
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", cal.getTimeInMillis(), map);
+		cc.send("urn:epc:id:sgtin:111111111113.1.1", cal.getTimeInMillis(), map);
 		cc.close();
 	}
 	
@@ -92,7 +92,7 @@ public class CaptureClientTest {
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
 		GregorianCalendar cal = new GregorianCalendar();
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", cal.getTimeInMillis(), cal.getTimeInMillis()+5, map);
+		cc.send("urn:epc:id:sgtin:111111111114.1.1", cal.getTimeInMillis(), cal.getTimeInMillis()+5, map);
 		cc.close();
 	}
 	
@@ -109,7 +109,7 @@ public class CaptureClientTest {
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
 		GregorianCalendar cal = new GregorianCalendar();
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", cal.getTimeInMillis(), cal.getTimeInMillis()-5, map);
+		cc.send("urn:epc:id:sgtin:111111111115.1.1", cal.getTimeInMillis(), cal.getTimeInMillis()-5, map);
 		cc.close();
 	}
 	
@@ -125,10 +125,10 @@ public class CaptureClientTest {
 		map.put("DummyFloat", 36.132);
 		map.put("DummyLong", 23431223123123l);
 		map.put("DummyString", "hello");
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", map);
+		cc.send("urn:epc:id:sgtin:111111111111.1.1", map);
 		cc.close();
 		cc.reconnect();
-		cc.send("Object", "urn:epc:id:sgtin:111111111111.1.1", map);
+		cc.send("urn:epc:id:sgtin:111111111111.1.1", map);
 		cc.close();		
 	}
 	

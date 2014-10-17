@@ -35,12 +35,14 @@ public class CaptureClient {
 	private Connection conn = null;
 	private Channel channel = null;
 	private String queueName = null;
-		
+
 	/**
-	 * Constructor of Capture Client
-	 * with basic host : 127.0.0.1
-	 * with basic port : 5683
-	 * @param queueName the name of work queue specified in Configuration.json e.g. epcis_capture
+	 * Constructor of Capture Client with basic host : 127.0.0.1 with basic port
+	 * : 5683
+	 * 
+	 * @param queueName
+	 *            the name of work queue specified in Configuration.json e.g.
+	 *            epcis_capture
 	 */
 	public CaptureClient(String queueName) {
 		try {
@@ -59,9 +61,11 @@ public class CaptureClient {
 	}
 
 	/**
-	 * Constructor of Capture Client
-	 * with host and port 
-	 * @param queueName the name of work queue specified in Configuration.json e.g. epcis_capture
+	 * Constructor of Capture Client with host and port
+	 * 
+	 * @param queueName
+	 *            the name of work queue specified in Configuration.json e.g.
+	 *            epcis_capture
 	 */
 	public CaptureClient(String host, int port, String queueName) {
 		try {
@@ -81,172 +85,143 @@ public class CaptureClient {
 
 	/**
 	 * Send MAP data to Message Queue using current time
-	 * @param targetType (Object|Area)
-	 * @param target		EPC
-	 * @param data		Map to send
+	 * 
+	 * @param epc
+	 *            EPC
+	 * @param data
+	 *            Map to send
 	 */
-	public void send(String targetType, String target, Map<String, Object> data) {
-		
+	public void send(String epc, Map<String, Object> data) {
+
 		try {
 			JSONObject jObject = new JSONObject();
-			
-			// Process target type and itself
-			target = target.trim();
-			if( !SimplePureIdentityFilter.isPureIdentity(target) )
-			{
+
+			// Process epc
+			epc = epc.trim();
+			if (!SimplePureIdentityFilter.isPureIdentity(epc)) {
 				return;
+			} else {
+				jObject.put("epc", epc);
 			}
-			
-			if(targetType.equals("Object"))
-			{
-				jObject.put("targetObject", target);
-			}
-			else if(targetType.equals("Area"))
-			{
-				jObject.put("targetArea", target);
-			}
-			else
-			{
-				return;
-			}
-			
+
 			GregorianCalendar cal = new GregorianCalendar();
 			jObject.put("eventTime", cal.getTimeInMillis());
 			jObject.put("finishTime", cal.getTimeInMillis());
-			
+
 			Iterator<String> iter = data.keySet().iterator();
-			while(iter.hasNext())
-			{
+			while (iter.hasNext()) {
 				String key = iter.next();
 				jObject.put(key, data.get(key));
 			}
-			channel.basicPublish("", queueName, null, jObject.toString().getBytes());
+			channel.basicPublish("", queueName, null, jObject.toString()
+					.getBytes());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
 	/**
 	 * Send MAP data to Message Queue with specified time
-	 * @param targetType	(Object|Area)
-	 * @param target		EPC
-	 * @param eventTime	time when event occurred
-	 * @param data		Map to send
+	 * 
+	 * @param epc
+	 *            EPC
+	 * @param eventTime
+	 *            time when event occurred
+	 * @param data
+	 *            Map to send
 	 */
-	public void send(String targetType, String target, long eventTime, Map<String, Object> data) {
-		
+	public void send(String epc, long eventTime, Map<String, Object> data) {
+
 		try {
 			JSONObject jObject = new JSONObject();
-			
-			// Process target type and itself
-			target = target.trim();
-			if( !SimplePureIdentityFilter.isPureIdentity(target) )
-			{
+
+			// Process epc
+			epc = epc.trim();
+			if (!SimplePureIdentityFilter.isPureIdentity(epc)) {
 				return;
+			} else {
+				jObject.put("epc", epc);
 			}
-			
-			if(targetType.equals("Object"))
-			{
-				jObject.put("targetObject", target);
-			}
-			else if(targetType.equals("Area"))
-			{
-				jObject.put("targetArea", target);
-			}
-			else
-			{
-				return;
-			}
-			
-			jObject.put("eventTime", eventTime);		
-			jObject.put("finishTime", eventTime);		
-			
+
+			jObject.put("eventTime", eventTime);
+			jObject.put("finishTime", eventTime);
+
 			Iterator<String> iter = data.keySet().iterator();
-			while(iter.hasNext())
-			{
+			while (iter.hasNext()) {
 				String key = iter.next();
 				jObject.put(key, data.get(key));
 			}
-			channel.basicPublish("", queueName, null, jObject.toString().getBytes());
+			channel.basicPublish("", queueName, null, jObject.toString()
+					.getBytes());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Send MAP data to Message Queue with specified time range
-	 * @param targetType		(Object|Area)
-	 * @param target			EPC
-	 * @param eventTime		time when event occurred
-	 * @param finishTime		time when event finished
-	 * @param data			Map to send
+	 * 
+	 * @param targetType
+	 *            (Object|Area)
+	 * @param target
+	 *            EPC
+	 * @param eventTime
+	 *            time when event occurred
+	 * @param finishTime
+	 *            time when event finished
+	 * @param data
+	 *            Map to send
 	 */
-	public void send(String targetType, String target, long eventTime, long finishTime, Map<String, Object> data) {
-		
+	public void send(String epc, long eventTime, long finishTime,
+			Map<String, Object> data) {
+
 		try {
-			
-			if( eventTime > finishTime )
-			{
+
+			if (eventTime > finishTime) {
 				return;
 			}
-			
+
 			JSONObject jObject = new JSONObject();
-			
-			// Process target type and itself
-			target = target.trim();
-			if( !SimplePureIdentityFilter.isPureIdentity(target) )
-			{
+
+			// Process epc
+			epc = epc.trim();
+			if (!SimplePureIdentityFilter.isPureIdentity(epc)) {
 				return;
+			} else {
+				jObject.put("epc", epc);
 			}
-			
-			if(targetType.equals("Object"))
-			{
-				jObject.put("targetObject", target);
-			}
-			else if(targetType.equals("Area"))
-			{
-				jObject.put("targetArea", target);
-			}
-			else
-			{
-				return;
-			}
-			
-			jObject.put("eventTime", eventTime);		
-			jObject.put("finishTime", finishTime);		
-			
+
+			jObject.put("eventTime", eventTime);
+			jObject.put("finishTime", finishTime);
+
 			Iterator<String> iter = data.keySet().iterator();
-			while(iter.hasNext())
-			{
+			while (iter.hasNext()) {
 				String key = iter.next();
 				jObject.put(key, data.get(key));
 			}
-			channel.basicPublish("", queueName, null, jObject.toString().getBytes());
+			channel.basicPublish("", queueName, null, jObject.toString()
+					.getBytes());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Reconnect to message queue with previous setting
 	 */
-	public void reconnect()
-	{
+	public void reconnect() {
 		try {
 			conn = factory.newConnection();
 			channel = conn.createChannel();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
-	 * Close channel and connection of message queue
-	 * Reconnectable with reconnect() method
+	 * Close channel and connection of message queue Reconnectable with
+	 * reconnect() method
 	 */
 	public void close() {
 		try {

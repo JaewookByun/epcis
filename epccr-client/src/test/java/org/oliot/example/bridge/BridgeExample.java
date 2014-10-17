@@ -78,7 +78,7 @@ public class BridgeExample {
 					map.put("YJ-3A-DSG-04", v4);
 					map.put("YJ-3A-DSG-03", v5);
 					map.put("YJ-3A-DSG-02", v6);
-					cc.send("Object", "urn:epc:id:sgtin:111111111112.1.1", map);
+					cc.send("urn:epc:id:sgtin:111111111112.1.1", map);
 					System.out.println(new GregorianCalendar().getTime().toString() + " published ");
 					pTime = 0;
 				}	
@@ -149,7 +149,7 @@ public class BridgeExample {
 					{
 						map.put(""+i, stringArr[i]);
 					}
-					cc.send("Object", "urn:epc:id:sgtin:111111111113.1.1", map);
+					cc.send("urn:epc:id:sgtin:111111111113.1.1", map);
 					System.out.println(new GregorianCalendar().getTime().toString() + " published ");
 					pTime = 0;
 				}	
