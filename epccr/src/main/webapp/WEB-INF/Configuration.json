@@ -2,6 +2,9 @@
 	"_backend" : "Backend Database : (MongoDB|...|...)",
 	"backend" : "MongoDB",
 	
+	"_mongo_capped_size" : "size of capped collection of each resource in bytes",
+	"capped_size" : "52428800",
+	
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "off",
 	
@@ -12,9 +15,5 @@
 	"rest_message_queue_capture_name" : "rest_capture",
 	
 	"_rest_message_queue_capture_listener" : "[number of capture listener]",
-	"rest_message_queue_capture_listener" : "5",
-	
-	"_rest_message_queue_exchange_query" : "[exchange_name of query interface]",
-	"rest_message_queue_exchange_query" : "rest_query"
-	
+	"rest_message_queue_capture_listener" : "5"
 }

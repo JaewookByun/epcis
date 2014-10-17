@@ -5,14 +5,13 @@
 <web-app>
 	<display-name>Oliot EPCCR 1.0</display-name>
 
-	<servlet>
-		<servlet-name>ConfigurationServlet</servlet-name>
-		<display-name>ConfigurationServlet</display-name>
-		<description></description>
-		<servlet-class>org.oliot.epcis.configuration.ConfigurationServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
+	<!-- Web Service Initialization , Configuration, Termination -->
+	<listener>
+		<listener-class>
+			org.oliot.epcis.configuration.Configuration
+		</listener-class>
+	</listener>
+	
 	<!-- Spring Framework MVC -->
 	<servlet>
 		<servlet-name>dispatcher</servlet-name>
@@ -20,13 +19,11 @@
 		<!-- <init-param> <param-name>contextConfigLocation</param-name> <param-value> 
 			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
 	</servlet>
-
 	<servlet>
-		<servlet-name>RESTMQServlet</servlet-name>
-		<display-name>RESTMQServlet</display-name>
+		<servlet-name>Test</servlet-name>
+		<display-name>Test</display-name>
 		<description></description>
-		<servlet-class>org.oliot.epcis.service.rest.RESTMQServlet</servlet-class>
-		<load-on-startup>2</load-on-startup>
+		<servlet-class>org.oliot.epcis.test.Test</servlet-class>
 	</servlet>
 
 	<!-- Spring Framework MVC -->
@@ -36,7 +33,8 @@
 		<url-pattern>/Service/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
-		<servlet-name>RESTMQServlet</servlet-name>
-		<url-pattern>/RESTMQServlet</url-pattern>
+		<servlet-name>Test</servlet-name>
+		<url-pattern>/Test</url-pattern>
 	</servlet-mapping>
+	
 </web-app>
