@@ -1,10 +1,11 @@
-package org.oliot.epcis_client;
+package org.oliot.example.test;
 
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.oliot.epcis_client.CaptureClient;
 
 /**
  * Copyright (C) 2014 KAIST RESL
