@@ -6,6 +6,6 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-	<bean id="resource" class="org.oliot.epcis.service.rest.Resource"></bean>
+	<bean id="resource" class="org.oliot.epccr.rest.Resource"></bean>
 
 </beans>
