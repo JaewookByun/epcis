@@ -8,7 +8,7 @@
 	<!-- Web Service Initialization , Configuration, Termination -->
 	<listener>
 		<listener-class>
-			org.oliot.epcis.configuration.Configuration
+			org.oliot.epccr.configuration.Configuration
 		</listener-class>
 	</listener>
 	
@@ -23,7 +23,7 @@
 		<servlet-name>Test</servlet-name>
 		<display-name>Test</display-name>
 		<description></description>
-		<servlet-class>org.oliot.epcis.test.Test</servlet-class>
+		<servlet-class>org.oliot.epccr.test.Test</servlet-class>
 	</servlet>
 
 	<!-- Spring Framework MVC -->

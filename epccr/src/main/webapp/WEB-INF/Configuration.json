@@ -8,12 +8,9 @@
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "off",
 	
-	"_rest_message_queue" : "(on|off) - should have message_queue_exchange_capture and message_queue_exchange_query if on",
-	"rest_message_queue" : "on",
+	"_message_queue_capture_name" : "[name of capture queue]",
+	"message_queue_capture_name" : "rest_capture",
 	
-	"_rest_message_queue_capture_name" : "[name of capture queue]",
-	"rest_message_queue_capture_name" : "rest_capture",
-	
-	"_rest_message_queue_capture_listener" : "[number of capture listener]",
-	"rest_message_queue_capture_listener" : "5"
+	"_message_queue_capture_listener" : "[number of capture listener]",
+	"message_queue_capture_listener" : "5"
 }
