@@ -48,7 +48,7 @@ public class Resource {
 	/**
 	 * Put EPC Resource Method: PUT
 	 * 
-	 * @param target
+	 * @param epc
 	 *            EPC
 	 * @param eventTime
 	 *            SystemTimeMilis

@@ -4,7 +4,7 @@
 	<groupId>org.oliot</groupId>
 	<artifactId>epccr</artifactId>
 	<packaging>war</packaging>
-	<version>0.1</version>
+	<version>1.0</version>
 	<name>epccr Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>

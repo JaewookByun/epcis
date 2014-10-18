@@ -40,7 +40,7 @@ public class TimeUtil {
 
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+					"yyyy-MM-dd'T'HH:mm:ss");
 			Date date = sdf.parse(absString);
 			return date.getTime();
 		} catch (ParseException e) {
