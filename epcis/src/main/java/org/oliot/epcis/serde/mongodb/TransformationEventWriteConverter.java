@@ -145,39 +145,41 @@ public class TransformationEventWriteConverter implements
 				readPoint.put("id", readPointType.getId());
 			ReadPointExtensionType readPointExtensionType = readPointType
 					.getExtension();
-			DBObject extension = new BasicDBObject();
-			if (readPointExtensionType.getAny() != null) {
-				Map<String, String> map2Save = new HashMap<String, String>();
-				List<Object> objList = readPointExtensionType.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getLocalName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
+			if (readPointExtensionType != null) {
+				DBObject extension = new BasicDBObject();
+				if (readPointExtensionType.getAny() != null) {
+					Map<String, String> map2Save = new HashMap<String, String>();
+					List<Object> objList = readPointExtensionType.getAny();
+					for (int i = 0; i < objList.size(); i++) {
+						Object obj = objList.get(i);
+						if (obj instanceof Element) {
+							Element element = (Element) obj;
+							if (element.getFirstChild() != null) {
+								String name = element.getLocalName();
+								String value = element.getFirstChild()
+										.getTextContent();
+								map2Save.put(name, value);
+							}
 						}
 					}
+					if (map2Save != null)
+						extension.put("any", map2Save);
 				}
-				if (map2Save != null)
-					extension.put("any", map2Save);
-			}
 
-			if (readPointExtensionType.getOtherAttributes() != null) {
-				Map<QName, String> map = readPointExtensionType
-						.getOtherAttributes();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				Iterator<QName> iter = map.keySet().iterator();
-				while (iter.hasNext()) {
-					QName qName = iter.next();
-					String value = map.get(qName);
-					map2Save.put(qName.toString(), value);
+				if (readPointExtensionType.getOtherAttributes() != null) {
+					Map<QName, String> map = readPointExtensionType
+							.getOtherAttributes();
+					Map<String, String> map2Save = new HashMap<String, String>();
+					Iterator<QName> iter = map.keySet().iterator();
+					while (iter.hasNext()) {
+						QName qName = iter.next();
+						String value = map.get(qName);
+						map2Save.put(qName.toString(), value);
+					}
+					extension.put("otherAttributes", map2Save);
 				}
-				extension.put("otherAttributes", map2Save);
+				readPoint.put("extension", extension);
 			}
-			readPoint.put("extension", extension);
 			dbo.put("readPoint", readPoint);
 		}
 		if (transformationEventType.getBizLocation() != null) {
@@ -188,39 +190,41 @@ public class TransformationEventWriteConverter implements
 				bizLocation.put("id", bizLocationType.getId());
 			BusinessLocationExtensionType bizLocationExtensionType = bizLocationType
 					.getExtension();
-			DBObject extension = new BasicDBObject();
-			if (bizLocationExtensionType.getAny() != null) {
-				Map<String, String> map2Save = new HashMap<String, String>();
-				List<Object> objList = bizLocationExtensionType.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getLocalName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
+			if (bizLocationExtensionType != null) {
+				DBObject extension = new BasicDBObject();
+				if (bizLocationExtensionType.getAny() != null) {
+					Map<String, String> map2Save = new HashMap<String, String>();
+					List<Object> objList = bizLocationExtensionType.getAny();
+					for (int i = 0; i < objList.size(); i++) {
+						Object obj = objList.get(i);
+						if (obj instanceof Element) {
+							Element element = (Element) obj;
+							if (element.getFirstChild() != null) {
+								String name = element.getLocalName();
+								String value = element.getFirstChild()
+										.getTextContent();
+								map2Save.put(name, value);
+							}
 						}
 					}
+					if (map2Save != null)
+						extension.put("any", map2Save);
 				}
-				if (map2Save != null)
-					extension.put("any", map2Save);
-			}
 
-			if (bizLocationExtensionType.getOtherAttributes() != null) {
-				Map<QName, String> map = bizLocationExtensionType
-						.getOtherAttributes();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				Iterator<QName> iter = map.keySet().iterator();
-				while (iter.hasNext()) {
-					QName qName = iter.next();
-					String value = map.get(qName);
-					map2Save.put(qName.toString(), value);
+				if (bizLocationExtensionType.getOtherAttributes() != null) {
+					Map<QName, String> map = bizLocationExtensionType
+							.getOtherAttributes();
+					Map<String, String> map2Save = new HashMap<String, String>();
+					Iterator<QName> iter = map.keySet().iterator();
+					while (iter.hasNext()) {
+						QName qName = iter.next();
+						String value = map.get(qName);
+						map2Save.put(qName.toString(), value);
+					}
+					extension.put("otherAttributes", map2Save);
 				}
-				extension.put("otherAttributes", map2Save);
+				bizLocation.put("extension", extension);
 			}
-			bizLocation.put("extension", extension);
 			dbo.put("bizLocation", bizLocation);
 		}
 
@@ -303,11 +307,9 @@ public class TransformationEventWriteConverter implements
 			dbo.put("destinationList", dbList);
 		}
 
-		if (transformationEventType.getIlmd() != null )
-		{
+		if (transformationEventType.getIlmd() != null) {
 			ILMDType ilmd = transformationEventType.getIlmd();
-			if( ilmd.getExtension() != null )
-			{
+			if (ilmd.getExtension() != null) {
 				ILMDExtensionType ilmdExtension = ilmd.getExtension();
 				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = ilmdExtension.getAny();
@@ -326,9 +328,9 @@ public class TransformationEventWriteConverter implements
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
 			}
-			
+
 		}
-		
+
 		// Extension
 		DBObject extension = new BasicDBObject();
 		if (transformationEventType.getExtension() != null) {
