@@ -19,8 +19,7 @@
 					<id>urn:epc:id:sgln:0614141.07346.1234</id>
 				</readPoint>
 				<bizTransactionList>
-					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678
-					</bizTransaction>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
 				</bizTransactionList>
 			</ObjectEvent>
 			<ObjectEvent>
@@ -39,19 +38,17 @@
 					<id>urn:epc:id:sgln:0012345.11111.0</id>
 				</bizLocation>
 				<bizTransactionList>
-					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678
-					</bizTransaction>
-					<bizTransaction type="urn:epcglobal:cbv:btt:desadv">urn:epcglobal:cbv:bt:0614141073467:1152
-					</bizTransaction>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
+					<bizTransaction type="urn:epcglobal:cbv:btt:desadv">urn:epcglobal:cbv:bt:0614141073467:1152</bizTransaction>
 				</bizTransactionList>
 				<!-- Wrong way to store extension field -->
-				<!-- <example:myField>Example of a vendor/user extension</example:myField>-->
+				<!-- <example:myField>Example of a vendor/user extension</example:myField> -->
 				<extension>
 					<!-- Right way to store extension field v1.1 -->
 					<extension>
-						<temperature>36</temperature>
-						<emg>22</emg>
-						<ecg>11</ecg>
+						<example:temperature>36</example:temperature>
+						<example:emg>22</example:emg>
+						<example:ecg>11</example:ecg>
 					</extension>
 				</extension>
 			</ObjectEvent>

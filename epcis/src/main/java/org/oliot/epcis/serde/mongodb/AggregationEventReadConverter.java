@@ -438,7 +438,6 @@ public class AggregationEventReadConverter implements
 						}
 						aee2t.setOtherAttributes(otherAttributes);
 					}
-					//
 					aeet.setExtension(aee2t);
 				}
 				aggregationEventType.setExtension(aeet);
