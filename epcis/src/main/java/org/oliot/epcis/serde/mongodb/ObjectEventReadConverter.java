@@ -2,18 +2,12 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.Configuration;
@@ -26,7 +20,6 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
-import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
 import org.oliot.model.epcis.ObjectEventExtensionType;
@@ -40,13 +33,12 @@ import org.oliot.model.epcis.SourceListType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
+import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -123,44 +115,7 @@ public class ObjectEventReadConverter implements
 				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
 				BasicDBObject baseExtension = (BasicDBObject) dbObject
 						.get("baseExtension");
-				if (baseExtension.get("any") != null) {
-					BasicDBObject anyObject = (BasicDBObject) baseExtension
-							.get("any");
-					Iterator<String> anyKeysIter = anyObject.keySet()
-							.iterator();
-					List<Object> elementList = new ArrayList<Object>();
-					while (anyKeysIter.hasNext()) {
-						String anyKey = anyKeysIter.next();
-						String value = anyObject.get(anyKey).toString();
-						if (anyKey != null && value != null) {
-							DocumentBuilderFactory dbf = DocumentBuilderFactory
-									.newInstance();
-							DocumentBuilder builder = dbf.newDocumentBuilder();
-							Document doc = builder.newDocument();
-
-							Node node = doc.createElement("value");
-							node.setTextContent(value);
-							Element element = doc.createElement(anyKey);
-							element.appendChild(node);
-							elementList.add(element);
-						}
-					}
-					eeet.setAny(elementList);
-				}
-				if (baseExtension.get("otherAttributes") != null) {
-					Map<QName, String> otherAttributes = new HashMap<QName, String>();
-					BasicDBObject otherAttributeObject = (BasicDBObject) baseExtension
-							.get("otherAttributes");
-					Iterator<String> otherKeysIter = otherAttributeObject
-							.keySet().iterator();
-					while (otherKeysIter.hasNext()) {
-						String anyKey = otherKeysIter.next();
-						String value = otherAttributeObject.get(anyKey)
-								.toString();
-						otherAttributes.put(new QName("", anyKey), value);
-					}
-					eeet.setOtherAttributes(otherAttributes);
-				}
+				eeet = putEPCISExtension(eeet, baseExtension);
 				objectEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("readPoint") != null) {
@@ -172,49 +127,9 @@ public class ObjectEventReadConverter implements
 				}
 				if (readPointObject.get("extension") != null) {
 					ReadPointExtensionType rpet = new ReadPointExtensionType();
-					//
 					BasicDBObject extension = (BasicDBObject) readPointObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						rpet.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						rpet.setOtherAttributes(otherAttributes);
-					}
-					//
+					rpet = putReadPointExtension(rpet, extension);
 					readPointType.setExtension(rpet);
 				}
 				objectEventType.setReadPoint(readPointType);
@@ -230,49 +145,9 @@ public class ObjectEventReadConverter implements
 				}
 				if (bizLocationObject.get("extension") != null) {
 					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
-					//
 					BasicDBObject extension = (BasicDBObject) bizLocationObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						blet.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						blet.setOtherAttributes(otherAttributes);
-					}
-					//
+					blet = putBusinessLocationExtension(blet, extension);
 					bizLocationType.setExtension(blet);
 				}
 				objectEventType.setBizLocation(bizLocationType);
@@ -305,29 +180,8 @@ public class ObjectEventReadConverter implements
 
 			if (dbObject.get("ilmd") != null) {
 				ILMDType ilmd = new ILMDType();
-				ILMDExtensionType ilmdExtension = new ILMDExtensionType();
-
 				BasicDBObject anyObject = (BasicDBObject) dbObject.get("ilmd");
-				Iterator<String> anyKeysIter = anyObject.keySet().iterator();
-				List<Object> elementList = new ArrayList<Object>();
-				while (anyKeysIter.hasNext()) {
-					String anyKey = anyKeysIter.next();
-					String value = anyObject.get(anyKey).toString();
-					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
-						DocumentBuilder builder = dbf.newDocumentBuilder();
-						Document doc = builder.newDocument();
-
-						Node node = doc.createElement("value");
-						node.setTextContent(value);
-						Element element = doc.createElement(anyKey);
-						element.appendChild(node);
-						elementList.add(element);
-					}
-				}
-				ilmdExtension.setAny(elementList);
-				ilmd.setExtension(ilmdExtension);
+				ilmd = putILMD(ilmd, anyObject);
 				objectEventType.setIlmd(ilmd);
 			}
 
@@ -423,54 +277,13 @@ public class ObjectEventReadConverter implements
 					ObjectEventExtension2Type oee2t = new ObjectEventExtension2Type();
 					BasicDBObject extension = (BasicDBObject) extObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						oee2t.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						oee2t.setOtherAttributes(otherAttributes);
-					}
+					oee2t = putObjectExtension(oee2t, extension);
 					oeet.setExtension(oee2t);
 				}
 				objectEventType.setExtension(oeet);
 			}
-
 			return objectEventType;
 		} catch (DatatypeConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		} catch (ParserConfigurationException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return null;

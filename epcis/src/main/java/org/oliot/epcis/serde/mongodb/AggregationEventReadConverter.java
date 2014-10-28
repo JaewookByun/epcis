@@ -2,18 +2,12 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.Configuration;
@@ -38,14 +32,11 @@ import org.oliot.model.epcis.SourceListType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.stereotype.Component;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-
+import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -127,44 +118,7 @@ public class AggregationEventReadConverter implements
 				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
 				BasicDBObject baseExtension = (BasicDBObject) dbObject
 						.get("baseExtension");
-				if (baseExtension.get("any") != null) {
-					BasicDBObject anyObject = (BasicDBObject) baseExtension
-							.get("any");
-					Iterator<String> anyKeysIter = anyObject.keySet()
-							.iterator();
-					List<Object> elementList = new ArrayList<Object>();
-					while (anyKeysIter.hasNext()) {
-						String anyKey = anyKeysIter.next();
-						String value = anyObject.get(anyKey).toString();
-						if (anyKey != null && value != null) {
-							DocumentBuilderFactory dbf = DocumentBuilderFactory
-									.newInstance();
-							DocumentBuilder builder = dbf.newDocumentBuilder();
-							Document doc = builder.newDocument();
-
-							Node node = doc.createElement("value");
-							node.setTextContent(value);
-							Element element = doc.createElement(anyKey);
-							element.appendChild(node);
-							elementList.add(element);
-						}
-					}
-					eeet.setAny(elementList);
-				}
-				if (baseExtension.get("otherAttributes") != null) {
-					Map<QName, String> otherAttributes = new HashMap<QName, String>();
-					BasicDBObject otherAttributeObject = (BasicDBObject) baseExtension
-							.get("otherAttributes");
-					Iterator<String> otherKeysIter = otherAttributeObject
-							.keySet().iterator();
-					while (otherKeysIter.hasNext()) {
-						String anyKey = otherKeysIter.next();
-						String value = otherAttributeObject.get(anyKey)
-								.toString();
-						otherAttributes.put(new QName("", anyKey), value);
-					}
-					eeet.setOtherAttributes(otherAttributes);
-				}
+				eeet = putEPCISExtension(eeet, baseExtension);
 				aggregationEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("readPoint") != null) {
@@ -176,49 +130,9 @@ public class AggregationEventReadConverter implements
 				}
 				if (readPointObject.get("extension") != null) {
 					ReadPointExtensionType rpet = new ReadPointExtensionType();
-					//
 					BasicDBObject extension = (BasicDBObject) readPointObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						rpet.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						rpet.setOtherAttributes(otherAttributes);
-					}
-					//
+					rpet = putReadPointExtension(rpet, extension);
 					readPointType.setExtension(rpet);
 				}
 				aggregationEventType.setReadPoint(readPointType);
@@ -234,49 +148,9 @@ public class AggregationEventReadConverter implements
 				}
 				if (bizLocationObject.get("extension") != null) {
 					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
-					//
 					BasicDBObject extension = (BasicDBObject) bizLocationObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						blet.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						blet.setOtherAttributes(otherAttributes);
-					}
-					//
+					blet = putBusinessLocationExtension(blet, extension);
 					bizLocationType.setExtension(blet);
 				}
 				aggregationEventType.setBizLocation(bizLocationType);
@@ -399,53 +273,13 @@ public class AggregationEventReadConverter implements
 					AggregationEventExtension2Type aee2t = new AggregationEventExtension2Type();
 					BasicDBObject extension = (BasicDBObject) extObject
 							.get("extension");
-					if (extension.get("any") != null) {
-						BasicDBObject anyObject = (BasicDBObject) extension
-								.get("any");
-						Iterator<String> anyKeysIter = anyObject.keySet()
-								.iterator();
-						List<Object> elementList = new ArrayList<Object>();
-						while (anyKeysIter.hasNext()) {
-							String anyKey = anyKeysIter.next();
-							String value = anyObject.get(anyKey).toString();
-							if (anyKey != null && value != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory
-										.newInstance();
-								DocumentBuilder builder = dbf
-										.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(value);
-								Element element = doc.createElement(anyKey);
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						aee2t.setAny(elementList);
-					}
-					if (extension.get("otherAttributes") != null) {
-						Map<QName, String> otherAttributes = new HashMap<QName, String>();
-						BasicDBObject otherAttributeObject = (BasicDBObject) extension
-								.get("otherAttributes");
-						Iterator<String> otherKeysIter = otherAttributeObject
-								.keySet().iterator();
-						while (otherKeysIter.hasNext()) {
-							String anyKey = otherKeysIter.next();
-							String value = otherAttributeObject.get(anyKey)
-									.toString();
-							otherAttributes.put(new QName("", anyKey), value);
-						}
-						aee2t.setOtherAttributes(otherAttributes);
-					}
+					aee2t = putAggregationExtension(aee2t, extension);
 					aeet.setExtension(aee2t);
 				}
 				aggregationEventType.setExtension(aeet);
 			}
 			return aggregationEventType;
 		} catch (DatatypeConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		} catch (ParserConfigurationException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 
