@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -60,8 +59,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import static org.quartz.TriggerKey.*;
 import static org.quartz.JobKey.*;
@@ -108,7 +105,7 @@ public class MongoQueryService {
 		String orderDirection = subscription.getOrderDirection();
 		String eventCountLimit = subscription.getEventCountLimit();
 		String maxEventCount = subscription.getMaxEventCount();
-		Map<String, String[]> paramMap = subscription.getParamMap();
+		Map<String, String> paramMap = subscription.getParamMap();
 
 		String result = subscribe(queryName, subscriptionID, dest,
 				cronExpression, reportIfEmpty, eventType, GE_eventTime,
@@ -137,7 +134,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -236,7 +233,7 @@ public class MongoQueryService {
 		String cronExpression = null;
 		boolean reportIfEmpty = false;
 
-		Map<String, String[]> extMap = new HashMap<String, String[]>();
+		Map<String, String> extMap = new HashMap<String, String>();
 		for (int i = 0; i < queryParamList.size(); i++) {
 
 			QueryParam qp = queryParamList.get(i);
@@ -346,7 +343,7 @@ public class MongoQueryService {
 				maxEventCount = value;
 				continue;
 			} else {
-				extMap.put(name, new String[] { value });
+				extMap.put(name, value);
 			}
 		}
 
@@ -376,16 +373,8 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> extMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
-		Map<String, String[]> paramMap;
-		if (extMap == null) {
-			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
-					.getRequestAttributes()).getRequest();
-			paramMap = request.getParameterMap();
-		} else {
-			paramMap = extMap;
-		}
 		// M20 : Throw an InvalidURIException for an incorrect dest argument in
 		// the subscribe method in EPCIS Query Control Interface
 		try {
@@ -499,7 +488,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -869,7 +858,7 @@ public class MongoQueryService {
 		String WD_name = null;
 		String HASATTR = null;
 		String maxElementCount = null;
-		Map<String, String[]> extMap = new HashMap<String, String[]>();
+		Map<String, String> extMap = new HashMap<String, String>();
 		for (int i = 0; i < queryParamList.size(); i++) {
 
 			QueryParam qp = queryParamList.get(i);
@@ -1000,7 +989,7 @@ public class MongoQueryService {
 				maxElementCount = value;
 				continue;
 			} else {
-				extMap.put(name, new String[] { value });
+				extMap.put(name, value);
 			}
 		}
 
@@ -1034,18 +1023,8 @@ public class MongoQueryService {
 			String vocabularyName, boolean includeAttributes,
 			boolean includeChildren, String attributeNames, String EQ_name,
 			String WD_name, String HASATTR, String maxElementCount,
-			Map<String, String[]> extMap) {
+			Map<String, String> paramMap) {
 
-		Map<String, String[]> paramMap = new HashMap<String, String[]>();
-		if (extMap == null || extMap.size() == 0) {
-			if (RequestContextHolder.getRequestAttributes() != null) {
-				HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder
-						.getRequestAttributes()).getRequest();
-				paramMap = request.getParameterMap();
-			}
-		} else {
-			paramMap = extMap;
-		}
 		// M24
 		if (queryName == null) {
 			// It is not possible, automatically filtered by URI param
@@ -1085,7 +1064,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
 		// M27
 		try {
@@ -1311,7 +1290,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
 		List<Criteria> criteriaList = new ArrayList<Criteria>();
 		try {
@@ -1850,7 +1829,7 @@ public class MongoQueryService {
 			Iterator<String> paramIter = paramMap.keySet().iterator();
 			while (paramIter.hasNext()) {
 				String paramName = paramIter.next();
-				String[] paramValues = paramMap.get(paramName);
+				String paramValues = paramMap.get(paramName);
 
 				/**
 				 * EQ_bizTransaction_type: This is not a single parameter, but a
@@ -1865,8 +1844,9 @@ public class MongoQueryService {
 				if (paramName.contains("EQ_bizTransaction_")) {
 					String type = paramName.substring(18, paramName.length());
 					List<DBObject> subObjList = new ArrayList<DBObject>();
-					for (int i = 0; i < paramValues.length; i++) {
-						String val = paramValues[i].trim();
+					String[] paramValueArr = paramValues.split(",");
+					for (int i = 0; i < paramValueArr.length; i++) {
+						String val = paramValueArr[i].trim();
 						DBObject dbo = new BasicDBObject();
 						dbo.put(type, val);
 						subObjList.add(dbo);
@@ -1890,8 +1870,9 @@ public class MongoQueryService {
 				if (paramName.contains("EQ_source_")) {
 					String type = paramName.substring(10, paramName.length());
 					List<DBObject> subObjList = new ArrayList<DBObject>();
-					for (int i = 0; i < paramValues.length; i++) {
-						String val = paramValues[i].trim();
+					String[] paramValueArr = paramValues.split(",");
+					for (int i = 0; i < paramValueArr.length; i++) {
+						String val = paramValueArr[i].trim();
 						DBObject dbo = new BasicDBObject();
 						dbo.put(type, val);
 						subObjList.add(dbo);
@@ -1923,8 +1904,9 @@ public class MongoQueryService {
 				if (paramName.contains("EQ_destination_")) {
 					String type = paramName.substring(15, paramName.length());
 					List<DBObject> subObjList = new ArrayList<DBObject>();
-					for (int i = 0; i < paramValues.length; i++) {
-						String val = paramValues[i].trim();
+					String[] paramValueArr = paramValues.split(",");
+					for (int i = 0; i < paramValueArr.length; i++) {
+						String val = paramValueArr[i].trim();
 						DBObject dbo = new BasicDBObject();
 						dbo.put(type, val);
 						subObjList.add(dbo);
@@ -1965,8 +1947,9 @@ public class MongoQueryService {
 						String type = paramName
 								.substring(3, paramName.length());
 						List<String> subObjList = new ArrayList<String>();
-						for (int i = 0; i < paramValues.length; i++) {
-							String val = paramValues[i].trim();
+						String[] paramValueArr = paramValues.split(",");
+						for (int i = 0; i < paramValueArr.length; i++) {
+							String val = paramValueArr[i].trim();
 							subObjList.add(val);
 						}
 						Criteria criteria = new Criteria();
@@ -2013,7 +1996,7 @@ public class MongoQueryService {
 						String type = paramName
 								.substring(3, paramName.length());
 						// Already error handled
-						String value = paramValues[0];
+						String value = paramValues;
 						Criteria criteria = new Criteria();
 						if (eventType.equals("AggregationEvent")
 								|| eventType.equals("ObjectEvent")
@@ -2252,7 +2235,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -2363,7 +2346,7 @@ public class MongoQueryService {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
 				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
@@ -2415,8 +2398,8 @@ public class MongoQueryService {
 				new Query(Criteria.where("subscriptionID").is(
 						subscription.getSubscriptionID())),
 				SubscriptionType.class);
-		Configuration.logger.log(Level.INFO, "Subscription ID: "
-				+ subscription + " is removed from DB");
+		Configuration.logger.log(Level.INFO, "Subscription ID: " + subscription
+				+ " is removed from DB");
 	}
 
 	@SuppressWarnings("rawtypes")

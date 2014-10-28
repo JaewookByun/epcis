@@ -50,44 +50,28 @@ public class MongoWriterUtil {
 		return attrObject;
 	}
 	
-	static DBObject getBaseExtensionObject(EPCISEventExtensionType baseExtensionType)
-	{
+	static DBObject getBaseExtensionObject(
+			EPCISEventExtensionType baseExtensionType) {
 		DBObject baseExtension = new BasicDBObject();
-		if (baseExtensionType.getAny() != null) {
-			Map<String, String> map2Save = new HashMap<String, String>();
+		if (baseExtensionType.getAny() != null
+				&& baseExtensionType.getAny().isEmpty() == false) {
 			List<Object> objList = baseExtensionType.getAny();
-			for (int i = 0; i < objList.size(); i++) {
-				Object obj = objList.get(i);
-				if (obj instanceof Element) {
-					Element element = (Element) obj;
-					if (element.getFirstChild() != null) {
-						String name = element.getNodeName();
-						String value = element.getFirstChild()
-								.getTextContent();
-						map2Save.put(name, value);
-					}
-				}
-			}
-			if (map2Save != null)
+			Map<String, String> map2Save = getAnyMap(objList);
+			if (map2Save.isEmpty() == false)
 				baseExtension.put("any", map2Save);
 		}
 
-		if (baseExtensionType.getOtherAttributes() != null) {
+		if (baseExtensionType.getOtherAttributes() != null
+				&& baseExtensionType.getOtherAttributes().isEmpty() == false) {
 			Map<QName, String> map = baseExtensionType.getOtherAttributes();
-			Map<String, String> map2Save = new HashMap<String, String>();
-			Iterator<QName> iter = map.keySet().iterator();
-			while (iter.hasNext()) {
-				QName qName = iter.next();
-				String value = map.get(qName);
-				map2Save.put(qName.toString(), value);
-			}
-			baseExtension.put("otherAttributes", map2Save);
+			Map<String, String> map2Save = getOtherAttributesMap(map);
+			if (map2Save.isEmpty() == false)
+				baseExtension.put("otherAttributes", map2Save);
 		}
 		return baseExtension;
 	}
 
-	static DBObject getReadPointObject(ReadPointType readPointType)
-	{
+	static DBObject getReadPointObject(ReadPointType readPointType) {
 		DBObject readPoint = new BasicDBObject();
 		if (readPointType.getId() != null)
 			readPoint.put("id", readPointType.getId());
@@ -95,32 +79,29 @@ public class MongoWriterUtil {
 		/*
 		 * ReadPointExtensionType readPointExtensionType = readPointType
 		 * .getExtension(); if (readPointExtensionType != null) { DBObject
-		 * extension = new BasicDBObject(); if
-		 * (readPointExtensionType.getAny() != null) { Map<String, String>
-		 * map2Save = new HashMap<String, String>(); List<Object> objList =
-		 * readPointExtensionType.getAny(); for (int i = 0; i <
-		 * objList.size(); i++) { Object obj = objList.get(i); if (obj
-		 * instanceof Element) { Element element = (Element) obj; if
-		 * (element.getFirstChild() != null) { String name =
+		 * extension = new BasicDBObject(); if (readPointExtensionType.getAny()
+		 * != null) { Map<String, String> map2Save = new HashMap<String,
+		 * String>(); List<Object> objList = readPointExtensionType.getAny();
+		 * for (int i = 0; i < objList.size(); i++) { Object obj =
+		 * objList.get(i); if (obj instanceof Element) { Element element =
+		 * (Element) obj; if (element.getFirstChild() != null) { String name =
 		 * element.getLocalName(); String value = element.getFirstChild()
-		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save
-		 * != null) extension.put("any", map2Save); }
+		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save !=
+		 * null) extension.put("any", map2Save); }
 		 * 
-		 * if (readPointExtensionType.getOtherAttributes() != null) {
-		 * Map<QName, String> map = readPointExtensionType
-		 * .getOtherAttributes(); Map<String, String> map2Save = new
-		 * HashMap<String, String>(); Iterator<QName> iter =
-		 * map.keySet().iterator(); while (iter.hasNext()) { QName qName =
-		 * iter.next(); String value = map.get(qName);
-		 * map2Save.put(qName.toString(), value); }
+		 * if (readPointExtensionType.getOtherAttributes() != null) { Map<QName,
+		 * String> map = readPointExtensionType .getOtherAttributes();
+		 * Map<String, String> map2Save = new HashMap<String, String>();
+		 * Iterator<QName> iter = map.keySet().iterator(); while
+		 * (iter.hasNext()) { QName qName = iter.next(); String value =
+		 * map.get(qName); map2Save.put(qName.toString(), value); }
 		 * extension.put("otherAttributes", map2Save); }
 		 * readPoint.put("extension", extension); }
 		 */
 		return readPoint;
 	}
-	
-	static DBObject getBizLocationObject(BusinessLocationType bizLocationType)
-	{
+
+	static DBObject getBizLocationObject(BusinessLocationType bizLocationType) {
 		DBObject bizLocation = new BasicDBObject();
 		if (bizLocationType.getId() != null)
 			bizLocation.put("id", bizLocationType.getId());
@@ -136,8 +117,8 @@ public class MongoWriterUtil {
 		 * instanceof Element) { Element element = (Element) obj; if
 		 * (element.getFirstChild() != null) { String name =
 		 * element.getLocalName(); String value = element.getFirstChild()
-		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save
-		 * != null) extension.put("any", map2Save); }
+		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save !=
+		 * null) extension.put("any", map2Save); }
 		 * 
 		 * if (bizLocationExtensionType.getOtherAttributes() != null) {
 		 * Map<QName, String> map = bizLocationExtensionType
@@ -151,14 +132,13 @@ public class MongoWriterUtil {
 		 */
 		return bizLocation;
 	}
-	
-	static List<DBObject> getBizTransactionObjectList(List<BusinessTransactionType> bizList)
-	{
+
+	static List<DBObject> getBizTransactionObjectList(
+			List<BusinessTransactionType> bizList) {
 		List<DBObject> bizTranList = new ArrayList<DBObject>();
 		for (int i = 0; i < bizList.size(); i++) {
 			BusinessTransactionType bizTranType = bizList.get(i);
-			if (bizTranType.getType() != null
-					&& bizTranType.getValue() != null) {
+			if (bizTranType.getType() != null && bizTranType.getValue() != null) {
 				DBObject dbObj = new BasicDBObject();
 				dbObj.put(bizTranType.getType(), bizTranType.getValue());
 				bizTranList.add(dbObj);
@@ -166,9 +146,9 @@ public class MongoWriterUtil {
 		}
 		return bizTranList;
 	}
-	
-	static DBObject getAggregationEventExtensionObject(AggregationEventExtensionType oee)
-	{
+
+	static DBObject getAggregationEventExtensionObject(
+			AggregationEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getChildQuantityList() != null) {
 			QuantityListType qetl = oee.getChildQuantityList();
@@ -212,64 +192,34 @@ public class MongoWriterUtil {
 			extension.put("destinationList", dbList);
 		}
 		if (oee.getExtension() != null) {
-			AggregationEventExtension2Type extension2Type = oee
-					.getExtension();
+			AggregationEventExtension2Type extension2Type = oee.getExtension();
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
-				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = extension2Type.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getNodeName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
-						}
-					}
-				}
-				if (map2Save != null)
+				Map<String, String> map2Save = getAnyMap(objList);
+				if (map2Save.isEmpty() == false)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
-				Map<QName, String> map = extension2Type
-						.getOtherAttributes();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				Iterator<QName> iter = map.keySet().iterator();
-				while (iter.hasNext()) {
-					QName qName = iter.next();
-					String value = map.get(qName);
-					map2Save.put(qName.toString(), value);
-				}
-				extension2.put("otherAttributes", map2Save);
+				Map<QName, String> map = extension2Type.getOtherAttributes();
+				Map<String, String> map2Save = getOtherAttributesMap(map);
+				if (map2Save.isEmpty() == false)
+					extension2.put("otherAttributes", map2Save);
 			}
 			extension.put("extension", extension2);
 		}
 		return extension;
 	}
-	static Map<String,String> getILMDExtensionMap(ILMDExtensionType ilmdExtension)
-	{
-		Map<String, String> map2Save = new HashMap<String, String>();
+
+	static Map<String, String> getILMDExtensionMap(
+			ILMDExtensionType ilmdExtension) {
 		List<Object> objList = ilmdExtension.getAny();
-		for (int i = 0; i < objList.size(); i++) {
-			Object obj = objList.get(i);
-			if (obj instanceof Element) {
-				Element element = (Element) obj;
-				if (element.getFirstChild() != null) {
-					String name = element.getNodeName();
-					String value = element.getFirstChild()
-							.getTextContent();
-					map2Save.put(name, value);
-				}
-			}
-		}
+		Map<String, String> map2Save = getAnyMap(objList);
 		return map2Save;
 	}
-	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee)
-	{
+
+	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -315,113 +265,62 @@ public class MongoWriterUtil {
 			ObjectEventExtension2Type extension2Type = oee.getExtension();
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
-				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = extension2Type.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getNodeName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
-						}
-					}
-				}
+				Map<String, String> map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
-				Map<QName, String> map = extension2Type
-						.getOtherAttributes();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				Iterator<QName> iter = map.keySet().iterator();
-				while (iter.hasNext()) {
-					QName qName = iter.next();
-					String value = map.get(qName);
-					map2Save.put(qName.toString(), value);
-				}
-				extension2.put("otherAttributes", map2Save);
+				Map<QName, String> map = extension2Type.getOtherAttributes();
+				Map<String, String> map2Save = getOtherAttributesMap(map);
+				if (map2Save.isEmpty() == false)
+					extension2.put("otherAttributes", map2Save);
 			}
 			extension.put("extension", extension2);
 		}
 		return extension;
 	}
-	static DBObject getQuantityEventExtensionObject(QuantityEventExtensionType oee)
-	{
+
+	static DBObject getQuantityEventExtensionObject(
+			QuantityEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
-			Map<String, String> map2Save = new HashMap<String, String>();
 			List<Object> objList = oee.getAny();
-			for (int i = 0; i < objList.size(); i++) {
-				Object obj = objList.get(i);
-				if (obj instanceof Element) {
-					Element element = (Element) obj;
-					if (element.getFirstChild() != null) {
-						String name = element.getNodeName();
-						String value = element.getFirstChild()
-								.getTextContent();
-						map2Save.put(name, value);
-					}
-				}
-			}
+			Map<String, String> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
 
 		if (oee.getOtherAttributes() != null) {
 			Map<QName, String> map = oee.getOtherAttributes();
-			Map<String, String> map2Save = new HashMap<String, String>();
-			Iterator<QName> iter = map.keySet().iterator();
-			while (iter.hasNext()) {
-				QName qName = iter.next();
-				String value = map.get(qName);
-				map2Save.put(qName.toString(), value);
-			}
-			extension.put("otherAttributes", map2Save);
+			Map<String, String> map2Save = getOtherAttributesMap(map);
+			if (map2Save.isEmpty() == false)
+				extension.put("otherAttributes", map2Save);
 		}
 		return extension;
 	}
-	static DBObject getSensorEventExtensionObject(SensorEventExtensionType oee)
-	{
+
+	static DBObject getSensorEventExtensionObject(SensorEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
-			Map<String, String> map2Save = new HashMap<String, String>();
 			List<Object> objList = oee.getAny();
-			for (int i = 0; i < objList.size(); i++) {
-				Object obj = objList.get(i);
-				if (obj instanceof Element) {
-					Element element = (Element) obj;
-					if (element.getFirstChild() != null) {
-						String name = element.getNodeName();
-						String value = element.getFirstChild()
-								.getTextContent();
-						map2Save.put(name, value);
-					}
-				}
-			}
+			Map<String, String> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
 
 		if (oee.getOtherAttributes() != null) {
 			Map<QName, String> map = oee.getOtherAttributes();
-			Map<String, String> map2Save = new HashMap<String, String>();
-			Iterator<QName> iter = map.keySet().iterator();
-			while (iter.hasNext()) {
-				QName qName = iter.next();
-				String value = map.get(qName);
-				map2Save.put(qName.toString(), value);
-			}
-			extension.put("otherAttributes", map2Save);
+			Map<String, String> map2Save = getOtherAttributesMap(map);
+			if (map2Save.isEmpty() == false)
+				extension.put("otherAttributes", map2Save);
 		}
 		return extension;
 	}
-	
-	static DBObject getTransactionEventExtensionObject(TransactionEventExtensionType oee)
-	{
+
+	static DBObject getTransactionEventExtensionObject(
+			TransactionEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -464,47 +363,28 @@ public class MongoWriterUtil {
 			extension.put("destinationList", dbList);
 		}
 		if (oee.getExtension() != null) {
-			TransactionEventExtension2Type extension2Type = oee
-					.getExtension();
+			TransactionEventExtension2Type extension2Type = oee.getExtension();
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
-				Map<String, String> map2Save = new HashMap<String, String>();
 				List<Object> objList = extension2Type.getAny();
-				for (int i = 0; i < objList.size(); i++) {
-					Object obj = objList.get(i);
-					if (obj instanceof Element) {
-						Element element = (Element) obj;
-						if (element.getFirstChild() != null) {
-							String name = element.getNodeName();
-							String value = element.getFirstChild()
-									.getTextContent();
-							map2Save.put(name, value);
-						}
-					}
-				}
+				Map<String, String> map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
-				Map<QName, String> map = extension2Type
-						.getOtherAttributes();
-				Map<String, String> map2Save = new HashMap<String, String>();
-				Iterator<QName> iter = map.keySet().iterator();
-				while (iter.hasNext()) {
-					QName qName = iter.next();
-					String value = map.get(qName);
-					map2Save.put(qName.toString(), value);
-				}
-				extension2.put("otherAttributes", map2Save);
+				Map<QName, String> map = extension2Type.getOtherAttributes();
+				Map<String, String> map2Save = getOtherAttributesMap(map);
+				if (map2Save.isEmpty() == false)
+					extension2.put("otherAttributes", map2Save);
 			}
 			extension.put("extension", extension2);
 		}
 		return extension;
 	}
-	
-	static List<DBObject> getQuantityObjectList(List<QuantityElementType> qetList)
-	{
+
+	static List<DBObject> getQuantityObjectList(
+			List<QuantityElementType> qetList) {
 		List<DBObject> quantityList = new ArrayList<DBObject>();
 		for (int i = 0; i < qetList.size(); i++) {
 			DBObject quantity = new BasicDBObject();
@@ -518,9 +398,8 @@ public class MongoWriterUtil {
 		}
 		return quantityList;
 	}
-	
-	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList)
-	{
+
+	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList) {
 		List<DBObject> dbList = new ArrayList<DBObject>();
 		for (int i = 0; i < sdtList.size(); i++) {
 			SourceDestType sdt = sdtList.get(i);
@@ -530,40 +409,56 @@ public class MongoWriterUtil {
 		}
 		return dbList;
 	}
-	
-	static DBObject getTransformationEventExtensionObject(TransformationEventExtensionType oee)
-	{
+
+	static DBObject getTransformationEventExtensionObject(
+			TransformationEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
-			Map<String, String> map2Save = new HashMap<String, String>();
 			List<Object> objList = oee.getAny();
-			for (int i = 0; i < objList.size(); i++) {
-				Object obj = objList.get(i);
-				if (obj instanceof Element) {
-					Element element = (Element) obj;
-					if (element.getFirstChild() != null) {
-						String name = element.getNodeName();
-						String value = element.getFirstChild()
-								.getTextContent();
-						map2Save.put(name, value);
-					}
-				}
-			}
+			Map<String, String> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
 
 		if (oee.getOtherAttributes() != null) {
 			Map<QName, String> map = oee.getOtherAttributes();
-			Map<String, String> map2Save = new HashMap<String, String>();
-			Iterator<QName> iter = map.keySet().iterator();
-			while (iter.hasNext()) {
-				QName qName = iter.next();
-				String value = map.get(qName);
-				map2Save.put(qName.toString(), value);
-			}
-			extension.put("otherAttributes", map2Save);
+			Map<String, String> map2Save = getOtherAttributesMap(map);
+			if (map2Save != null)
+				extension.put("otherAttributes", map2Save);
 		}
 		return extension;
+	}
+
+	static Map<String, String> getAnyMap(List<Object> objList) {
+		Map<String, String> map2Save = new HashMap<String, String>();
+		for (int i = 0; i < objList.size(); i++) {
+			Object obj = objList.get(i);
+			if (obj instanceof Element) {
+				Element element = (Element) obj;
+				if (element.getFirstChild() != null) {
+					String name = element.getNodeName();
+					// Process Namespace
+					String[] checkArr = name.split(":");
+					if (checkArr.length == 2) {
+						map2Save.put("@" + checkArr[0],
+								element.getNamespaceURI());
+					}
+					String value = element.getFirstChild().getTextContent();
+					map2Save.put(name, value);
+				}
+			}
+		}
+		return map2Save;
+	}
+
+	static Map<String, String> getOtherAttributesMap(Map<QName, String> map) {
+		Map<String, String> map2Save = new HashMap<String, String>();
+		Iterator<QName> iter = map.keySet().iterator();
+		while (iter.hasNext()) {
+			QName qName = iter.next();
+			String value = map.get(qName);
+			map2Save.put(qName.toString(), value);
+		}
+		return map2Save;
 	}
 }

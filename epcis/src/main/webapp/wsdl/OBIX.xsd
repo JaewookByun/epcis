@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://iot.kr/oBIX"
+	attributeFormDefault="unqualified" elementFormDefault="qualified"
+	targetNamespace="http://iot.kr/oBIX">
+
+	<xsd:simpleType name="presence">
+		<xsd:annotation>
+			<xsd:documentation>oBIX presence value
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string" />
+	</xsd:simpleType>
+
+	<xsd:simpleType name="fanSpeed">
+		<xsd:annotation>
+			<xsd:documentation>oBIX fanSpeed value
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int" />
+	</xsd:simpleType>
+	
+	<xsd:simpleType name="brightness">
+		<xsd:annotation>
+			<xsd:documentation>oBIX brightness value
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:int" />
+	</xsd:simpleType>
+	
+</xsd:schema>

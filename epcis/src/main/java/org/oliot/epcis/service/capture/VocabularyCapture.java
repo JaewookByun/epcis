@@ -45,7 +45,7 @@ import org.xml.sax.SAXException;
  *         bjw0829@kaist.ac.kr
  */
 @Controller
-@RequestMapping("/vocabularyCapture")
+@RequestMapping("/VocabularyCapture")
 public class VocabularyCapture implements ServletContextAware {
 	@Autowired
 	ServletContext servletContext;

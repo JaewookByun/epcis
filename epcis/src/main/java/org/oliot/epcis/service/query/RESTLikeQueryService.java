@@ -37,7 +37,6 @@ import org.springframework.web.context.ServletContextAware;
  *         bjw0829@kaist.ac.kr
  */
 @Controller
-@RequestMapping("/query")
 public class RESTLikeQueryService implements ServletContextAware {
 
 	@Autowired
@@ -110,7 +109,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
 			@RequestParam(required = false) String maxEventCount,
-			Map<String, String[]> extMap) {
+			Map<String, String> params) {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
@@ -124,7 +123,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
 					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					extMap);
+					params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -156,7 +155,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * Returns a list of all subscriptionIDs currently subscribed to the
 	 * specified named query.
 	 */
-	@RequestMapping(value = "/SubscriptionIDs/{queryName}", method = RequestMethod.GET)
+	@RequestMapping(value = "/GetSubscriptionIDs/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
 
@@ -215,7 +214,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String WD_name,
 			@RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String maxElementCount,
-			Map<String, String[]> extMap) {
+			@RequestParam Map<String, String> params) {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
@@ -230,7 +229,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					orderBy, orderDirection, eventCountLimit, maxEventCount,
 					vocabularyName, includeAttributes, includeChildren,
 					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
-					extMap);
+					params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -250,7 +249,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * 
 	 * @return JSONArray of query names ( String )
 	 */
-	@RequestMapping(value = "/QueryNames", method = RequestMethod.GET)
+	@RequestMapping(value = "/GetQueryNames", method = RequestMethod.GET)
 	@ResponseBody
 	public String getQueryNamesREST() {
 		JSONArray jsonArray = new JSONArray();
@@ -287,7 +286,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * 
 	 * No Dependency with Backend
 	 */
-	@RequestMapping(value = "/StandardVersion", method = RequestMethod.GET)
+	@RequestMapping(value = "/GetStandardVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public String getStandardVersion() {
 		return "1.1";
@@ -307,7 +306,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * 
 	 * No Dependency with Backend
 	 */
-	@RequestMapping(value = "/VendorVersion", method = RequestMethod.GET)
+	@RequestMapping(value = "/GetVendorVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public String getVendorVersion() {
 		// It is not a version of Vendor

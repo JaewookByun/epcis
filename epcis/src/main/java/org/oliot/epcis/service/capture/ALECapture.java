@@ -74,7 +74,7 @@ import org.xml.sax.SAXException;
  *         bjw0829@kaist.ac.kr
  */
 @Controller
-@RequestMapping("/aleCapture")
+@RequestMapping("/ALECapture")
 public class ALECapture implements ServletContextAware {
 
 	@Autowired

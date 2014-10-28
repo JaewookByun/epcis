@@ -85,48 +85,46 @@ public class MongoSubscriptionTask implements Job {
 		String orderDirection = map.getString("orderDirection");
 		String eventCountLimit = map.getString(" eventCountLimit");
 		String maxEventCount = map.getString("maxEventCount");
-		Map<String, String[]> paramMap = (Map<String,String[]>)map.get("paramMap");
-		
-		
+		Map<String, String> paramMap = (Map<String, String>) map
+				.get("paramMap");
+
 		MongoQueryService queryService = new MongoQueryService();
-		String pollResult = queryService
-				.poll(queryName, eventType, GE_eventTime, LT_eventTime,
-						GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-						EQ_disposition, EQ_readPoint, WD_readPoint,
-						EQ_bizLocation, WD_bizLocation,
-						EQ_transformationID, MATCH_epc, MATCH_parentID,
-						MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-						MATCH_epcClass, MATCH_inputEPCClass,
-						MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-						GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-						orderBy, orderDirection, eventCountLimit,
-						maxEventCount, null, false, false, null, null, null,
-						null, null, paramMap);
+		String pollResult = queryService.poll(queryName, eventType,
+				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+				WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, null, false, false, null, null, null, null,
+				null, paramMap);
 
 		EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(
 				pollResult), EPCISQueryDocumentType.class);
-		
+
 		String resultString = "";
-		
-		if (resultXML != null
-				&& resultXML.getEPCISBody() != null
-				&& resultXML.getEPCISBody().getQueryTooLargeException() != null ) {
-			QueryTooLargeException e = resultXML.getEPCISBody().getQueryTooLargeException();
+
+		if (resultXML != null && resultXML.getEPCISBody() != null
+				&& resultXML.getEPCISBody().getQueryTooLargeException() != null) {
+			QueryTooLargeException e = resultXML.getEPCISBody()
+					.getQueryTooLargeException();
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(e, sw);
 			resultString = sw.toString();
-		}else if (resultXML != null
+		} else if (resultXML != null
 				&& resultXML.getEPCISBody() != null
-				&& resultXML.getEPCISBody().getImplementationException() != null ) {
-			ImplementationException e = resultXML.getEPCISBody().getImplementationException();
+				&& resultXML.getEPCISBody().getImplementationException() != null) {
+			ImplementationException e = resultXML.getEPCISBody()
+					.getImplementationException();
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(e, sw);
 			resultString = sw.toString();
-		}else if (resultXML != null
+		} else if (resultXML != null
 				&& resultXML.getEPCISBody() != null
 				&& resultXML.getEPCISBody().getQueryResults() != null
-				&& resultXML.getEPCISBody().getQueryResults()
-						.getResultsBody() != null) {
+				&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
 			QueryResults queryResults = new QueryResults();
 			queryResults.setQueryName(queryName);
 			queryResults.setResultsBody(resultXML.getEPCISBody()
@@ -135,7 +133,7 @@ public class MongoSubscriptionTask implements Job {
 			JAXB.marshal(queryResults, sw);
 			resultString = sw.toString();
 		}
-		
+
 		try {
 			URL url = new URL(dest);
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument schemaVersion="1.1"
-	creationDate="2013-06-04T14:59:02.099+02:00" xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	xmlns:example="http://ns.example.com/epcis">
+	creationDate="2013-06-04T14:59:02.099+02:00" xmlns:epcis="urn:epcglobal:epcis:xsd:1">
 	<EPCISBody>
 		<EventList>
 			<!-- ERROR XML -->
@@ -47,8 +46,8 @@
 				<ilmd>
 					<!-- Wrong example, not work according to xsd -->
 					<extension>
-						<example:bestBeforeDate>2014-12-10</example:bestBeforeDate>
-						<example:batch>XYZ</example:batch>
+						<example:bestBeforeDate xmlns:example="http://ns.example.com/epcis">2014-12-10</example:bestBeforeDate>
+						<example:batch xmlns:example="http://ns.example.com/epcis">XYZ</example:batch>
 					</extension>
 				</ilmd>
 			</TransformationEvent>
