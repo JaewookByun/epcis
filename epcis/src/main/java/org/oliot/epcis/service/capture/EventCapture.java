@@ -47,7 +47,7 @@ import org.xml.sax.SAXException;
  *         bjw0829@kaist.ac.kr
  */
 @Controller
-@RequestMapping("/eventCapture")
+@RequestMapping("/EventCapture")
 public class EventCapture implements ServletContextAware {
 
 	@Autowired

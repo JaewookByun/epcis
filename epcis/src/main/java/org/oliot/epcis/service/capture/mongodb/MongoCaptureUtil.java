@@ -86,7 +86,7 @@ public class MongoCaptureUtil {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 		mongoOperation.save(vocabulary);
-		Configuration.logger.info(" Event Saved ");
+		Configuration.logger.info(" Vocabulary Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
 }

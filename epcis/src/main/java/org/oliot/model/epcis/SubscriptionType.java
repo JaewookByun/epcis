@@ -51,13 +51,13 @@ public class SubscriptionType {
 	private String orderDirection;
 	private String eventCountLimit;
 	private String maxEventCount;
-	private Map<String, String[]> paramMap;
+	private Map<String, String> paramMap;
 
-	public Map<String, String[]> getParamMap() {
+	public Map<String, String> getParamMap() {
 		return paramMap;
 	}
 
-	public void setParamMap(Map<String, String[]> paramMap) {
+	public void setParamMap(Map<String, String> paramMap) {
 		this.paramMap = paramMap;
 	}
 
@@ -74,7 +74,7 @@ public class SubscriptionType {
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity,
 			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String[]> paramMap) {
+			String maxEventCount, Map<String, String> paramMap) {
 		this.queryName = queryName;
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;

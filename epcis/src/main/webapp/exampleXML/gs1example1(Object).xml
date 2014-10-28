@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.1">
 	<EPCISBody>
 		<EventList>
@@ -46,9 +46,9 @@
 				<extension>
 					<!-- Right way to store extension field v1.1 -->
 					<extension>
-						<example:temperature>36</example:temperature>
-						<example:emg>22</example:emg>
-						<example:ecg>11</example:ecg>
+						<example:temperature xmlns:example="http://ns.example.com/epcis" >36</example:temperature>
+						<example:emg xmlns:example="http://ns.example.com/epcis" >22</example:emg>
+						<example:ecg xmlns:example="http://ns.example.com/epcis" >11</example:ecg>
 					</extension>
 				</extension>
 			</ObjectEvent>
