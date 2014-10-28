@@ -1389,25 +1389,8 @@ public class MongoQueryService {
 			 * Verified
 			 */
 			if (EQ_action != null) {
-				String[] eqActionArray = EQ_action.split(",");
-				List<String> subStringList = new ArrayList<String>();
-				for (int i = 0; i < eqActionArray.length; i++) {
-					String eqActionString = eqActionArray[i].trim();
-					// According to SPEC, this condition thwos
-					// QueryParameterException
-					if (!eqActionString.equals("ADD")
-							&& !eqActionString.equals("OBSERVE")
-							&& !eqActionString.equals("DELETE")) {
-					}
-					if (eqActionString.equals("ADD")
-							|| eqActionString.equals("OBSERVE")
-							|| eqActionString.equals("DELETE"))
-						subStringList.add(eqActionString);
-				}
-
-				if (subStringList != null)
-					criteriaList
-							.add(Criteria.where("action").in(subStringList));
+				// Constrained already checked
+				criteriaList.add(Criteria.where("action").is(EQ_action));
 			}
 			/**
 			 * EQ_bizStep: If specified, the result will only include events
@@ -2094,7 +2077,11 @@ public class MongoQueryService {
 	}
 
 	private boolean isExtraParameter(String paramName) {
-
+		
+		if (paramName.contains("eventTime"))
+			return false;
+		if (paramName.contains("recordTime"))
+			return false;
 		if (paramName.contains("action"))
 			return false;
 		if (paramName.contains("bizStep"))
