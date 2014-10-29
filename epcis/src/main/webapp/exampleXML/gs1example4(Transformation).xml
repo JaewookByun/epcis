@@ -32,6 +32,7 @@
 							220 instances (e.g., pieces) of GTIN '04012345666663' have been used. -->
 					</quantityElement>
 				</inputQuantityList>
+				<transformationID>transformationID</transformationID>
 				<outputEPCList>
 					<epc>urn:epc:id:sgtin:4012345.077889.25</epc>
 					<epc>urn:epc:id:sgtin:4012345.077889.26</epc>

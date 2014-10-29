@@ -199,12 +199,14 @@ public class TransactionEventReadConverter implements
 								.get("epcClass");
 						Object quantity = quantityDBObject.get("quantity");
 						Object uom = quantityDBObject.get("uom");
-						if (epcClassObject != null && quantity != null
-								&& uom != null) {
+						if (epcClassObject != null) {
 							qet.setEpcClass(epcClassObject.toString());
-							double quantityDouble = (double) quantity;
-							qet.setQuantity((float) quantityDouble);
-							qet.setUom(uom.toString());
+							if (quantity != null) {
+								double quantityDouble = (double) quantity;
+								qet.setQuantity((float) quantityDouble);
+							}
+							if (uom != null)
+								qet.setUom(uom.toString());
 							qetList.add(qet);
 						}
 					}
