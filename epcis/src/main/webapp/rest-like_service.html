@@ -35,7 +35,7 @@
 										v1.1 XML Schema</a>
 								</li>
 								<li class="list-group-item">Example URL:
-									http://{base-url}:{base-port}/epcis/Service/eventCapture</li>
+									http://{base-url}:{base-port}/epcis/Service/EventCapture</li>
 								<li class="list-group-item">Example EPCIS Document: <a
 									href="./exampleXML/EPCISDocument.xml">Example of
 										EPCISDocument</a></li>
@@ -56,7 +56,7 @@
 										v1.1 XML Schema</a>
 								</li>
 								<li class="list-group-item">Example URL:
-									http://{base-url}:{base-port}/epcis/Service/vocabularyCapture</li>
+									http://{base-url}:{base-port}/epcis/Service/VocabularyCapture</li>
 								<li class="list-group-item">Example EPCIS Master Data
 									Document: <a href="./exampleXML/EPCISMasterDataDocument.xml">Example
 										of EPCIS Master Data Document</a>
@@ -79,7 +79,7 @@
 										v1.1 XML Schema</a>
 								</li>
 								<li class="list-group-item">Example URL:
-									http://{base-url}:{base-port}/epcis/Service/aleCapture</li>
+									http://{base-url}:{base-port}/epcis/Service/ALECapture</li>
 								<li class="list-group-item">Example ALE ECReport: <a
 									href="./exampleXML/ALEReport.xml">Example of ALE ECReport</a>
 								</li>
@@ -111,7 +111,7 @@
 								<li class="list-group-item">Return the standard version of
 									EPCIS</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/StandardVersion</li>
+									http://{base-url}:{base-port}/epcis/Service/GetStandardVersion</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
@@ -123,7 +123,7 @@
 								<li class="list-group-item">Return the vendor specific
 									version of EPCIS</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/VendorVersion
+									http://{base-url}:{base-port}/epcis/Service/GetVendorVersion
 								</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
@@ -136,7 +136,7 @@
 								<li class="list-group-item">Return a list of all query
 									names available</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/QueryNames</li>
+									http://{base-url}:{base-port}/epcis/Service/GetQueryNames</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 								<li class="list-group-item">Return: [ {queryNames} ]</li>
 							</ul>
@@ -149,7 +149,7 @@
 								<li class="list-group-item">Return events stored in
 									repository in interest immediately</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query//Poll/{queryName}</li>
+									http://{base-url}:{base-port}/epcis/Service/Poll/{queryName}</li>
 								<li class="list-group-item">Additional Parameters: <br>
 									eventType : Comma separated event type (e.g. ObjectEvent) <br>
 									(GE|LT)_eventTime : yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br>
@@ -191,7 +191,7 @@
 									subscriptionIDs currently subscribed to the specified named
 									query.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/SubscriptionIDs/{queryName}</li>
+									http://{base-url}:{base-port}/epcis/Service/GetSubscriptionIDs/{queryName}</li>
 								<li class="list-group-item">Return: [ {SubscriptionIDs} ]</li>
 							</ul>
 						</td>
@@ -203,15 +203,14 @@
 								<li class="list-group-item">Registers a subscriber for a
 									previously defined query having the specified name.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/Subscribe/{queryName}/{subscriptionID}</li>
+									http://{base-url}:{base-port}/epcis/Service/Subscribe/{queryName}/{subscriptionID}</li>
 								<li class="list-group-item">Additional Parameters: <br>
 									dest : Callback URL <br> cronExpression : <a
 									href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
 										CronTrigger Tutorial</a>
 								</li>
 								<li class="list-group-item">e.g. <a
-									href="http://{base-url}:{base-port}/epcis/Service/query/Subscribe/SimpleEventQuery/3?MATCH_EPC=urn:epc:id:sgtin:1.1.1&cronExpression=0/10
-					* * * * ?&dest=http://localhost:8888/epcis/SubscriptionServlet">Link</a></li>
+									href="http://{base-url}:{base-port}/epcis/Service/Subscribe/SimpleEventQuery/6?MATCH_epc=urn:epc:id:sgtin:1.1.1&cronExpression=0/10 * * * * ?&dest=http://localhost:8080/epcis/SubscriptionTestServlet">Link</a></li>
 							</ul>
 						</td>
 					</tr>
@@ -222,7 +221,7 @@
 								<li class="list-group-item">Removes a previously registered
 									subscription having the specified subscriptionID.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/query/Unsubscribe/{subscriptionID}</li>
+									http://{base-url}:{base-port}/epcis/Service/Unsubscribe/{subscriptionID}</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>

@@ -203,7 +203,6 @@ public class Configuration implements ServletContextListener {
 						.info("Message Queue Service - Capture Listener "
 								+ (i + 1) + " started");
 			}
-
 		}
 	}
 
