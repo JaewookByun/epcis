@@ -828,7 +828,7 @@ public class MongoQueryService {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 
-		List<Criteria> criteriaList = makeCritera(vocabularyName,
+		List<Criteria> criteriaList = makeCriteria(vocabularyName,
 				includeAttributes, includeChildren, attributeNames, eQ_name,
 				wD_name, hASATTR, maxElementCount);
 
@@ -1218,7 +1218,7 @@ public class MongoQueryService {
 		return epcisQueryDocumentType;
 	}
 
-	private List<Criteria> makeCritera(String vocabularyName,
+	private List<Criteria> makeCriteria(String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
 			String hASATTR, String maxElementCount) {
