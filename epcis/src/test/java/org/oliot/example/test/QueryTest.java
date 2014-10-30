@@ -41,11 +41,6 @@ public class QueryTest {
 				.getBean("mongoTemplate");
 		DBCollection collection = mongoOperation.getCollection("ObjectEvent");
 		DBObject query = new BasicDBObject();
-		//query.put("readPoint.id", "urn:epc:id:sgln:0614141.07346.1234");
-		//DBObject gt = new BasicDBObject();
-		//gt.put("$gt", 112582011115l);
-		//query.put("eventTime", gt);
-		//query.put("eventTime", new BasicDBObject("$lt", 112582011115l));
 		query.put("readPoint.id", "urn:epc:id:sgln:0614141.07346.1234");
 		DBCursor c = collection.find(query);
 		while(c.hasNext())
