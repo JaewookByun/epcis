@@ -1355,21 +1355,17 @@ public class MongoQueryService {
 				map.put("eventCountLimit", subscription.getEventCountLimit());
 			if (subscription.getMaxEventCount() != null)
 				map.put("maxEventCount", subscription.getMaxEventCount());
-
+			if (subscription.getParamMap() != null )
+				map.put("paramMap", subscription.getParamMap());
+			
 			JobDetail job = newJob(MongoSubscriptionTask.class)
-					.withIdentity(subscription.getSubscriptionID(),
-							subscription.getQueryName()).setJobData(map)
-					.build();
+					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).setJobData(map)
+					.storeDurably(false).build();
 
 			Trigger trigger = newTrigger()
-					.withIdentity(subscription.getSubscriptionID(),
-							subscription.getQueryName())
-					.startNow()
-					.withSchedule(
-							cronSchedule(subscription.getCronExpression()))
-					.forJob(subscription.getSubscriptionID(),
-							subscription.getQueryName()).build();
-
+					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).startNow()
+					.withSchedule(cronSchedule(subscription.getCronExpression())).build();
+			
 			// ClassPathXmlApplicationContext context = new
 			// ClassPathXmlApplicationContext(
 			// "classpath:QuartzConfig.xml");
