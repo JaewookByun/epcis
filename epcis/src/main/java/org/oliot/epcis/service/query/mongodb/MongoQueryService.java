@@ -73,6 +73,23 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+/**
+ * Copyright (C) 2014 KAIST RESL
+ *
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
+ *
+ * @author Jack Jaewook Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr
+ */
 public class MongoQueryService {
 
 	public String subscribe(SubscriptionType subscription) {
@@ -589,14 +606,18 @@ public class MongoQueryService {
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
-			BasicDBList aggreQueryList = new BasicDBList();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
 			}
-			baseQuery.put("$and", aggreQueryList);
-
-			// Query
-			DBCursor cursor = collection.find(baseQuery);
 			// Sort and Limit
 			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
 					eventCountLimit);
@@ -630,14 +651,18 @@ public class MongoQueryService {
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
-			BasicDBList aggreQueryList = new BasicDBList();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
 			}
-			baseQuery.put("$and", aggreQueryList);
-
-			// Query
-			DBCursor cursor = collection.find(baseQuery);
 			// Sort and Limit
 			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
 					eventCountLimit);
@@ -667,14 +692,18 @@ public class MongoQueryService {
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
-			BasicDBList aggreQueryList = new BasicDBList();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
 			}
-			baseQuery.put("$and", aggreQueryList);
-
-			// Query
-			DBCursor cursor = collection.find(baseQuery);
 			// Sort and Limit
 			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
 					eventCountLimit);
@@ -705,14 +734,18 @@ public class MongoQueryService {
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
-			BasicDBList aggreQueryList = new BasicDBList();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
 			}
-			baseQuery.put("$and", aggreQueryList);
-
-			// Query
-			DBCursor cursor = collection.find(baseQuery);
 			// Sort and Limit
 			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
 					eventCountLimit);
@@ -743,14 +776,18 @@ public class MongoQueryService {
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
-			BasicDBList aggreQueryList = new BasicDBList();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
 			}
-			baseQuery.put("$and", aggreQueryList);
-
-			// Query
-			DBCursor cursor = collection.find(baseQuery);
 			// Sort and Limit
 			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
 					eventCountLimit);
@@ -1466,245 +1503,302 @@ public class MongoQueryService {
 						dbo.put(type, val);
 						subObjectList.add(dbo);
 					}
-					if(subObjectList.isEmpty() == false )
-					{
+					if (subObjectList.isEmpty() == false) {
 						DBObject query = new BasicDBObject();
-						query.put("bizTransactionList", new BasicDBObject("$in", subObjectList));
+						query.put("bizTransactionList", new BasicDBObject(
+								"$in", subObjectList));
 						queryList.add(query);
 					}
 				}
 
-//				/**
-//				 * EQ_source_type: This is not a single parameter, but a family
-//				 * of parameters. If a parameter of this form is specified, the
-//				 * result will only include events that (a) include a
-//				 * sourceList; (b) where the source list includes an entry whose
-//				 * type subfield is equal to type extracted from the name of
-//				 * this parameter; and (c) where the source subfield of that
-//				 * entry is equal to one of the values specified in this
-//				 * parameter.
-//				 */
-//
-//				if (paramName.contains("EQ_source_")) {
-//					String type = paramName.substring(10, paramName.length());
-//					List<DBObject> subObjList = new ArrayList<DBObject>();
-//					String[] paramValueArr = paramValues.split(",");
-//					for (int i = 0; i < paramValueArr.length; i++) {
-//						String val = paramValueArr[i].trim();
-//						DBObject dbo = new BasicDBObject();
-//						dbo.put(type, val);
-//						subObjList.add(dbo);
-//					}
-//					if (eventType.equals("AggregationEvent")
-//							|| eventType.equals("ObjectEvent")
-//							|| eventType.equals("TransactionEvent")) {
-//						Criteria criteria = Criteria.where(
-//								"extension.sourceList").in(subObjList);
-//						criteriaList.add(criteria);
-//					}
-//					if (eventType.equals("TransformationEvent")) {
-//						Criteria criteria = Criteria.where("sourceList").in(
-//								subObjList);
-//						criteriaList.add(criteria);
-//					}
-//				}
-//
-//				/**
-//				 * EQ_destination_type: This is not a single parameter, but a
-//				 * family of parameters. If a parameter of this form is
-//				 * specified, the result will only include events that (a)
-//				 * include a destinationList; (b) where the destination list
-//				 * includes an entry whose type subfield is equal to type
-//				 * extracted from the name of this parameter; and (c) where the
-//				 * destination subfield of that entry is equal to one of the
-//				 * values specified in this parameter.
-//				 */
-//				if (paramName.contains("EQ_destination_")) {
-//					String type = paramName.substring(15, paramName.length());
-//					List<DBObject> subObjList = new ArrayList<DBObject>();
-//					String[] paramValueArr = paramValues.split(",");
-//					for (int i = 0; i < paramValueArr.length; i++) {
-//						String val = paramValueArr[i].trim();
-//						DBObject dbo = new BasicDBObject();
-//						dbo.put(type, val);
-//						subObjList.add(dbo);
-//					}
-//					if (eventType.equals("AggregationEvent")
-//							|| eventType.equals("ObjectEvent")
-//							|| eventType.equals("TransactionEvent")) {
-//						Criteria criteria = Criteria.where(
-//								"extension.destinationList").in(subObjList);
-//						criteriaList.add(criteria);
-//					}
-//					if (eventType.equals("TransformationEvent")) {
-//						Criteria criteria = Criteria.where("destinationList")
-//								.in(subObjList);
-//						criteriaList.add(criteria);
-//					}
-//				}
-//				boolean isExtraParam = isExtraParameter(paramName);
-//
-//				if (isExtraParam == true) {
-//
-//					/**
-//					 * EQ_fieldname: This is not a single parameter, but a
-//					 * family of parameters. If a parameter of this form is
-//					 * specified, the result will only include events that (a)
-//					 * have a field named fieldname whose type is either String
-//					 * or a vocabulary type; and where (b) the value of that
-//					 * field matches one of the values specified in this
-//					 * parameter. Fieldname is the fully qualified name of an
-//					 * extension field. The name of an extension field is an XML
-//					 * qname; that is, a pair consisting of an XML namespace URI
-//					 * and a name. The name of the corresponding query parameter
-//					 * is constructed by concatenating the following: the string
-//					 * EQ_, the namespace URI for the extension field, a pound
-//					 * sign (#), and the name of the extension field.
-//					 */
-//					if (paramName.startsWith("EQ_")) {
-//						String type = paramName
-//								.substring(3, paramName.length());
-//						List<String> subObjList = new ArrayList<String>();
-//						String[] paramValueArr = paramValues.split(",");
-//						for (int i = 0; i < paramValueArr.length; i++) {
-//							String val = paramValueArr[i].trim();
-//							subObjList.add(val);
-//						}
-//						Criteria criteria = new Criteria();
-//						if (eventType.equals("AggregationEvent")
-//								|| eventType.equals("ObjectEvent")
-//								|| eventType.equals("TransactionEvent")) {
-//							criteria.orOperator(
-//									Criteria.where(
-//											"extension.extension.any." + type)
-//											.in(subObjList),
-//									Criteria.where(
-//											"extension.extension.otherAttributes."
-//													+ type).in(subObjList));
-//							criteriaList.add(criteria);
-//						}
-//						if (eventType.equals("QuantityEvent")
-//								|| eventType.equals("TransformationEvent")
-//								|| eventType.equals("SensorEvent")) {
-//							criteria.orOperator(
-//									Criteria.where("extension.any." + type).in(
-//											subObjList),
-//									Criteria.where(
-//											"extension.otherAttributes." + type)
-//											.in(subObjList));
-//							criteriaList.add(criteria);
-//						}
-//					}
-//
-//					/**
-//					 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described
-//					 * above, but may be applied to a field of type Int, Float,
-//					 * or Time. The result will include events that (a) have a
-//					 * field named fieldname; and where (b) the type of the
-//					 * field matches the type of this parameter (Int, Float, or
-//					 * Time); and where (c) the value of the field is greater
-//					 * than the specified value. Fieldname is constructed as for
-//					 * EQ_fieldname.
-//					 */
-//
-//					if (paramName.startsWith("GT_")
-//							|| paramName.startsWith("GE_")
-//							|| paramName.startsWith("LT_")
-//							|| paramName.startsWith("LE_")) {
-//						String type = paramName
-//								.substring(3, paramName.length());
-//						// Already error handled
-//						String value = paramValues;
-//						Criteria criteria = new Criteria();
-//						if (eventType.equals("AggregationEvent")
-//								|| eventType.equals("ObjectEvent")
-//								|| eventType.equals("TransactionEvent")) {
-//							if (paramName.startsWith("GT_")) {
-//								criteria.orOperator(
-//										Criteria.where(
-//												"extension.extension.any."
-//														+ type).gt(value),
-//										Criteria.where(
-//												"extension.extension.otherAttributes."
-//														+ type).gt(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("GE_")) {
-//								criteria.orOperator(
-//										Criteria.where(
-//												"extension.extension.any."
-//														+ type).gte(value),
-//										Criteria.where(
-//												"extension.extension.otherAttributes."
-//														+ type).gte(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("LT_")) {
-//								criteria.orOperator(
-//										Criteria.where(
-//												"extension.extension.any."
-//														+ type).lt(value),
-//										Criteria.where(
-//												"extension.extension.otherAttributes."
-//														+ type).lt(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("LE_")) {
-//								criteria.orOperator(
-//										Criteria.where(
-//												"extension.extension.any."
-//														+ type).lte(value),
-//										Criteria.where(
-//												"extension.extension.otherAttributes."
-//														+ type).lte(value));
-//								criteriaList.add(criteria);
-//							}
-//						}
-//						if (eventType.equals("QuantityEvent")
-//								|| eventType.equals("TransformationEvent")
-//								|| eventType.equals("SensorEvent")) {
-//							if (paramName.startsWith("GT_")) {
-//								criteria.orOperator(
-//										Criteria.where("extension.any." + type)
-//												.gt(value),
-//										Criteria.where(
-//												"extension.otherAttributes."
-//														+ type).gt(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("GE_")) {
-//								criteria.orOperator(
-//										Criteria.where("extension.any." + type)
-//												.gte(value),
-//										Criteria.where(
-//												"extension.otherAttributes."
-//														+ type).gte(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("LT_")) {
-//								criteria.orOperator(
-//										Criteria.where("extension.any." + type)
-//												.lt(value),
-//										Criteria.where(
-//												"extension.otherAttributes."
-//														+ type).lt(value));
-//								criteriaList.add(criteria);
-//							}
-//							if (paramName.startsWith("LE_")) {
-//								criteria.orOperator(
-//										Criteria.where("extension.any." + type)
-//												.lte(value),
-//										Criteria.where(
-//												"extension.otherAttributes."
-//														+ type).lte(value));
-//								criteriaList.add(criteria);
-//							}
-//						}
-//					}
-//
-//				}
-			}
+				/**
+				 * EQ_source_type: This is not a single parameter, but a family
+				 * of parameters. If a parameter of this form is specified, the
+				 * result will only include events that (a) include a
+				 * sourceList; (b) where the source list includes an entry whose
+				 * type subfield is equal to type extracted from the name of
+				 * this parameter; and (c) where the source subfield of that
+				 * entry is equal to one of the values specified in this
+				 * parameter.
+				 */
 
+				if (paramName.contains("EQ_source_")) {
+					String type = paramName.substring(10, paramName.length());
+					String[] paramValueArr = paramValues.split(",");
+					BasicDBList subObjectList = new BasicDBList();
+					for (int i = 0; i < paramValueArr.length; i++) {
+						String val = paramValueArr[i].trim();
+						DBObject dbo = new BasicDBObject();
+						dbo.put(type, val);
+						subObjectList.add(dbo);
+					}
+					if (subObjectList.isEmpty() == false) {
+						if (eventType.equals("AggregationEvent")
+								|| eventType.equals("ObjectEvent")
+								|| eventType.equals("TransactionEvent")) {
+							DBObject query = new BasicDBObject();
+							query.put("extension.sourceList",
+									new BasicDBObject("$in", subObjectList));
+							queryList.add(query);
+						}
+						if (eventType.equals("TransformationEvent")) {
+							DBObject query = new BasicDBObject();
+							query.put("sourceList", new BasicDBObject("$in",
+									subObjectList));
+							queryList.add(query);
+						}
+					}
+				}
+
+				/**
+				 * EQ_destination_type: This is not a single parameter, but a
+				 * family of parameters. If a parameter of this form is
+				 * specified, the result will only include events that (a)
+				 * include a destinationList; (b) where the destination list
+				 * includes an entry whose type subfield is equal to type
+				 * extracted from the name of this parameter; and (c) where the
+				 * destination subfield of that entry is equal to one of the
+				 * values specified in this parameter.
+				 */
+				if (paramName.contains("EQ_destination_")) {
+					String type = paramName.substring(15, paramName.length());
+					String[] paramValueArr = paramValues.split(",");
+					BasicDBList subObjectList = new BasicDBList();
+					for (int i = 0; i < paramValueArr.length; i++) {
+						String val = paramValueArr[i].trim();
+						DBObject dbo = new BasicDBObject();
+						dbo.put(type, val);
+						subObjectList.add(dbo);
+					}
+					if (subObjectList.isEmpty() == false) {
+						if (eventType.equals("AggregationEvent")
+								|| eventType.equals("ObjectEvent")
+								|| eventType.equals("TransactionEvent")) {
+							DBObject query = new BasicDBObject();
+							query.put("extension.destinationList",
+									new BasicDBObject("$in", subObjectList));
+							queryList.add(query);
+						}
+						if (eventType.equals("TransformationEvent")) {
+							DBObject query = new BasicDBObject();
+							query.put("destinationList", new BasicDBObject(
+									"$in", subObjectList));
+							queryList.add(query);
+						}
+					}
+				}
+				boolean isExtraParam = isExtraParameter(paramName);
+
+				if (isExtraParam == true) {
+
+					/**
+					 * EQ_fieldname: This is not a single parameter, but a
+					 * family of parameters. If a parameter of this form is
+					 * specified, the result will only include events that (a)
+					 * have a field named fieldname whose type is either String
+					 * or a vocabulary type; and where (b) the value of that
+					 * field matches one of the values specified in this
+					 * parameter. Fieldname is the fully qualified name of an
+					 * extension field. The name of an extension field is an XML
+					 * qname; that is, a pair consisting of an XML namespace URI
+					 * and a name. The name of the corresponding query parameter
+					 * is constructed by concatenating the following: the string
+					 * EQ_, the namespace URI for the extension field, a pound
+					 * sign (#), and the name of the extension field.
+					 */
+					if (paramName.startsWith("EQ_")) {
+						String type = paramName
+								.substring(3, paramName.length());
+						String[] paramValueArr = paramValues.split(",");
+						BasicDBList subStringList = new BasicDBList();
+						for (int i = 0; i < paramValueArr.length; i++) {
+							String val = paramValueArr[i].trim();
+							subStringList.add(val);
+						}
+						if (subStringList.isEmpty() == false) {
+							if (eventType.equals("AggregationEvent")
+									|| eventType.equals("ObjectEvent")
+									|| eventType.equals("TransactionEvent")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.extension.any." + type,
+										new BasicDBObject("$in", subStringList));
+								DBObject query2 = new BasicDBObject();
+								query2.put(
+										"extension.extension.otherAttributes."
+												+ type, new BasicDBObject(
+												"$in", subStringList));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (eventType.equals("QuantityEvent")
+									|| eventType.equals("TransformationEvent")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.any." + type,
+										new BasicDBObject("$in", subStringList));
+								DBObject query2 = new BasicDBObject();
+								query2.put("extension.otherAttributes." + type,
+										new BasicDBObject("$in", subStringList));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+						}
+					}
+
+					/**
+					 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described
+					 * above, but may be applied to a field of type Int, Float,
+					 * or Time. The result will include events that (a) have a
+					 * field named fieldname; and where (b) the type of the
+					 * field matches the type of this parameter (Int, Float, or
+					 * Time); and where (c) the value of the field is greater
+					 * than the specified value. Fieldname is constructed as for
+					 * EQ_fieldname.
+					 */
+
+					if (paramName.startsWith("GT_")
+							|| paramName.startsWith("GE_")
+							|| paramName.startsWith("LT_")
+							|| paramName.startsWith("LE_")) {
+						String type = paramName
+								.substring(3, paramName.length());
+						if (eventType.equals("AggregationEvent")
+								|| eventType.equals("ObjectEvent")
+								|| eventType.equals("TransactionEvent")) {
+							if (paramName.startsWith("GT_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.extension.any." + type,
+										new BasicDBObject("$gt", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put(
+										"extension.extension.otherAttributes."
+												+ type, new BasicDBObject(
+												"$gt", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("GE_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.extension.any." + type,
+										new BasicDBObject("$gte", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put(
+										"extension.extension.otherAttributes."
+												+ type, new BasicDBObject(
+												"$gte", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("LT_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.extension.any." + type,
+										new BasicDBObject("$lt", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put(
+										"extension.extension.otherAttributes."
+												+ type, new BasicDBObject(
+												"$lt", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("LE_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.extension.any." + type,
+										new BasicDBObject("$lte", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put(
+										"extension.extension.otherAttributes."
+												+ type, new BasicDBObject(
+												"$lte", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+						}
+						if (eventType.equals("QuantityEvent")
+								|| eventType.equals("TransformationEvent")) {
+							if (paramName.startsWith("GT_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.any." + type,
+										new BasicDBObject("$gt", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put("extension.otherAttributes." + type,
+										new BasicDBObject("$gt", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("GE_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.any." + type,
+										new BasicDBObject("$gte", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put("extension.otherAttributes." + type,
+										new BasicDBObject("$gte", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("LT_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.any." + type,
+										new BasicDBObject("$lt", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put("extension.otherAttributes." + type,
+										new BasicDBObject("$lt", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+							if (paramName.startsWith("LE_")) {
+								DBObject query1 = new BasicDBObject();
+								query1.put("extension.any." + type,
+										new BasicDBObject("$lte", paramValues));
+								DBObject query2 = new BasicDBObject();
+								query2.put("extension.otherAttributes." + type,
+										new BasicDBObject("$lte", paramValues));
+								BasicDBList subList = new BasicDBList();
+								subList.add(query1);
+								subList.add(query2);
+								DBObject subBase = new BasicDBObject();
+								subBase.put("$or", subList);
+								queryList.add(subBase);
+							}
+						}
+					}
+				}
+			}
 		} catch (ParseException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
