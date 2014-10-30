@@ -35,6 +35,13 @@
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
+	<!-- Subscription Test Servlet -->
+	<servlet>
+		<servlet-name>SubscriptionTestServlet</servlet-name>
+		<display-name>SubscriptionTestServlet</display-name>
+		<description></description>
+		<servlet-class>org.oliot.epcis.service.query.mongodb.SubscriptionTestServlet</servlet-class>
+	</servlet>
 
 	<!-- Spring Framework MVC -->
 	<servlet>
@@ -43,7 +50,7 @@
 		<!-- <init-param> <param-name>contextConfigLocation</param-name> <param-value> 
 			/WEB-INF/beans.xml /WEB-INF/main.xml </param-value> </init-param> -->
 	</servlet>
-
+	
 	<!-- CXF Web Service -->
 	<servlet-mapping>
 		<servlet-name>CXFServlet</servlet-name>
@@ -54,5 +61,11 @@
 	<servlet-mapping>
 		<servlet-name>dispatcher</servlet-name>
 		<url-pattern>/Service/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- Subscription Test Servlet -->
+	<servlet-mapping>
+		<servlet-name>SubscriptionTestServlet</servlet-name>
+		<url-pattern>/SubscriptionTestServlet</url-pattern>
 	</servlet-mapping>
 </web-app>
