@@ -99,9 +99,10 @@ public class TransformationEventWriteConverter implements
 			dbo.put("outputEPCList", epcDBList);
 		}
 		// TransformationID
-		if (transformationEventType.getTransformationID() != null ){
-			dbo.put("transformationID", transformationEventType.getTransformationID());
-		}		
+		if (transformationEventType.getTransformationID() != null) {
+			dbo.put("transformationID",
+					transformationEventType.getTransformationID());
+		}
 		// BizStep
 		if (transformationEventType.getBizStep() != null)
 			dbo.put("bizStep", transformationEventType.getBizStep());
