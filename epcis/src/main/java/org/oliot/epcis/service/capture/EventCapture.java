@@ -129,7 +129,8 @@ public class EventCapture implements ServletContextAware {
 			cs.capture(epcisDocument);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		} else {
-			EPCISDocumentType epcisDocument = JAXB.unmarshal(inputString,
+			InputStream epcisStream = getXMLDocumentInputStream(inputString);
+			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
 					EPCISDocumentType.class);
 			CaptureService cs = new CaptureService();
 			cs.capture(epcisDocument);
