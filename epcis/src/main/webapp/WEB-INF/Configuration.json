@@ -3,7 +3,7 @@
 	"backend" : "MongoDB",
 	
 	"_capture_verification" : "(on|off)",
-	"capture_verification" : "on",
+	"capture_verification" : "off",
 	
 	"_message_queue" : "(on|off) - should have message_queue_exchange_capture and message_queue_exchange_query if on",
 	"message_queue" : "on",

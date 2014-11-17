@@ -82,7 +82,8 @@ public class VocabularyCapture implements ServletContextAware {
 			cs.capture(epcisMasterDataDocument);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		} else {
-			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(inputString,
+			InputStream epcisStream = getXMLDocumentInputStream(inputString);
+			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
 					EPCISMasterDataDocumentType.class);
 			CaptureService cs = new CaptureService();
 			cs.capture(epcisMasterDataDocument);
