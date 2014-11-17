@@ -9,8 +9,6 @@ import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -25,7 +23,10 @@ import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.StandardBusinessDocumentHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 import org.xml.sax.SAXException;
 
@@ -58,113 +59,83 @@ public class EventCapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
-	@RequestMapping
-	public void post(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping(method = RequestMethod.POST)
+	@ResponseBody
+	public String post(@RequestBody String inputString) {
+		Configuration.logger.info(" EPCIS Document Capture Started.... ");
 
-		try {
+		if (Configuration.isCaptureVerfificationOn == true) {
 
-			Configuration.logger
-					.info(" EPCIS Document Capture Started.... ");
-
-			// Get Input Stream
-			InputStream is = request.getInputStream();
-			if (Configuration.isCaptureVerfificationOn == true) {
-				String isString = getInputStream(is);
-
-				InputStream validateStream = getXMLDocumentInputStream(isString);
-				// Parsing and Validating data
-				String xsdPath = servletContext.getRealPath("/wsdl");
-				xsdPath += "/EPCglobal-epcis-1_2_jack.xsd";
-				boolean isValidated = validate(validateStream, xsdPath);
-				if (isValidated == false) {
-					// M63
-					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-					return;
-				}
-
-				InputStream epcisStream = getXMLDocumentInputStream(isString);
-				Configuration.logger
-						.info(" EPCIS Document : Validated ");
-				EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
-						EPCISDocumentType.class);
-				
-				// M50, M63
-				if( epcisDocument.getEPCISHeader() != null )
-				{
-					if( epcisDocument.getEPCISHeader().getStandardBusinessDocumentHeader() != null )
-					{
-						StandardBusinessDocumentHeader header = epcisDocument.getEPCISHeader().getStandardBusinessDocumentHeader();
-						if( header.getHeaderVersion() == null || !header.getHeaderVersion().equals("1.1"))
-						{
-							Configuration.logger
-							.error(" HeaderVersion should 1.1 if use SBDH ");
-							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-							return;
-						}
-						if( header.getDocumentIdentification() == null )
-						{
-							Configuration.logger
-							.error(" DocumentIdentification should exist if use SBDH ");
-							response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-							return;
-						}else
-						{
-							DocumentIdentification docID = header.getDocumentIdentification();
-							if( docID.getStandard() == null | !docID.getStandard().equals("EPCglobal") )
-							{
-								Configuration.logger
-								.error(" DocumentIdentification/Standard should EPCglobal if use SBDH ");
-								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-								return;
-							}
-							if( docID.getType() == null || (!docID.getType().equals("Events") && !docID.getType().equals("MasterData")) )
-							{
-								Configuration.logger
-								.error(" DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH ");
-								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-								return;
-							}
-							if( docID.getTypeVersion() == null | !docID.getTypeVersion().equals("1.1"))
-							{
-								Configuration.logger
-								.error(" DocumentIdentification/TypeVersion should 1.1 if use SBDH ");
-								response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-								return;
-							}
-							
-						}
-					}
-				}
-				
-				CaptureService cs = new CaptureService();
-				cs.capture(epcisDocument);
-				Configuration.logger.info(" EPCIS Document : Captured ");
-				response.setStatus(HttpServletResponse.SC_ACCEPTED);
-			} else {
-				EPCISDocumentType epcisDocument = JAXB.unmarshal(is,
-						EPCISDocumentType.class);
-				CaptureService cs = new CaptureService();
-				cs.capture(epcisDocument);
-				Configuration.logger.info(" EPCIS Document : Captured ");
-				response.setStatus(HttpServletResponse.SC_ACCEPTED);
+			InputStream validateStream = getXMLDocumentInputStream(inputString);
+			// Parsing and Validating data
+			String xsdPath = servletContext.getRealPath("/wsdl");
+			xsdPath += "/EPCglobal-epcis-1_2_jack.xsd";
+			boolean isValidated = validate(validateStream, xsdPath);
+			if (isValidated == false) {
+				// M63
+				return "Error M63";
 			}
 
-		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-		}
-	}
+			InputStream epcisStream = getXMLDocumentInputStream(inputString);
+			Configuration.logger.info(" EPCIS Document : Validated ");
+			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream,
+					EPCISDocumentType.class);
 
-	private static String getInputStream(InputStream is) {
-		try {
-			StringWriter writer = new StringWriter();
-			IOUtils.copy(is, writer, "UTF-8");
-			String str = writer.toString();
-			return str;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			// M50, M63
+			if (epcisDocument.getEPCISHeader() != null) {
+				if (epcisDocument.getEPCISHeader()
+						.getStandardBusinessDocumentHeader() != null) {
+					StandardBusinessDocumentHeader header = epcisDocument
+							.getEPCISHeader()
+							.getStandardBusinessDocumentHeader();
+					if (header.getHeaderVersion() == null
+							|| !header.getHeaderVersion().equals("1.1")) {
+						Configuration.logger
+								.error(" HeaderVersion should 1.1 if use SBDH ");
+						return "Error: HeaderVersion should 1.1 if use SBDH";
+					}
+					if (header.getDocumentIdentification() == null) {
+						Configuration.logger
+								.error(" DocumentIdentification should exist if use SBDH ");
+						return "Error: DocumentIdentification should exist if use SBDH";
+					} else {
+						DocumentIdentification docID = header
+								.getDocumentIdentification();
+						if (docID.getStandard() == null
+								| !docID.getStandard().equals("EPCglobal")) {
+							Configuration.logger
+									.error(" DocumentIdentification/Standard should EPCglobal if use SBDH ");
+							return "Error: DocumentIdentification/Standard should EPCglobal if use SBDH";
+						}
+						if (docID.getType() == null
+								|| (!docID.getType().equals("Events") && !docID
+										.getType().equals("MasterData"))) {
+							Configuration.logger
+									.error(" DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH ");
+							return "Error: DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH";
+						}
+						if (docID.getTypeVersion() == null
+								| !docID.getTypeVersion().equals("1.1")) {
+							Configuration.logger
+									.error(" DocumentIdentification/TypeVersion should 1.1 if use SBDH ");
+							return "Error: DocumentIdentification/TypeVersion should 1.1 if use SBDH";
+						}
+
+					}
+				}
+			}
+
+			CaptureService cs = new CaptureService();
+			cs.capture(epcisDocument);
+			Configuration.logger.info(" EPCIS Document : Captured ");
+		} else {
+			EPCISDocumentType epcisDocument = JAXB.unmarshal(inputString,
+					EPCISDocumentType.class);
+			CaptureService cs = new CaptureService();
+			cs.capture(epcisDocument);
+			Configuration.logger.info(" EPCIS Document : Captured ");
 		}
+		return "EPCIS Document : Captured ";
 	}
 
 	private static InputStream getXMLDocumentInputStream(String xmlString) {

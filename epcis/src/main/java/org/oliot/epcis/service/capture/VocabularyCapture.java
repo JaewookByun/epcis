@@ -9,8 +9,6 @@ import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -23,7 +21,10 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 import org.xml.sax.SAXException;
 
@@ -55,60 +56,39 @@ public class VocabularyCapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
-	@RequestMapping
-	public void post(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping(method = RequestMethod.POST)
+	@ResponseBody
+	public String post(@RequestBody String inputString) {
+		Configuration.logger
+				.info(" EPCIS Masterdata Document Capture Started.... ");
 
-		try {
-
-			Configuration.logger
-					.info(" EPCIS Masterdata Document Capture Started.... ");
-
-			// Get Input Stream
-			InputStream is = request.getInputStream();
-			if (Configuration.isCaptureVerfificationOn == true) {
-				String isString = getInputStream(is);
-
-				InputStream validateStream = getXMLDocumentInputStream(isString);
-				// Parsing and Validating data
-				String xsdPath = servletContext.getRealPath("/wsdl");
-				xsdPath += "/EPCglobal-epcis-masterdata-1_1_jack.xsd";
-				boolean isValidated = validate(validateStream, xsdPath);
-				if (isValidated == false) {
-					return;
-				}
-
-				InputStream epcisStream = getXMLDocumentInputStream(isString);
-				Configuration.logger
-						.info(" EPCIS Masterdata Document : Validated ");
-				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
-						EPCISMasterDataDocumentType.class);
-
-				CaptureService cs = new CaptureService();
-				cs.capture(epcisMasterDataDocument);
-				Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
-			} else {
-				EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(is,
-						EPCISMasterDataDocumentType.class);
-				CaptureService cs = new CaptureService();
-				cs.capture(epcisMasterDataDocument);
-				Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
+		if (Configuration.isCaptureVerfificationOn == true) {
+			InputStream validateStream = getXMLDocumentInputStream(inputString);
+			// Parsing and Validating data
+			String xsdPath = servletContext.getRealPath("/wsdl");
+			xsdPath += "/EPCglobal-epcis-masterdata-1_1_jack.xsd";
+			boolean isValidated = validate(validateStream, xsdPath);
+			if (isValidated == false) {
+				return "Error: EPCIS Masterdata Document is not validated";
 			}
 
-		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		}
-	}
+			InputStream epcisStream = getXMLDocumentInputStream(inputString);
+			Configuration.logger
+					.info(" EPCIS Masterdata Document : Validated ");
+			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
+					EPCISMasterDataDocumentType.class);
 
-	private static String getInputStream(InputStream is) {
-		try {
-			StringWriter writer = new StringWriter();
-			IOUtils.copy(is, writer, "UTF-8");
-			String str = writer.toString();
-			return str;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
+			CaptureService cs = new CaptureService();
+			cs.capture(epcisMasterDataDocument);
+			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
+		} else {
+			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(inputString,
+					EPCISMasterDataDocumentType.class);
+			CaptureService cs = new CaptureService();
+			cs.capture(epcisMasterDataDocument);
+			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		}
+		return "EPCIS Masterdata Document : Captured";
 	}
 
 	private static InputStream getXMLDocumentInputStream(String xmlString) {
