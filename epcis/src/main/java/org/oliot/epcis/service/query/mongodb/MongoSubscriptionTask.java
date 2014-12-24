@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.JAXB;
@@ -54,6 +55,8 @@ public class MongoSubscriptionTask implements Job {
 		// String subscriptionID = map.getString("subscriptionID");
 		String dest = map.getString("dest");
 		// String cronExpression = map.getString("cronExpression");
+		boolean reportIfEmpty = map.getBoolean("reportIfEmpty");
+		String initialRecordTime = map.getString("initialRecordTime");
 		String eventType = map.getString("eventType");
 		String GE_eventTime = map.getString("GE_eventTime");
 		String LT_eventTime = map.getString("LT_eventTime");
@@ -88,6 +91,9 @@ public class MongoSubscriptionTask implements Job {
 		Map<String, String> paramMap = (Map<String, String>) map
 				.get("paramMap");
 
+		// InitialRecordTime limits recordTime
+		GE_recordTime = initialRecordTime;
+		
 		MongoQueryService queryService = new MongoQueryService();
 		String pollResult = queryService.poll(queryName, eventType,
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
@@ -125,10 +131,24 @@ public class MongoSubscriptionTask implements Job {
 				&& resultXML.getEPCISBody() != null
 				&& resultXML.getEPCISBody().getQueryResults() != null
 				&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
+
+			List<Object> checkList = resultXML.getEPCISBody()
+					.getQueryResults().getResultsBody().getEventList().getObjectEventOrAggregationEventOrQuantityEvent();
+			
+			if( reportIfEmpty == false )
+			{
+				if( checkList == null || checkList.size() == 0 )
+				{
+					// Do not report if reportIfEmpty is true
+					return;
+				}
+			}
+			
 			QueryResults queryResults = new QueryResults();
 			queryResults.setQueryName(queryName);
 			queryResults.setResultsBody(resultXML.getEPCISBody()
 					.getQueryResults().getResultsBody());
+
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(queryResults, sw);
 			resultString = sw.toString();

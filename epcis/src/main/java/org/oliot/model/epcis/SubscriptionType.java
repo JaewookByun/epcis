@@ -11,6 +11,16 @@ public class SubscriptionType {
 	private String dest;
 	private String cronExpression;
 	private boolean reportIfEmpty;
+	private String initialRecordTime;
+	
+	public String getInitialRecordTime() {
+		return initialRecordTime;
+	}
+
+	public void setInitialRecordTime(String initialRecordTime) {
+		this.initialRecordTime = initialRecordTime;
+	}
+
 	private String eventType;
 
 	public boolean isReportIfEmpty() {
@@ -62,7 +72,7 @@ public class SubscriptionType {
 	}
 
 	public SubscriptionType(String queryName, String subscriptionID,
-			String dest, String cronExpression, String eventType,
+			String dest, String cronExpression, boolean reportIfEmpty, String initialRecordTime, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
@@ -79,6 +89,8 @@ public class SubscriptionType {
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
 		this.cronExpression = cronExpression;
+		this.reportIfEmpty = reportIfEmpty;
+		this.initialRecordTime = initialRecordTime;
 		this.eventType = eventType;
 		this.GE_eventTime = GE_eventTime;
 		this.LT_eventTime = LT_eventTime;

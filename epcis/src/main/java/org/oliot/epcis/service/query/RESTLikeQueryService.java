@@ -1,6 +1,10 @@
 package org.oliot.epcis.service.query;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -78,6 +82,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
 			@RequestParam(required = false) boolean reportIfEmpty,
+			@RequestParam(required = false) String initialRecordTime,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
 			@RequestParam(required = false) String LT_eventTime,
@@ -111,10 +116,30 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String maxEventCount,
 			Map<String, String> params) {
 
+		if( initialRecordTime == null )
+		{
+			GregorianCalendar cal = new GregorianCalendar();
+			Date curTime = cal.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			initialRecordTime = sdf.format(curTime);
+		}else
+		{
+			try{
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			sdf.parse(initialRecordTime);
+			}catch(ParseException e )
+			{
+				return e.toString();
+			}
+		}
+		
+		
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.subscribe(queryName, subscriptionID, dest,
-					cronExpression, reportIfEmpty, eventType, GE_eventTime,
+					cronExpression, reportIfEmpty, initialRecordTime, eventType, GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
