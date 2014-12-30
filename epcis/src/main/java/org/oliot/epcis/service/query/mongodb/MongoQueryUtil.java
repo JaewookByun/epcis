@@ -6,6 +6,24 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+/**
+ * Copyright (C) 2014 Jaewook Jack Byun
+ *
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
+ *
+ * @author Jaewook Jack Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ */
+
 public class MongoQueryUtil {
 
 	static DBObject getINQueryObject(String field, String csv) {
@@ -64,8 +82,7 @@ public class MongoQueryUtil {
 
 	static DBObject getCompExtensionQueryObject(String type, String[] fields,
 			String value, String comp) {
-		if( comp.equals("GT"))
-		{
+		if (comp.equals("GT")) {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
@@ -75,8 +92,7 @@ public class MongoQueryUtil {
 			DBObject subBase = new BasicDBObject();
 			subBase.put("$or", subList);
 			return subBase;
-		}else if( comp.equals("GE"))
-		{
+		} else if (comp.equals("GE")) {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
@@ -86,8 +102,7 @@ public class MongoQueryUtil {
 			DBObject subBase = new BasicDBObject();
 			subBase.put("$or", subList);
 			return subBase;
-		}else if( comp.equals("LT"))
-		{
+		} else if (comp.equals("LT")) {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
@@ -97,8 +112,7 @@ public class MongoQueryUtil {
 			DBObject subBase = new BasicDBObject();
 			subBase.put("$or", subList);
 			return subBase;
-		}else if( comp.equals("LE"))
-		{
+		} else if (comp.equals("LE")) {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
@@ -109,7 +123,7 @@ public class MongoQueryUtil {
 			subBase.put("$or", subList);
 			return subBase;
 		}
-		return null;		
+		return null;
 	}
 
 	static DBObject getINQueryObject(String[] fields, String csv) {

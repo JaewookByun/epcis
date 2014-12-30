@@ -79,7 +79,7 @@ import com.mongodb.DBObject;
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -87,14 +87,15 @@ import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class MongoQueryService {
 
 	public String subscribe(SubscriptionType subscription) {
@@ -380,15 +381,15 @@ public class MongoQueryService {
 		 * the implementation SHALL raise a SubscriptionControls- Exception..
 		 */
 		QuerySchedule querySchedule = controls.getSchedule();
-		if( cronExpression == null  )
-		{
+		if (cronExpression == null) {
 			String sec = querySchedule.getSecond();
 			String min = querySchedule.getMinute();
 			String hours = querySchedule.getHour();
 			String dayOfMonth = querySchedule.getDayOfMonth();
 			String month = querySchedule.getMonth();
 			String dayOfWeek = querySchedule.getDayOfWeek();
-			cronExpression = sec + " " + min + " " + hours + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+			cronExpression = sec + " " + min + " " + hours + " " + dayOfMonth
+					+ " " + month + " " + dayOfWeek;
 		}
 
 		/*

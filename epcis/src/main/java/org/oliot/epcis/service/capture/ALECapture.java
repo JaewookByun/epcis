@@ -57,7 +57,7 @@ import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -65,14 +65,15 @@ import org.xml.sax.SAXException;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Controller
 @RequestMapping("/ALECapture")
 public class ALECapture implements ServletContextAware {
@@ -237,7 +238,8 @@ public class ALECapture implements ServletContextAware {
 			XMLGregorianCalendar recordTime = df
 					.newXMLGregorianCalendar(recordCalendar);
 
-			String eventTimeZoneOffset = makeTimeZoneString(eventTime.getTimezone());
+			String eventTimeZoneOffset = makeTimeZoneString(eventTime
+					.getTimezone());
 
 			if (duration != null) {
 				Duration du = DatatypeFactory.newInstance().newDuration(
@@ -388,17 +390,18 @@ public class ALECapture implements ServletContextAware {
 			String bizLocation = request.getParameter("bizLocation");
 
 			XMLGregorianCalendar eventTime = getEventTime(ecReports);
-			
+
 			String eventTimeZoneOffset = null;
-			
-			if(eventTime.getTimezone() == -2147483648)
-			{
+
+			if (eventTime.getTimezone() == -2147483648) {
 				GregorianCalendar cal = new GregorianCalendar();
-				eventTimeZoneOffset = makeTimeZoneString(cal.getTime().getTimezoneOffset());			
-			}else{
-				eventTimeZoneOffset = makeTimeZoneString(eventTime.getTimezone());
+				eventTimeZoneOffset = makeTimeZoneString(cal.getTime()
+						.getTimezoneOffset());
+			} else {
+				eventTimeZoneOffset = makeTimeZoneString(eventTime
+						.getTimezone());
 			}
-			
+
 			GregorianCalendar recordCalendar = new GregorianCalendar();
 			DatatypeFactory df = DatatypeFactory.newInstance();
 			XMLGregorianCalendar recordTime = df
@@ -498,17 +501,14 @@ public class ALECapture implements ServletContextAware {
 			return null;
 		}
 	}
-	
-	public String makeTimeZoneString(int timeZone)
-	{
+
+	public String makeTimeZoneString(int timeZone) {
 		String retString = "";
-		timeZone = timeZone/60;
-		
-		if( timeZone >= 0 )
-		{
+		timeZone = timeZone / 60;
+
+		if (timeZone >= 0) {
 			retString = String.format("+%02d:00", timeZone);
-		}else
-		{
+		} else {
 			timeZone = Math.abs(timeZone);
 			retString = String.format("-%02d:00", timeZone);
 		}

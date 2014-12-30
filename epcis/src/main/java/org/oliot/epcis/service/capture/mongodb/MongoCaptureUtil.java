@@ -13,10 +13,27 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.data.mongodb.core.MongoOperations;
 
+/**
+ * Copyright (C) 2014 Jaewook Jack Byun
+ *
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
+ *
+ * @author Jaewook Jack Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ */
+
 public class MongoCaptureUtil {
 
-	public void capture(AggregationEventType event)
-	{
+	public void capture(AggregationEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -25,9 +42,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	
-	public void capture(ObjectEventType event)
-	{
+
+	public void capture(ObjectEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -36,9 +52,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	
-	public void capture(QuantityEventType event)
-	{
+
+	public void capture(QuantityEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -47,9 +62,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	
-	public void capture(TransactionEventType event)
-	{
+
+	public void capture(TransactionEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -58,8 +72,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	public void capture(TransformationEventType event)
-	{
+
+	public void capture(TransformationEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -68,8 +82,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	public void capture(SensorEventType event)
-	{
+
+	public void capture(SensorEventType event) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
@@ -78,9 +92,8 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}
-	
-	public void capture(VocabularyType vocabulary)
-	{
+
+	public void capture(VocabularyType vocabulary) {
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx

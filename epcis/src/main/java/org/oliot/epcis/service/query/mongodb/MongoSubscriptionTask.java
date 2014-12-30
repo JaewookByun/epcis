@@ -24,7 +24,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -32,14 +32,15 @@ import org.quartz.JobExecutionException;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class MongoSubscriptionTask implements Job {
 
 	/**
@@ -93,7 +94,7 @@ public class MongoSubscriptionTask implements Job {
 
 		// InitialRecordTime limits recordTime
 		GE_recordTime = initialRecordTime;
-		
+
 		MongoQueryService queryService = new MongoQueryService();
 		String pollResult = queryService.poll(queryName, eventType,
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
@@ -132,18 +133,17 @@ public class MongoSubscriptionTask implements Job {
 				&& resultXML.getEPCISBody().getQueryResults() != null
 				&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
 
-			List<Object> checkList = resultXML.getEPCISBody()
-					.getQueryResults().getResultsBody().getEventList().getObjectEventOrAggregationEventOrQuantityEvent();
-			
-			if( reportIfEmpty == false )
-			{
-				if( checkList == null || checkList.size() == 0 )
-				{
+			List<Object> checkList = resultXML.getEPCISBody().getQueryResults()
+					.getResultsBody().getEventList()
+					.getObjectEventOrAggregationEventOrQuantityEvent();
+
+			if (reportIfEmpty == false) {
+				if (checkList == null || checkList.size() == 0) {
 					// Do not report if reportIfEmpty is true
 					return;
 				}
 			}
-			
+
 			QueryResults queryResults = new QueryResults();
 			queryResults.setQueryName(queryName);
 			queryResults.setResultsBody(resultXML.getEPCISBody()
