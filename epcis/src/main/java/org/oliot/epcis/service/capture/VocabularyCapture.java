@@ -29,7 +29,7 @@ import org.springframework.web.context.ServletContextAware;
 import org.xml.sax.SAXException;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -37,14 +37,15 @@ import org.xml.sax.SAXException;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Controller
 @RequestMapping("/VocabularyCapture")
 public class VocabularyCapture implements ServletContextAware {
@@ -75,16 +76,16 @@ public class VocabularyCapture implements ServletContextAware {
 			InputStream epcisStream = getXMLDocumentInputStream(inputString);
 			Configuration.logger
 					.info(" EPCIS Masterdata Document : Validated ");
-			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
-					EPCISMasterDataDocumentType.class);
+			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB
+					.unmarshal(epcisStream, EPCISMasterDataDocumentType.class);
 
 			CaptureService cs = new CaptureService();
 			cs.capture(epcisMasterDataDocument);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		} else {
 			InputStream epcisStream = getXMLDocumentInputStream(inputString);
-			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
-					EPCISMasterDataDocumentType.class);
+			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB
+					.unmarshal(epcisStream, EPCISMasterDataDocumentType.class);
 			CaptureService cs = new CaptureService();
 			cs.capture(epcisMasterDataDocument);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");

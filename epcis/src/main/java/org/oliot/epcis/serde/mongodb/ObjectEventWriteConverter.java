@@ -25,7 +25,7 @@ import com.mongodb.DBObject;
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -33,14 +33,15 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Component
 @WritingConverter
 public class ObjectEventWriteConverter implements
@@ -117,12 +118,12 @@ public class ObjectEventWriteConverter implements
 			ILMDType ilmd = objectEventType.getIlmd();
 			if (ilmd.getExtension() != null) {
 				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				Map<String,String> map2Save = getILMDExtensionMap(ilmdExtension);
+				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
 			}
 		}
-		// Extension	
+		// Extension
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
 			DBObject extension = getObjectEventExtensionObject(oee);
