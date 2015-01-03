@@ -12,12 +12,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import org.oliot.model.oliot.ReadPoint;
 import org.w3c.dom.Element;
 
 
@@ -48,7 +52,71 @@ import org.w3c.dom.Element;
 public class ReadPointExtensionType {
 
     @XmlAnyElement(lax = true)
-    protected List<Object> any;
+    private ReadPoint readPoint;
+	private String fieldname;
+	private String prefix;
+	private int intValue;
+	private float floatValue;
+	private XMLGregorianCalendar dateValue;
+	private String stringValue;
+	
+    public ReadPoint getReadPoint() {
+		return readPoint;
+	}
+
+	public void setReadPoint(ReadPoint readPoint) {
+		this.readPoint = readPoint;
+	}
+
+	public String getFieldname() {
+		return fieldname;
+	}
+
+	public void setFieldname(String fieldname) {
+		this.fieldname = fieldname;
+	}
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	public int getIntValue() {
+		return intValue;
+	}
+
+	public void setIntValue(int intValue) {
+		this.intValue = intValue;
+	}
+
+	public float getFloatValue() {
+		return floatValue;
+	}
+
+	public void setFloatValue(float floatValue) {
+		this.floatValue = floatValue;
+	}
+
+	public String getStringValue() {
+		return stringValue;
+	}
+
+	public void setStringValue(String stringValue) {
+		this.stringValue = stringValue;
+	}
+
+	public XMLGregorianCalendar getDateValue() {
+		return dateValue;
+	}
+
+	public void setDateValue(XMLGregorianCalendar dateValue) {
+		this.dateValue = dateValue;
+	}
+
+	protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
@@ -107,5 +175,14 @@ public class ReadPointExtensionType {
     public Map<QName, String> getOtherAttributes() {
         return otherAttributes;
     }
+
+	public ReadPointExtensionType(String fieldname) {
+		super();
+		this.fieldname = fieldname;
+	}
+
+	public ReadPointExtensionType() {
+		super();
+	}
 
 }

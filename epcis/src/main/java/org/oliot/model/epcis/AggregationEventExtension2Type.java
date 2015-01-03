@@ -12,12 +12,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
+
 import org.w3c.dom.Element;
 
 
@@ -47,6 +49,7 @@ import org.w3c.dom.Element;
 })
 public class AggregationEventExtension2Type {
 
+	private String fieldName;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -107,5 +110,14 @@ public class AggregationEventExtension2Type {
     public Map<QName, String> getOtherAttributes() {
         return otherAttributes;
     }
+
+	public AggregationEventExtension2Type() {
+		super();
+	}
+
+	public AggregationEventExtension2Type(String fieldName) {
+		super();
+		this.fieldName = fieldName;
+	}
 
 }

@@ -91,4 +91,14 @@ public class BusinessTransactionType {
         this.type = value;
     }
 
+	public BusinessTransactionType() {
+		super();
+	}
+
+	public BusinessTransactionType(String value, String type) {
+		super();
+		this.value = value;
+		this.type = type;
+	}
+
 }

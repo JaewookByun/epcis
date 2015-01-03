@@ -111,4 +111,18 @@ public class QuantityElementType {
         this.uom = value;
     }
 
+	public QuantityElementType(String epcClass, float quantity, String uom) {
+		super();
+		this.epcClass = epcClass;
+		this.quantity = quantity;
+		this.uom = uom;
+	}
+
+	public QuantityElementType() {
+		super();
+	}
+
+    
+    
+    
 }

@@ -12,12 +12,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+
+import org.oliot.model.oliot.BusinessLocation;
 import org.w3c.dom.Element;
 
 
@@ -47,7 +51,74 @@ import org.w3c.dom.Element;
 })
 public class BusinessLocationExtensionType {
 
-    @XmlAnyElement(lax = true)
+	
+	private BusinessLocationType businessLocation;
+	private String fieldname;
+	private String prefix;
+	private int intValue;
+	private float floatValue;
+	private XMLGregorianCalendar dateValue;
+	private String stringValue;
+	
+	
+	
+    public BusinessLocationType getBusinessLocation() {
+		return businessLocation;
+	}
+
+	public void setBusinessLocation(BusinessLocationType businessLocation) {
+		this.businessLocation = businessLocation;
+	}
+
+	public String getFieldname() {
+		return fieldname;
+	}
+
+	public void setFieldname(String fieldname) {
+		this.fieldname = fieldname;
+	}
+
+	public String getPrefix() {
+		return prefix;
+	}
+
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+
+	public int getIntValue() {
+		return intValue;
+	}
+
+	public void setIntValue(int intValue) {
+		this.intValue = intValue;
+	}
+
+	public float getFloatValue() {
+		return floatValue;
+	}
+
+	public void setFloatValue(float floatValue) {
+		this.floatValue = floatValue;
+	}
+
+	public XMLGregorianCalendar getDateValue() {
+		return dateValue;
+	}
+
+	public void setDateValue(XMLGregorianCalendar dateValue) {
+		this.dateValue = dateValue;
+	}
+
+	public String getStringValue() {
+		return stringValue;
+	}
+
+	public void setStringValue(String stringValue) {
+		this.stringValue = stringValue;
+	}
+
+	@XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
@@ -107,5 +178,14 @@ public class BusinessLocationExtensionType {
     public Map<QName, String> getOtherAttributes() {
         return otherAttributes;
     }
+
+	public BusinessLocationExtensionType() {
+		super();
+	}
+
+	public BusinessLocationExtensionType(String fieldname) {
+		super();
+		this.fieldname = fieldname;
+	}
 
 }

@@ -64,11 +64,16 @@ public class TransactionEventExtensionType {
      *     {@link QuantityListType }
      *     
      */
+    
     public QuantityListType getQuantityList() {
         return quantityList;
     }
 
-    /**
+    public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
+	/**
      * Sets the value of the quantityList property.
      * 
      * @param value

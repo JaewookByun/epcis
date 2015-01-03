@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlType;
 public class DestinationListType {
 
     @XmlElement(required = true)
-    protected List<SourceDestType> destination;
+    protected List<SourceDestType> destination = new ArrayList<SourceDestType>();
 
     /**
      * Gets the value of the destination property.

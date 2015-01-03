@@ -17,6 +17,7 @@ import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
+import org.oliot.epcis.service.capture.mysql.MysqlCaptureUtil;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -59,6 +60,7 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
+//event.getEventTimeZoneOffset();
 
 		// Mandatory Field: Action
 		if (event.getAction() == null) {
@@ -88,6 +90,10 @@ public class CaptureService implements CoreCaptureService {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
+		else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
+		}
 	}
 
 	public void capture(ObjectEventType event) {
@@ -102,6 +108,9 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
 			m.capture(event);
 		}
 	}
@@ -118,6 +127,9 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
 			m.capture(event);
 		}
 	}
@@ -145,6 +157,10 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
+		}	
+		else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -160,6 +176,10 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(event);
+		}
+		else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
 			m.capture(event);
 		}
 	}
@@ -178,12 +198,20 @@ public class CaptureService implements CoreCaptureService {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
 		}
+		else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
+		}
 	}
 
 	public void capture(VocabularyType vocabulary) {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.capture(vocabulary);
+		}
+		else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
 			m.capture(vocabulary);
 		}
 

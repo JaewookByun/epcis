@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.capture.CaptureMQListener;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
+import org.oliot.epcis.service.query.mysql.MysqlSubscription;
 import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -213,7 +214,8 @@ public class Configuration implements ServletContextListener {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlSubscription ms = new MysqlSubscription();
+			ms.init();
 		}
 	}
 }

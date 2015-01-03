@@ -7,6 +7,9 @@
 
 package org.oliot.model.epcis;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -37,7 +40,17 @@ import javax.xml.bind.annotation.XmlValue;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EPC", namespace = "epcglobal.axis.epcis.oliot.org", propOrder = { "value" })
+@Entity
 public class EPC {
+	@Id
+	private int id;
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	@XmlValue
 	protected String value;
@@ -49,25 +62,14 @@ public class EPC {
 		this.value = value;
 	}
 
-	/**
-	 * Gets the value of the value property.
-	 * 
-	 * @return possible object is {@link String }
-	 * 
-	 */
 	public String getValue() {
 		return value;
 	}
 
-	/**
-	 * Sets the value of the value property.
-	 * 
-	 * @param value
-	 *            allowed object is {@link String }
-	 * 
-	 */
 	public void setValue(String value) {
 		this.value = value;
 	}
+
+	
 
 }

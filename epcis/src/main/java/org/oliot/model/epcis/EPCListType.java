@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class EPCListType {
 
-    protected List<EPC> epc;
+    protected List<EPC> epc =new ArrayList<EPC>();
 
     public void setEpc(List<EPC> epc) {
 		this.epc = epc;

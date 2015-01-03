@@ -10,6 +10,14 @@ package org.oliot.model.epcis;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
@@ -64,8 +72,11 @@ import javax.xml.namespace.QName;
     TransactionEventType.class,
     ObjectEventType.class
 })
-public abstract class EPCISEventType {
 
+public abstract class EPCISEventType {
+ 
+	
+	
     @XmlElement(required = true)
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar eventTime;
@@ -73,8 +84,12 @@ public abstract class EPCISEventType {
     protected XMLGregorianCalendar recordTime;
     @XmlElement(required = true)
     protected String eventTimeZoneOffset;
+    
+    @Transient
     protected EPCISEventExtensionType baseExtension;
+    
     @XmlAnyAttribute
+    @Transient
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
@@ -187,8 +202,14 @@ public abstract class EPCISEventType {
      * @return
      *     always non-null
      */
+    
+    
     public Map<QName, String> getOtherAttributes() {
         return otherAttributes;
     }
+
+	public EPCISEventType() {
+		super();
+	}
 
 }
