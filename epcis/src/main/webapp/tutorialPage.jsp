@@ -71,7 +71,7 @@
 				</div>
 			</div>
 			<div class="item">
-				<img width="100%" src="./image/2.png" alt="2">
+				<img width="100%" src="./image/inspection.png" alt="2">
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>When Customer Wants to Know about</h1>
@@ -80,7 +80,7 @@
 				</div>
 			</div>
 			<div class="item">
-				<img width="100%" src="./image/2.png" alt="3">
+				<img width="100%" src="./image/transaction.png" alt="3">
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS Event Producer 1: Diary Farm</h1>
@@ -89,7 +89,7 @@
 				</div>
 			</div>
 			<div class="item">
-				<img width="100%" src="./image/2.png" alt="4">
+				<img width="100%" src="./image/transformation.png" alt="4">
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS Event Producer 2: The Butchery</h1>
@@ -98,7 +98,7 @@
 				</div>
 			</div>
 			<div class="item">
-				<img width="100%" src="./image/2.png" alt="5">
+				<img width="100%" src="./image/object.png" alt="5">
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS Event Producer 3: Retail</h1>
