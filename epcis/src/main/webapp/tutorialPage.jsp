@@ -37,7 +37,6 @@
 			<!--/.navbar-collapse -->
 		</div>
 	</nav>
-
 	<!-- Carousel
     ================================================== -->
 	<div id="myCarousel" class="carousel slide" data-ride="carousel">
@@ -141,13 +140,12 @@
 				</ul>
 			</div>
 			<div class="col-md-4">
-				<h2>Capture the events</h2>
+				<h2>Write Your Events</h2>
 				<p>This tutorial explains how you can record the important
 					events based on EPCIS document.</p>
-				<p>This tutorial enables you to customize and record the EPCIS
-					events based on our template.</p>
+				<p>This tutorial helps you understand what the elements in the XML mean step by step with three business sites and three EPCIS event types.</p>
 				<p>
-					<a class="btn btn-default" href="#" role="button">Try it now
+					<a class="btn btn-default" href="./captureService1.jsp" role="button">Try it now
 						&raquo;</a>
 				</p>
 			</div>

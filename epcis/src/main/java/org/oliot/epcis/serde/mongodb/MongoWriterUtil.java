@@ -11,6 +11,7 @@ import javax.xml.namespace.QName;
 import org.apache.axis.message.MessageElement;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
+import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.DestinationListType;
@@ -67,7 +68,7 @@ public class MongoWriterUtil {
 		}
 		return attrObject;
 	}
-	
+
 	static DBObject getBaseExtensionObject(
 			EPCISEventExtensionType baseExtensionType) {
 		DBObject baseExtension = new BasicDBObject();
@@ -123,31 +124,45 @@ public class MongoWriterUtil {
 		DBObject bizLocation = new BasicDBObject();
 		if (bizLocationType.getId() != null)
 			bizLocation.put("id", bizLocationType.getId());
-		// Business Location Extension is not currently supported
-		/*
-		 * BusinessLocationExtensionType bizLocationExtensionType =
-		 * bizLocationType .getExtension(); if (bizLocationExtensionType !=
-		 * null) { DBObject extension = new BasicDBObject(); if
-		 * (bizLocationExtensionType.getAny() != null) { Map<String, String>
-		 * map2Save = new HashMap<String, String>(); List<Object> objList =
-		 * bizLocationExtensionType.getAny(); for (int i = 0; i <
-		 * objList.size(); i++) { Object obj = objList.get(i); if (obj
-		 * instanceof Element) { Element element = (Element) obj; if
-		 * (element.getFirstChild() != null) { String name =
-		 * element.getLocalName(); String value = element.getFirstChild()
-		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save !=
-		 * null) extension.put("any", map2Save); }
-		 * 
-		 * if (bizLocationExtensionType.getOtherAttributes() != null) {
-		 * Map<QName, String> map = bizLocationExtensionType
-		 * .getOtherAttributes(); Map<String, String> map2Save = new
-		 * HashMap<String, String>(); Iterator<QName> iter =
-		 * map.keySet().iterator(); while (iter.hasNext()) { QName qName =
-		 * iter.next(); String value = map.get(qName);
-		 * map2Save.put(qName.toString(), value); }
-		 * extension.put("otherAttributes", map2Save); }
-		 * bizLocation.put("extension", extension); }
-		 */
+
+		BusinessLocationExtensionType bizLocationExtensionType = bizLocationType
+				.getExtension();
+		if (bizLocationExtensionType != null) {
+			DBObject extension = new BasicDBObject();
+			if (bizLocationExtensionType.getAny() != null) {
+				Map<String, String> map2Save = new HashMap<String, String>();
+				List<Object> objList = bizLocationExtensionType.getAny();
+				for (int i = 0; i < objList.size(); i++) {
+					Object obj = objList.get(i);
+					if (obj instanceof Element) {
+						Element element = (Element) obj;
+						if (element.getFirstChild() != null) {
+							String name = element.getLocalName();
+							String value = element.getFirstChild()
+									.getTextContent();
+							map2Save.put(name, value);
+						}
+					}
+				}
+				if (map2Save != null)
+					extension.put("any", map2Save);
+			}
+
+			if (bizLocationExtensionType.getOtherAttributes() != null) {
+				Map<QName, String> map = bizLocationExtensionType
+						.getOtherAttributes();
+				Map<String, String> map2Save = new HashMap<String, String>();
+				Iterator<QName> iter = map.keySet().iterator();
+				while (iter.hasNext()) {
+					QName qName = iter.next();
+					String value = map.get(qName);
+					map2Save.put(qName.toString(), value);
+				}
+				extension.put("otherAttributes", map2Save);
+			}
+			bizLocation.put("extension", extension);
+		}
+
 		return bizLocation;
 	}
 
