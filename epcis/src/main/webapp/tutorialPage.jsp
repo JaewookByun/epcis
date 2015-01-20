@@ -83,7 +83,7 @@
 				<img width="100%" src="./image/transaction.png" alt="3">
 				<div class="container">
 					<div class="carousel-caption">
-						<h1>EPCIS Event Producer 1: Diary Farm</h1>
+						<h1>EPCIS Event Producer 1: Dairy Farm</h1>
 						<h4>Capture when the cow solds</h4>
 					</div>
 				</div>
@@ -135,7 +135,7 @@
 				<p>Customers in retail want to trace the beefs in terms of
 					Where, When, and Why. This tutorial gives the guideline about</p>
 				<ul>
-					<li>How Diary Farm, The butchery, and Retail can record the
+					<li>How Dairy Farm, The butchery, and Retail can record the
 						important events on the cow.</li>
 					<li>How Customer easily traces the beef pack</li>
 				</ul>
@@ -157,7 +157,7 @@
 					log on the specific EPC.</p>
 				<p></p>
 				<p>
-					<a class="btn btn-default" href="#" role="button">See it now
+					<a class="btn btn-default" href="./mapService.jsp" role="button">See it now
 						&raquo;</a>
 				</p>
 			</div>
