@@ -11,7 +11,7 @@
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="./js/bootstrap.js"></script>
-<link href="carousel.css" rel="stylesheet">
+<link href="./css/carousel.css" rel="stylesheet">
 
 </head>
 <body>
@@ -30,7 +30,7 @@
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
-					<button type="submit" class="btn btn-success" onclick="#">RESET
+					<button type="submit" class="btn btn-success" onclick="resetDB()">RESET
 						DB</button>
 				</form>
 			</div>
@@ -51,10 +51,10 @@
 		</ol>
 		<div class="carousel-inner" role="listbox">
 			<div class="item active">
-				<img width="100%" src="./image/2.png" alt="1">
+				<img width="100%" src="./image/epcis.png" alt="1">
 				<div class="container">
 					<div class="carousel-caption">
-						<h1>EPCIS Overview</h1>
+						<h1 style="font-color:#FFFFFF">EPCIS Overview</h1>
 						<h4>
 							Electronic Product Code Information Service (EPCIS) enables to
 							capture and share EPC-based event.<br> With EPCIS, event
@@ -106,7 +106,7 @@
 				</div>
 			</div>
 			<div class="item">
-				<img width="100%" src="./image/2.png" alt="6">
+				<img width="100%" src="./image/trace.png" alt="6">
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS visualizes everyday-objects</h1>
@@ -150,7 +150,7 @@
 				</p>
 			</div>
 			<div class="col-md-4">
-				<h2>Query the history</h2>
+				<h2>Trace the history</h2>
 				<p>This tutorial gives you a map service which traces the life
 					log on the specific EPC.</p>
 				<p></p>
@@ -175,9 +175,16 @@
 	</div>
 	<!-- /container -->
 
+	<script>
+		function resetDB(){
+			$.get("http://localhost:8081/epcis/Service/ResetDB");
+			alert("Repository Initialized");	
+		}
+	
+	</script>
+
 	<script src="js/bootstrap.min.js"></script>
-	<script
-		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 </body>
 </html>

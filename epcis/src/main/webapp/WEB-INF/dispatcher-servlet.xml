@@ -10,6 +10,7 @@
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
+	<bean id="utilityService" class="org.oliot.epcis.service.query.UtilityService"></bean>
 	
 	<!-- SOAP/HTTP Test Class, describing how to consume SOAP services  -->
 	<!-- <bean id="soaptest" class="org.oliot.epcis.service.query.SoapTest"></bean>-->
