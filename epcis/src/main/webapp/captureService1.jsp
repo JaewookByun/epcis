@@ -127,7 +127,7 @@
 										.ajax(
 												{
 													type : "POST",
-													url : "http://localhost:8080/epcis/Service/EventCapture",
+													url : "http://localhost:8081/epcis/Service/EventCapture",
 													contentType : "application/xml; charset=utf-8",
 													data : responseTxt
 												})
@@ -145,6 +145,10 @@
 
 		function skip() {
 			document.location.href = "./captureService2.jsp";
+		}
+		
+		function backToMainPage(){
+			document.location.href = "./tutorialPage.jsp";
 		}
 	</script>
 </body>

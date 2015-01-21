@@ -33,6 +33,14 @@ body {
 	margin-left: auto;
 	margin-right: auto
 }
+
+.gm-style-iw {
+	width: 200px;
+}
+
+.carousel-caption {
+	color: #FFFFFF;
+}
 </style>
 </head>
 
@@ -96,7 +104,7 @@ body {
 	function trace1() {
 		$
 				.get(
-						"http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
+						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
@@ -118,8 +126,9 @@ body {
 								map : map
 							});
 
-							infoText = $epc.text().trim()
-									+ "<br>was located in<br>Matsuyama Food Mart<br>at<br>"
+							infoText = "The beef pack"+
+									"<br>was located in"+
+									"<br>Matsuyama Food Mart<br>at<br>"
 									+ $eventTime.text().trim();
 
 							$infowindow1 = new google.maps.InfoWindow({
@@ -135,10 +144,9 @@ body {
 	}
 
 	function trace2() {
-		$infowindow1.close();
 		$
 				.get(
-						"http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
+						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
@@ -149,50 +157,96 @@ body {
 							lat = $geo.text().split(",")[0].trim();
 							lon = $geo.text().split(",")[1].trim();
 							$latlng2 = new google.maps.LatLng(lat, lon);
-							mapOptions = {
-								center : $latlng2,
-								zoom : 10,
-								mapTypeId : google.maps.MapTypeId.ROADMAP
-							};
-							map.setOptions(mapOptions);
-							$marker2 = new google.maps.Marker({
-								position : $latlng2,
-								title : 'Matsuyama Food Mart',
-								map : map
-							});
+							path1 = [ $latlng1, $latlng2 ];
+							/*
+							 mapOptions = {
+							 center : $latlng2,
+							 zoom : 10,
+							 mapTypeId : google.maps.MapTypeId.ROADMAP
+							 };
+							 map.setOptions(mapOptions);
+							 */
+							
 
-							infoText = $epc.text().trim()
-									+ "<br>was produced from<br>" + $origin
+							infoText = "The beef pack"
+									+ "<br>was produced from"
+									+ "<br>the cow"
 									+ "<br>in Butcher Lauren B<br>at<br>"
 									+ $eventTime.text().trim();
 
 							$infowindow2 = new google.maps.InfoWindow({
 								content : infoText,
-								maxWidth : 800
+								maxWidth : 2000
 							});
 
-							$infowindow2.open(map, $marker2);
+							// Animation
+							$infowindow1.close();
 
-							path1 = [ $latlng1, $latlng2 ];
-							var path1obj = new google.maps.Polyline({
-								path : path1,
-								strokeColor : "#0000FF",
-								strokeOpacity : 0.8,
-								strokeWeight : 2
+							$cnt = 0;
+							// 100 frames
+							
+							var timer1 = setInterval( timer1func, 10);
+							
+							$marker2 = new google.maps.Marker({
+								position : $latlng2,
+								title : 'Matsuyama Food Mart',
+								map : map
 							});
 							
-							path1obj.setMap(map);
+							function timer1func(){
+								if ($cnt != 100) {
 
+									latTmp = path1[0].lat()
+											+ (path1[1].lat() - path1[0]
+													.lat()) * $cnt
+											/ 100.0;
+									lngTmp = path1[0].lng()
+											+ (path1[1].lng() - path1[0]
+													.lng()) * $cnt
+											/ 100.0;
+
+									$latlngTmp = new google.maps.LatLng(
+											latTmp, lngTmp);
+									//console.log($cnt + " , " + latTmp + " , " + $latlngTmp);
+									pathTmp = [ $latlng1, $latlngTmp ];
+
+									var pathTmp = new google.maps.Polyline(
+											{
+												path : pathTmp,
+												strokeColor : "#0000FF",
+												strokeOpacity : 0.8,
+												strokeWeight : 2
+											});
+
+									pathTmp.setMap(map);
+									$cnt = $cnt+1;
+
+									mapOptions = {
+										center : $latlngTmp,
+										zoom : 10,
+										mapTypeId : google.maps.MapTypeId.ROADMAP
+									};
+									map.setOptions(mapOptions);
+
+								} else if ($cnt == 100) {
+									clearInterval(timer1);
+									
+									
+									
+									$infowindow2.open(map, $marker2);
+								}
+							}
+							
 							google.maps.event.addListener($marker2, 'click',
 									trace3);
 						});
 	}
 
 	function trace3() {
-		$infowindow2.close();
+		
 		$
 				.get(
-						"http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?MATCH_epc="
+						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_epc="
 								+ $origin,
 						function(data) {
 							xmlDoc = $.parseXML(data);
@@ -212,31 +266,88 @@ body {
 							map.setOptions(mapOptions);
 							$marker3 = new google.maps.Marker({
 								position : $latlng3,
-								title : 'Matsuyama Food Mart',
+								title : 'Parker Ranch',
 								map : map
 							});
 
-							infoText = $origin
-									+ "<br>was sold from Parker Ranch<br>to Butcher Lauren B<br>at<br>"
+							infoText = "The cow"
+									+ "<br>was sold from Parker Ranch"
+									+ "<br>to Butcher Lauren B<br>at<br>"
 									+ $eventTime.text().trim();
 
-							$infowindow3 = new google.maps.InfoWindow({
-								content : infoText,
-								maxWidth : 800
-							});
-
 							path2 = [ $latlng2, $latlng3 ];
+							/*
 							var path2obj = new google.maps.Polyline({
 								path : path2,
 								strokeColor : "#0000FF",
 								strokeOpacity : 0.8,
 								strokeWeight : 2
 							});
-							
+
 							path2obj.setMap(map);
+*/
+							// Animation
+							$infowindow2.close();
+
+							$cnt = 0;
+							// 100 frames
 							
+							var timer2 = setInterval( timer2func, 15);
 							
-							$infowindow3.open(map, $marker3);
+							function timer2func(){
+								if ($cnt != 100) {
+
+									latTmp = path2[0].lat()
+											+ (path2[1].lat() - path2[0]
+													.lat()) * $cnt
+											/ 100.0;
+									lngTmp = path2[0].lng()
+											+ (path2[1].lng() - path2[0]
+													.lng()) * $cnt
+											/ 100.0;
+
+									$latlngTmp = new google.maps.LatLng(
+											latTmp, lngTmp);
+									//console.log($cnt + " , " + latTmp + " , " + $latlngTmp);
+									pathTmp = [ $latlng2, $latlngTmp ];
+
+									var pathTmp = new google.maps.Polyline(
+											{
+												path : pathTmp,
+												strokeColor : "#0000FF",
+												strokeOpacity : 0.8,
+												strokeWeight : 2
+											});
+
+									pathTmp.setMap(map);
+									$cnt = $cnt+1;
+
+									mapOptions = {
+										center : $latlngTmp,
+										zoom : 10,
+										mapTypeId : google.maps.MapTypeId.ROADMAP
+									};
+									map.setOptions(mapOptions);
+
+								} else if ($cnt == 100) {
+									clearInterval(timer2);
+									
+									$marker3 = new google.maps.Marker({
+										position : $latlng3,
+										title : 'Butcher Lauren B',
+										map : map
+									});
+									
+									$infowindow3 = new google.maps.InfoWindow({
+										content : infoText,
+										maxWidth : 800
+									});
+									
+									$infowindow3.open(map, $marker3);
+								}
+							}
+				
+							//$infowindow3.open(map, $marker3);
 						});
 	}
 </script>
@@ -268,7 +379,7 @@ body {
 	<div class="container">
 		<p>
 			Insert the EPC you want to trace. If you want to trace it,
-			<code>Click Markers</code>
+			<code>Click</code> the latest marker
 		</p>
 		<input type="text" class="input-medium search-query"
 			value="urn:epc:id:sgtin:4012345.077889.27" size=35>
