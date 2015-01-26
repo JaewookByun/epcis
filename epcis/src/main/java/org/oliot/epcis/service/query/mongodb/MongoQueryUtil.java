@@ -41,6 +41,24 @@ public class MongoQueryUtil {
 		return null;
 	}
 
+	static DBObject getVocFamilyQueryObject(String type, String field, String csv) {
+		String[] paramValueArr = csv.split(",");
+		BasicDBList subObjectList = new BasicDBList();
+		for (int i = 0; i < paramValueArr.length; i++) {
+			String val = paramValueArr[i].trim();
+			DBObject dbo = new BasicDBObject();
+			dbo.put("id", type);
+			dbo.put("value", val);
+			subObjectList.add(dbo);
+		}
+		if (subObjectList.isEmpty() == false) {
+			DBObject query = new BasicDBObject();
+			query.put(field, new BasicDBObject("$in", subObjectList));
+			return query;
+		}
+		return null;
+	}
+	
 	static DBObject getINFamilyQueryObject(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
 		BasicDBList subObjectList = new BasicDBList();

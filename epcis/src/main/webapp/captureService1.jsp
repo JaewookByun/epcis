@@ -82,12 +82,17 @@
 					The cow is sold <br> &nbsp;&nbsp;&nbsp; &#8226; Business Step:
 					departing <br> &nbsp;&nbsp;&nbsp; &#8226; Disposition:
 					in_transit <br> &nbsp;&nbsp;&nbsp; &#8226; Ownership transfer
+				</a> <a href="#" class="list-group-item active"
+					style="text-align: center"> Capture Transaction Event </a> <a
+					href="#" class="list-group-item"> Send left EPCIS Document as
+					HTTP POST Message to <br> <code>http://localhost:8081/epcis/Service/EventCapture</code><br><br>
+					<button type="button" class="btn btn-warning" onclick="capture()">Capture
+						this event</button>
 				</a>
 			</div>
 			<button type="button" class="btn btn-danger" onclick="back()">Back
 				to main page</button>
-			<button type="button" class="btn btn-warning" onclick="capture()">Capture
-				this event</button>
+
 			<button type="button" class="btn btn-info" onclick="skip()">Skip
 				to next step</button>
 			<br> <br>
@@ -116,25 +121,19 @@
 				});
 
 		function capture() {
-			$("#transaction")
-					.load(
-							"./exampleXML/cow-transaction.xml",
-							function(responseTxt, statusTxt, xhr) {
+			$("#transaction").load("./exampleXML/cow-transaction.xml",
+					function(responseTxt, statusTxt, xhr) {
 
-								$
-										.ajax(
-												{
-													type : "POST",
-													url : baseURL+"/Service/EventCapture",
-													contentType : "application/xml; charset=utf-8",
-													data : responseTxt
-												})
-										.done(
-												function() {
-													alert("Event is successfully stored");
-													document.location.href = "./captureService2.jsp";
-												});
-							});
+						$.ajax({
+							type : "POST",
+							url : baseURL + "/Service/EventCapture",
+							contentType : "application/xml; charset=utf-8",
+							data : responseTxt
+						}).done(function() {
+							alert("Event is successfully stored");
+							document.location.href = "./captureService2.jsp";
+						});
+					});
 		}
 
 		function back() {
@@ -144,8 +143,8 @@
 		function skip() {
 			document.location.href = "./captureService2.jsp";
 		}
-		
-		function backToMainPage(){
+
+		function backToMainPage() {
 			document.location.href = "./tutorialPage.jsp";
 		}
 	</script>

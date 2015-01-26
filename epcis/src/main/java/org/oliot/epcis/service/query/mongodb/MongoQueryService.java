@@ -29,6 +29,7 @@ import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.AggregationEventReadConverter;
+import org.oliot.epcis.serde.mongodb.MasterDataReadConverter;
 import org.oliot.epcis.serde.mongodb.ObjectEventReadConverter;
 import org.oliot.epcis.serde.mongodb.QuantityEventReadConverter;
 import org.oliot.epcis.serde.mongodb.TransactionEventReadConverter;
@@ -53,6 +54,7 @@ import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
 import org.quartz.JobDataMap;
@@ -870,7 +872,7 @@ public class MongoQueryService {
 	public String pollMasterDataQuery(String queryName, String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String maxElementCount) {
+			String hASATTR, String maxElementCount, Map<String, String> paramMap) {
 
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
@@ -880,17 +882,59 @@ public class MongoQueryService {
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
 
-		List<Criteria> criteriaList = makeCriteria(vocabularyName,
-				includeAttributes, includeChildren, attributeNames, eQ_name,
-				wD_name, hASATTR, maxElementCount);
+		DBCollection collection = mongoOperation.getCollection("MasterData");
 
-		Query query = new Query();
-		for (int i = 0; i < criteriaList.size(); i++) {
-			query.addCriteria(criteriaList.get(i));
+		List<DBObject> queryList = makeMasterQueryObjects(vocabularyName,
+				includeAttributes, includeChildren, attributeNames, eQ_name,
+				wD_name, hASATTR, maxElementCount, paramMap);
+
+		// Merge All the queries with $and
+		DBObject baseQuery = new BasicDBObject();
+		DBCursor cursor;
+		if (queryList.isEmpty() == false) {
+			BasicDBList aggreQueryList = new BasicDBList();
+			for (int i = 0; i < queryList.size(); i++) {
+				aggreQueryList.add(queryList.get(i));
+			}
+			baseQuery.put("$and", aggreQueryList);
+			// Query
+			cursor = collection.find(baseQuery);
+		} else {
+			cursor = collection.find();
 		}
 
-		List<VocabularyType> vList = mongoOperation.find(query,
-				VocabularyType.class);
+		// Cursor needed to ordered
+
+		List<VocabularyType> vList = new ArrayList<>();
+		while (cursor.hasNext()) {
+			DBObject dbObject = cursor.next();
+			MasterDataReadConverter con = new MasterDataReadConverter();
+			VocabularyType vt = con.convert(dbObject);
+			if( includeAttributes == false || includeChildren == false )
+			{
+				if( vt.getVocabularyElementList() != null )
+				{
+					if( vt.getVocabularyElementList().getVocabularyElement() != null )
+					{
+						List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
+						for(int i = 0 ; i < vetList.size() ; i++ )
+						{
+							VocabularyElementType vet = vetList.get(i);
+							if( includeAttributes == false )
+							{
+								vet.setAttribute(null);
+							}
+							if( includeChildren == false )
+							{
+								vet.setChildren(null);
+							}
+						}
+					}
+				}
+			}
+			
+			vList.add(vt);
+		}
 
 		QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
 				.getQueryResults().getResultsBody();
@@ -1152,7 +1196,7 @@ public class MongoQueryService {
 		if (queryName.equals("SimpleMasterDataQuery"))
 			return pollMasterDataQuery(queryName, vocabularyName,
 					includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount);
+					EQ_name, WD_name, HASATTR, maxElementCount, paramMap);
 		return "";
 	}
 
@@ -1268,42 +1312,6 @@ public class MongoQueryService {
 		eventListType
 				.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
 		return epcisQueryDocumentType;
-	}
-
-	private List<Criteria> makeCriteria(String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String maxElementCount) {
-
-		List<Criteria> criteriaList = new ArrayList<Criteria>();
-
-		/**
-		 * If specified, only vocabulary elements drawn from one of the
-		 * specified vocabularies will be included in the results. Each element
-		 * of the specified list is the formal URI name for a vocabulary; e.g.,
-		 * one of the URIs specified in the table at the end of Section 7.2. If
-		 * omitted, all vocabularies are considered.
-		 */
-
-		if (vocabularyName != null) {
-			String[] vocNameArray = vocabularyName.split(",");
-			List<String> subStringList = new ArrayList<String>();
-			for (int i = 0; i < vocNameArray.length; i++) {
-				String vocNameString = vocNameArray[i].trim();
-				subStringList.add(vocNameString);
-			}
-			if (subStringList != null)
-				criteriaList.add(Criteria.where("type").in(subStringList));
-		}
-
-		/**
-		 * If true, the results will include attribute names and values for
-		 * matching vocabulary elements. If false, attribute names and values
-		 * will not be included in the result.
-		 */
-
-		return criteriaList;
-
 	}
 
 	boolean isExtraParameter(String paramName) {
@@ -2413,5 +2421,95 @@ public class MongoQueryService {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return queryList;
+	}
+
+	private List<DBObject> makeMasterQueryObjects(String vocabularyName,
+			boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name,
+			String hASATTR, String maxElementCount, Map<String, String> paramMap) {
+
+		List<DBObject> queryList = new ArrayList<DBObject>();
+
+		/**
+		 * vocabularyName : If specified, only vocabulary elements drawn from
+		 * one of the specified vocabularies will be included in the results.
+		 * Each element of the specified list is the formal URI name for a
+		 * vocabulary; e.g., one of the URIs specified in the table at the end
+		 * of Section 7.2. If omitted, all vocabularies are considered.
+		 */
+
+		if (vocabularyName != null) {
+			DBObject query = getINQueryObject("type", vocabularyName);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * attributeNames : If specified, only those attributes whose names
+		 * match one of the specified names will be included in the results. If
+		 * omitted, all attributes for each matching vocabulary element will be
+		 * included. (To obtain a list of vocabulary element names with no
+		 * attributes, specify false for includeAttributes.) The value of this
+		 * parameter SHALL be ignored if includeAttributes is false. Note that
+		 * this parameter does not affect which vocabulary elements are included
+		 * in the result; it only limits which attributes will be included with
+		 * each vocabulary element.
+		 */
+		
+		if ( includeAttributes == true && attributeNames != null ) {
+			DBObject query = getINQueryObject("vocabularyList.attributeList.id", attributeNames);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * EQ_name : If specified, the result will only include vocabulary
+		 * elements whose names are equal to one of the specified values. If
+		 * this parameter and WD_name are both omitted, vocabulary elements are
+		 * included regardless of their names.
+		 */
+
+		if (eQ_name != null) {
+			DBObject query = getINQueryObject("vocabularyList.id", eQ_name);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * HASATTR : If specified, the result will only include vocabulary
+		 * elements that have a non-null attribute whose name matches one of the
+		 * values specified in this parameter.
+		 */
+
+		if (hASATTR != null) {
+			DBObject query = getINQueryObject(
+					"vocabularyList.attributeList.id", hASATTR);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * EQATTR_attrnam : This is not a single parameter, but a family of
+		 * parameters. If a parameter of this form is specified, the result will
+		 * only include vocabulary elements that have a non-null attribute named
+		 * attrname, and where the value of that attribute matches one of the
+		 * values specified in this parameter.
+		 */
+
+		Iterator<String> paramIter = paramMap.keySet().iterator();
+		while (paramIter.hasNext()) {
+			String paramName = paramIter.next();
+			String paramValues = paramMap.get(paramName);
+
+			if (paramName.contains("EQATTR_")) {
+				String type = paramName.substring(7, paramName.length());
+				DBObject query = getVocFamilyQueryObject(type,
+						"vocabularyList.attributeList", paramValues);
+				if (query != null)
+					queryList.add(query);
+			}
+		}
+		return queryList;
+
 	}
 }

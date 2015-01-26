@@ -84,10 +84,15 @@
 					&nbsp;&nbsp;&nbsp; &#8226; Business Step: transforming <br>
 					&nbsp;&nbsp;&nbsp; &#8226; Disposition: in_progress
 				</a>
+				<a href="#" class="list-group-item active"
+					style="text-align: center"> Capture Transformation Event </a> <a
+					href="#" class="list-group-item"> Send left EPCIS Document as
+					HTTP POST Message to <br> <code>http://localhost:8081/epcis/Service/EventCapture</code><br><br>
+					<button type="button" class="btn btn-warning" onclick="capture()">Capture
+						this event</button>
+				</a>
 			</div>
 			<button type="button" class="btn btn-danger" onclick="back()">Back to previous step</button>
-			<button type="button" class="btn btn-warning" onclick="capture()">Capture
-				this event</button>
 			<button type="button" class="btn btn-info" onclick="skip()">Skip to next step</button>
 			<br>
 			<br>
