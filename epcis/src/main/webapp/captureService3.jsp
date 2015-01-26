@@ -2,19 +2,25 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
 	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
 <meta name="author" content="Jaewook Jack Byun">
+
 <title>Write Your Events</title>
-<!-- The defer is not necessary for autoloading, but is necessary for the
-     script at the bottom to work as a Quine. -->
+
+<link rel="stylesheet" href="./css/bootstrap.min.css">
+
 <script
 	src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;skin=desert&amp;lang=html"
 	defer="defer"></script>
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
-<link rel="stylesheet" href="./css/bootstrap.min.css">
+<script>
+	var baseURL = "http://localhost:8081/epcis";
+</script>
+
 <style>
 .operative {
 	font-weight: bold;
@@ -24,10 +30,6 @@
 </head>
 
 <body>
-
-	<script>
-		
-	</script>
 
 	<nav class="navbar navbar-default">
 		<div class="container">
@@ -126,7 +128,7 @@
 										.ajax(
 												{
 													type : "POST",
-													url : "http://localhost:8081/epcis/Service/EventCapture",
+													url : baseURL+"/Service/EventCapture",
 													contentType : "application/xml; charset=utf-8",
 													data : responseTxt
 												})

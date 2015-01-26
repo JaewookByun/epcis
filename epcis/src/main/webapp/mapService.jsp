@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
 	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
 <meta name="author" content="Jaewook Jack Byun">
+
 <title>EPCIS v1.1 Tutorial - the cow's life</title>
+
 <link rel="stylesheet" href="./css/bootstrap.min.css">
+<link href="carousel.css" rel="stylesheet">
+
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="./js/bootstrap.js"></script>
 <script type="text/javascript"
-	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">
-	
+	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">	
 </script>
-<link href="carousel.css" rel="stylesheet">
+<script>
+	var baseURL = "http://localhost:8081/epcis";
+</script>
+
 <style type="text/css">
 html {
 	height: 100%
@@ -61,40 +68,6 @@ body {
 		}
 		poly = new google.maps.Polyline(polyOptions);
 		poly.setMap(map);
-
-		// Add a listener for the click event
-		// google.maps.event.addListener(map, 'click', addLatLng);
-
-		// var latLng = new google.maps.LatLng(36, 127);
-		// map.setCenter(latLng);
-
-	}
-
-	/**
-	 * Handles click events on a map, and adds a new point to the Polyline.
-	 * @param {MouseEvent} mouseEvent
-	 */
-	function addLatLng(event) {
-
-		var path = poly.getPath();
-
-		// Because path is an MVCArray, we can simply append a new coordinate
-		// and it will automatically appear
-		path.push(event.latLng);
-
-		// Add a new marker at the new plotted point on the polyline.
-		var marker = new google.maps.Marker({
-			position : event.latLng,
-			title : '#' + path.getLength(),
-			map : map
-		});
-
-		timer = setInterval(function() {
-			var newLatLng = new google.maps.LatLng(map.getCenter().lat() + 1,
-					map.getCenter().lng() + 1);
-			map.setCenter(newLatLng);
-		}, 1000);
-
 	}
 
 	function backToMainPage() {
@@ -104,7 +77,7 @@ body {
 	function trace1() {
 		$
 				.get(
-						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
+						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
@@ -146,7 +119,7 @@ body {
 	function trace2() {
 		$
 				.get(
-						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
+						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
@@ -158,16 +131,7 @@ body {
 							lon = $geo.text().split(",")[1].trim();
 							$latlng2 = new google.maps.LatLng(lat, lon);
 							path1 = [ $latlng1, $latlng2 ];
-							/*
-							 mapOptions = {
-							 center : $latlng2,
-							 zoom : 10,
-							 mapTypeId : google.maps.MapTypeId.ROADMAP
-							 };
-							 map.setOptions(mapOptions);
-							 */
 							
-
 							infoText = "The beef pack"
 									+ "<br>was produced from"
 									+ "<br>the cow"
@@ -181,10 +145,9 @@ body {
 
 							// Animation
 							$infowindow1.close();
-
 							$cnt = 0;
-							// 100 frames
 							
+							// smaller interval makes animation faster
 							var timer1 = setInterval( timer1func, 10);
 							
 							$marker2 = new google.maps.Marker({
@@ -207,15 +170,16 @@ body {
 
 									$latlngTmp = new google.maps.LatLng(
 											latTmp, lngTmp);
-									//console.log($cnt + " , " + latTmp + " , " + $latlngTmp);
+									
 									pathTmp = [ $latlng1, $latlngTmp ];
 
 									var pathTmp = new google.maps.Polyline(
 											{
 												path : pathTmp,
-												strokeColor : "#0000FF",
-												strokeOpacity : 0.8,
-												strokeWeight : 2
+												strokeColor : "#1A3CE4",
+												strokeOpacity : 0.08,
+												strokeWeight : 5,
+												geodesic : true
 											});
 
 									pathTmp.setMap(map);
@@ -229,24 +193,19 @@ body {
 									map.setOptions(mapOptions);
 
 								} else if ($cnt == 100) {
-									clearInterval(timer1);
-									
-									
-									
+									clearInterval(timer1);	
 									$infowindow2.open(map, $marker2);
 								}
-							}
-							
+							}	
 							google.maps.event.addListener($marker2, 'click',
 									trace3);
 						});
 	}
 
 	function trace3() {
-		
 		$
 				.get(
-						"http://localhost:8081/epcis/Service/Poll/SimpleEventQuery?MATCH_epc="
+						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_epc="
 								+ $origin,
 						function(data) {
 							xmlDoc = $.parseXML(data);
@@ -276,22 +235,10 @@ body {
 									+ $eventTime.text().trim();
 
 							path2 = [ $latlng2, $latlng3 ];
-							/*
-							var path2obj = new google.maps.Polyline({
-								path : path2,
-								strokeColor : "#0000FF",
-								strokeOpacity : 0.8,
-								strokeWeight : 2
-							});
 
-							path2obj.setMap(map);
-*/
 							// Animation
 							$infowindow2.close();
-
 							$cnt = 0;
-							// 100 frames
-							
 							var timer2 = setInterval( timer2func, 15);
 							
 							function timer2func(){
@@ -308,15 +255,16 @@ body {
 
 									$latlngTmp = new google.maps.LatLng(
 											latTmp, lngTmp);
-									//console.log($cnt + " , " + latTmp + " , " + $latlngTmp);
+							
 									pathTmp = [ $latlng2, $latlngTmp ];
 
 									var pathTmp = new google.maps.Polyline(
 											{
 												path : pathTmp,
-												strokeColor : "#0000FF",
-												strokeOpacity : 0.8,
-												strokeWeight : 2
+												strokeColor : "#E4421A",
+												strokeOpacity : 0.08,
+												strokeWeight : 5,
+												geodesic : true
 											});
 
 									pathTmp.setMap(map);
@@ -346,8 +294,6 @@ body {
 									$infowindow3.open(map, $marker3);
 								}
 							}
-				
-							//$infowindow3.open(map, $marker3);
 						});
 	}
 </script>

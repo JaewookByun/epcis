@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description"
 	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
 <meta name="author" content="Jaewook Jack Byun">
 <title>EPCIS v1.1 Tutorial - the cow's life</title>
+
 <link rel="stylesheet" href="./css/bootstrap.min.css">
+<link href="./css/carousel.css" rel="stylesheet">
+
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="./js/bootstrap.js"></script>
-<link href="./css/carousel.css" rel="stylesheet">
+
+<script>
+	var baseURL = "http://localhost:8081/epcis";
+</script>
 
 </head>
 <body>
-
 	<nav class="navbar navbar-default navbar-fixed-top">
 		<div class="container">
 			<div class="navbar-header">
@@ -54,7 +60,7 @@
 				<img width="100%" src="./image/epcis.png" alt="1">
 				<div class="container">
 					<div class="carousel-caption">
-						<h1 style="font-color:#FFFFFF">EPCIS Overview</h1>
+						<h1 style="font-color: #FFFFFF">EPCIS Overview</h1>
 						<h4>
 							Electronic Product Code Information Service (EPCIS) enables to
 							capture and share EPC-based event.<br> With EPCIS, event
@@ -143,10 +149,12 @@
 				<h2>Write Your Events</h2>
 				<p>This tutorial explains how you can record the important
 					events based on EPCIS document.</p>
-				<p>This tutorial helps you understand what the elements in the XML mean step by step with three business sites and three EPCIS event types.</p>
+				<p>This tutorial helps you understand what the elements in the
+					XML mean step by step with three business sites and three EPCIS
+					event types.</p>
 				<p>
-					<a class="btn btn-default" href="./captureService1.jsp" role="button">Try it now
-						&raquo;</a>
+					<a class="btn btn-default" href="./captureService1.jsp"
+						role="button">Try it now &raquo;</a>
 				</p>
 			</div>
 			<div class="col-md-4">
@@ -155,8 +163,8 @@
 					log on the specific EPC.</p>
 				<p></p>
 				<p>
-					<a class="btn btn-default" href="./mapService.jsp" role="button">See it now
-						&raquo;</a>
+					<a class="btn btn-default" href="./mapService.jsp" role="button">See
+						it now &raquo;</a>
 				</p>
 			</div>
 		</div>
@@ -173,18 +181,17 @@
 			</p>
 		</footer>
 	</div>
-	<!-- /container -->
 
 	<script>
-		function resetDB(){
-			$.get("http://localhost:8081/epcis/Service/ResetDB");
-			alert("Repository Initialized");	
+		function resetDB() {
+			$.get(baseURL +"/Service/ResetDB");
+			alert("Repository Initialized");
 		}
-	
 	</script>
 
 	<script src="js/bootstrap.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script
+		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 
 </body>
 </html>
