@@ -53,7 +53,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 	@Autowired
 	private HttpServletResponse response;
-	
+
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;

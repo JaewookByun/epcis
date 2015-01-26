@@ -98,6 +98,7 @@ public class MongoCaptureUtil {
 				"classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx
 				.getBean("mongoTemplate");
+				
 		mongoOperation.save(vocabulary);
 		Configuration.logger.info(" Vocabulary Saved ");
 		((AbstractApplicationContext) ctx).close();
