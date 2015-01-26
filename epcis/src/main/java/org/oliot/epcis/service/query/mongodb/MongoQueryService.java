@@ -4,19 +4,25 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
@@ -24,6 +30,9 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.json.JSONArray;
@@ -68,6 +77,11 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import static org.quartz.TriggerKey.*;
 import static org.quartz.JobKey.*;
@@ -910,29 +924,25 @@ public class MongoQueryService {
 			DBObject dbObject = cursor.next();
 			MasterDataReadConverter con = new MasterDataReadConverter();
 			VocabularyType vt = con.convert(dbObject);
-			if( includeAttributes == false || includeChildren == false )
-			{
-				if( vt.getVocabularyElementList() != null )
-				{
-					if( vt.getVocabularyElementList().getVocabularyElement() != null )
-					{
-						List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
-						for(int i = 0 ; i < vetList.size() ; i++ )
-						{
+			if (includeAttributes == false || includeChildren == false) {
+				if (vt.getVocabularyElementList() != null) {
+					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
+						List<VocabularyElementType> vetList = vt
+								.getVocabularyElementList()
+								.getVocabularyElement();
+						for (int i = 0; i < vetList.size(); i++) {
 							VocabularyElementType vet = vetList.get(i);
-							if( includeAttributes == false )
-							{
+							if (includeAttributes == false) {
 								vet.setAttribute(null);
 							}
-							if( includeChildren == false )
-							{
+							if (includeChildren == false) {
 								vet.setChildren(null);
 							}
 						}
 					}
 				}
 			}
-			
+
 			vList.add(vt);
 		}
 
@@ -1948,11 +1958,33 @@ public class MongoQueryService {
 			 * both omitted, events are returned regardless of the value of the
 			 * readPoint field or whether the readPoint field exists at all.
 			 */
+
 			if (WD_readPoint != null) {
-				DBObject query = getRegexQueryObject("readPoint.id",
-						WD_readPoint);
-				if (query != null)
-					queryList.add(query);
+
+				String[] eqArr = WD_readPoint.split(",");
+				for (int i = 0; i < eqArr.length; i++) {
+					eqArr[i] = eqArr[i].trim();
+				}
+				for (int i = 0; i < eqArr.length; i++) {
+					// Invoke vocabulary query with EQ_name and includeChildren
+					String masterReadPoint = pollMasterDataQuery(
+							"SimpleMasterDataQuery", null, false, true, null,
+							eqArr[i], null, null, null, null);
+					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
+					childReadPointSet.add(eqArr[i]);
+
+					Iterator<String> crp = childReadPointSet.iterator();
+					String csv = "";
+					while (crp.hasNext()) {
+						csv += crp.next() + ",";
+					}
+					if (!csv.equals("")) {
+						csv.substring(0, csv.length() - 1);
+					}
+					DBObject query = getINQueryObject("readPoint.id", csv);
+					if (query != null)
+						queryList.add(query);
+				}
 			}
 			/**
 			 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
@@ -1969,10 +2001,33 @@ public class MongoQueryService {
 			 * bizLocation field.
 			 */
 			if (WD_bizLocation != null) {
-				DBObject query = getRegexQueryObject("bizLocation.id",
-						WD_bizLocation);
-				if (query != null)
-					queryList.add(query);
+
+				String[] eqArr = WD_bizLocation.split(",");
+				for (int i = 0; i < eqArr.length; i++) {
+					eqArr[i] = eqArr[i].trim();
+				}
+				for (int i = 0; i < eqArr.length; i++) {
+					// Invoke vocabulary query with EQ_name and includeChildren
+					String masterReadPoint = pollMasterDataQuery(
+							"SimpleMasterDataQuery", null, false, true, null,
+							eqArr[i], null, null, null, null);
+
+					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
+					childReadPointSet.add(eqArr[i]);
+
+					Iterator<String> crp = childReadPointSet.iterator();
+					String csv = "";
+					while (crp.hasNext()) {
+						csv += crp.next() + ",";
+					}
+					if (!csv.equals("")) {
+						csv.substring(0, csv.length() - 1);
+					}
+					DBObject query = getINQueryObject("bizLocation.id", csv);
+					if (query != null)
+						queryList.add(query);
+
+				}
 			}
 
 			/**
@@ -2455,9 +2510,10 @@ public class MongoQueryService {
 		 * in the result; it only limits which attributes will be included with
 		 * each vocabulary element.
 		 */
-		
-		if ( includeAttributes == true && attributeNames != null ) {
-			DBObject query = getINQueryObject("vocabularyList.attributeList.id", attributeNames);
+
+		if (includeAttributes == true && attributeNames != null) {
+			DBObject query = getINQueryObject(
+					"vocabularyList.attributeList.id", attributeNames);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2473,6 +2529,44 @@ public class MongoQueryService {
 			DBObject query = getINQueryObject("vocabularyList.id", eQ_name);
 			if (query != null)
 				queryList.add(query);
+		}
+
+		/**
+		 * WD_name : If specified, the result will only include vocabulary
+		 * elements that either match one of the specified names, or are direct
+		 * or indirect descendants of a vocabulary element that matches one of
+		 * the specified names. The meaning of “direct or indirect descendant”
+		 * is described in Section 6.5. (WD is an abbreviation for “with
+		 * descendants.”) If this parameter and EQ_name are both omitted,
+		 * vocabulary elements are included regardless of their names.
+		 */
+
+		if (wD_name != null) {
+			String[] eqArr = wD_name.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				eqArr[i] = eqArr[i].trim();
+			}
+			for (int i = 0; i < eqArr.length; i++) {
+				// Invoke vocabulary query with EQ_name and includeChildren
+				String masterReadPoint = pollMasterDataQuery(
+						"SimpleMasterDataQuery", null, false, true, null,
+						eqArr[i], null, null, null, null);
+
+				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
+				childReadPointSet.add(eqArr[i]);
+
+				Iterator<String> crp = childReadPointSet.iterator();
+				String csv = "";
+				while (crp.hasNext()) {
+					csv += crp.next() + ",";
+				}
+				if (!csv.equals("")) {
+					csv.substring(0, csv.length() - 1);
+				}
+				DBObject query = getINQueryObject("vocabularyList.id", csv);
+				if (query != null)
+					queryList.add(query);
+			}
 		}
 
 		/**
@@ -2495,21 +2589,55 @@ public class MongoQueryService {
 		 * attrname, and where the value of that attribute matches one of the
 		 * values specified in this parameter.
 		 */
+		if (paramMap != null) {
+			Iterator<String> paramIter = paramMap.keySet().iterator();
+			while (paramIter.hasNext()) {
+				String paramName = paramIter.next();
+				String paramValues = paramMap.get(paramName);
 
-		Iterator<String> paramIter = paramMap.keySet().iterator();
-		while (paramIter.hasNext()) {
-			String paramName = paramIter.next();
-			String paramValues = paramMap.get(paramName);
-
-			if (paramName.contains("EQATTR_")) {
-				String type = paramName.substring(7, paramName.length());
-				DBObject query = getVocFamilyQueryObject(type,
-						"vocabularyList.attributeList", paramValues);
-				if (query != null)
-					queryList.add(query);
+				if (paramName.contains("EQATTR_")) {
+					String type = paramName.substring(7, paramName.length());
+					DBObject query = getVocFamilyQueryObject(type,
+							"vocabularyList.attributeList", paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
 			}
 		}
 		return queryList;
+	}
 
+	private Set<String> makeDecendentSet(String vocString) {
+		Set<String> childReadPointSet = new HashSet<String>();
+		try {
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
+					.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			InputStream stream = new ByteArrayInputStream(
+					vocString.getBytes(StandardCharsets.UTF_8));
+			Document doc = dBuilder.parse(stream);
+			NodeList nList = doc.getElementsByTagName("children");
+			for (int i = 0; i < nList.getLength(); i++) {
+				Node child = nList.item(i);
+				if (child.getNodeType() == Node.ELEMENT_NODE) {
+					Element childElement = (Element) child;
+					NodeList idList = childElement.getElementsByTagName("id");
+					for (int j = 0; j < idList.getLength(); j++) {
+						Node id = idList.item(j);
+						if (id.getNodeType() == Node.ELEMENT_NODE) {
+							Element idElement = (Element) id;
+							childReadPointSet.add(idElement.getTextContent());
+						}
+					}
+				}
+			}
+		} catch (ParserConfigurationException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		} catch (SAXException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		} catch (IOException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		}
+		return childReadPointSet;
 	}
 }

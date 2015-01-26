@@ -41,7 +41,8 @@ public class MongoQueryUtil {
 		return null;
 	}
 
-	static DBObject getVocFamilyQueryObject(String type, String field, String csv) {
+	static DBObject getVocFamilyQueryObject(String type, String field,
+			String csv) {
 		String[] paramValueArr = csv.split(",");
 		BasicDBList subObjectList = new BasicDBList();
 		for (int i = 0; i < paramValueArr.length; i++) {
@@ -58,7 +59,7 @@ public class MongoQueryUtil {
 		}
 		return null;
 	}
-	
+
 	static DBObject getINFamilyQueryObject(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
 		BasicDBList subObjectList = new BasicDBList();

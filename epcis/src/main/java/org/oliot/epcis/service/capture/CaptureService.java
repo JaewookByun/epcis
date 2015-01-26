@@ -11,6 +11,7 @@
 
 package org.oliot.epcis.service.capture;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBElement;
@@ -27,6 +28,7 @@ import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
+import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
 import org.oliot.tdt.SimplePureIdentityFilter;
@@ -261,7 +263,28 @@ public class CaptureService implements CoreCaptureService {
 
 		for (int i = 0; i < vocabularyTypeList.size(); i++) {
 			VocabularyType vocabulary = vocabularyTypeList.get(i);
-			capture(vocabulary);
+			if( vocabulary.getVocabularyElementList() != null )
+			{
+				if( vocabulary.getVocabularyElementList().getVocabularyElement() != null )
+				{
+					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
+					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
+					for(int j = 0 ; j < vetList.size() ; j++ )
+					{
+						VocabularyElementType vet = vetList.get(j);
+						VocabularyElementType vetTemp = new VocabularyElementType();
+						vetTemp = vet;
+						vetTempList.add(vetTemp);
+					}	
+					for(int j = 0 ; j < vetTempList.size() ; j++ )
+					{
+						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
+						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
+						capture(vocabulary);						
+					}
+				}
+			}
+			
 		}
 	}
 
