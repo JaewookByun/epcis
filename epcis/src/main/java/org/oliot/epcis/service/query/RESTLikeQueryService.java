@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
@@ -50,10 +51,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@Autowired
 	private HttpServletRequest request;
 
+	@Autowired
+	private HttpServletResponse response;
+	
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
-
 	}
 
 	/**

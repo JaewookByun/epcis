@@ -62,7 +62,7 @@
 					<div class="carousel-caption">
 						<h1 style="font-color: #FFFFFF">EPCIS Overview</h1>
 						<h4>
-							Electronic Product Code Information Service (EPCIS) enables to
+							<abbr title="Electronic Product Code Information Service" class="initialism">EPCIS</abbr> enables to
 							capture and share EPC-based event.<br> With EPCIS, event
 							producer generates and sends events complying with EPCIS schema
 							into EPCIS Repository.<br> Then, these events can be

@@ -5,13 +5,22 @@
 <web-app>
 	<display-name>Oliot EPCIS 1.1</display-name>
 
-
 	<!-- CXF -->
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>WEB-INF/beans.xml</param-value>
 	</context-param>
 
+	<filter>
+	    <filter-name>CorsFilter</filter-name>
+	    <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+	</filter>
+	
+	<filter-mapping>
+	    <filter-name>CorsFilter</filter-name>
+	    <url-pattern>/*</url-pattern>
+	</filter-mapping>
+	
 	<listener>
 		<listener-class>
 			org.springframework.web.context.ContextLoaderListener
@@ -68,4 +77,6 @@
 		<servlet-name>SubscriptionTestServlet</servlet-name>
 		<url-pattern>/SubscriptionTestServlet</url-pattern>
 	</servlet-mapping>
+	
+	
 </web-app>
