@@ -17,7 +17,9 @@
 <script src="./js/bootstrap.js"></script>
 
 <script>
-	var baseURL = "http://localhost:8081/epcis";
+	href = window.location.href;
+	hrefArr = href.split("/");
+	var baseURL = hrefArr[0] + "//" + hrefArr[2] + "/epcis";
 </script>
 
 </head>

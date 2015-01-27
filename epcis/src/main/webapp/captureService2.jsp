@@ -18,7 +18,9 @@
 	defer="defer"></script>
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script>
-	var baseURL = "http://localhost:8081/epcis";
+	href = window.location.href;
+	hrefArr = href.split("/");
+	var baseURL = hrefArr[0] + "//" + hrefArr[2] + "/epcis";
 </script>
 
 <style>
@@ -83,27 +85,28 @@
 					(Butcher shop) <br> &#8226; Why: The cow is butchered <br>
 					&nbsp;&nbsp;&nbsp; &#8226; Business Step: transforming <br>
 					&nbsp;&nbsp;&nbsp; &#8226; Disposition: in_progress
-				</a>
-				<a href="#" class="list-group-item active"
+				</a> <a href="#" class="list-group-item active"
 					style="text-align: center"> Capture Transformation Event </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
-					HTTP POST Message to <br> <code>http://localhost:8081/epcis/Service/EventCapture</code><br><br>
+					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
+				<br>
 					<button type="button" class="btn btn-warning" onclick="capture()">Capture
 						this event</button>
 				</a>
 			</div>
-			<button type="button" class="btn btn-danger" onclick="back()">Back to previous step</button>
-			<button type="button" class="btn btn-info" onclick="skip()">Skip to next step</button>
-			<br>
-			<br>
+			<button type="button" class="btn btn-danger" onclick="back()">Back
+				to previous step</button>
+			<button type="button" class="btn btn-info" onclick="skip()">Skip
+				to next step</button>
+			<br> <br>
 			<footer>
-			<p>&copy; Real time Embedded System Laboratory (RESL), Auto-ID
-				Labs@Korea 2015</p>
-			<p>
-				Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
-				Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,
-				bjw0829@gmail.com
-			</p>
+				<p>&copy; Real time Embedded System Laboratory (RESL), Auto-ID
+					Labs@Korea 2015</p>
+				<p>
+					Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
+					Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,
+					bjw0829@gmail.com
+				</p>
 			</footer>
 		</div>
 	</div>
@@ -121,34 +124,28 @@
 				});
 
 		function capture() {
-			$("#transaction")
-					.load(
-							"./exampleXML/cow-transformation.xml",
-							function(responseTxt, statusTxt, xhr) {
+			$("#transaction").load("./exampleXML/cow-transformation.xml",
+					function(responseTxt, statusTxt, xhr) {
 
-								$
-										.ajax(
-												{
-													type : "POST",
-													url : baseURL+"/Service/EventCapture",
-													contentType : "application/xml; charset=utf-8",
-													data : responseTxt
-												})
-										.done(
-												function() {
-													alert("Event is successfully stored");
-													document.location.href = "./captureService3.jsp";
-												});
-							});
+						$.ajax({
+							type : "POST",
+							url : baseURL + "/Service/EventCapture",
+							contentType : "application/xml; charset=utf-8",
+							data : responseTxt
+						}).done(function() {
+							alert("Event is successfully stored");
+							document.location.href = "./captureService3.jsp";
+						});
+					});
 		}
-		
-		function back(){
+
+		function back() {
 			document.location.href = "./captureService1.jsp";
-		}	
-		function skip(){
+		}
+		function skip() {
 			document.location.href = "./captureService3.jsp";
 		}
-		function backToMainPage(){
+		function backToMainPage() {
 			document.location.href = "./tutorialPage.jsp";
 		}
 	</script>

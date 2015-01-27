@@ -18,7 +18,9 @@
 	defer="defer"></script>
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script>
-	var baseURL = "http://localhost:8081/epcis";
+	href = window.location.href;
+	hrefArr = href.split("/");
+	var baseURL = hrefArr[0] + "//" + hrefArr[2] + "/epcis";
 </script>
 
 <style>
@@ -85,7 +87,8 @@
 				</a> <a href="#" class="list-group-item active"
 					style="text-align: center"> Capture Transaction Event </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
-					HTTP POST Message to <br> <code>http://localhost:8081/epcis/Service/EventCapture</code><br><br>
+					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
+				<br>
 					<button type="button" class="btn btn-warning" onclick="capture()">Capture
 						this event</button>
 				</a>

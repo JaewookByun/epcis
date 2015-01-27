@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+<title>EPCIS REST-Like Web Service</title>
+</head>
+<body>
+	<script src="js/bootstrap.min.js"></script>
+
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<h3 class="panel-title">EPCIS REST Like Query Examples</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<td>Method Name</td>
+						<td>URL</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Get All Master Data</td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery</td>
+					</tr>
+					<tr>
+						<td>Get All Master Data including Attributes</td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?includeAttributes=True</td>
+					</tr>
+					<tr>
+						<td>Get All Master Data including Children</td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?includeChildren=True</td>
+					</tr>
+					<tr>
+						<td>Get Master Data with Specific Vocabulary Type ( e.g. business location )</td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?vocabularyName=urn:epcglobal:epcis:vtype:BusinessLocation</td>
+					</tr>
+					<tr>
+						<td>Get Master Data having specific attributes ( filtering ) </td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?attributeNames=http://epcis.example.com/mda/latitude</td>
+					</tr>
+					<tr>
+						<td>Get Master Data including specific vocabulary ( e.g. urn:epc:id:sgln:0037000.00729.0 )</td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?EQ_name=urn:epc:id:sgln:0037000.00729.0</td>
+					</tr>
+					<tr>
+						<td>Get Master Data including specific vocabulary with indirect descendants </td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?WD_name=urn:epc:id:sgln:0037000.00729.0</td>
+					</tr>
+					<tr>
+						<td>Get Master Data only having specific attributes ( isNull ) </td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?HASATTR=http://epcis.example.com/mda/latitude</td>
+					</tr>
+					<tr>
+						<td>Get Master Data with attributes having specific value ( e.g. latitude = +18.000 ) </td>
+						<td>http://{baseURL}:{port}/epcis/Service/Poll/SimpleMasterDataQuery?EQATTR_http://epcis.example.com/mda/latitude=%2B18.0000</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>

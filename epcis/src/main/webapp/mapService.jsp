@@ -17,10 +17,12 @@
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="./js/bootstrap.js"></script>
 <script type="text/javascript"
-	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">	
+	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">
 </script>
 <script>
-	var baseURL = "http://localhost:8081/epcis";
+	href = window.location.href;
+	hrefArr = href.split("/");
+	var baseURL = hrefArr[0] + "//" + hrefArr[2] + "/epcis";
 </script>
 
 <style type="text/css">
@@ -77,16 +79,24 @@ body {
 	function trace1() {
 		$
 				.get(
-						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
+						baseURL
+								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
-							$eventTime = $xml.find("eventTime");
+							if( $xml.find("eventTime").length == 0 )
+							{
+								alert("No Events, please capture your events first\nGo to Capture Tutorial");
+								document.location.href = "./captureService1.jsp";
+							}
+							$eventTime = $xml.find("eventTime")[0];
 							$epc = $xml.find("epc");
 							$geo = $xml.find("geo");
 							lat = $geo.text().split(",")[0].trim();
 							lon = $geo.text().split(",")[1].trim();
-							$latlng1 = new google.maps.LatLng(lat, lon);
+							latf = parseFloat(lat);
+							lonf = parseFloat(lon);
+							$latlng1 = new google.maps.LatLng(latf, lonf);
 							mapOptions = {
 								center : $latlng1,
 								zoom : 10,
@@ -99,10 +109,9 @@ body {
 								map : map
 							});
 
-							infoText = "The beef pack"+
-									"<br>was located in"+
-									"<br>Matsuyama Food Mart<br>at<br>"
-									+ $eventTime.text().trim();
+							infoText = "The beef pack" + "<br>was located in"
+									+ "<br>Matsuyama Food Mart<br>at<br>"
+									+ $eventTime.textContent.trim();
 
 							$infowindow1 = new google.maps.InfoWindow({
 								content : infoText
@@ -119,24 +128,26 @@ body {
 	function trace2() {
 		$
 				.get(
-						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
+						baseURL
+								+ "/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
-							$eventTime = $xml.find("eventTime");
+							$eventTime = $xml.find("eventTime")[0];
 							$inputEPCList = $xml.find("inputEPCList");
-							$origin = $inputEPCList.text().trim();
+							$origin = $inputEPCList[0].textContent.trim();
 							$geo = $xml.find("geo");
 							lat = $geo.text().split(",")[0].trim();
 							lon = $geo.text().split(",")[1].trim();
-							$latlng2 = new google.maps.LatLng(lat, lon);
+							latf = parseFloat(lat);
+							lonf = parseFloat(lon);
+							$latlng2 = new google.maps.LatLng(latf, lonf);
 							path1 = [ $latlng1, $latlng2 ];
-							
+
 							infoText = "The beef pack"
-									+ "<br>was produced from"
-									+ "<br>the cow"
+									+ "<br>was produced from" + "<br>the cow"
 									+ "<br>in Butcher Lauren B<br>at<br>"
-									+ $eventTime.text().trim();
+									+ $eventTime.textContent.trim();
 
 							$infowindow2 = new google.maps.InfoWindow({
 								content : infoText,
@@ -146,44 +157,41 @@ body {
 							// Animation
 							$infowindow1.close();
 							$cnt = 0;
-							
+
 							// smaller interval makes animation faster
-							var timer1 = setInterval( timer1func, 10);
-							
+							var timer1 = setInterval(timer1func, 10);
+
 							$marker2 = new google.maps.Marker({
 								position : $latlng2,
 								title : 'Matsuyama Food Mart',
 								map : map
 							});
-							
-							function timer1func(){
+
+							function timer1func() {
 								if ($cnt != 100) {
 
 									latTmp = path1[0].lat()
-											+ (path1[1].lat() - path1[0]
-													.lat()) * $cnt
-											/ 100.0;
+											+ (path1[1].lat() - path1[0].lat())
+											* $cnt / 100.0;
 									lngTmp = path1[0].lng()
-											+ (path1[1].lng() - path1[0]
-													.lng()) * $cnt
-											/ 100.0;
+											+ (path1[1].lng() - path1[0].lng())
+											* $cnt / 100.0;
 
-									$latlngTmp = new google.maps.LatLng(
-											latTmp, lngTmp);
-									
+									$latlngTmp = new google.maps.LatLng(latTmp,
+											lngTmp);
+
 									pathTmp = [ $latlng1, $latlngTmp ];
 
-									var pathTmp = new google.maps.Polyline(
-											{
-												path : pathTmp,
-												strokeColor : "#1A3CE4",
-												strokeOpacity : 0.08,
-												strokeWeight : 5,
-												geodesic : true
-											});
+									var pathTmp = new google.maps.Polyline({
+										path : pathTmp,
+										strokeColor : "#1A3CE4",
+										strokeOpacity : 0.08,
+										strokeWeight : 5,
+										geodesic : true
+									});
 
 									pathTmp.setMap(map);
-									$cnt = $cnt+1;
+									$cnt = $cnt + 1;
 
 									mapOptions = {
 										center : $latlngTmp,
@@ -193,30 +201,34 @@ body {
 									map.setOptions(mapOptions);
 
 								} else if ($cnt == 100) {
-									clearInterval(timer1);	
+									clearInterval(timer1);
 									$infowindow2.open(map, $marker2);
 								}
-							}	
+							}
 							google.maps.event.addListener($marker2, 'click',
 									trace3);
 						});
 	}
 
 	function trace3() {
+		console.log($origin);
 		$
 				.get(
-						baseURL+"/Service/Poll/SimpleEventQuery?MATCH_epc="
+						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_epc="
 								+ $origin,
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
-							$eventTime = $xml.find("eventTime");
+							$eventTime = $xml.find("eventTime")[0];
 							$inputEPCList = $xml.find("inputEPCList");
 							$origin = $inputEPCList.text().trim();
 							$geo = $xml.find("geo");
+							console.log(data);
 							lat = $geo.text().split(",")[0].trim();
 							lon = $geo.text().split(",")[1].trim();
-							$latlng3 = new google.maps.LatLng(lat, lon);
+							latf = parseFloat(lat);
+							lonf = parseFloat(lon);
+							$latlng3 = new google.maps.LatLng(latf, lonf);
 							mapOptions = {
 								center : $latlng3,
 								zoom : 10,
@@ -232,43 +244,40 @@ body {
 							infoText = "The cow"
 									+ "<br>was sold from Parker Ranch"
 									+ "<br>to Butcher Lauren B<br>at<br>"
-									+ $eventTime.text().trim();
+									+ $eventTime.textContent.trim();
 
 							path2 = [ $latlng2, $latlng3 ];
 
 							// Animation
 							$infowindow2.close();
 							$cnt = 0;
-							var timer2 = setInterval( timer2func, 15);
-							
-							function timer2func(){
+							var timer2 = setInterval(timer2func, 15);
+
+							function timer2func() {
 								if ($cnt != 100) {
 
 									latTmp = path2[0].lat()
-											+ (path2[1].lat() - path2[0]
-													.lat()) * $cnt
-											/ 100.0;
+											+ (path2[1].lat() - path2[0].lat())
+											* $cnt / 100.0;
 									lngTmp = path2[0].lng()
-											+ (path2[1].lng() - path2[0]
-													.lng()) * $cnt
-											/ 100.0;
+											+ (path2[1].lng() - path2[0].lng())
+											* $cnt / 100.0;
 
-									$latlngTmp = new google.maps.LatLng(
-											latTmp, lngTmp);
-							
+									$latlngTmp = new google.maps.LatLng(latTmp,
+											lngTmp);
+
 									pathTmp = [ $latlng2, $latlngTmp ];
 
-									var pathTmp = new google.maps.Polyline(
-											{
-												path : pathTmp,
-												strokeColor : "#E4421A",
-												strokeOpacity : 0.08,
-												strokeWeight : 5,
-												geodesic : true
-											});
+									var pathTmp = new google.maps.Polyline({
+										path : pathTmp,
+										strokeColor : "#E4421A",
+										strokeOpacity : 0.08,
+										strokeWeight : 5,
+										geodesic : true
+									});
 
 									pathTmp.setMap(map);
-									$cnt = $cnt+1;
+									$cnt = $cnt + 1;
 
 									mapOptions = {
 										center : $latlngTmp,
@@ -279,18 +288,18 @@ body {
 
 								} else if ($cnt == 100) {
 									clearInterval(timer2);
-									
+
 									$marker3 = new google.maps.Marker({
 										position : $latlng3,
 										title : 'Butcher Lauren B',
 										map : map
 									});
-									
+
 									$infowindow3 = new google.maps.InfoWindow({
 										content : infoText,
 										maxWidth : 800
 									});
-									
+
 									$infowindow3.open(map, $marker3);
 								}
 							}
@@ -325,7 +334,8 @@ body {
 	<div class="container">
 		<p>
 			Insert the EPC you want to trace. If you want to trace it,
-			<code>Click</code> the latest marker
+			<code>Click</code>
+			the latest marker
 		</p>
 		<input type="text" class="input-medium search-query"
 			value="urn:epc:id:sgtin:4012345.077889.27" size=35>
