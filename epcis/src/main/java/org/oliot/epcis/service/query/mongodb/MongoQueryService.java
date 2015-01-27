@@ -44,6 +44,7 @@ import org.oliot.epcis.serde.mongodb.QuantityEventReadConverter;
 import org.oliot.epcis.serde.mongodb.TransactionEventReadConverter;
 import org.oliot.epcis.serde.mongodb.TransformationEventReadConverter;
 import org.oliot.model.epcis.AggregationEventType;
+import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
@@ -934,6 +935,48 @@ public class MongoQueryService {
 							VocabularyElementType vet = vetList.get(i);
 							if (includeAttributes == false) {
 								vet.setAttribute(null);
+							} else if (includeAttributes == true
+									&& attributeNames != null) {
+								/**
+								 * attributeNames : If specified, only those
+								 * attributes whose names match one of the
+								 * specified names will be included in the
+								 * results. If omitted, all attributes for each
+								 * matching vocabulary element will be included.
+								 * (To obtain a list of vocabulary element names
+								 * with no attributes, specify false for
+								 * includeAttributes.) The value of this
+								 * parameter SHALL be ignored if
+								 * includeAttributes is false. Note that this
+								 * parameter does not affect which vocabulary
+								 * elements are included in the result; it only
+								 * limits which attributes will be included with
+								 * each vocabulary element.
+								 */
+								String[] attrArr = attributeNames.split(",");
+								for (int j = 0; j < attrArr.length; j++) {
+									attrArr[j] = attrArr[j].trim();
+								}
+
+								List<AttributeType> atList = vet.getAttribute();
+								for (int j = 0; j < atList.size(); j++) {
+									boolean isMatched = false;
+									for (int k = 0; k < attrArr.length; k++) {
+										if (attrArr[k].equals(atList.get(j)
+												.getId())) {
+											isMatched = true;
+										}
+									}
+									if (isMatched == false) {
+										atList.remove(j);
+										if (atList.size() == 0)
+											break;
+										else {
+											j=-1;
+											continue;
+										}
+									}
+								}
 							}
 							if (includeChildren == false) {
 								vet.setChildren(null);
@@ -2495,25 +2538,6 @@ public class MongoQueryService {
 
 		if (vocabularyName != null) {
 			DBObject query = getINQueryObject("type", vocabularyName);
-			if (query != null)
-				queryList.add(query);
-		}
-
-		/**
-		 * attributeNames : If specified, only those attributes whose names
-		 * match one of the specified names will be included in the results. If
-		 * omitted, all attributes for each matching vocabulary element will be
-		 * included. (To obtain a list of vocabulary element names with no
-		 * attributes, specify false for includeAttributes.) The value of this
-		 * parameter SHALL be ignored if includeAttributes is false. Note that
-		 * this parameter does not affect which vocabulary elements are included
-		 * in the result; it only limits which attributes will be included with
-		 * each vocabulary element.
-		 */
-
-		if (includeAttributes == true && attributeNames != null) {
-			DBObject query = getINQueryObject(
-					"vocabularyList.attributeList.id", attributeNames);
 			if (query != null)
 				queryList.add(query);
 		}
