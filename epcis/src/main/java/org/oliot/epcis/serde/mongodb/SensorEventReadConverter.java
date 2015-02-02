@@ -38,6 +38,7 @@ import org.springframework.stereotype.Component;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
@@ -66,18 +67,24 @@ public class SensorEventReadConverter implements
 	public SensorEventType convert(DBObject dbObject) {
 		try {
 			SensorEventType sensorEventType = new SensorEventType();
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				sensorEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if(eventTimeZoneOffset.split(":").length == 2 ){
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone * 60);
 				sensorEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				sensorEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -85,6 +92,7 @@ public class SensorEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone * 60);
 				sensorEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("finishTime") != null) {
@@ -93,6 +101,7 @@ public class SensorEventReadConverter implements
 				finishCalendar.setTimeInMillis(finishTime);
 				XMLGregorianCalendar xmlFinishTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(finishCalendar);
+				xmlFinishTime.setTimezone(zone * 60);
 				sensorEventType.setFinishTime(xmlFinishTime);
 			}
 			if (dbObject.get("action") != null) {

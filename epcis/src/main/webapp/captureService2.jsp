@@ -43,7 +43,8 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">Oliot EPCIS Tutorial</a>
+				<a class="navbar-brand" href="#">EPCIS v1.1 Tutorial and
+					Demonstration ( Oliot Opensource Project )</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
@@ -89,7 +90,7 @@
 					style="text-align: center"> Capture Transformation Event </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
 					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
-				<br>
+					<br>
 					<button type="button" class="btn btn-warning" onclick="capture()">Capture
 						this event</button>
 				</a>
@@ -100,8 +101,11 @@
 				to next step</button>
 			<br> <br>
 			<footer>
-				<p>&copy; Real time Embedded System Laboratory (RESL), Auto-ID
-					Labs@Korea 2015</p>
+				<code style="font-size: 12pt">Auto-ID Labs. Korea 2015</code>
+				<br>
+				<br>
+				<p class="lead"
+					style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 				<p>
 					Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
 					Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,
