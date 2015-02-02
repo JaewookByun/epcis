@@ -34,7 +34,7 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">Oliot EPCIS Tutorial</a>
+				<a class="navbar-brand" href="#">EPCIS v1.1 Tutorial and Demonstration ( Oliot Opensource Project )</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
@@ -81,8 +81,8 @@
 				<img width="100%" src="./image/inspection.png" alt="2">
 				<div class="container">
 					<div class="carousel-caption">
-						<h1>When Customer Wants to Know about</h1>
-						<h4>BEEF PACK, EPCIS and RFID technology can give us solution</h4>
+						<h1>When Customer Wants to Know about BEEF PACK</h1>
+						<h4>EPCIS and RFID technology can give us solution</h4>
 					</div>
 				</div>
 			</div>
@@ -91,7 +91,7 @@
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS Event Producer 1: Dairy Farm</h1>
-						<h4>Capture when the cow solds</h4>
+						<h4>Capture when the cow was sold</h4>
 					</div>
 				</div>
 			</div>
@@ -99,8 +99,8 @@
 				<img width="100%" src="./image/transformation.png" alt="4">
 				<div class="container">
 					<div class="carousel-caption">
-						<h1>EPCIS Event Producer 2: The Butchery</h1>
-						<h4>Capture when the cow transforms to beef packs</h4>
+						<h1>EPCIS Event Producer 2: Butcher Shop</h1>
+						<h4>Capture when the cow was transformed to beef packs</h4>
 					</div>
 				</div>
 			</div>
@@ -109,7 +109,7 @@
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS Event Producer 3: Retail</h1>
-						<h4>Capture when one of the beef packs is ready to be sold</h4>
+						<h4>Capture when one of the beef packs was ready to be sold</h4>
 					</div>
 				</div>
 			</div>
@@ -118,7 +118,7 @@
 				<div class="container">
 					<div class="carousel-caption">
 						<h1>EPCIS visualizes everyday-objects</h1>
-						<h4>Query the history</h4>
+						<h4>Trace the history</h4>
 					</div>
 				</div>
 			</div>
@@ -142,7 +142,7 @@
 				<p>Customers in retail want to trace the beefs in terms of
 					Where, When, and Why. This tutorial gives the guideline about</p>
 				<ul>
-					<li>How Dairy Farm, The butchery, and Retail can record the
+					<li>How Dairy Farm, Butcher Shop, and Retail can record the
 						important events on the cow.</li>
 					<li>How Customer easily traces the beef pack</li>
 				</ul>
@@ -174,8 +174,8 @@
 		<hr>
 
 		<footer>
-			<p>&copy; Real time Embedded System Laboratory (RESL), Auto-ID
-				Labs@Korea 2015</p>
+			<code style="font-size: 12pt">Auto-ID Labs. Korea 2015</code><br><br>
+			<p class="lead" style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt" >Contact</p>
 			<p>
 				Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
 				Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,

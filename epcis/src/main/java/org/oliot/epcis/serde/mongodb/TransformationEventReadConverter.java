@@ -64,19 +64,24 @@ public class TransformationEventReadConverter implements
 	public TransformationEventType convert(DBObject dbObject) {
 		try {
 			TransformationEventType transformationEventType = new TransformationEventType();
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				transformationEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if(eventTimeZoneOffset.split(":").length == 2 ){
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone*60);
 				transformationEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				transformationEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -84,6 +89,7 @@ public class TransformationEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone*60);
 				transformationEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("inputEPCList") != null) {

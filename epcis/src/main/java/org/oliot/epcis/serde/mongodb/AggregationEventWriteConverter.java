@@ -116,6 +116,7 @@ public class AggregationEventWriteConverter implements
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
+		
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType oee = aggregationEventType

@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
@@ -55,18 +56,24 @@ public class QuantityEventReadConverter implements
 	public QuantityEventType convert(DBObject dbObject) {
 		try {
 			QuantityEventType quantityEventType = new QuantityEventType();
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				quantityEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if(eventTimeZoneOffset.split(":").length == 2 ){
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone * 60);
 				quantityEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				quantityEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -74,6 +81,7 @@ public class QuantityEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone * 60);
 				quantityEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("epcClass") != null)

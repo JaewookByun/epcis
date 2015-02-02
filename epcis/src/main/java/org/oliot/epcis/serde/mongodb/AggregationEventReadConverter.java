@@ -36,6 +36,7 @@ import org.springframework.stereotype.Component;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
@@ -65,22 +66,24 @@ public class AggregationEventReadConverter implements
 
 		try {
 			AggregationEventType aggregationEventType = new AggregationEventType();
-			if (dbObject.get("parentID") != null)
-				aggregationEventType.setParentID(dbObject.get("parentID")
-						.toString());
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				aggregationEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if(eventTimeZoneOffset.split(":").length == 2 ){
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone * 60);
 				aggregationEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				aggregationEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -88,8 +91,12 @@ public class AggregationEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone * 60);
 				aggregationEventType.setRecordTime(xmlRecordTime);
 			}
+			if (dbObject.get("parentID") != null)
+				aggregationEventType.setParentID(dbObject.get("parentID")
+						.toString());
 			if (dbObject.get("childEPCs") != null) {
 				BasicDBList epcListM = (BasicDBList) dbObject.get("childEPCs");
 				EPCListType epcListType = new EPCListType();

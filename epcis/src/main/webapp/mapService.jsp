@@ -18,6 +18,7 @@
 <script src="./js/bootstrap.js"></script>
 <script type="text/javascript"
 	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">
+	
 </script>
 <script>
 	href = window.location.href;
@@ -84,8 +85,7 @@ body {
 						function(data) {
 							xmlDoc = $.parseXML(data);
 							$xml = $(xmlDoc);
-							if( $xml.find("eventTime").length == 0 )
-							{
+							if ($xml.find("eventTime").length == 0) {
 								alert("No Events, please capture your events first\nGo to Capture Tutorial");
 								document.location.href = "./captureService1.jsp";
 							}
@@ -319,7 +319,8 @@ body {
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">Oliot EPCIS Tutorial</a>
+				<a class="navbar-brand" href="#">EPCIS v1.1 Tutorial and
+					Demonstration ( Oliot Opensource Project )</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
@@ -333,7 +334,7 @@ body {
 
 	<div class="container">
 		<p>
-			Insert the EPC you want to trace. If you want to trace it,
+			Insert the EPC you want to trace. Then,
 			<code>Click</code>
 			the latest marker
 		</p>
@@ -347,8 +348,11 @@ body {
 	<br>
 	<div class="container" align="left">
 		<footer>
-			<p>&copy; Real time Embedded System Laboratory (RESL), Auto-ID
-				Labs@Korea 2015</p>
+			<code style="font-size: 12pt">Auto-ID Labs. Korea 2015</code>
+			<br>
+			<br>
+			<p class="lead"
+				style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 			<p>
 				Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
 				Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,
