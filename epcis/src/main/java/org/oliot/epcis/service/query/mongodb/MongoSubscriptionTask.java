@@ -137,7 +137,7 @@ public class MongoSubscriptionTask implements Job {
 					.getResultsBody().getEventList()
 					.getObjectEventOrAggregationEventOrQuantityEvent();
 
-			if (reportIfEmpty == false) {
+			if (reportIfEmpty == true) {
 				if (checkList == null || checkList.size() == 0) {
 					// Do not report if reportIfEmpty is true
 					return;
