@@ -14,6 +14,11 @@ With EPCIS, event producer (e.g. RFID middleware) generates and sends events
 complying with EPCIS Document XML schema into EPCIS Repository. 
 Then, these events can be globally shared with given queries 
 
+Temporary Server
+============
+[Main Page](http://143.248.56.100:8080/epcis)
+[Tutorial Page](http://143.248.56.100:8080/epcis/tutorialPage.jsp)
+
 Specification
 =============
 Java, Dynamic Web Service
