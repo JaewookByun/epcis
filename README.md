@@ -33,6 +33,6 @@ Copyright (C) 2014 Jaewook Jack Byun
 
 > Korea Advanced Institute of Science and Technology (KAIST)
 
-> Real-time Embedded System Laboratory(RESL)
+> Real-time and Embedded Systems Laboratory(RESL)
 
 > bjw0829@kaist.ac.kr, bjw0829@gmail.com
