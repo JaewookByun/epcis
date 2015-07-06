@@ -1,9 +1,9 @@
 ### Oliot EPCIS Repository ###
 Copyright (C) 2014 Jaewook Jack Byun
 
-This project is part of Oliot (oliot.org), pursuing the implementation of
-Electronic Product Code Information Service(EPCIS) v1.1 specification in
-EPCglobal. [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+> This project is part of Oliot (oliot.org), pursuing the implementation of
+> Electronic Product Code Information Service(EPCIS) v1.1 specification in
+> EPCglobal. [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
 
 ### Introduction ###
 Electronic Product Code Information Service (EPCIS) enables to capture and share EPC-based event 
