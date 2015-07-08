@@ -37,12 +37,12 @@ Copyright (C) 2014 Jaewook Jack Byun
 
 > Maintainer:
 
->> Jack Jaewook Byun, Ph.D student : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+>> Jaewook Byun, Ph.D student : bjw0829@kaist.ac.kr, bjw0829@gmail.com
 
 > MySQL Backend Extension:
 
->> Yalew Kidane : yalewkidane@kaist.ac.k, yalewkidane@gmail.com
+>> Yalew Kidane, Master student : yalewkidane@kaist.ac.k, yalewkidane@gmail.com
 
 > Capture Interface Extension:
 
->> Sungpil Woo : woosungpil@kaist.ac.kr, woosungpil7@gmail.com
+>> Sungpil Woo, Master student : woosungpil@kaist.ac.kr, woosungpil7@gmail.com
