@@ -1,7 +1,7 @@
 ### Oliot EPCIS Repository ###
 Copyright (C) 2014 Jaewook Jack Byun
 
-> This project is part of Oliot (oliot.org), pursuing the implementation of
+> This project is part of Oliot ([Oliot Homepage](http://oliot.org)), pursuing the implementation of
 > Electronic Product Code Information Service(EPCIS) v1.1 specification in
 > EPCglobal. 
 
