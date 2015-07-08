@@ -41,7 +41,7 @@ Copyright (C) 2014 Jaewook Jack Byun
 
 > MySQL Backend Extension:
 
->> Yalew Kidane, Master student : yalewkidane@kaist.ac.k, yalewkidane@gmail.com
+>> Yalew Kidane, Master student : yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
 
 > Capture Interface Extension:
 
