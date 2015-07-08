@@ -29,10 +29,20 @@ Copyright (C) 2014 Jaewook Jack Byun
 > Spring Framework
 
 ### Contact ###
-> Jack Jaewook Byun, Ph.D student
-
 > Korea Advanced Institute of Science and Technology (KAIST)
 
 > Real-time and Embedded Systems Laboratory(RESL)
 
-> bjw0829@kaist.ac.kr, bjw0829@gmail.com
+> Auto-ID Labs @ Korea
+
+> Maintainer:
+
+>> Jack Jaewook Byun, Ph.D student : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+
+> MySQL Backend Extension:
+
+>> Yalew Kidane : yalewkidane@kaist.ac.k, yalewkidane@gmail.com
+
+> Capture Interface Extension:
+
+>> Sungpil Woo : woosungpil@kaist.ac.kr, woosungpil7@gmail.com
