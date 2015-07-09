@@ -28,4 +28,9 @@ Jack Jaewook Byun, Ph.D student
 Korea Advanced Institute of Science and Technology (KAIST)
 Real-time Embedded System Laboratory(RESL)
 bjw0829@kaist.ac.kr
+
+Yalew K.Tolcha, MSc. student
+Korea Advanced Institute of Science and Technology (KAIST)
+Real-time Embedded System Laboratory(RESL)
+yalewkidane@kaist.ac.kr
 ========
