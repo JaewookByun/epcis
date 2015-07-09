@@ -40,7 +40,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class QuantityListType {
 
-    protected List<QuantityElementType> quantityElement =new ArrayList<QuantityElementType>();
+    protected List<QuantityElementType> quantityElement;
 
     /**
      * Gets the value of the quantityElement property.

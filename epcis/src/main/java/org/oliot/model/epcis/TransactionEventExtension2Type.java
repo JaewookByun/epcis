@@ -9,18 +9,15 @@
 package org.oliot.model.epcis;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-
 import org.w3c.dom.Element;
 
 
@@ -50,17 +47,6 @@ import org.w3c.dom.Element;
 })
 public class TransactionEventExtension2Type {
 
-	
-	
-	private String fieldName;
-	private String prefix;
-	private int intValue;
-	private float floatValue;
-	private Date dateValue;
-	private String stringValue;
-	
-	
-	
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
@@ -96,55 +82,7 @@ public class TransactionEventExtension2Type {
         return this.any;
     }
 
-    public String getFieldName() {
-		return fieldName;
-	}
-
-	public void setFieldName(String fieldName) {
-		this.fieldName = fieldName;
-	}
-
-	public String getPrefix() {
-		return prefix;
-	}
-
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
-
-	public int getIntValue() {
-		return intValue;
-	}
-
-	public void setIntValue(int intValue) {
-		this.intValue = intValue;
-	}
-
-	public float getFloatValue() {
-		return floatValue;
-	}
-
-	public void setFloatValue(float floatValue) {
-		this.floatValue = floatValue;
-	}
-
-	public Date getDateValue() {
-		return dateValue;
-	}
-
-	public void setDateValue(Date dateValue) {
-		this.dateValue = dateValue;
-	}
-
-	public String getStringValue() {
-		return stringValue;
-	}
-
-	public void setStringValue(String stringValue) {
-		this.stringValue = stringValue;
-	}
-
-	public void setAny(List<Object> any) {
+    public void setAny(List<Object> any) {
 		this.any = any;
 	}
 

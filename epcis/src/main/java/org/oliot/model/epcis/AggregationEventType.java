@@ -113,7 +113,13 @@ public class AggregationEventType
         this.parentID = value;
     }
 
-    /**
+   
+
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	/**
      * Gets the value of the childEPCs property.
      * 
      * @return

@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlType;
 public class BusinessTransactionListType {
 
     @XmlElement(required = true)
-    protected List<BusinessTransactionType> bizTransaction =new ArrayList<BusinessTransactionType>();
+    protected List<BusinessTransactionType> bizTransaction;
 
     /**
      * Gets the value of the bizTransaction property.

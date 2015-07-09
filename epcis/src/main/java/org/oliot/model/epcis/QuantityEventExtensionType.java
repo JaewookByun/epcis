@@ -46,22 +46,13 @@ import org.w3c.dom.Element;
     "any"
 })
 public class QuantityEventExtensionType {
-	
-	QuantityEventType quantityEventType;
+
     @XmlAnyElement(lax = true)
     protected List<Object> any;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    public QuantityEventType getQuantityEventType() {
-		return quantityEventType;
-	}
-
-	public void setQuantityEventType(QuantityEventType quantityEventType) {
-		this.quantityEventType = quantityEventType;
-	}
-
-	/**
+    /**
      * Gets the value of the any property.
      * 
      * <p>

@@ -20,6 +20,9 @@ import java.util.Map;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Level;
@@ -42,6 +45,7 @@ import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
+import org.oliot.model.epcis.QuerySchedule;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.oliot.model.epcis.SubscribeNotPermittedException;
 import org.oliot.model.epcis.SubscriptionControls;
@@ -71,10 +75,11 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -82,14 +87,15 @@ import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class MongoQueryService {
 
 	public String subscribe(SubscriptionType subscription) {
@@ -98,6 +104,7 @@ public class MongoQueryService {
 		String dest = subscription.getDest();
 		String cronExpression = subscription.getCronExpression();
 		boolean reportIfEmpty = subscription.isReportIfEmpty();
+		String initialRecordTime = subscription.getInitialRecordTime();
 		String eventType = subscription.getEventType();
 		String GE_eventTime = subscription.getGE_eventTime();
 		String LT_eventTime = subscription.getLT_eventTime();
@@ -132,27 +139,28 @@ public class MongoQueryService {
 		Map<String, String> paramMap = subscription.getParamMap();
 
 		String result = subscribe(queryName, subscriptionID, dest,
-				cronExpression, reportIfEmpty, eventType, GE_eventTime,
-				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, orderBy, orderDirection,
-				eventCountLimit, maxEventCount, paramMap);
+				cronExpression, reportIfEmpty, initialRecordTime, eventType,
+				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+				WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
+				LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, paramMap);
 
 		return result;
 	}
 
 	public String subscribeEventQuery(String queryName, String subscriptionID,
-			String dest, String cronExpression, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
+			String dest, String cronExpression, boolean reportIfEmpty,
+			String initialRecordTimeStr, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime,
+			String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
@@ -189,27 +197,27 @@ public class MongoQueryService {
 
 		// Add Schedule with Query
 		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
-				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, paramMap);
+				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, orderBy, orderDirection,
+				eventCountLimit, maxEventCount, paramMap);
 
 		// Manage Subscription Persistently
 		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
-				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, paramMap);
+				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, orderBy, orderDirection,
+				eventCountLimit, maxEventCount, paramMap);
 
 		String retString = "SubscriptionID : " + subscriptionID
 				+ " is successfully triggered. ";
@@ -266,12 +274,6 @@ public class MongoQueryService {
 
 			if (name.equals("cronExpression")) {
 				cronExpression = value;
-				continue;
-			} else if (name.equals("reportIfEmpty")) {
-				if (value.equals("true"))
-					reportIfEmpty = true;
-				else
-					reportIfEmpty = false;
 				continue;
 			} else if (name.equals("eventType")) {
 				eventType = value;
@@ -371,27 +373,77 @@ public class MongoQueryService {
 			}
 		}
 
+		// Subscription Control Processing
+		/*
+		 * QuerySchedule: (Optional) Defines the periodic schedule on which the
+		 * query is to be executed. See Section 8.2.5.3. Exactly one of schedule
+		 * or trigger is required; if both are specified or both are omitted,
+		 * the implementation SHALL raise a SubscriptionControls- Exception..
+		 */
+		QuerySchedule querySchedule = controls.getSchedule();
+		if (cronExpression == null) {
+			String sec = querySchedule.getSecond();
+			String min = querySchedule.getMinute();
+			String hours = querySchedule.getHour();
+			String dayOfMonth = querySchedule.getDayOfMonth();
+			String month = querySchedule.getMonth();
+			String dayOfWeek = querySchedule.getDayOfWeek();
+			cronExpression = sec + " " + min + " " + hours + " " + dayOfMonth
+					+ " " + month + " " + dayOfWeek;
+		}
+
+		/*
+		 * InitialRecordTime: (Optional) Specifies a time used to constrain what
+		 * events are considered when processing the query when it is executed
+		 * for the first time. See Section 8.2.5.2. If omitted, defaults to the
+		 * time at which the subscription is created.
+		 */
+		XMLGregorianCalendar initialRecordTime = controls
+				.getInitialRecordTime();
+		if (initialRecordTime == null) {
+			try {
+				initialRecordTime = DatatypeFactory.newInstance()
+						.newXMLGregorianCalendar();
+			} catch (DatatypeConfigurationException e) {
+
+				e.printStackTrace();
+			}
+		}
+
+		SimpleDateFormat sdf = new SimpleDateFormat(
+				"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		Date initialRecordDate = initialRecordTime.toGregorianCalendar()
+				.getTime();
+		String initialRecordTimeStr = sdf.format(initialRecordDate);
+		/*
+		 * reportIfEmpty: If true, a QueryResults instance is always sent to the
+		 * subscriber when the query is executed. If false, a QueryResults
+		 * instance is sent to the subscriber only when the results are
+		 * non-empty.
+		 */
+		reportIfEmpty = controls.isReportIfEmpty();
+
 		subscribe(queryName, subscriptionID, destStr, cronExpression,
-				reportIfEmpty, eventType, GE_eventTime, LT_eventTime,
-				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
-				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, extMap);
+				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
+				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, orderBy, orderDirection,
+				eventCountLimit, maxEventCount, extMap);
 
 	}
 
 	public String subscribe(String queryName, String subscriptionID,
 			String dest, String cronExpression, boolean reportIfEmpty,
-			String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action,
-			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
-			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
+			String initialRecordTimeStr, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime,
+			String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
@@ -425,16 +477,16 @@ public class MongoQueryService {
 		String retString = "";
 		if (queryName.equals("SimpleEventQuery")) {
 			retString = subscribeEventQuery(queryName, subscriptionID, dest,
-					cronExpression, eventType, GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-					EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-					WD_bizLocation, EQ_transformationID, MATCH_epc,
-					MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+					cronExpression, reportIfEmpty, initialRecordTimeStr,
+					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 		}
 
 		return retString;
@@ -490,6 +542,7 @@ public class MongoQueryService {
 		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
 				Criteria.where("queryName").is(queryName)),
 				SubscriptionType.class);
+		
 		List<String> retList = new ArrayList<String>();
 		for (int i = 0; i < allSubscription.size(); i++) {
 			SubscriptionType subscription = allSubscription.get(i);
@@ -1288,6 +1341,8 @@ public class MongoQueryService {
 			map.put("subscriptionID", subscription.getSubscriptionID());
 			map.put("dest", subscription.getDest());
 			map.put("cronExpression", subscription.getCronExpression());
+			map.put("initialRecordTime", subscription.getInitialRecordTime());
+			map.put("reportIfEmpty", subscription.isReportIfEmpty());
 
 			if (subscription.getEventType() != null)
 				map.put("eventType", subscription.getEventType());
@@ -1355,17 +1410,22 @@ public class MongoQueryService {
 				map.put("eventCountLimit", subscription.getEventCountLimit());
 			if (subscription.getMaxEventCount() != null)
 				map.put("maxEventCount", subscription.getMaxEventCount());
-			if (subscription.getParamMap() != null )
+			if (subscription.getParamMap() != null)
 				map.put("paramMap", subscription.getParamMap());
-			
+
 			JobDetail job = newJob(MongoSubscriptionTask.class)
-					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).setJobData(map)
+					.withIdentity(subscription.getSubscriptionID(),
+							subscription.getQueryName()).setJobData(map)
 					.storeDurably(false).build();
 
 			Trigger trigger = newTrigger()
-					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).startNow()
-					.withSchedule(cronSchedule(subscription.getCronExpression())).build();
-			
+					.withIdentity(subscription.getSubscriptionID(),
+							subscription.getQueryName())
+					.startNow()
+					.withSchedule(
+							cronSchedule(subscription.getCronExpression()))
+					.build();
+
 			// ClassPathXmlApplicationContext context = new
 			// ClassPathXmlApplicationContext(
 			// "classpath:QuartzConfig.xml");
@@ -1380,17 +1440,19 @@ public class MongoQueryService {
 					+ " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
+		} catch (RuntimeException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
 	private void addScheduleToQuartz(String queryName, String subscriptionID,
-			String dest, String cronExpression, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
+			String dest, String cronExpression, boolean reportIfEmpty,
+			String initialRecordTimeStr, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime,
+			String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
@@ -1403,7 +1465,8 @@ public class MongoQueryService {
 			map.put("subscriptionID", subscriptionID);
 			map.put("dest", dest);
 			map.put("cronExpression", cronExpression);
-
+			map.put("reportIfEmpty", reportIfEmpty);
+			map.put("initialRecordTime", initialRecordTimeStr);
 			if (eventType != null)
 				map.put("eventType", eventType);
 			if (GE_eventTime != null)
@@ -1495,13 +1558,13 @@ public class MongoQueryService {
 
 	@SuppressWarnings("resource")
 	private boolean addScheduleToDB(String queryName, String subscriptionID,
-			String dest, String cronExpression, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
+			String dest, String cronExpression, boolean reportIfEmpty,
+			String initialRecordTime, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime,
+			String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
 			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
@@ -1510,11 +1573,12 @@ public class MongoQueryService {
 			String maxEventCount, Map<String, String> paramMap) {
 
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
-				dest, cronExpression, eventType, GE_eventTime, LT_eventTime,
-				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
-				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				dest, cronExpression, reportIfEmpty, initialRecordTime,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
 				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
 				LE_quantity, orderBy, orderDirection, eventCountLimit,
@@ -1547,7 +1611,8 @@ public class MongoQueryService {
 					subscription.getSubscriptionID(),
 					subscription.getQueryName()));
 			Configuration.logger.log(Level.INFO, "Subscription ID: "
-					+ subscription + " is removed from scheduler");
+					+ subscription.getSubscriptionID()
+					+ " is removed from scheduler");
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
@@ -1559,8 +1624,9 @@ public class MongoQueryService {
 				new Query(Criteria.where("subscriptionID").is(
 						subscription.getSubscriptionID())),
 				SubscriptionType.class);
-		Configuration.logger.log(Level.INFO, "Subscription ID: " + subscription
-				+ " is removed from DB");
+		Configuration.logger.log(Level.INFO,
+				"Subscription ID: " + subscription.getSubscriptionID()
+						+ " is removed from DB");
 	}
 
 	@SuppressWarnings("rawtypes")

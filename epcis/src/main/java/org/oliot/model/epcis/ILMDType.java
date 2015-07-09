@@ -127,4 +127,12 @@ public class ILMDType {
         return otherAttributes;
     }
 
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+
 }

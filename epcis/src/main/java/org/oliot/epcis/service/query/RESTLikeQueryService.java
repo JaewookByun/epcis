@@ -1,6 +1,10 @@
 package org.oliot.epcis.service.query;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.epcis.service.query.mysql.MysqlQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -28,14 +33,15 @@ import org.springframework.web.context.ServletContextAware;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Controller
 public class RESTLikeQueryService implements ServletContextAware {
 
@@ -78,6 +84,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
 			@RequestParam(required = false) boolean reportIfEmpty,
+			@RequestParam(required = false) String initialRecordTime,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
 			@RequestParam(required = false) String LT_eventTime,
@@ -111,23 +118,50 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String maxEventCount,
 			Map<String, String> params) {
 
+		if (initialRecordTime == null) {
+			GregorianCalendar cal = new GregorianCalendar();
+			Date curTime = cal.getTime();
+			SimpleDateFormat sdf = new SimpleDateFormat(
+					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			initialRecordTime = sdf.format(curTime);
+		} else {
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				sdf.parse(initialRecordTime);
+			} catch (ParseException e) {
+				return e.toString();
+			}
+		}
+
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.subscribe(queryName, subscriptionID, dest,
-					cronExpression, reportIfEmpty, eventType, GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					params);
+					cronExpression, reportIfEmpty, initialRecordTime,
+					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService=new MysqlQueryService();
+			return mysqlQueryService.subscribe(queryName, subscriptionID, dest,
+					cronExpression, reportIfEmpty, initialRecordTime,
+					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, params);
 		}
 
 		return null;
@@ -146,7 +180,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			mysqlQueryService.unsubscribe(subscriptionID);
 		}
 
 	}
@@ -165,7 +200,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			return mysqlQueryService.getSubscriptionIDsREST(queryName);
 		}
 
 		return null;
@@ -233,7 +269,19 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			return mysqlQueryService.poll(queryName, eventType, GE_eventTime,
+					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
+					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					vocabularyName, includeAttributes, includeChildren,
+					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
+					params);
 		}
 
 		return null;

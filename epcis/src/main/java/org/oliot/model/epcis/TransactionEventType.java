@@ -87,6 +87,7 @@ public class TransactionEventType
     protected String disposition;
     protected ReadPointType readPoint;
     protected BusinessLocationType bizLocation;
+   
     protected TransactionEventExtensionType extension;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
@@ -330,11 +331,20 @@ public class TransactionEventType
      * 
      * 
      */
+    
     public List<Object> getAny() {
         if (any == null) {
             any = new ArrayList<Object>();
         }
         return this.any;
     }
+
+	
+
+	
+
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
 
 }

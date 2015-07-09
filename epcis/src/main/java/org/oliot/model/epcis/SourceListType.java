@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlType;
 public class SourceListType {
 
     @XmlElement(required = true)
-    protected List<SourceDestType> source=new ArrayList<SourceDestType>();
+    protected List<SourceDestType> source;
 
     /**
      * Gets the value of the source property.

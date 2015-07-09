@@ -7,8 +7,13 @@ http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-extension-soap.xml" />
+	
+	  
 	<jaxws:endpoint id="SoapQueryService" implementor="org.oliot.epcis.service.query.SoapQueryService"
 		address="/QueryService">
-	</jaxws:endpoint>
+	</jaxws:endpoint> 
+	
+
+		
 	<jaxws:endpoint id="SoapCaptureService" implementor="org.oliot.epcis.service.capture.SoapCaptureService" address="/CaptureService"> </jaxws:endpoint>
 </beans>

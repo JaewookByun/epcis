@@ -7,5 +7,6 @@ http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
 http://cxf.apache.org/jaxws 
 http://cxf.apache.org/schemas/jaxws.xsd">
 	<jaxws:client id="client" serviceClass="org.oliot.epcis.service.query.CoreQueryService"
-		address="http://localhost:8888/epcis/webservice/QueryService" />
+		address="http://localhost:8888/epcis/webservice/QueryService" /> 
 </beans>
+
