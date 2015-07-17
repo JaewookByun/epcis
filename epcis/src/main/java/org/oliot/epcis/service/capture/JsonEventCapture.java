@@ -85,7 +85,8 @@ public class JsonEventCapture implements ServletContextAware {
 				JSONObject schema_json = schemaloader.getGeneralschema();
 				
 				if(!validate(json, schema_json)){
-					Configuration.logger.info("Json Document is not valid" + "first_validcheck");
+					Configuration.logger.info("Json Document is invalid" + " about general_validcheck");
+					return "Error: Json Document is not valid" + "general_validcheck";
 				}
 				JSONObject json2 = json.getJSONObject("epcis");
 				JSONObject json3 = json2.getJSONObject("EPCISBody");
@@ -101,7 +102,8 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if(!validate(json4.getJSONObject(i).getJSONObject("ObjectEvent"), objecteventschema_json)){
 
-							Configuration.logger.info("Json Document is not valid" + "detail validation check for objectevent");
+							Configuration.logger.info("Json Document is not valid" + " detail validation check for objectevent");
+							return "Error: Json Document is not valid" + " for detail validation check for objectevent";
 						}
 						/* finish validation logic for ObjectEvent */
 						
@@ -118,7 +120,8 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if(!validate(json4.getJSONObject(i).getJSONObject("AggregationEvent"), aggregationeventschema_json)){
 
-							Configuration.logger.info("Json Document is not valid" + "detail validation check for aggregationevent");
+							Configuration.logger.info("Json Document is not valid" + " detail validation check for aggregationevent");
+							return "Error: Json Document is not valid" + " for detail validation check for aggregationevent";
 						}
 						/* finish validation logic for AggregationEvent */
 						
@@ -135,7 +138,8 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if(!validate(json4.getJSONObject(i).getJSONObject("TransformationEvent"), tranformationeventschema_json)){
 
-							Configuration.logger.info("Json Document is not valid" + "detail validation check for TransFormationEvent");
+							Configuration.logger.info("Json Document is not valid" + " detail validation check for TransFormationEvent");
+							return "Error: Json Document is not valid" + " for detail validation check for TransFormationEvent";
 						}
 						/* finish validation logic for TransFormationEvent */
 						
@@ -151,7 +155,8 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if(!validate(json4.getJSONObject(i).getJSONObject("TransactionEvent"), transactioneventschema_json)){
 
-							Configuration.logger.info("Json Document is not valid" + "detail validation check for TransactionEvent");
+							Configuration.logger.info("Json Document is not valid." + " detail validation check for TransactionEvent");
+							return "Error: Json Document is not valid" + " for detail validation check for TransactionEvent";
 						}
 						/* finish validation logic for TransFormationEvent */
 						
@@ -161,7 +166,8 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 					}
 					else{
-						Configuration.logger.info(" Json Document is not valid " + "It doesn't have standard event_type");
+						Configuration.logger.info("Json Document is not valid. " + " It doesn't have standard event_type");
+						return "Error: Json Document is not valid" + " It doesn't have standard event_type";
 					}
 					
 				}
@@ -203,7 +209,8 @@ public class JsonEventCapture implements ServletContextAware {
 	        final JsonSchema schema = factory.getJsonSchema(schema_node);
 	        ProcessingReport report;
 	        report = schema.validate(input_node);
-			return true;
+	        Configuration.logger.info("validation process report : "+ report);
+			return report.isSuccess();
 			
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
