@@ -1,0 +1,196 @@
+{
+  "$schema": "http://oliot.org/transformationevent/schema#",
+  "id": "http://oliot.org/transformationevent",
+  "type": "object",
+  "properties": {
+    "eventTime": {
+      "id": "http://oliot.org/transformationevent/eventTime",
+      "type": "string"
+    },
+    "eventTimeZoneOffset": {
+      "id": "http://oliot.org/transformationevent/eventTimeZoneOffset",
+      "type": "string"
+    },
+    "recordTime": {
+      "id": "http://oliot.org/transformationevent/recordTime",
+      "type": "string"
+    },
+    "inputEPCList": {
+      "id": "http://oliot.org/transformationevent/inputEPCList",
+      "type": "array",
+      "items": [
+        {
+          "id": "http://oliot.org/transformationevent/inputEPCList/0",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/inputEPCList/0/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/inputEPCList/1",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/inputEPCList/1/epc",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "outputEPCList": {
+      "id": "http://oliot.org/transformationevent/outputEPCList",
+      "type": "array",
+      "items": [
+        {
+          "id": "http://oliot.org/transformationevent/outputEPCList/0",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/outputEPCList/0/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/outputEPCList/1",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/outputEPCList/1/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/outputEPCList/2",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/outputEPCList/2/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/outputEPCList/3",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transformationevent/outputEPCList/3/epc",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "transformationID": {
+      "id": "http://oliot.org/transformationevent/transformationID",
+      "type": "string"
+    },
+    "bizStep": {
+      "id": "http://oliot.org/transformationevent/bizStep",
+      "type": "string"
+    },
+    "disposition": {
+      "id": "http://oliot.org/transformationevent/disposition",
+      "type": "string"
+    },
+    "readPoint": {
+      "id": "http://oliot.org/transformationevent/readPoint",
+      "type": "object",
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/transformationevent/readPoint/id",
+          "type": "string"
+        }
+      }
+    },
+    "inputQuantityList": {
+      "id": "http://oliot.org/transformationevent/inputQuantityList",
+      "type": "array",
+      "items": [
+        {
+          "id": "http://oliot.org/transformationevent/inputQuantityList/0",
+          "type": "object",
+          "properties": {
+            "epcClass": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/0/epcClass",
+              "type": "string"
+            },
+            "quantity": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/0/quantity",
+              "type": "integer"
+            },
+            "uom": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/0/uom",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/inputQuantityList/1",
+          "type": "object",
+          "properties": {
+            "epcClass": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/1/epcClass",
+              "type": "string"
+            },
+            "quantity": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/1/quantity",
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/transformationevent/inputQuantityList/2",
+          "type": "object",
+          "properties": {
+            "epcClass": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/2/epcClass",
+              "type": "string"
+            },
+            "quantity": {
+              "id": "http://oliot.org/transformationevent/inputQuantityList/2/quantity",
+              "type": "integer"
+            }
+          }
+        }
+      ]
+    },
+    "ilmd": {
+      "id": "http://oliot.org/transformationevent/ilmd",
+      "type": "object",
+      "properties": {
+        "example:batch": {
+          "id": "http://oliot.org/transformationevent/ilmd/example:batch",
+          "type": "string"
+        },
+        "@example": {
+          "id": "http://oliot.org/transformationevent/ilmd/@example",
+          "type": "string"
+        },
+        "example:bestBeforeDate": {
+          "id": "http://oliot.org/transformationevent/ilmd/example:bestBeforeDate",
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "eventTime",
+    "eventTimeZoneOffset",
+    "recordTime",
+    "inputEPCList",
+    "outputEPCList",
+    "transformationID",
+    "bizStep",
+    "disposition",
+    "readPoint",
+    "inputQuantityList",
+    "ilmd"
+  ]
+}

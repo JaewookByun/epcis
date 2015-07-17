@@ -1,0 +1,138 @@
+{
+  "$schema": "http://oliot.org/aggregationevent/schema#",
+  "id": "http://oliot.org/aggregationevent",
+  "type": "object",
+  "properties": {
+    "eventTime": {
+      "id": "http://oliot.org/aggregationevent/eventTime",
+      "type": "string"
+    },
+    "eventTimeZoneOffset": {
+      "id": "http://oliot.org/aggregationevent/eventTimeZoneOffset",
+      "type": "string"
+    },
+    "recordTime": {
+      "id": "http://oliot.org/aggregationevent/recordTime",
+      "type": "string"
+    },
+    "parentID": {
+      "id": "http://oliot.org/aggregationevent/parentID",
+      "type": "string"
+    },
+    "childEPCs": {
+      "id": "http://oliot.org/aggregationevent/childEPCs",
+      "type": "array",
+      "items": [
+        {
+          "id": "http://oliot.org/aggregationevent/childEPCs/0",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/aggregationevent/childEPCs/0/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/aggregationevent/childEPCs/1",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/aggregationevent/childEPCs/1/epc",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "action": {
+      "id": "http://oliot.org/aggregationevent/action",
+      "type": "string"
+    },
+    "bizStep": {
+      "id": "http://oliot.org/aggregationevent/bizStep",
+      "type": "string"
+    },
+    "disposition": {
+      "id": "http://oliot.org/aggregationevent/disposition",
+      "type": "string"
+    },
+    "readPoint": {
+      "id": "http://oliot.org/aggregationevent/readPoint",
+      "type": "object",
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/aggregationevent/readPoint/id",
+          "type": "string"
+        }
+      }
+    },
+    "bizLocation": {
+      "id": "http://oliot.org/aggregationevent/bizLocation",
+      "type": "object",
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/aggregationevent/bizLocation/id",
+          "type": "string"
+        }
+      }
+    },
+    "extension": {
+      "id": "http://oliot.org/aggregationevent/extension",
+      "type": "object",
+      "properties": {
+        "childQuantityList": {
+          "id": "http://oliot.org/aggregationevent/extension/childQuantityList",
+          "type": "array",
+          "items": [
+            {
+              "id": "http://oliot.org/aggregationevent/extension/childQuantityList/0",
+              "type": "object",
+              "properties": {
+                "epcClass": {
+                  "id": "http://oliot.org/aggregationevent/extension/childQuantityList/0/epcClass",
+                  "type": "string"
+                },
+                "quantity": {
+                  "id": "http://oliot.org/aggregationevent/extension/childQuantityList/0/quantity",
+                  "type": "integer"
+                }
+              }
+            },
+            {
+              "id": "http://oliot.org/aggregationevent/extension/childQuantityList/1",
+              "type": "object",
+              "properties": {
+                "epcClass": {
+                  "id": "http://oliot.org/aggregationevent/extension/childQuantityList/1/epcClass",
+                  "type": "string"
+                },
+                "quantity": {
+                  "id": "http://oliot.org/aggregationevent/extension/childQuantityList/1/quantity",
+                  "type": "number"
+                },
+                "uom": {
+                  "id": "http://oliot.org/aggregationevent/extension/childQuantityList/1/uom",
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "required": [
+    "eventTime",
+    "eventTimeZoneOffset",
+    "recordTime",
+    "parentID",
+    "childEPCs",
+    "action",
+    "bizStep",
+    "disposition",
+    "readPoint",
+    "bizLocation",
+    "extension"
+  ]
+}
