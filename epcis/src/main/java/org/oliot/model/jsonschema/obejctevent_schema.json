@@ -1,0 +1,92 @@
+{
+  "$schema": "http://oliot.org/obejctevent/schema#",
+  "id": "http://oliot.org/obejctevent",
+  "type": "object",
+  "properties": {
+    "eventTime": {
+      "id": "http://oliot.org/obejctevent/eventTime",
+      "type": "string"
+    },
+    "eventTimeZoneOffset": {
+      "id": "http://oliot.org/obejctevent/eventTimeZoneOffset",
+      "type": "string"
+    },
+    "recordTime": {
+      "id": "http://oliot.org/obejctevent/recordTime",
+      "type": "string"
+    },
+    "epcList": {
+      "id": "http://oliot.org/obejctevent/epcList",
+      "type": "array",
+      "items": [
+        {
+          "id": "http://oliot.org/obejctevent/epcList/0",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/obejctevent/epcList/0/epc",
+              "type": "string"
+            }
+          }
+        },
+        {
+          "id": "http://oliot.org/obejctevent/epcList/1",
+          "type": "object",
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/obejctevent/epcList/1/epc",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "action": {
+      "id": "http://oliot.org/obejctevent/action",
+      "type": "string"
+    },
+    "bizStep": {
+      "id": "http://oliot.org/obejctevent/bizStep",
+      "type": "string"
+    },
+    "disposition": {
+      "id": "http://oliot.org/obejctevent/disposition",
+      "type": "string"
+    },
+    "readPoint": {
+      "id": "http://oliot.org/obejctevent/readPoint",
+      "type": "object",
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/obejctevent/readPoint/id",
+          "type": "string"
+        }
+      }
+    },
+    "bizTransactionList": {
+      "id": "http://oliot.org/obejctevent/bizTransactionList",
+      "type": "array",
+      "items": {
+        "id": "http://oliot.org/obejctevent/bizTransactionList/0",
+        "type": "object",
+        "properties": {
+          "urn:epcglobal:cbv:btt:po": {
+            "id": "http://oliot.org/obejctevent/bizTransactionList/0/urn:epcglobal:cbv:btt:po",
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "eventTime",
+    "eventTimeZoneOffset",
+    "recordTime",
+    "epcList",
+    "action",
+    "bizStep",
+    "disposition",
+    "readPoint",
+    "bizTransactionList"
+  ]
+}
