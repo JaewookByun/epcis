@@ -80,7 +80,11 @@ public class QuantityEventType
     protected String disposition;
     protected ReadPointType readPoint;
     protected BusinessLocationType bizLocation;
-    protected BusinessTransactionListType bizTransactionList;
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	protected BusinessTransactionListType bizTransactionList;
     protected QuantityEventExtensionType extension;
     @XmlAnyElement(lax = true)
     protected List<Object> any;

@@ -78,7 +78,11 @@ public class TransactionEventType
 
     @XmlElement(required = true)
     protected BusinessTransactionListType bizTransactionList;
-    protected String parentID;
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	protected String parentID;
     @XmlElement(required = true)
     protected EPCListType epcList;
     @XmlElement(required = true)
