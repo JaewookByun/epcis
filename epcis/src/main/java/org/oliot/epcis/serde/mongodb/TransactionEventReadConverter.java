@@ -71,7 +71,7 @@ public class TransactionEventReadConverter implements
 						.get("eventTimeZoneOffset");
 				transactionEventType
 						.setEventTimeZoneOffset(eventTimeZoneOffset);
-				if(eventTimeZoneOffset.split(":").length == 2 ){
+				if (eventTimeZoneOffset.split(":").length == 2) {
 					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 				}
 			}
@@ -81,7 +81,7 @@ public class TransactionEventReadConverter implements
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
-				xmlEventTime.setTimezone(zone*60);
+				xmlEventTime.setTimezone(zone * 60);
 				transactionEventType.setEventTime(xmlEventTime);
 			}
 			if (dbObject.get("recordTime") != null) {
@@ -90,7 +90,7 @@ public class TransactionEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
-				xmlRecordTime.setTimezone(zone*60);
+				xmlRecordTime.setTimezone(zone * 60);
 				transactionEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("parentID") != null)
@@ -186,6 +186,13 @@ public class TransactionEventReadConverter implements
 				}
 				btlt.setBizTransaction(bizTranArrayList);
 				transactionEventType.setBizTransactionList(btlt);
+			}
+
+			// Vendor Extension
+			if (dbObject.get("any") != null) {
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				transactionEventType.setAny(any);
 			}
 
 			// Extension Field
