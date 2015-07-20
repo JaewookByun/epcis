@@ -24,8 +24,10 @@ import org.oliot.model.epcis.TransformationEventType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.stereotype.Component;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
@@ -173,6 +175,15 @@ public class TransformationEventWriteConverter implements
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
 			}
+		}
+
+		// Vendor Extension
+		if (transformationEventType.getAny() != null) {
+			List<Object> objList = transformationEventType.getAny();
+			Map<String, String> map2Save = getAnyMap(objList);
+			if (map2Save != null)
+				dbo.put("any", map2Save);
+
 		}
 
 		// Extension

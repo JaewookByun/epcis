@@ -192,6 +192,13 @@ public class ObjectEventReadConverter implements
 				ilmd = putILMD(ilmd, anyObject);
 				objectEventType.setIlmd(ilmd);
 			}
+			
+			// Vendor Extension
+			if (dbObject.get("any") != null ){
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				objectEventType.setAny(any);
+			}
 
 			// Extension Field
 			if (dbObject.get("extension") != null) {
@@ -282,6 +289,7 @@ public class ObjectEventReadConverter implements
 					dlt.setDestination(sdtList);
 					oeet.setDestinationList(dlt);
 				}
+				
 				// extension2
 				if (extObject.get("extension") != null) {
 					ObjectEventExtension2Type oee2t = new ObjectEventExtension2Type();
