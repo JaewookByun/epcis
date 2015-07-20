@@ -3,6 +3,7 @@ package org.oliot.epcis.serde.mongodb;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
@@ -111,6 +113,16 @@ public class TransactionEventWriteConverter implements
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
+
+		// Vendor Extension
+		if (transactionEventType.getAny() != null) {
+			List<Object> objList = transactionEventType.getAny();
+			Map<String, String> map2Save = getAnyMap(objList);
+			if (map2Save != null)
+				dbo.put("any", map2Save);
+
+		}
+
 		// Extension
 		if (transactionEventType.getExtension() != null) {
 			TransactionEventExtensionType oee = transactionEventType

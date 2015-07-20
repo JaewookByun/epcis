@@ -60,9 +60,8 @@ public class QuantityEventReadConverter implements
 			if (dbObject.get("eventTimeZoneOffset") != null) {
 				String eventTimeZoneOffset = (String) dbObject
 						.get("eventTimeZoneOffset");
-				quantityEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
-				if(eventTimeZoneOffset.split(":").length == 2 ){
+				quantityEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if (eventTimeZoneOffset.split(":").length == 2) {
 					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 				}
 			}
@@ -162,6 +161,13 @@ public class QuantityEventReadConverter implements
 				}
 				btlt.setBizTransaction(bizTranArrayList);
 				quantityEventType.setBizTransactionList(btlt);
+			}
+
+			// Vendor Extension
+			if (dbObject.get("any") != null) {
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				quantityEventType.setAny(any);
 			}
 
 			// Extension Field

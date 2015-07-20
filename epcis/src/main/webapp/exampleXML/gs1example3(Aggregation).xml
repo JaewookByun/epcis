@@ -37,6 +37,7 @@
 						</quantityElement>
 					</childQuantityList>
 				</extension>
+				<example:dd>pp</example:dd>
 			</AggregationEvent>
 		</EventList>
 	</EPCISBody>
