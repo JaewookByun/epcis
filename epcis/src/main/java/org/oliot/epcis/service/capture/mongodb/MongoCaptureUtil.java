@@ -112,6 +112,7 @@ public class MongoCaptureUtil {
 	
 	//JsonObject event capture series..
 	
+	@SuppressWarnings("resource")
 	public void objectevent_capture(JSONObject event){
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
@@ -126,6 +127,7 @@ public class MongoCaptureUtil {
 		collection.save(dbObject);
 	}
 	
+	@SuppressWarnings("resource")
 	public void aggregationevent_capture(JSONObject event){
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
@@ -140,6 +142,7 @@ public class MongoCaptureUtil {
 		collection.save(dbObject);
 	}
 	
+	@SuppressWarnings("resource")
 	public void transformationevent_capture(JSONObject event){
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");
@@ -154,6 +157,7 @@ public class MongoCaptureUtil {
 		collection.save(dbObject);
 	}
 	
+	@SuppressWarnings("resource")
 	public void transactionevent_capture(JSONObject event){
 		ApplicationContext ctx = new GenericXmlApplicationContext(
 				"classpath:MongoConfig.xml");

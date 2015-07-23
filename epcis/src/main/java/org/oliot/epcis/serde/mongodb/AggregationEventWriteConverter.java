@@ -3,6 +3,7 @@ package org.oliot.epcis.serde.mongodb;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.AggregationEventType;
@@ -116,7 +117,16 @@ public class AggregationEventWriteConverter implements
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
-		
+
+		// Vendor Extension
+		if (aggregationEventType.getAny() != null) {
+			List<Object> objList = aggregationEventType.getAny();
+			Map<String, String> map2Save = getAnyMap(objList);
+			if (map2Save != null)
+				dbo.put("any", map2Save);
+
+		}
+
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType oee = aggregationEventType

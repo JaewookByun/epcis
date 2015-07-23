@@ -72,7 +72,7 @@ public class AggregationEventReadConverter implements
 						.get("eventTimeZoneOffset");
 				aggregationEventType
 						.setEventTimeZoneOffset(eventTimeZoneOffset);
-				if(eventTimeZoneOffset.split(":").length == 2 ){
+				if (eventTimeZoneOffset.split(":").length == 2) {
 					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 				}
 			}
@@ -187,6 +187,13 @@ public class AggregationEventReadConverter implements
 				}
 				btlt.setBizTransaction(bizTranArrayList);
 				aggregationEventType.setBizTransactionList(btlt);
+			}
+
+			// Vendor Extension
+			if (dbObject.get("any") != null) {
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				aggregationEventType.setAny(any);
 			}
 
 			// Extension Field
