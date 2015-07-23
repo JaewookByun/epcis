@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
@@ -123,6 +124,15 @@ public class ObjectEventWriteConverter implements
 					dbo.put("ilmd", map2Save);
 			}
 		}
+		// Vendor Extension
+		if (objectEventType.getAny() != null) {
+			List<Object> objList = objectEventType.getAny();
+			Map<String, String> map2Save = getAnyMap(objList);
+			if (map2Save != null)
+				dbo.put("any", map2Save);
+
+		}
+
 		// Extension
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();

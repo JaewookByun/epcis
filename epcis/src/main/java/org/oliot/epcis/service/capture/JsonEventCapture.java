@@ -1,12 +1,9 @@
 package org.oliot.epcis.service.capture;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletContext;
@@ -183,7 +180,7 @@ public class JsonEventCapture implements ServletContextAware {
 		return "EPCIS Document : Captured ";
 	}
 
-	private static InputStream getXMLDocumentInputStream(String xmlString) {
+	static InputStream getXMLDocumentInputStream(String xmlString) {
 		InputStream stream = new ByteArrayInputStream(
 				xmlString.getBytes(StandardCharsets.UTF_8));
 		return stream;

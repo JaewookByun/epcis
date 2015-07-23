@@ -1,9 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Oliot EPCIS v1.1 Main Page</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-64257932-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </head>
 <body>
 	<script src="js/bootstrap.min.js"></script>
@@ -25,6 +36,11 @@
 					Then, these events can be globally shared with given queries <br>
 				</a>
 			</div>
+			
+			<div class="list-group">
+				<a href="#" class="list-group-item list-group-item-success"> Quick Start - Tutorial </a> <a href="./tutorialPage.jsp" class="list-group-item">Click</a>
+			</div>
+			
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
 					href="#" class="list-group-item">Java, Dynamic Web Service<br>EPCIS
@@ -32,10 +48,11 @@
 			</div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Contact </a> <a href="#"
-					class="list-group-item">Jack Jaewook Byun, Ph.D student<br>
+					class="list-group-item">Jaewook Jack Byun, Ph.D student<br>
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
 					Real-time Embedded System Laboratory(RESL)<br>
-					bjw0829@kaist.ac.kr
+					bjw0829@kaist.ac.kr<br>
+					GitHub: https://github.com/JaewookByun/epcis
 				</a>
 			</div>
 		</div>

@@ -972,7 +972,7 @@ public class MongoQueryService {
 										if (atList.size() == 0)
 											break;
 										else {
-											j=-1;
+											j = -1;
 											continue;
 										}
 									}
@@ -2378,27 +2378,28 @@ public class MongoQueryService {
 					if (paramName.startsWith("EQ_")) {
 						String type = paramName
 								.substring(3, paramName.length());
-						if (eventType.equals("AggregationEvent")
-								|| eventType.equals("ObjectEvent")
-								|| eventType.equals("TransactionEvent")) {
-							DBObject query = getINExtensionQueryObject(type,
-									new String[] {
-											"extension.extension.any." + type,
-											"extension.extension.otherAttributes."
-													+ type }, paramValues);
-							if (query != null)
-								queryList.add(query);
-						}
-						if (eventType.equals("QuantityEvent")
-								|| eventType.equals("TransformationEvent")) {
-							DBObject query = getINExtensionQueryObject(
-									type,
-									new String[] { "extension.any." + type,
-											"extension.otherAttributes." + type },
-									paramValues);
-							if (query != null)
-								queryList.add(query);
-						}
+						/*
+						 * if (eventType.equals("AggregationEvent") ||
+						 * eventType.equals("ObjectEvent") ||
+						 * eventType.equals("TransactionEvent")) { DBObject
+						 * query = getINExtensionQueryObject(type, new String[]
+						 * { "extension.extension.any." + type,
+						 * "extension.extension.otherAttributes." + type },
+						 * paramValues); if (query != null)
+						 * queryList.add(query); } if
+						 * (eventType.equals("QuantityEvent") ||
+						 * eventType.equals("TransformationEvent")) { DBObject
+						 * query = getINExtensionQueryObject( type, new String[]
+						 * { "extension.any." + type,
+						 * "extension.otherAttributes." + type }, paramValues);
+						 * if (query != null) queryList.add(query); }
+						 */
+						DBObject query = getINExtensionQueryObject(type,
+								new String[] { "any." + type,
+										"otherAttributes." + type },
+								paramValues);
+						if (query != null)
+							queryList.add(query);
 					}
 
 					/**
@@ -2418,99 +2419,92 @@ public class MongoQueryService {
 							|| paramName.startsWith("LE_")) {
 						String type = paramName
 								.substring(3, paramName.length());
-						if (eventType.equals("AggregationEvent")
-								|| eventType.equals("ObjectEvent")
-								|| eventType.equals("TransactionEvent")) {
-							if (paramName.startsWith("GT_")) {
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.extension.any."
-														+ type,
-												"extension.extension.otherAttributes."
-														+ type }, paramValues,
-										"GT");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("GE_")) {
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.extension.any."
-														+ type,
-												"extension.extension.otherAttributes."
-														+ type }, paramValues,
-										"GE");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("LT_")) {
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.extension.any."
-														+ type,
-												"extension.extension.otherAttributes."
-														+ type }, paramValues,
-										"LT");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("LE_")) {
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.extension.any."
-														+ type,
-												"extension.extension.otherAttributes."
-														+ type }, paramValues,
-										"LE");
-								if (query != null)
-									queryList.add(query);
-							}
+
+						/*
+						 * if (eventType.equals("AggregationEvent") ||
+						 * eventType.equals("ObjectEvent") ||
+						 * eventType.equals("TransactionEvent")) { if
+						 * (paramName.startsWith("GT_")) { DBObject query =
+						 * getCompExtensionQueryObject( type, new String[] {
+						 * "extension.extension.any." + type,
+						 * "extension.extension.otherAttributes." + type },
+						 * paramValues, "GT"); if (query != null)
+						 * queryList.add(query); } if
+						 * (paramName.startsWith("GE_")) { DBObject query =
+						 * getCompExtensionQueryObject( type, new String[] {
+						 * "extension.extension.any." + type,
+						 * "extension.extension.otherAttributes." + type },
+						 * paramValues, "GE"); if (query != null)
+						 * queryList.add(query); } if
+						 * (paramName.startsWith("LT_")) { DBObject query =
+						 * getCompExtensionQueryObject( type, new String[] {
+						 * "extension.extension.any." + type,
+						 * "extension.extension.otherAttributes." + type },
+						 * paramValues, "LT"); if (query != null)
+						 * queryList.add(query); } if
+						 * (paramName.startsWith("LE_")) { DBObject query =
+						 * getCompExtensionQueryObject( type, new String[] {
+						 * "extension.extension.any." + type,
+						 * "extension.extension.otherAttributes." + type },
+						 * paramValues, "LE"); if (query != null)
+						 * queryList.add(query); } } if
+						 * (eventType.equals("QuantityEvent") ||
+						 * eventType.equals("TransformationEvent")) { if
+						 * (paramName.startsWith("GT_")) {
+						 * 
+						 * DBObject query = getCompExtensionQueryObject( type,
+						 * new String[] { "extension.any." + type,
+						 * "extension.otherAttributes." + type }, paramValues,
+						 * "GT"); if (query != null) queryList.add(query); } if
+						 * (paramName.startsWith("GE_")) {
+						 * 
+						 * DBObject query = getCompExtensionQueryObject( type,
+						 * new String[] { "extension.any." + type,
+						 * "extension.otherAttributes." + type }, paramValues,
+						 * "GE"); if (query != null) queryList.add(query); } if
+						 * (paramName.startsWith("LT_")) { DBObject query =
+						 * getCompExtensionQueryObject( type, new String[] {
+						 * "extension.any." + type, "extension.otherAttributes."
+						 * + type }, paramValues, "LT"); if (query != null)
+						 * queryList.add(query); } if
+						 * (paramName.startsWith("LE_")) {
+						 * 
+						 * DBObject query = getCompExtensionQueryObject( type,
+						 * new String[] { "extension.any." + type,
+						 * "extension.otherAttributes." + type }, paramValues,
+						 * "LE"); if (query != null) queryList.add(query); } }
+						 */
+						if (paramName.startsWith("GT_")) {
+							DBObject query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type,
+											"otherAttributes." + type },
+									paramValues, "GT");
+							if (query != null)
+								queryList.add(query);
 						}
-						if (eventType.equals("QuantityEvent")
-								|| eventType.equals("TransformationEvent")) {
-							if (paramName.startsWith("GT_")) {
-
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.any." + type,
-												"extension.otherAttributes."
-														+ type }, paramValues,
-										"GT");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("GE_")) {
-
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.any." + type,
-												"extension.otherAttributes."
-														+ type }, paramValues,
-										"GE");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("LT_")) {
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.any." + type,
-												"extension.otherAttributes."
-														+ type }, paramValues,
-										"LT");
-								if (query != null)
-									queryList.add(query);
-							}
-							if (paramName.startsWith("LE_")) {
-
-								DBObject query = getCompExtensionQueryObject(
-										type, new String[] {
-												"extension.any." + type,
-												"extension.otherAttributes."
-														+ type }, paramValues,
-										"LE");
-								if (query != null)
-									queryList.add(query);
-							}
+						if (paramName.startsWith("GE_")) {
+							DBObject query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type,
+											"otherAttributes." + type },
+									paramValues, "GE");
+							if (query != null)
+								queryList.add(query);
+						}
+						if (paramName.startsWith("LT_")) {
+							DBObject query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type,
+											"otherAttributes." + type },
+									paramValues, "LT");
+							if (query != null)
+								queryList.add(query);
+						}
+						if (paramName.startsWith("LE_")) {
+							DBObject query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type,
+											"otherAttributes." + type },
+									paramValues, "LE");
+							if (query != null)
+								queryList.add(query);
 						}
 					}
 				}
