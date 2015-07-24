@@ -18,32 +18,24 @@
     "epcList": {
       "id": "http://oliot.org/obejctevent/epcList",
       "type": "array",
-      "items": [
+      "items": 
         {
           "id": "http://oliot.org/obejctevent/epcList/0",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "epc": {
               "id": "http://oliot.org/obejctevent/epcList/0/epc",
               "type": "string"
             }
           }
-        },
-        {
-          "id": "http://oliot.org/obejctevent/epcList/1",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/obejctevent/epcList/1/epc",
-              "type": "string"
-            }
-          }
         }
-      ]
+      
     },
     "action": {
       "id": "http://oliot.org/obejctevent/action",
-      "type": "string"
+      "type": "string",
+      "enum": ["ADD", "DELETE", "OBSERVE" ]
     },
     "bizStep": {
       "id": "http://oliot.org/obejctevent/bizStep",
@@ -56,10 +48,49 @@
     "readPoint": {
       "id": "http://oliot.org/obejctevent/readPoint",
       "type": "object",
+      
       "properties": {
         "id": {
           "id": "http://oliot.org/obejctevent/readPoint/id",
           "type": "string"
+        }
+      },
+     "additionalProperties": false
+    },
+    "bizLocation": {
+      "id": "http://oliot.org/obejctevent/bizLocation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/obejctevent/bizLocation/id",
+          "type": "string"
+        },
+        "extension": {
+          "id": "http://oliot.org/obejctevent/bizLocation/extension",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "id": "http://oliot.org/obejctevent/bizLocation/extension/any",
+              "type": "object",
+              "properties": {
+                "longitude": {
+                  "id": "http://oliot.org/obejctevent/bizLocation/extension/any/longitude",
+                  "type": "string"
+                },
+                "latitude": {
+                  "id": "http://oliot.org/obejctevent/bizLocation/extension/any/latitude",
+                  "type": "string"
+                }
+              }
+            },
+            "otherAttributes": {
+              "id": "http://oliot.org/obejctevent/bizLocation/extension/otherAttributes",
+              "type": "object",
+              "properties": {}
+            }
+          }
         }
       }
     },
@@ -68,12 +99,58 @@
       "type": "array",
       "items": {
         "id": "http://oliot.org/obejctevent/bizTransactionList/0",
-        "type": "object",
-        "properties": {
-          "urn:epcglobal:cbv:btt:po": {
-            "id": "http://oliot.org/obejctevent/bizTransactionList/0/urn:epcglobal:cbv:btt:po",
-            "type": "string"
+        "type": "object"
+      }
+    },
+    "ilmd": {
+      "id": "http://oliot.org/obejctevent/ilmd",
+      "type": "object"
+    },
+    "any": {
+      "id": "http://oliot.org/obejctevent/any",
+      "type": "object",
+      "properties": {}
+    },
+    "extension": {
+      "id": "http://oliot.org/obejctevent/extension",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "quantityList": {
+          "id": "http://oliot.org/obejctevent/extension/quantityList",
+          "type": "array",
+          "items": {
+            "id": "http://oliot.org/obejctevent/extension/quantityList/0",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "epcClass": {
+                "id": "http://oliot.org/obejctevent/extension/quantityList/0/epcClass",
+                "type": "string"
+              },
+              "quantity": {
+                "id": "http://oliot.org/obejctevent/extension/quantityList/0/quantity",
+                "type": "integer"
+              },
+              "uom": {
+                "id": "http://oliot.org/obejctevent/extension/quantityList/0/uom",
+                "type": "string"
+              }
+            }
           }
+        },
+        "sourceList": {
+          "id": "http://oliot.org/obejctevent/extension/sourceList",
+          "type": "array"
+        },
+        "destinationList": {
+          "id": "http://oliot.org/obejctevent/extension/destinationList",
+          "type": "array"
+        },
+        "extension": {
+          "id": "http://oliot.org/objectevent/extension/extension",
+          "type": "object",
+          "properties": {}
         }
       }
     }
@@ -82,11 +159,7 @@
     "eventTime",
     "eventTimeZoneOffset",
     "recordTime",
-    "epcList",
-    "action",
-    "bizStep",
-    "disposition",
-    "readPoint",
-    "bizTransactionList"
-  ]
+    "action"
+  ],
+"additionalProperties": false
 }

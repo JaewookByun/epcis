@@ -39,6 +39,7 @@ public class UtilityService implements ServletContextAware {
 	@Autowired
 	ServletContext servletContext;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private HttpServletRequest request;
 

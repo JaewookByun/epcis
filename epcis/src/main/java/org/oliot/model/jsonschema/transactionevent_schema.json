@@ -22,32 +22,24 @@
     "epcList": {
       "id": "http://oliot.org/transactionevent/epcList",
       "type": "array",
-      "items": [
+      "additionalProperties": false,
+      "items": 
         {
           "id": "http://oliot.org/transactionevent/epcList/0",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "epc": {
               "id": "http://oliot.org/transactionevent/epcList/0/epc",
               "type": "string"
             }
           }
-        },
-        {
-          "id": "http://oliot.org/transactionevent/epcList/1",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transactionevent/epcList/1/epc",
-              "type": "string"
-            }
-          }
         }
-      ]
     },
     "action": {
       "id": "http://oliot.org/transactionevent/action",
-      "type": "string"
+      "type": "string",
+      "enum" : ["ADD", "DELETE", "OBSERVE"]
     },
     "bizStep": {
       "id": "http://oliot.org/transactionevent/bizStep",
@@ -60,10 +52,39 @@
     "readPoint": {
       "id": "http://oliot.org/transactionevent/readPoint",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "id": {
           "id": "http://oliot.org/transactionevent/readPoint/id",
           "type": "string"
+        }
+      }
+    },
+    "bizLocation": {
+      "id": "http://oliot.org/transactionevent/bizLocation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/transactionevent/bizLocation/id",
+          "type": "string"
+        },
+        "extension": {
+          "id": "http://oliot.org/transactionevent/bizLocation/extension",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "id": "http://oliot.org/transactionevent/bizLocation/extension/any",
+              "type": "object",
+              "properties": {}
+            },
+            "otherAttributes": {
+              "id": "http://oliot.org/transactionevent/bizLocation/extension/otherAttributes",
+              "type": "object",
+              "properties": {}
+            }
+          }
         }
       }
     },
@@ -74,20 +95,27 @@
         "id": "http://oliot.org/transactionevent/bizTransactionList/0",
         "type": "object",
         "properties": {
-          "urn:epcglobal:cbv:btt:po": {
-            "id": "http://oliot.org/transactionevent/bizTransactionList/0/urn:epcglobal:cbv:btt:po",
+          "sdf": {
+            "id": "http://oliot.org/transactionevent/bizTransactionList/0/sdf",
             "type": "string"
           }
         }
       }
     },
+    "any": {
+      "id": "http://oliot.org/transactionevent/any",
+      "type": "object",
+      "properties": {}
+    },
     "extension": {
       "id": "http://oliot.org/transactionevent/extension",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "quantityList": {
           "id": "http://oliot.org/transactionevent/extension/quantityList",
           "type": "array",
+          "additionalProperties": false,
           "items": {
             "id": "http://oliot.org/transactionevent/extension/quantityList/0",
             "type": "object",
@@ -109,55 +137,16 @@
         },
         "sourceList": {
           "id": "http://oliot.org/transactionevent/extension/sourceList",
-          "type": "array",
-          "items": [
-            {
-              "id": "http://oliot.org/transactionevent/extension/sourceList/0",
-              "type": "object",
-              "properties": {
-                "urn:epcglobal:cbv:sdt:possessing_party": {
-                  "id": "http://oliot.org/transactionevent/extension/sourceList/0/urn:epcglobal:cbv:sdt:possessing_party",
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "id": "http://oliot.org/transactionevent/extension/sourceList/1",
-              "type": "object",
-              "properties": {
-                "urn:epcglobal:cbv:sdt:location": {
-                  "id": "http://oliot.org/transactionevent/extension/sourceList/1/urn:epcglobal:cbv:sdt:location",
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": "array"
         },
         "destinationList": {
           "id": "http://oliot.org/transactionevent/extension/destinationList",
-          "type": "array",
-          "items": [
-            {
-              "id": "http://oliot.org/transactionevent/extension/destinationList/0",
-              "type": "object",
-              "properties": {
-                "urn:epcglobal:cbv:sdt:owning_party": {
-                  "id": "http://oliot.org/transactionevent/extension/destinationList/0/urn:epcglobal:cbv:sdt:owning_party",
-                  "type": "string"
-                }
-              }
-            },
-            {
-              "id": "http://oliot.org/transactionevent/extension/destinationList/1",
-              "type": "object",
-              "properties": {
-                "urn:epcglobal:cbv:sdt:location": {
-                  "id": "http://oliot.org/transactionevent/extension/destinationList/1/urn:epcglobal:cbv:sdt:location",
-                  "type": "string"
-                }
-              }
-            }
-          ]
+          "type": "array"
+        },
+        "extension": {
+          "id": "http://oliot.org/transactionevent/extension/extension",
+          "type": "object",
+          "properties": {}
         }
       }
     }
@@ -166,13 +155,7 @@
     "eventTime",
     "eventTimeZoneOffset",
     "recordTime",
-    "parentID",
-    "epcList",
-    "action",
-    "bizStep",
-    "disposition",
-    "readPoint",
-    "bizTransactionList",
-    "extension"
-  ]
+    "action"
+  ],
+"additionalProperties": false
 }
