@@ -400,7 +400,7 @@ public class JsonEventCapture implements ServletContextAware {
 					                }
 					            }
 					        }
-					        /* Finish validation whether each component use correct name space */
+					        /* Finish validation whether each component use correct name space !*/
 					        
 						}
 						
