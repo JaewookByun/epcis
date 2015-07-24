@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
@@ -104,6 +105,67 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for ObjectEvent */
 						
+						if(json4.getJSONObject(i).getJSONObject("ObjectEvent").has("any")){
+							/* start finding namespace in the any field. */
+							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("ObjectEvent").getJSONObject("any");
+							String namespace ="";
+							String anyobject_str = anyobject.toString();
+							String obj_field = anyobject_str.substring(1, anyobject_str.length()-1);
+							boolean namespace_flag = false;
+							
+							StringTokenizer st1 = new StringTokenizer(obj_field, ",");
+					        while(st1.hasMoreTokens()){
+					            String temp = st1.nextToken();
+					            StringTokenizer st2 = new StringTokenizer(temp, "\"");
+					            while(st2.hasMoreTokens()){
+					                String temp1 = st2.nextToken();
+					                if(temp1.substring(0,1).equals("@")){
+					                	namespace_flag = true;
+					                	namespace = temp1.substring(1,temp1.length());
+					                }
+					            }
+					        }
+					        
+					        if(!namespace_flag){
+					        	Configuration.logger.info("Json Document doesn't have namespace in any field");
+								return "Error: Json Document doesn't have namespace in any field" + " for detail validation check for objectevent";
+		                
+					        }
+							/* finish finding namespace in the any field. */
+					        
+					        /* Start Validation whether each component use correct name space */
+							StringTokenizer validation_st1 = new StringTokenizer(obj_field, ",");
+							int indexcount = 0;
+					        while(validation_st1.hasMoreTokens()){
+					            String temp = validation_st1.nextToken();
+					            StringTokenizer validation_st2 = new StringTokenizer(temp, "\"");
+					            while(validation_st2.hasMoreTokens()){
+					            	indexcount++;
+					            	String temp1 = validation_st2.nextToken();
+					                if(indexcount % 3 == 1){
+					                	
+					                	if(temp1.length()<namespace.length()){
+					                		Configuration.logger.info("Json Document use invalid namespace in anyfield");
+											return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for objectevent";
+					                	}
+					                	
+					                	if(temp1.substring(0,1).equals("@")){
+						                	// then, It is namespace that doesn't need to be validated
+					                	}
+					                	else{
+					                		if(!temp1.substring(0,namespace.length()).equals(namespace)){
+					                			Configuration.logger.info("Json Document use invalid namespace in anyfield");
+												return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for objectevent";
+					                		}
+					                		
+					                	}
+					                	
+					                }
+					            }
+					        }
+					        /* Finish validation whether each component use correct name space */
+					        
+						}
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
@@ -122,6 +184,67 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for AggregationEvent */
 						
+						if(json4.getJSONObject(i).getJSONObject("AggregationEvent").has("any")){
+							/* start finding namespace in the any field. */
+							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("AggregationEvent").getJSONObject("any");
+							String namespace ="";
+							String anyobject_str = anyobject.toString();
+							String obj_field = anyobject_str.substring(1, anyobject_str.length()-1);
+							boolean namespace_flag = false;
+							
+							StringTokenizer st1 = new StringTokenizer(obj_field, ",");
+					        while(st1.hasMoreTokens()){
+					            String temp = st1.nextToken();
+					            StringTokenizer st2 = new StringTokenizer(temp, "\"");
+					            while(st2.hasMoreTokens()){
+					                String temp1 = st2.nextToken();
+					                if(temp1.substring(0,1).equals("@")){
+					                	namespace_flag = true;
+					                	namespace = temp1.substring(1,temp1.length());
+					                }
+					            }
+					        }
+					        
+					        if(!namespace_flag){
+					        	Configuration.logger.info("Json Document doesn't have namespace in any field");
+								return "Error: Json Document doesn't have namespace in any field" + " for detail validation check for aggregationevent";
+		                
+					        }
+							/* finish finding namespace in the any field. */
+					        
+					        /* Start Validation whether each component use correct name space */
+							StringTokenizer validation_st1 = new StringTokenizer(obj_field, ",");
+							int indexcount = 0;
+					        while(validation_st1.hasMoreTokens()){
+					            String temp = validation_st1.nextToken();
+					            StringTokenizer validation_st2 = new StringTokenizer(temp, "\"");
+					            while(validation_st2.hasMoreTokens()){
+					            	indexcount++;
+					            	String temp1 = validation_st2.nextToken();
+					                if(indexcount % 3 == 1){
+					                	
+					                	if(temp1.length()<namespace.length()){
+					                		Configuration.logger.info("Json Document use invalid namespace in anyfield");
+											return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for aggregationevent";
+					                	}
+					                	
+					                	if(temp1.substring(0,1).equals("@")){
+						                	// then, It is namespace that doesn't need to be validated
+					                	}
+					                	else{
+					                		if(!temp1.substring(0,namespace.length()).equals(namespace)){
+					                			Configuration.logger.info("Json Document use invalid namespace in anyfield");
+												return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for aggregationevent";
+					                		}
+					                		
+					                	}
+					                	
+					                }
+					            }
+					        }
+					        /* Finish validation whether each component use correct name space */
+					        
+						}
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
@@ -140,6 +263,68 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for TransFormationEvent */
 						
+						if(json4.getJSONObject(i).getJSONObject("TransformationEvent").has("any")){
+							/* start finding namespace in the any field. */
+							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("TransformationEvent").getJSONObject("any");
+							String namespace ="";
+							String anyobject_str = anyobject.toString();
+							String obj_field = anyobject_str.substring(1, anyobject_str.length()-1);
+							boolean namespace_flag = false;
+							
+							StringTokenizer st1 = new StringTokenizer(obj_field, ",");
+					        while(st1.hasMoreTokens()){
+					            String temp = st1.nextToken();
+					            StringTokenizer st2 = new StringTokenizer(temp, "\"");
+					            while(st2.hasMoreTokens()){
+					                String temp1 = st2.nextToken();
+					                if(temp1.substring(0,1).equals("@")){
+					                	namespace_flag = true;
+					                	namespace = temp1.substring(1,temp1.length());
+					                }
+					            }
+					        }
+					        
+					        if(!namespace_flag){
+					        	Configuration.logger.info("Json Document doesn't have namespace in any field");
+								return "Error: Json Document doesn't have namespace in any field" + " for detail validation check for TransFormationEvent";
+		                
+					        }
+							/* finish finding namespace in the any field. */
+					        
+					        /* Start Validation whether each component use correct name space */
+							StringTokenizer validation_st1 = new StringTokenizer(obj_field, ",");
+							int indexcount = 0;
+					        while(validation_st1.hasMoreTokens()){
+					            String temp = validation_st1.nextToken();
+					            StringTokenizer validation_st2 = new StringTokenizer(temp, "\"");
+					            while(validation_st2.hasMoreTokens()){
+					            	indexcount++;
+					            	String temp1 = validation_st2.nextToken();
+					                if(indexcount % 3 == 1){
+					                	
+					                	if(temp1.length()<namespace.length()){
+					                		Configuration.logger.info("Json Document use invalid namespace in anyfield");
+											return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for TransFormationEvent";
+					                	}
+					                	
+					                	if(temp1.substring(0,1).equals("@")){
+						                	// then, It is namespace that doesn't need to be validated
+					                	}
+					                	else{
+					                		if(!temp1.substring(0,namespace.length()).equals(namespace)){
+					                			Configuration.logger.info("Json Document use invalid namespace in anyfield");
+												return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for TransFormationEvent";
+					                		}
+					                		
+					                	}
+					                	
+					                }
+					            }
+					        }
+					        /* Finish validation whether each component use correct name space */
+					        
+						}
+						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
 							m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
@@ -156,6 +341,68 @@ public class JsonEventCapture implements ServletContextAware {
 							return "Error: Json Document is not valid" + " for detail validation check for TransactionEvent";
 						}
 						/* finish validation logic for TransFormationEvent */
+						
+						if(json4.getJSONObject(i).getJSONObject("TransactionEvent").has("any")){
+							/* start finding namespace in the any field. */
+							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("TransactionEvent").getJSONObject("any");
+							String namespace ="";
+							String anyobject_str = anyobject.toString();
+							String obj_field = anyobject_str.substring(1, anyobject_str.length()-1);
+							boolean namespace_flag = false;
+							
+							StringTokenizer st1 = new StringTokenizer(obj_field, ",");
+					        while(st1.hasMoreTokens()){
+					            String temp = st1.nextToken();
+					            StringTokenizer st2 = new StringTokenizer(temp, "\"");
+					            while(st2.hasMoreTokens()){
+					                String temp1 = st2.nextToken();
+					                if(temp1.substring(0,1).equals("@")){
+					                	namespace_flag = true;
+					                	namespace = temp1.substring(1,temp1.length());
+					                }
+					            }
+					        }
+					        
+					        if(!namespace_flag){
+					        	Configuration.logger.info("Json Document doesn't have namespace in any field");
+								return "Error: Json Document doesn't have namespace in any field" + " for detail validation check for TransFormationEvent";
+		                
+					        }
+							/* finish finding namespace in the any field. */
+					        
+					        /* Start Validation whether each component use correct name space */
+							StringTokenizer validation_st1 = new StringTokenizer(obj_field, ",");
+							int indexcount = 0;
+					        while(validation_st1.hasMoreTokens()){
+					            String temp = validation_st1.nextToken();
+					            StringTokenizer validation_st2 = new StringTokenizer(temp, "\"");
+					            while(validation_st2.hasMoreTokens()){
+					            	indexcount++;
+					            	String temp1 = validation_st2.nextToken();
+					                if(indexcount % 3 == 1){
+					                	
+					                	if(temp1.length()<namespace.length()){
+					                		Configuration.logger.info("Json Document use invalid namespace in anyfield");
+											return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for TransactionEvent";
+					                	}
+					                	
+					                	if(temp1.substring(0,1).equals("@")){
+						                	// then, It is namespace that doesn't need to be validated
+					                	}
+					                	else{
+					                		if(!temp1.substring(0,namespace.length()).equals(namespace)){
+					                			Configuration.logger.info("Json Document use invalid namespace in anyfield");
+												return "Error: Json Document use invalid namespace in anyfield" + " for detail validation check for TransactionEvent";
+					                		}
+					                		
+					                	}
+					                	
+					                }
+					            }
+					        }
+					        /* Finish validation whether each component use correct name space !*/
+					        
+						}
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
@@ -213,7 +460,6 @@ public class JsonEventCapture implements ServletContextAware {
 			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (ProcessingException e) {
-			// TODO Auto-generated catch block
 			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		}

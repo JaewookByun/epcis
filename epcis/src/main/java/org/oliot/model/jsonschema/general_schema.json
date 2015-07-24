@@ -26,15 +26,18 @@
           },
           "required": [
             "EventList"
-          ]
+          ],
+         "additionalProperties": false
         }
       },
       "required": [
         "EPCISBody"
-      ]
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
     "epcis"
-  ]
+  ],
+  "additionalProperties": false
 }
