@@ -75,13 +75,10 @@ public class JsonSchemaLoader {
 			tranformationeventschema_json = new JSONObject(tranformationeventobj.toString());
 			transactioneventschema_json = new JSONObject(transactioneventobj.toString());
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		

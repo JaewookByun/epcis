@@ -48,9 +48,11 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@Autowired
 	ServletContext servletContext;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private HttpServletRequest request;
 
+	@SuppressWarnings("unused")
 	@Autowired
 	private HttpServletResponse response;
 

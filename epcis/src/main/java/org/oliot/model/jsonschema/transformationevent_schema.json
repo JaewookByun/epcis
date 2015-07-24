@@ -18,74 +18,34 @@
     "inputEPCList": {
       "id": "http://oliot.org/transformationevent/inputEPCList",
       "type": "array",
-      "items": [
+      "additionalProperties": false,
+      "items": 
         {
           "id": "http://oliot.org/transformationevent/inputEPCList/0",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "epc": {
               "id": "http://oliot.org/transformationevent/inputEPCList/0/epc",
               "type": "string"
             }
           }
-        },
-        {
-          "id": "http://oliot.org/transformationevent/inputEPCList/1",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transformationevent/inputEPCList/1/epc",
-              "type": "string"
-            }
-          }
         }
-      ]
     },
     "outputEPCList": {
       "id": "http://oliot.org/transformationevent/outputEPCList",
       "type": "array",
-      "items": [
-        {
-          "id": "http://oliot.org/transformationevent/outputEPCList/0",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transformationevent/outputEPCList/0/epc",
-              "type": "string"
-            }
-          }
-        },
-        {
-          "id": "http://oliot.org/transformationevent/outputEPCList/1",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transformationevent/outputEPCList/1/epc",
-              "type": "string"
-            }
-          }
-        },
-        {
-          "id": "http://oliot.org/transformationevent/outputEPCList/2",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transformationevent/outputEPCList/2/epc",
-              "type": "string"
-            }
-          }
-        },
-        {
-          "id": "http://oliot.org/transformationevent/outputEPCList/3",
-          "type": "object",
-          "properties": {
-            "epc": {
-              "id": "http://oliot.org/transformationevent/outputEPCList/3/epc",
-              "type": "string"
-            }
+      "additionalProperties": false,
+      "items": {
+        "id": "http://oliot.org/transformationevent/outputEPCList/0",
+        "type": "object",
+        "properties": {
+          "epc": {
+            "id": "http://oliot.org/transformationevent/outputEPCList/0/epc",
+            "type": "string"
           }
         }
-      ]
+      }
     },
     "transformationID": {
       "id": "http://oliot.org/transformationevent/transformationID",
@@ -102,6 +62,7 @@
     "readPoint": {
       "id": "http://oliot.org/transformationevent/readPoint",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "id": {
           "id": "http://oliot.org/transformationevent/readPoint/id",
@@ -109,73 +70,126 @@
         }
       }
     },
-    "inputQuantityList": {
-      "id": "http://oliot.org/transformationevent/inputQuantityList",
-      "type": "array",
-      "items": [
-        {
-          "id": "http://oliot.org/transformationevent/inputQuantityList/0",
-          "type": "object",
-          "properties": {
-            "epcClass": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/0/epcClass",
-              "type": "string"
-            },
-            "quantity": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/0/quantity",
-              "type": "integer"
-            },
-            "uom": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/0/uom",
-              "type": "string"
-            }
-          }
+    "bizLocation": {
+      "id": "http://oliot.org/transformationevent/bizLocation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/transformationevent/bizLocation/id",
+          "type": "string"
         },
-        {
-          "id": "http://oliot.org/transformationevent/inputQuantityList/1",
+        "extension": {
+          "id": "http://oliot.org/transformationevent/bizLocation/extension",
           "type": "object",
+          "additionalProperties": false,
           "properties": {
-            "epcClass": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/1/epcClass",
-              "type": "string"
+            "any": {
+              "id": "http://oliot.org/transformationevent/bizLocation/extension/any",
+              "type": "object",
+              "properties": {}
             },
-            "quantity": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/1/quantity",
-              "type": "integer"
-            }
-          }
-        },
-        {
-          "id": "http://oliot.org/transformationevent/inputQuantityList/2",
-          "type": "object",
-          "properties": {
-            "epcClass": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/2/epcClass",
-              "type": "string"
-            },
-            "quantity": {
-              "id": "http://oliot.org/transformationevent/inputQuantityList/2/quantity",
-              "type": "integer"
+            "otherAttributes": {
+              "id": "http://oliot.org/transformationevent/bizLocation/extension/otherAttributes",
+              "type": "object",
+              "properties": {}
             }
           }
         }
-      ]
+      }
+    },
+    "bizTransactionList": {
+      "id": "http://oliot.org/transformationevent/bizTransactionList",
+      "type": "array",
+      "items": {
+        "id": "http://oliot.org/transformationevent/bizTransactionList/0",
+        "type": "object"
+      }
+    },
+    "inputQuantityList": {
+      "id": "http://oliot.org/transformationevent/inputQuantityList",
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "id": "http://oliot.org/transformationevent/inputQuantityList/0",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "epcClass": {
+            "id": "http://oliot.org/transformationevent/inputQuantityList/0/epcClass",
+            "type": "string"
+          },
+          "quantity": {
+            "id": "http://oliot.org/transformationevent/inputQuantityList/0/quantity",
+            "type": "integer"
+          },
+          "uom": {
+            "id": "http://oliot.org/transformationevent/inputQuantityList/0/uom",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "outputQuantityList": {
+      "id": "http://oliot.org/transformationevent/outputQuantityList",
+      "type": "array",
+      "additionalProperties": false,
+      "items": {
+        "id": "http://oliot.org/transformationevent/outputQuantityList/0",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "epcClass": {
+            "id": "http://oliot.org/transformationevent/outputQuantityList/0/epcClass",
+            "type": "string"
+          },
+          "quantity": {
+            "id": "http://oliot.org/transformationevent/outputQuantityList/0/quantity",
+            "type": "integer"
+          },
+          "uom": {
+            "id": "http://oliot.org/transformationevent/outputQuantityList/0/uom",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "sourceList": {
+      "id": "http://oliot.org/transformationevent/sourceList",
+      "type": "array"
+    },
+    "destinationList": {
+      "id": "http://oliot.org/transformationevent/destinationList",
+      "type": "array"
     },
     "ilmd": {
       "id": "http://oliot.org/transformationevent/ilmd",
+      "type": "object"
+    },
+    "any": {
+      "id": "http://oliot.org/transformationevent/any",
       "type": "object",
+      "properties": {}
+    },
+    "extension": {
+      "id": "http://oliot.org/transformationevent/extension",
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "example:batch": {
-          "id": "http://oliot.org/transformationevent/ilmd/example:batch",
-          "type": "string"
+        "any": {
+          "id": "http://oliot.org/transformationevent/extension/any",
+          "type": "object",
+          "properties": {}
         },
-        "@example": {
-          "id": "http://oliot.org/transformationevent/ilmd/@example",
-          "type": "string"
+        "otherAttributes": {
+          "id": "http://oliot.org/transformationevent/extension/otherAttributes",
+          "type": "object",
+          "properties": {}
         },
-        "example:bestBeforeDate": {
-          "id": "http://oliot.org/transformationevent/ilmd/example:bestBeforeDate",
-          "type": "string"
+        "extension": {
+          "id": "http://oliot.org/transformationevent/extension/extension",
+          "type": "object",
+          "properties": {}
         }
       }
     }
@@ -183,14 +197,7 @@
   "required": [
     "eventTime",
     "eventTimeZoneOffset",
-    "recordTime",
-    "inputEPCList",
-    "outputEPCList",
-    "transformationID",
-    "bizStep",
-    "disposition",
-    "readPoint",
-    "inputQuantityList",
-    "ilmd"
-  ]
+    "recordTime"
+  ],
+ "additionalProperties": false
 }
