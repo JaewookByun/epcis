@@ -2,14 +2,20 @@
 <html>
 <head>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	(function(i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function() {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', '//www.google-analytics.com/analytics.js',
+			'ga');
 
-  ga('create', 'UA-64257932-1', 'auto');
-  ga('send', 'pageview');
-
+	ga('create', 'UA-64257932-1', 'auto');
+	ga('send', 'pageview');
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -46,19 +52,14 @@
 								</li>
 								<li class="list-group-item">Example URL:
 									http://{base-url}:{base-port}/epcis/Service/EventCapture</li>
-								<li class="list-group-item">Example EPCIS Document: <br><a
-									href="./exampleXML/gs1example1(Object).xml">gs1example1(Object)</a><br>
-									<a
-									href="./exampleXML/gs1example2(Object).xml">gs1example2(Object)</a><br>
-									<a
-									href="./exampleXML/gs1example3(Aggregation).xml">gs1example3(Aggregation)</a><br>
-									<a
-									href="./exampleXML/gs1example4(Transformation).xml">gs1example4(Transformation)</a><br>
-									<a
-									href="./exampleXML/otherExample1(Quantity).xml">otherExample1(Quantity)</a><br>
-									<a
-									href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a>
-									</li>
+								<li class="list-group-item">Example EPCIS Document: <br>
+								<a href="./exampleXML/gs1example1(Object).xml">gs1example1(Object)</a><br>
+									<a href="./exampleXML/gs1example2(Object).xml">gs1example2(Object)</a><br>
+									<a href="./exampleXML/gs1example3(Aggregation).xml">gs1example3(Aggregation)</a><br>
+									<a href="./exampleXML/gs1example4(Transformation).xml">gs1example4(Transformation)</a><br>
+									<a href="./exampleXML/otherExample1(Quantity).xml">otherExample1(Quantity)</a><br>
+									<a href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a>
+								</li>
 							</ul>
 						</td>
 					</tr>
@@ -143,8 +144,7 @@
 								<li class="list-group-item">Return the vendor specific
 									version of EPCIS</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/GetVendorVersion
-								</li>
+									http://{base-url}:{base-port}/epcis/Service/GetVendorVersion</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
@@ -198,11 +198,10 @@
 									exceeds specified number
 								</li>
 								<li class="list-group-item"><a
-									href="./rest-like-query-examples.html">SimpleEventQuery Example</a>
-									<br>
-									<a
-									href="./rest-like-master-query-examples.html">SimpleMasterDataQuery Example</a>									
-									</li>
+									href="./rest-like-query-examples.html">SimpleEventQuery
+										Example</a> <br> <a
+									href="./rest-like-master-query-examples.html">SimpleMasterDataQuery
+										Example</a></li>
 							</ul>
 						</td>
 					</tr>
@@ -231,9 +230,16 @@
 								<li class="list-group-item">Additional Parameters: <br>
 									dest : Callback URL <br> cronExpression : <a
 									href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
-										CronTrigger Tutorial</a>
+										CronTrigger Tutorial</a> <br> reportIfEmpty : do not receive
+									events if empty (true|false) <br> ignoreReceivedEvent
+									(NEW) : do not receive received events (true|false)
 								</li>
-								<li class="list-group-item">e.g. MATCH_epc=urn:epc:id:sgtin:1.1.1 cronExpression=0/10 * * * * ? dest=http://localhost:8080/epcis/SubscriptionTestServlet</li>
+								<li class="list-group-item">[Example] <br>
+									MATCH_epc=urn:epc:id:sgtin:1.1.1 <br> cronExpression=0/10
+									* * * * ? <br>
+									dest=http://localhost:8080/epcis/SubscriptionTestServlet <br>
+									reportIfEmpty=true <br> ignoreReceivedEvent=true
+								</li>
 							</ul>
 						</td>
 					</tr>
