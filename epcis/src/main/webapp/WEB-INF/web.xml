@@ -3,7 +3,7 @@
  "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
-	<display-name>Oliot EPCIS 1.1</display-name>
+	<display-name>Oliot EPCIS 1.1.2</display-name>
 
 	<!-- CXF -->
 	<context-param>

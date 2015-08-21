@@ -7,6 +7,9 @@ import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -18,10 +21,20 @@ import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryTooLargeException;
+import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -53,9 +66,10 @@ public class MongoSubscriptionTask implements Job {
 			throws JobExecutionException {
 		JobDataMap map = context.getJobDetail().getJobDataMap();
 		String queryName = map.getString("queryName");
-		// String subscriptionID = map.getString("subscriptionID");
+		String subscriptionID = map.getString("subscriptionID");
 		String dest = map.getString("dest");
 		// String cronExpression = map.getString("cronExpression");
+		boolean ignoreReceivedEvent = map.getBoolean("ignoreReceivedEvent");
 		boolean reportIfEmpty = map.getBoolean("reportIfEmpty");
 		String initialRecordTime = map.getString("initialRecordTime");
 		String eventType = map.getString("eventType");
@@ -93,8 +107,24 @@ public class MongoSubscriptionTask implements Job {
 				.get("paramMap");
 
 		// InitialRecordTime limits recordTime
-		GE_recordTime = initialRecordTime;
-
+		if (ignoreReceivedEvent == true) {
+			try {
+				GE_recordTime = initialRecordTime;
+				GregorianCalendar cal = new GregorianCalendar();
+				Date curTime = cal.getTime();
+				SimpleDateFormat sdf = new SimpleDateFormat(
+						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				initialRecordTime = sdf.format(curTime);
+				updateInitialRecordTime(subscriptionID, initialRecordTime);
+				JobDetail detail = context.getJobDetail();
+				detail.getJobDataMap().put("initialRecordTime",
+						initialRecordTime);
+				
+				MongoSubscription.sched.addJob(detail, true,true);
+			} catch (SchedulerException e) {
+				e.printStackTrace();
+			}
+		}
 		MongoQueryService queryService = new MongoQueryService();
 		String pollResult = queryService.poll(queryName, eventType,
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
@@ -137,7 +167,7 @@ public class MongoSubscriptionTask implements Job {
 					.getResultsBody().getEventList()
 					.getObjectEventOrAggregationEventOrQuantityEvent();
 
-			if (reportIfEmpty == true) {
+			if (reportIfEmpty == false) {
 				if (checkList == null || checkList.size() == 0) {
 					// Do not report if reportIfEmpty is true
 					return;
@@ -175,5 +205,30 @@ public class MongoSubscriptionTask implements Job {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 
+	}
+
+	private void updateInitialRecordTime(String subscriptionID,
+			String initialRecordTime) {
+		ApplicationContext ctx = new GenericXmlApplicationContext(
+				"classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx
+				.getBean("mongoTemplate");
+
+		List<SubscriptionType> subscriptions = mongoOperation.find(new Query(
+				Criteria.where("subscriptionID").is(subscriptionID)),
+				SubscriptionType.class);
+
+		Query query = new Query(Criteria.where("subscriptionID").is(
+				subscriptionID));
+
+		if (subscriptions.size() != 0) {
+			mongoOperation.upsert(query,
+					Update.update("initialRecordTime", initialRecordTime),
+					SubscriptionType.class);
+		}
+		Configuration.logger.log(Level.INFO,
+				"InitialRecordTime of Subscription ID: " + subscriptionID
+						+ " is updated to DB. ");
+		((AbstractApplicationContext) ctx).close();
 	}
 }
