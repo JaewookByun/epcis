@@ -45,12 +45,6 @@
 				<bean class="org.oliot.epcis.serde.mongodb.QuantityEventReadConverter" />
 			</mongo:converter>
 			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.SensorEventWriteConverter" />
-			</mongo:converter>
-			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.SensorEventReadConverter" />
-			</mongo:converter>
-			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.MasterDataWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>

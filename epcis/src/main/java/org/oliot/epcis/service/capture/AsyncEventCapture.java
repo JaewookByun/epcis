@@ -30,7 +30,7 @@ public class AsyncEventCapture extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		System.out.println("Do nothing");
+		response.getWriter().append("GET /EventCapture Not Supported");
 	}
 
 	/**
@@ -40,7 +40,6 @@ public class AsyncEventCapture extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		final ServletInputStream input = request.getInputStream();
-		org.oliot.epcis.configuration.Configuration.isCaptureVerfificationOn = false;
 		request.setAttribute("org.apache.catalina.ASYNC_SUPPORTED", true);
 		AsyncContext ac = request.startAsync();
 		input.setReadListener(new EventCaptureReadListener(input, response, ac));
