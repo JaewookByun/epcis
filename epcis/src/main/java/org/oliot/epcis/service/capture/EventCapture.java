@@ -60,6 +60,12 @@ public class EventCapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
+	public String asyncPost(String inputString){
+		String result = post(inputString);
+		return result;
+	}
+	
+	
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public String post(@RequestBody String inputString) {

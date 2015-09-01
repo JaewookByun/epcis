@@ -91,5 +91,4 @@
 		<url-pattern>/SubscriptionTestServlet</url-pattern>
 	</servlet-mapping>
 
-
 </web-app>
