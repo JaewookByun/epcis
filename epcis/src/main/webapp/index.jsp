@@ -43,14 +43,13 @@
 			
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">Java, Dynamic Web Service<br>EPCIS
-					v1.1<br>Maven<br>Spring Framework<br></a>
+					href="#" class="list-group-item">EPCIS v1.1 compliance<br>Dynamic Web Service over Tomcat 8<br>Java 7, Servlet 3.1<br>Maven<br>Spring Framework<br></a>
 			</div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Contact </a> <a href="#"
 					class="list-group-item">Jaewook Jack Byun, Ph.D student<br>
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
-					Real-time Embedded System Laboratory(RESL)<br>
+					Real-time and Embedded Systems Laboratory(RESL)<br>
 					bjw0829@kaist.ac.kr<br>
 					GitHub: https://github.com/JaewookByun/epcis
 				</a>

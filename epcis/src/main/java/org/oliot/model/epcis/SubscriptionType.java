@@ -10,9 +10,18 @@ public class SubscriptionType {
 	private String subscriptionID;
 	private String dest;
 	private String cronExpression;
+	private boolean ignoreReceivedEvent;
 	private boolean reportIfEmpty;
 	private String initialRecordTime;
 	
+	public boolean isIgnoreReceivedEvent() {
+		return ignoreReceivedEvent;
+	}
+
+	public void setIgnoreReceivedEvent(boolean ignoreReceivedEvent) {
+		this.ignoreReceivedEvent = ignoreReceivedEvent;
+	}
+
 	public String getInitialRecordTime() {
 		return initialRecordTime;
 	}
@@ -72,7 +81,7 @@ public class SubscriptionType {
 	}
 
 	public SubscriptionType(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean reportIfEmpty, String initialRecordTime, String eventType,
+			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
@@ -89,6 +98,7 @@ public class SubscriptionType {
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
 		this.cronExpression = cronExpression;
+		this.ignoreReceivedEvent = ignoreReceivedEvent;
 		this.reportIfEmpty = reportIfEmpty;
 		this.initialRecordTime = initialRecordTime;
 		this.eventType = eventType;
