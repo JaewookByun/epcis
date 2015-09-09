@@ -155,8 +155,9 @@ public class MongoQueryService {
 		String maxEventCount = subscription.getMaxEventCount();
 		Map<String, String> paramMap = subscription.getParamMap();
 
+		// Oliot EPCIS doesn't support ignoreReceivedEvent for SOAP Interface
 		String result = subscribe(queryName, subscriptionID, dest,
-				cronExpression, reportIfEmpty, initialRecordTime, eventType,
+				cronExpression, false, reportIfEmpty, initialRecordTime, eventType,
 				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
 				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
 				WD_readPoint, EQ_bizLocation, WD_bizLocation,
@@ -171,7 +172,7 @@ public class MongoQueryService {
 	}
 
 	public String subscribeEventQuery(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean reportIfEmpty,
+			String dest, String cronExpression,boolean ignoreReceivedEvent, boolean reportIfEmpty,
 			String initialRecordTimeStr, String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -214,7 +215,7 @@ public class MongoQueryService {
 
 		// Add Schedule with Query
 		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
-				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
 				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
@@ -226,7 +227,7 @@ public class MongoQueryService {
 
 		// Manage Subscription Persistently
 		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
-				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
 				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
@@ -440,8 +441,9 @@ public class MongoQueryService {
 		 */
 		reportIfEmpty = controls.isReportIfEmpty();
 
+		// Oliot doesn't support ignoreReceivedEvent for SOAP interface
 		subscribe(queryName, subscriptionID, destStr, cronExpression,
-				reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
+				false, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
 				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
@@ -454,7 +456,7 @@ public class MongoQueryService {
 	}
 
 	public String subscribe(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean reportIfEmpty,
+			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
 			String initialRecordTimeStr, String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -494,7 +496,7 @@ public class MongoQueryService {
 		String retString = "";
 		if (queryName.equals("SimpleEventQuery")) {
 			retString = subscribeEventQuery(queryName, subscriptionID, dest,
-					cronExpression, reportIfEmpty, initialRecordTimeStr,
+					cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr,
 					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
@@ -1402,6 +1404,7 @@ public class MongoQueryService {
 			map.put("dest", subscription.getDest());
 			map.put("cronExpression", subscription.getCronExpression());
 			map.put("initialRecordTime", subscription.getInitialRecordTime());
+			map.put("ignoreReceivedEvent", subscription.isIgnoreReceivedEvent());
 			map.put("reportIfEmpty", subscription.isReportIfEmpty());
 
 			if (subscription.getEventType() != null)
@@ -1506,7 +1509,7 @@ public class MongoQueryService {
 	}
 
 	private void addScheduleToQuartz(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean reportIfEmpty,
+			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
 			String initialRecordTimeStr, String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -1524,6 +1527,7 @@ public class MongoQueryService {
 			map.put("queryName", queryName);
 			map.put("subscriptionID", subscriptionID);
 			map.put("dest", dest);
+			map.put("ignoreReceivedEvent", ignoreReceivedEvent);
 			map.put("cronExpression", cronExpression);
 			map.put("reportIfEmpty", reportIfEmpty);
 			map.put("initialRecordTime", initialRecordTimeStr);
@@ -1618,7 +1622,7 @@ public class MongoQueryService {
 
 	@SuppressWarnings("resource")
 	private boolean addScheduleToDB(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean reportIfEmpty,
+			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
 			String initialRecordTime, String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime,
 			String EQ_action, String EQ_bizStep, String EQ_disposition,
@@ -1633,7 +1637,7 @@ public class MongoQueryService {
 			String maxEventCount, Map<String, String> paramMap) {
 
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
-				dest, cronExpression, reportIfEmpty, initialRecordTime,
+				dest, cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTime,
 				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,

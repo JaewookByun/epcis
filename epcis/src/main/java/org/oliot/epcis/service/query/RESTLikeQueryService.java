@@ -88,6 +88,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
 			@RequestParam(required = false) boolean reportIfEmpty,
+			@RequestParam(required = false) boolean ignoreReceivedEvent, 
 			@RequestParam(required = false) String initialRecordTime,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
@@ -141,7 +142,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.subscribe(queryName, subscriptionID, dest,
-					cronExpression, reportIfEmpty, initialRecordTime,
+					cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTime,
 					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,

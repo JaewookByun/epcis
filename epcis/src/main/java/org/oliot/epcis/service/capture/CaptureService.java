@@ -152,7 +152,6 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	public void capture(TransformationEventType event) {
-
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
@@ -160,7 +159,6 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
-
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
@@ -168,7 +166,6 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	public void capture(SensorEventType event) {
-
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
@@ -176,7 +173,6 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
-
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event);
@@ -184,12 +180,10 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	public void capture(VocabularyType vocabulary) {
-
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(vocabulary);
 		}
-
 	}
 
 	@SuppressWarnings("rawtypes")

@@ -13,14 +13,6 @@
 					<VocabularyElement id="urn:epc:id:sgln:0037000.00729.0">
 						<attribute id="http://epcis.example.com/mda/latitude">+18.0000</attribute>
 						<attribute id="http://epcis.example.com/mda/longitude">-70.0000</attribute>
-						<attribute id="http://epcis.example.com/mda/address">
-							<example:Address xmlns:example="http://epcis.example.com/ns">
-								<Street>100 Nowhere Street</Street>
-								<City>Fancy</City>
-								<State>DC</State>
-								<Zip>99999</Zip>
-							</example:Address>
-						</attribute>
 						<children>
 							<id>urn:epc:id:sgln:0037000.00729.8201</id>
 							<id>urn:epc:id:sgln:0037000.00729.8202</id>
@@ -59,11 +51,5 @@
 				</VocabularyElementList>
 			</Vocabulary>
 		</VocabularyList>
-		<extension>
-			<ANY-ELEMENT />
-		</extension>
 	</EPCISBody>
-	<extension>
-		<ANY-ELEMENT />
-	</extension>
 </epcismd:EPCISMasterDataDocument>
