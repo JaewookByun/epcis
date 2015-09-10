@@ -70,6 +70,11 @@ public class JsonEventCapture implements ServletContextAware {
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
+	
+	public String asyncPost(String inputString){
+		String result = post(inputString);
+		return result;
+	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
