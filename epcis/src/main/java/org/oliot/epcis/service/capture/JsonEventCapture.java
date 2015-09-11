@@ -80,6 +80,8 @@ public class JsonEventCapture implements ServletContextAware {
 	@ResponseBody
 	public String post(@RequestBody String inputString) {
 		Configuration.logger.info(" EPCIS Json Document Capture Started.... ");
+		
+		if(Configuration.isCaptureVerfificationOn == true){
 		//JSONParser parser = new JSONParser();
 		JsonSchemaLoader schemaloader = new JsonSchemaLoader();
 			try { 
@@ -430,6 +432,44 @@ public class JsonEventCapture implements ServletContextAware {
 	        }
 		
 		return "EPCIS Document : Captured ";
+		
+		}
+		else{
+			JSONObject json = new JSONObject(inputString);
+			JSONObject json2 = json.getJSONObject("epcis");
+			JSONObject json3 = json2.getJSONObject("EPCISBody");
+			JSONArray json4 = json3.getJSONArray("EventList");	
+			
+			for(int i = 0 ; i < json4.length(); i++){
+				if(json4.getJSONObject(i).has("ObjectEvent") == true){
+					
+					if (Configuration.backend.equals("MongoDB")) {
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"));
+					}
+				}
+				else if(json4.getJSONObject(i).has("AggregationEvent") == true){
+					if (Configuration.backend.equals("MongoDB")) {
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"));
+					}
+				}
+				else if(json4.getJSONObject(i).has("TransformationEvent") == true){
+					if (Configuration.backend.equals("MongoDB")) {
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
+					}
+				}
+				else if(json4.getJSONObject(i).has("TransactionEvent") == true){
+					if (Configuration.backend.equals("MongoDB")) {
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"));
+					}
+				}
+			}
+			
+			return "EPCIS Document : Captured ";
+		}
 	}
 
 	static InputStream getXMLDocumentInputStream(String xmlString) {
