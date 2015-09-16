@@ -197,7 +197,6 @@
   "required": [
     "eventTime",
     "eventTimeZoneOffset",
-    "recordTime"
   ],
  "additionalProperties": false
 }
