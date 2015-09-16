@@ -121,6 +121,10 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for ObjectEvent */
 						
+						if(!json4.getJSONObject(i).getJSONObject("ObjectEvent").has("recordTime")){
+							json4.getJSONObject(i).getJSONObject("ObjectEvent").append("recordTime", System.currentTimeMillis());
+						}
+						
 						if(json4.getJSONObject(i).getJSONObject("ObjectEvent").has("any")){
 							/* start finding namespace in the any field. */
 							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("ObjectEvent").getJSONObject("any");
@@ -199,6 +203,10 @@ public class JsonEventCapture implements ServletContextAware {
 							return "Error: Json Document is not valid" + " for detail validation check for aggregationevent";
 						}
 						/* finish validation logic for AggregationEvent */
+						
+						if(!json4.getJSONObject(i).getJSONObject("AggregationEvent").has("recordTime")){
+							json4.getJSONObject(i).getJSONObject("AggregationEvent").append("recordTime", System.currentTimeMillis());
+						}
 						
 						if(json4.getJSONObject(i).getJSONObject("AggregationEvent").has("any")){
 							/* start finding namespace in the any field. */
@@ -279,6 +287,10 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for TransFormationEvent */
 						
+						if(!json4.getJSONObject(i).getJSONObject("TransformationEvent").has("recordTime")){
+							json4.getJSONObject(i).getJSONObject("TransformationEvent").append("recordTime", System.currentTimeMillis());
+						}
+						
 						if(json4.getJSONObject(i).getJSONObject("TransformationEvent").has("any")){
 							/* start finding namespace in the any field. */
 							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("TransformationEvent").getJSONObject("any");
@@ -357,6 +369,10 @@ public class JsonEventCapture implements ServletContextAware {
 							return "Error: Json Document is not valid" + " for detail validation check for TransactionEvent";
 						}
 						/* finish validation logic for TransFormationEvent */
+						
+						if(!json4.getJSONObject(i).getJSONObject("TransactionEvent").has("recordTime")){
+							json4.getJSONObject(i).getJSONObject("TransactionEvent").append("recordTime", System.currentTimeMillis());
+						}
 						
 						if(json4.getJSONObject(i).getJSONObject("TransactionEvent").has("any")){
 							/* start finding namespace in the any field. */
