@@ -121,6 +121,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
 			@RequestParam(required = false) String maxEventCount,
+			@RequestParam(required = false) String format,
 			Map<String, String> params) {
 
 		if (initialRecordTime == null) {
@@ -151,7 +152,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
 					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
 					LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, params);
+					eventCountLimit, maxEventCount, format, params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -242,6 +243,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String WD_name,
 			@RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String maxElementCount,
+			
+			@RequestParam(required = false) String format,
 			@RequestParam Map<String, String> params) {
 
 		if (Configuration.backend.equals("MongoDB")) {
@@ -256,7 +259,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
 					orderBy, orderDirection, eventCountLimit, maxEventCount,
 					vocabularyName, includeAttributes, includeChildren,
-					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
+					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format,
 					params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
