@@ -36,6 +36,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.AggregationEventReadConverter;
 import org.oliot.epcis.serde.mongodb.MasterDataReadConverter;
@@ -156,47 +157,34 @@ public class MongoQueryService {
 		Map<String, String> paramMap = subscription.getParamMap();
 
 		// Oliot EPCIS doesn't support ignoreReceivedEvent for SOAP Interface
-		String result = subscribe(queryName, subscriptionID, dest,
-				cronExpression, false, reportIfEmpty, initialRecordTime, eventType,
-				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, paramMap);
+		String result = subscribe(queryName, subscriptionID, dest, cronExpression, false, reportIfEmpty,
+				initialRecordTime, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
+				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, null,
+				paramMap);
 
 		return result;
 	}
 
-	public String subscribeEventQuery(String queryName, String subscriptionID,
-			String dest, String cronExpression,boolean ignoreReceivedEvent, boolean reportIfEmpty,
-			String initialRecordTimeStr, String eventType, String GE_eventTime,
-			String LT_eventTime, String GE_recordTime, String LT_recordTime,
-			String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	public String subscribeEventQuery(String queryName, String subscriptionID, String dest, String cronExpression,
+			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTimeStr, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
-		String reason = checkConstraintSimpleEventQuery(queryName, eventType,
-				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
+		String reason = checkConstraintSimpleEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
 				maxEventCount, paramMap);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
@@ -209,42 +197,34 @@ public class MongoQueryService {
 		try {
 			cronSchedule(cronExpression);
 		} catch (RuntimeException e) {
-			return makeErrorResult(e.toString(),
-					SubscriptionControlsException.class);
+			return makeErrorResult(e.toString(), SubscriptionControlsException.class);
 		}
 
 		// Add Schedule with Query
-		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression,
-				ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
-				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, orderBy, orderDirection,
-				eventCountLimit, maxEventCount, paramMap);
+		addScheduleToQuartz(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent, reportIfEmpty,
+				initialRecordTimeStr, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
+				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, format,
+				paramMap);
 
 		// Manage Subscription Persistently
-		addScheduleToDB(queryName, subscriptionID, dest, cronExpression,
-				ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
-				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, orderBy, orderDirection,
-				eventCountLimit, maxEventCount, paramMap);
+		addScheduleToDB(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent, reportIfEmpty,
+				initialRecordTimeStr, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
+				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, format,
+				paramMap);
 
-		String retString = "SubscriptionID : " + subscriptionID
-				+ " is successfully triggered. ";
+		String retString = "SubscriptionID : " + subscriptionID + " is successfully triggered. ";
 		return retString;
 	}
 
 	// Soap Query Adaptor
-	public void subscribe(String queryName, QueryParams params, URI dest,
-			SubscriptionControls controls, String subscriptionID) {
+	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
+			String subscriptionID) {
 
 		List<QueryParam> queryParamList = params.getParam();
 		String destStr = dest.toString();
@@ -406,8 +386,7 @@ public class MongoQueryService {
 			String dayOfMonth = querySchedule.getDayOfMonth();
 			String month = querySchedule.getMonth();
 			String dayOfWeek = querySchedule.getDayOfWeek();
-			cronExpression = sec + " " + min + " " + hours + " " + dayOfMonth
-					+ " " + month + " " + dayOfWeek;
+			cronExpression = sec + " " + min + " " + hours + " " + dayOfMonth + " " + month + " " + dayOfWeek;
 		}
 
 		/*
@@ -416,22 +395,18 @@ public class MongoQueryService {
 		 * for the first time. See Section 8.2.5.2. If omitted, defaults to the
 		 * time at which the subscription is created.
 		 */
-		XMLGregorianCalendar initialRecordTime = controls
-				.getInitialRecordTime();
+		XMLGregorianCalendar initialRecordTime = controls.getInitialRecordTime();
 		if (initialRecordTime == null) {
 			try {
-				initialRecordTime = DatatypeFactory.newInstance()
-						.newXMLGregorianCalendar();
+				initialRecordTime = DatatypeFactory.newInstance().newXMLGregorianCalendar();
 			} catch (DatatypeConfigurationException e) {
 
 				e.printStackTrace();
 			}
 		}
 
-		SimpleDateFormat sdf = new SimpleDateFormat(
-				"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-		Date initialRecordDate = initialRecordTime.toGregorianCalendar()
-				.getTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		Date initialRecordDate = initialRecordTime.toGregorianCalendar().getTime();
 		String initialRecordTimeStr = sdf.format(initialRecordDate);
 		/*
 		 * reportIfEmpty: If true, a QueryResults instance is always sent to the
@@ -442,33 +417,25 @@ public class MongoQueryService {
 		reportIfEmpty = controls.isReportIfEmpty();
 
 		// Oliot doesn't support ignoreReceivedEvent for SOAP interface
-		subscribe(queryName, subscriptionID, destStr, cronExpression,
-				false, reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime,
-				LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc,
-				MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-				MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-				LT_quantity, LE_quantity, orderBy, orderDirection,
-				eventCountLimit, maxEventCount, extMap);
+		// Oliot doesn't support to select output format for SOAP interface
+		subscribe(queryName, subscriptionID, destStr, cronExpression, false, reportIfEmpty, initialRecordTimeStr,
+				eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
+				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation, EQ_transformationID,
+				MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
+				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+				LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, null, extMap);
 
 	}
 
-	public String subscribe(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
-			String initialRecordTimeStr, String eventType, String GE_eventTime,
-			String LT_eventTime, String GE_recordTime, String LT_recordTime,
-			String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	public String subscribe(String queryName, String subscriptionID, String dest, String cronExpression,
+			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTimeStr, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
 
 		// M20 : Throw an InvalidURIException for an incorrect dest argument in
 		// the subscribe method in EPCIS Query Control Interface
@@ -481,46 +448,36 @@ public class MongoQueryService {
 		// M24 : Virtual Error Handling
 		// Automatically processed by URI param
 		if (dest == null || cronExpression == null) {
-			return makeErrorResult(
-					"Fill the mandatory field in subscribe method",
-					QueryParameterException.class);
+			return makeErrorResult("Fill the mandatory field in subscribe method", QueryParameterException.class);
 		}
 
 		// M46
 		if (queryName.equals("SimpleMasterDataQuery")) {
-			return makeErrorResult(
-					"SimpleMasterDataQuery is not available in subscription method",
+			return makeErrorResult("SimpleMasterDataQuery is not available in subscription method",
 					SubscribeNotPermittedException.class);
 		}
 
 		String retString = "";
 		if (queryName.equals("SimpleEventQuery")) {
-			retString = subscribeEventQuery(queryName, subscriptionID, dest,
-					cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTimeStr,
-					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);
+			retString = subscribeEventQuery(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent,
+					reportIfEmpty, initialRecordTimeStr, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, format, paramMap);
 		}
 
 		return retString;
 	}
 
 	public void unsubscribe(String subscriptionID) {
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
 		// Its size should be 0 or 1
-		List<SubscriptionType> subscriptions = mongoOperation.find(new Query(
-				Criteria.where("subscriptionID").is(subscriptionID)),
-				SubscriptionType.class);
+		List<SubscriptionType> subscriptions = mongoOperation
+				.find(new Query(Criteria.where("subscriptionID").is(subscriptionID)), SubscriptionType.class);
 
 		for (int i = 0; i < subscriptions.size(); i++) {
 			SubscriptionType subscription = subscriptions.get(i);
@@ -534,14 +491,11 @@ public class MongoQueryService {
 
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
 
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
-				Criteria.where("queryName").is(queryName)),
-				SubscriptionType.class);
+		List<SubscriptionType> allSubscription = mongoOperation
+				.find(new Query(Criteria.where("queryName").is(queryName)), SubscriptionType.class);
 
 		JSONArray retArray = new JSONArray();
 		for (int i = 0; i < allSubscription.size(); i++) {
@@ -553,14 +507,11 @@ public class MongoQueryService {
 	}
 
 	public List<String> getSubscriptionIDs(String queryName) {
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> allSubscription = mongoOperation.find(new Query(
-				Criteria.where("queryName").is(queryName)),
-				SubscriptionType.class);
+		List<SubscriptionType> allSubscription = mongoOperation
+				.find(new Query(Criteria.where("queryName").is(queryName)), SubscriptionType.class);
 		List<String> retList = new ArrayList<String>();
 		for (int i = 0; i < allSubscription.size(); i++) {
 			SubscriptionType subscription = allSubscription.get(i);
@@ -571,50 +522,52 @@ public class MongoQueryService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public String pollEventQuery(String queryName, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	public String pollEventQuery(String queryName, String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
+			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
+			String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
-		String reason = checkConstraintSimpleEventQuery(queryName, eventType,
-				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
+		String reason = checkConstraintSimpleEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
 				maxEventCount, paramMap);
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
 		}
 
 		// Make Base Result Document
-		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		EPCISQueryDocumentType epcisQueryDocumentType = null;
+		JSONObject retJSON = new JSONObject();
 
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		if (format == null || format.equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		} else if (format.equals("JSON")) {
+			// Do Nothing
+		} else {
+			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
+		}
 
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		// Prepare container which query results are included
 		// eventObjects : Container which all the query results (events) will be
 		// contained
-		List<Object> eventObjects = epcisQueryDocumentType.getEPCISBody()
-				.getQueryResults().getResultsBody().getEventList()
-				.getObjectEventOrAggregationEventOrQuantityEvent();
-
+		List<Object> eventObjects = null;
+		if (format == null || format.equals("XML")) {
+			eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody().getEventList()
+					.getObjectEventOrAggregationEventOrQuantityEvent();
+		} else {
+			// foramt == JSON -> Do Nothing
+		}
 		// To be filtered by eventType
 		boolean toGetAggregationEvent = true;
 		boolean toGetObjectEvent = true;
@@ -661,18 +614,13 @@ public class MongoQueryService {
 
 		if (toGetAggregationEvent == true) {
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation
-					.getCollection("AggregationEvent");
+			DBCollection collection = mongoOperation.getCollection("AggregationEvent");
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("AggregationEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
+			List<DBObject> queryList = makeQueryObjects("AggregationEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
@@ -690,15 +638,24 @@ public class MongoQueryService {
 				cursor = collection.find();
 			}
 			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
-					eventCountLimit);
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray aggrJSONArray = new JSONArray();
+
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
-				AggregationEventReadConverter con = new AggregationEventReadConverter();
-				JAXBElement element = new JAXBElement(new QName(
-						"AggregationEvent"), AggregationEventType.class,
-						con.convert(dbObject));
-				eventObjects.add(element);
+				if (format == null || format.equals("XML")) {
+					AggregationEventReadConverter con = new AggregationEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					aggrJSONArray.put(dbObject);
+				}
+			}
+			if (aggrJSONArray.length() > 0) {
+				retJSON.put("AggregationEvent", aggrJSONArray);
 			}
 		}
 
@@ -706,18 +663,13 @@ public class MongoQueryService {
 		if (toGetObjectEvent == true) {
 
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation
-					.getCollection("ObjectEvent");
+			DBCollection collection = mongoOperation.getCollection("ObjectEvent");
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("ObjectEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
+			List<DBObject> queryList = makeQueryObjects("ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
@@ -735,30 +687,35 @@ public class MongoQueryService {
 				cursor = collection.find();
 			}
 			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
-					eventCountLimit);
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray objJSONArray = new JSONArray();
+
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
-				ObjectEventReadConverter con = new ObjectEventReadConverter();
-				JAXBElement element = new JAXBElement(new QName("ObjectEvent"),
-						ObjectEventType.class, con.convert(dbObject));
-				eventObjects.add(element);
+				if (format == null || format.equals("XML")) {
+					ObjectEventReadConverter con = new ObjectEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					objJSONArray.put(dbObject);
+				}
+			}
+			if (objJSONArray.length() > 0) {
+				retJSON.put("ObjectEvent", objJSONArray);
 			}
 		}
 		if (toGetQuantityEvent == true) {
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation
-					.getCollection("QuantityEvent");
+			DBCollection collection = mongoOperation.getCollection("QuantityEvent");
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("QuantityEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
+			List<DBObject> queryList = makeQueryObjects("QuantityEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
@@ -776,31 +733,35 @@ public class MongoQueryService {
 				cursor = collection.find();
 			}
 			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
-					eventCountLimit);
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray qntJSONArray = new JSONArray();
+
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
-				QuantityEventReadConverter con = new QuantityEventReadConverter();
-				JAXBElement element = new JAXBElement(
-						new QName("QuantityEvent"), QuantityEventType.class,
-						con.convert(dbObject));
-				eventObjects.add(element);
+				if (format == null || format.equals("XML")) {
+					QuantityEventReadConverter con = new QuantityEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					qntJSONArray.put(dbObject);
+				}
+			}
+			if (qntJSONArray.length() > 0) {
+				retJSON.put("QuantityEvent", qntJSONArray);
 			}
 		}
 		if (toGetTransactionEvent == true) {
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation
-					.getCollection("TransactionEvent");
+			DBCollection collection = mongoOperation.getCollection("TransactionEvent");
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("TransactionEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
+			List<DBObject> queryList = makeQueryObjects("TransactionEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
@@ -818,32 +779,37 @@ public class MongoQueryService {
 				cursor = collection.find();
 			}
 			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
-					eventCountLimit);
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray transactionJSONArray = new JSONArray();
+
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
-				TransactionEventReadConverter con = new TransactionEventReadConverter();
-				JAXBElement element = new JAXBElement(new QName(
-						"TransactionEvent"), TransactionEventType.class,
-						con.convert(dbObject));
-				eventObjects.add(element);
+
+				if (format == null || format.equals("XML")) {
+					TransactionEventReadConverter con = new TransactionEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					transactionJSONArray.put(dbObject);
+				}
+			}
+			if (transactionJSONArray.length() > 0) {
+				retJSON.put("TransactionEvent", transactionJSONArray);
 			}
 		}
 		if (toGetTransformationEvent == true) {
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation
-					.getCollection("TransformationEvent");
+			DBCollection collection = mongoOperation.getCollection("TransformationEvent");
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("TransformationEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);
+			List<DBObject> queryList = makeQueryObjects("TransformationEvent", GE_eventTime, LT_eventTime,
+					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
+					orderDirection, eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
 			DBObject baseQuery = new BasicDBObject();
@@ -860,50 +826,92 @@ public class MongoQueryService {
 				cursor = collection.find();
 			}
 			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection,
-					eventCountLimit);
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray transformationJSONArray = new JSONArray();
+
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
-				TransformationEventReadConverter con = new TransformationEventReadConverter();
-				JAXBElement element = new JAXBElement(new QName(
-						"TransformationEvent"), TransformationEventType.class,
-						con.convert(dbObject));
-				eventObjects.add(element);
+
+				if (format == null || format.equals("XML")) {
+					TransformationEventReadConverter con = new TransformationEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
+							TransformationEventType.class, con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					transformationJSONArray.put(dbObject);
+				}
+			}
+			if (transformationJSONArray.length() > 0) {
+				retJSON.put("TransformationEvent", transformationJSONArray);
 			}
 		}
 
 		// M44
 		if (maxEventCount != null) {
-			if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
-				((AbstractApplicationContext) ctx).close();
-				return makeErrorResult("Violate maxEventCount",
-						QueryTooLargeException.class);
+			if (format == null || format.equals("XML")) {
+				if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
+					((AbstractApplicationContext) ctx).close();
+					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+				}
+			} else {
+				int cnt = 0;
+				if (!retJSON.isNull("AggregationEvent")) {
+					cnt += retJSON.getJSONArray("AggregationEvent").length();
+				}
+				if (!retJSON.isNull("ObjectEvent")) {
+					cnt += retJSON.getJSONArray("ObjectEvent").length();
+				}
+				if (!retJSON.isNull("QuantityEvent")) {
+					cnt += retJSON.getJSONArray("QuantityEvent").length();
+				}
+				if (!retJSON.isNull("TransactionEvent")) {
+					cnt += retJSON.getJSONArray("TransactionEvent").length();
+				}
+				if (!retJSON.isNull("TransformationEvent")) {
+					cnt += retJSON.getJSONArray("TransformationEvent").length();
+				}
+				if (cnt > Integer.parseInt(maxEventCount)) {
+					((AbstractApplicationContext) ctx).close();
+					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+				}
 			}
 		}
 		((AbstractApplicationContext) ctx).close();
-		StringWriter sw = new StringWriter();
-		JAXB.marshal(epcisQueryDocumentType, sw);
-		return sw.toString();
+		if (format == null || format.equals("XML")) {
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(epcisQueryDocumentType, sw);
+			return sw.toString();
+		} else {
+			return retJSON.toString(1);
+		}
 	}
 
-	public String pollMasterDataQuery(String queryName, String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String maxElementCount, Map<String, String> paramMap) {
+	public String pollMasterDataQuery(String queryName, String vocabularyName, boolean includeAttributes,
+			boolean includeChildren, String attributeNames, String eQ_name, String wD_name, String hASATTR,
+			String maxElementCount, String format, Map<String, String> paramMap) {
 
 		// Make Base Result Document
-		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		EPCISQueryDocumentType epcisQueryDocumentType = null;
+		JSONArray retArray = new JSONArray();
 
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		if (format == null || format.equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		} else if (format.equals("JSON")) {
+			// Do Nothing
+		} else {
+			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
+		}
+
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
 		DBCollection collection = mongoOperation.getCollection("MasterData");
 
-		List<DBObject> queryList = makeMasterQueryObjects(vocabularyName,
-				includeAttributes, includeChildren, attributeNames, eQ_name,
-				wD_name, hASATTR, maxElementCount, paramMap);
+		// Make Query
+		List<DBObject> queryList = makeMasterQueryObjects(vocabularyName, includeAttributes, includeChildren,
+				attributeNames, eQ_name, wD_name, hASATTR, maxElementCount, paramMap);
 
 		// Merge All the queries with $and
 		DBObject baseQuery = new BasicDBObject();
@@ -925,97 +933,107 @@ public class MongoQueryService {
 		List<VocabularyType> vList = new ArrayList<>();
 		while (cursor.hasNext()) {
 			DBObject dbObject = cursor.next();
-			MasterDataReadConverter con = new MasterDataReadConverter();
-			VocabularyType vt = con.convert(dbObject);
-			if (includeAttributes == false || includeChildren == false) {
-				if (vt.getVocabularyElementList() != null) {
-					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
-						List<VocabularyElementType> vetList = vt
-								.getVocabularyElementList()
-								.getVocabularyElement();
-						for (int i = 0; i < vetList.size(); i++) {
-							VocabularyElementType vet = vetList.get(i);
-							if (includeAttributes == false) {
-								vet.setAttribute(null);
-							} else if (includeAttributes == true
-									&& attributeNames != null) {
-								/**
-								 * attributeNames : If specified, only those
-								 * attributes whose names match one of the
-								 * specified names will be included in the
-								 * results. If omitted, all attributes for each
-								 * matching vocabulary element will be included.
-								 * (To obtain a list of vocabulary element names
-								 * with no attributes, specify false for
-								 * includeAttributes.) The value of this
-								 * parameter SHALL be ignored if
-								 * includeAttributes is false. Note that this
-								 * parameter does not affect which vocabulary
-								 * elements are included in the result; it only
-								 * limits which attributes will be included with
-								 * each vocabulary element.
-								 */
-								String[] attrArr = attributeNames.split(",");
-								for (int j = 0; j < attrArr.length; j++) {
-									attrArr[j] = attrArr[j].trim();
-								}
 
-								List<AttributeType> atList = vet.getAttribute();
-								for (int j = 0; j < atList.size(); j++) {
-									boolean isMatched = false;
-									for (int k = 0; k < attrArr.length; k++) {
-										if (attrArr[k].equals(atList.get(j)
-												.getId())) {
-											isMatched = true;
-										}
+			if (format == null || format.equals("XML")) {
+				MasterDataReadConverter con = new MasterDataReadConverter();
+				VocabularyType vt = con.convert(dbObject);
+				if (includeAttributes == false || includeChildren == false) {
+					if (vt.getVocabularyElementList() != null) {
+						if (vt.getVocabularyElementList().getVocabularyElement() != null) {
+							List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
+							for (int i = 0; i < vetList.size(); i++) {
+								VocabularyElementType vet = vetList.get(i);
+								if (includeAttributes == false) {
+									vet.setAttribute(null);
+								} else if (includeAttributes == true && attributeNames != null) {
+									/**
+									 * attributeNames : If specified, only those
+									 * attributes whose names match one of the
+									 * specified names will be included in the
+									 * results. If omitted, all attributes for
+									 * each matching vocabulary element will be
+									 * included. (To obtain a list of vocabulary
+									 * element names with no attributes, specify
+									 * false for includeAttributes.) The value
+									 * of this parameter SHALL be ignored if
+									 * includeAttributes is false. Note that
+									 * this parameter does not affect which
+									 * vocabulary elements are included in the
+									 * result; it only limits which attributes
+									 * will be included with each vocabulary
+									 * element.
+									 */
+									String[] attrArr = attributeNames.split(",");
+									for (int j = 0; j < attrArr.length; j++) {
+										attrArr[j] = attrArr[j].trim();
 									}
-									if (isMatched == false) {
-										atList.remove(j);
-										if (atList.size() == 0)
-											break;
-										else {
-											j = -1;
-											continue;
+
+									List<AttributeType> atList = vet.getAttribute();
+									for (int j = 0; j < atList.size(); j++) {
+										boolean isMatched = false;
+										for (int k = 0; k < attrArr.length; k++) {
+											if (attrArr[k].equals(atList.get(j).getId())) {
+												isMatched = true;
+											}
+										}
+										if (isMatched == false) {
+											atList.remove(j);
+											if (atList.size() == 0)
+												break;
+											else {
+												j = -1;
+												continue;
+											}
 										}
 									}
 								}
-							}
-							if (includeChildren == false) {
-								vet.setChildren(null);
+								if (includeChildren == false) {
+									vet.setChildren(null);
+								}
 							}
 						}
 					}
 				}
+				vList.add(vt);
+			} else {
+				dbObject.removeField("_id");
+				retArray.put(dbObject);
 			}
-
-			vList.add(vt);
 		}
 
-		QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
-				.getQueryResults().getResultsBody();
+		if (format == null || format.equals("XML")) {
+			QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody();
 
-		VocabularyListType vlt = new VocabularyListType();
-		vlt.setVocabulary(vList);
-		qbt.setVocabularyList(vlt);
-
+			VocabularyListType vlt = new VocabularyListType();
+			vlt.setVocabulary(vList);
+			qbt.setVocabularyList(vlt);
+		}
 		((AbstractApplicationContext) ctx).close();
 
 		// M47
 		if (maxElementCount != null) {
 			try {
 				int maxElement = Integer.parseInt(maxElementCount);
-				if (vList.size() > maxElement) {
-					return makeErrorResult("Too Large Master Data result",
-							QueryTooLargeException.class);
+				if (format == null || format.equals("XML")) {
+					if (vList.size() > maxElement) {
+						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+					}
+				} else {
+					if( retArray.length() > maxElement ){
+						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+					}
 				}
 			} catch (NumberFormatException e) {
 
 			}
 		}
-
-		StringWriter sw = new StringWriter();
-		JAXB.marshal(epcisQueryDocumentType, sw);
-		return sw.toString();
+		if (format == null || format.equals("XML")) {
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(epcisQueryDocumentType, sw);
+			return sw.toString();
+		} else {
+			return retArray.toString(1);
+		}
 	}
 
 	// Soap Service Adaptor
@@ -1196,83 +1214,59 @@ public class MongoQueryService {
 			}
 		}
 
-		return poll(queryName, eventType, GE_eventTime, LT_eventTime,
-				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
-				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, vocabularyName, includeAttributes,
-				includeChildren, attributeNames, EQ_name, WD_name, HASATTR,
-				maxElementCount, extMap);
+		return poll(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
+				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount,
+				vocabularyName, includeAttributes, includeChildren, attributeNames, EQ_name, WD_name, HASATTR,
+				maxElementCount, null, extMap);
 	}
 
-	public String poll(@PathVariable String queryName, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount,
+	public String poll(@PathVariable String queryName, String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
+			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
+			String eventCountLimit, String maxEventCount,
 
-			String vocabularyName, boolean includeAttributes,
-			boolean includeChildren, String attributeNames, String EQ_name,
-			String WD_name, String HASATTR, String maxElementCount,
-			Map<String, String> paramMap) {
+	String vocabularyName, boolean includeAttributes, boolean includeChildren, String attributeNames, String EQ_name,
+			String WD_name, String HASATTR, String maxElementCount, String format, Map<String, String> paramMap) {
 
 		// M24
 		if (queryName == null) {
 			// It is not possible, automatically filtered by URI param
-			return makeErrorResult(
-					"queryName is mandatory field in poll method",
-					QueryParameterException.class);
+			return makeErrorResult("queryName is mandatory field in poll method", QueryParameterException.class);
 		}
 
 		if (queryName.equals("SimpleEventQuery"))
-			return pollEventQuery(queryName, eventType, GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
+			return pollEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
+					maxEventCount, format, paramMap);
 
 		if (queryName.equals("SimpleMasterDataQuery"))
-			return pollMasterDataQuery(queryName, vocabularyName,
-					includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount, paramMap);
+			return pollMasterDataQuery(queryName, vocabularyName, includeAttributes, includeChildren, attributeNames,
+					EQ_name, WD_name, HASATTR, maxElementCount, format, paramMap);
 		return "";
 	}
 
-	private String checkConstraintSimpleEventQuery(String queryName,
-			String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action,
-			String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
-			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	private String checkConstraintSimpleEventQuery(String queryName, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, Map<String, String> paramMap) {
 
 		// M27
 		try {
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			if (GE_eventTime != null)
 				sdf.parse(GE_eventTime);
 			if (LT_eventTime != null)
@@ -1288,16 +1282,11 @@ public class MongoQueryService {
 		// M27
 		if (orderBy != null) {
 			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
-				return makeErrorResult(
-						"orderBy should be eventTime or recordTime",
-						QueryParameterException.class);
+				return makeErrorResult("orderBy should be eventTime or recordTime", QueryParameterException.class);
 			}
 			if (orderDirection != null) {
-				if (!orderDirection.equals("ASC")
-						&& !orderDirection.equals("DESC")) {
-					return makeErrorResult(
-							"orderDirection should be ASC or DESC",
-							QueryParameterException.class);
+				if (!orderDirection.equals("ASC") && !orderDirection.equals("DESC")) {
+					return makeErrorResult("orderDirection should be ASC or DESC", QueryParameterException.class);
 				}
 			}
 		}
@@ -1307,13 +1296,10 @@ public class MongoQueryService {
 			try {
 				int c = Integer.parseInt(eventCountLimit);
 				if (c <= 0) {
-					return makeErrorResult(
-							"eventCount should be natural number",
-							QueryParameterException.class);
+					return makeErrorResult("eventCount should be natural number", QueryParameterException.class);
 				}
 			} catch (NumberFormatException e) {
-				return makeErrorResult("eventCount: " + e.toString(),
-						QueryParameterException.class);
+				return makeErrorResult("eventCount: " + e.toString(), QueryParameterException.class);
 			}
 		}
 
@@ -1322,29 +1308,23 @@ public class MongoQueryService {
 			try {
 				int c = Integer.parseInt(maxEventCount);
 				if (c <= 0) {
-					return makeErrorResult(
-							"maxEventCount should be natural number",
-							QueryParameterException.class);
+					return makeErrorResult("maxEventCount should be natural number", QueryParameterException.class);
 				}
 			} catch (NumberFormatException e) {
-				return makeErrorResult("maxEventCount: " + e.toString(),
-						QueryParameterException.class);
+				return makeErrorResult("maxEventCount: " + e.toString(), QueryParameterException.class);
 			}
 		}
 
 		// M39
 		if (EQ_action != null) {
-			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE")
-					&& !EQ_action.equals("DELETE")) {
-				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE",
-						QueryParameterException.class);
+			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE") && !EQ_action.equals("DELETE")) {
+				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE", QueryParameterException.class);
 			}
 		}
 
 		// M42
 		if (eventCountLimit != null && maxEventCount != null) {
-			return makeErrorResult(
-					"One of eventCountLimit and maxEventCount should be omitted",
+			return makeErrorResult("One of eventCountLimit and maxEventCount should be omitted",
 					QueryParameterException.class);
 		}
 		return null;
@@ -1364,8 +1344,7 @@ public class MongoQueryService {
 		queryResultsBody.setEventList(eventListType);
 		// Object instanceof JAXBElement
 		List<Object> eventObjects = new ArrayList<Object>();
-		eventListType
-				.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
+		eventListType.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
 		return epcisQueryDocumentType;
 	}
 
@@ -1432,8 +1411,7 @@ public class MongoQueryService {
 			if (subscription.getWD_bizLocation() != null)
 				map.put("WD_bizLocation", subscription.getWD_bizLocation());
 			if (subscription.getEQ_transformationID() != null)
-				map.put("EQ_transformationID",
-						subscription.getEQ_transformationID());
+				map.put("EQ_transformationID", subscription.getEQ_transformationID());
 			if (subscription.getMATCH_epc() != null)
 				map.put("MATCH_epc", subscription.getMATCH_epc());
 			if (subscription.getMATCH_parentID() != null)
@@ -1447,14 +1425,11 @@ public class MongoQueryService {
 			if (subscription.getMATCH_epcClass() != null)
 				map.put("MATCH_epcClass", subscription.getMATCH_epcClass());
 			if (subscription.getMATCH_inputEPCClass() != null)
-				map.put("MATCH_inputEPCClass",
-						subscription.getMATCH_inputEPCClass());
+				map.put("MATCH_inputEPCClass", subscription.getMATCH_inputEPCClass());
 			if (subscription.getMATCH_outputEPCClass() != null)
-				map.put("MATCH_outputEPCClass",
-						subscription.getMATCH_outputEPCClass());
+				map.put("MATCH_outputEPCClass", subscription.getMATCH_outputEPCClass());
 			if (subscription.getMATCH_anyEPCClass() != null)
-				map.put("MATCH_anyEPCClass",
-						subscription.getMATCH_anyEPCClass());
+				map.put("MATCH_anyEPCClass", subscription.getMATCH_anyEPCClass());
 			if (subscription.getEQ_quantity() != null)
 				map.put("EQ_quantity", subscription.getEQ_quantity());
 			if (subscription.getGT_quantity() != null)
@@ -1473,21 +1448,17 @@ public class MongoQueryService {
 				map.put("eventCountLimit", subscription.getEventCountLimit());
 			if (subscription.getMaxEventCount() != null)
 				map.put("maxEventCount", subscription.getMaxEventCount());
+			if (subscription.getFormat() != null)
+				map.put("format", subscription.getFormat());
 			if (subscription.getParamMap() != null)
 				map.put("paramMap", subscription.getParamMap());
 
 			JobDetail job = newJob(MongoSubscriptionTask.class)
-					.withIdentity(subscription.getSubscriptionID(),
-							subscription.getQueryName()).setJobData(map)
+					.withIdentity(subscription.getSubscriptionID(), subscription.getQueryName()).setJobData(map)
 					.storeDurably(false).build();
 
-			Trigger trigger = newTrigger()
-					.withIdentity(subscription.getSubscriptionID(),
-							subscription.getQueryName())
-					.startNow()
-					.withSchedule(
-							cronSchedule(subscription.getCronExpression()))
-					.build();
+			Trigger trigger = newTrigger().withIdentity(subscription.getSubscriptionID(), subscription.getQueryName())
+					.startNow().withSchedule(cronSchedule(subscription.getCronExpression())).build();
 
 			// ClassPathXmlApplicationContext context = new
 			// ClassPathXmlApplicationContext(
@@ -1498,9 +1469,8 @@ public class MongoQueryService {
 			if (MongoSubscription.sched.isStarted() != true)
 				MongoSubscription.sched.start();
 			MongoSubscription.sched.scheduleJob(job, trigger);
-			Configuration.logger.log(Level.INFO, "Subscription ID: "
-					+ subscription.getSubscriptionID()
-					+ " is added to quartz scheduler. ");
+			Configuration.logger.log(Level.INFO,
+					"Subscription ID: " + subscription.getSubscriptionID() + " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		} catch (RuntimeException e) {
@@ -1508,20 +1478,15 @@ public class MongoQueryService {
 		}
 	}
 
-	private void addScheduleToQuartz(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
-			String initialRecordTimeStr, String eventType, String GE_eventTime,
-			String LT_eventTime, String GE_recordTime, String LT_recordTime,
-			String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	private void addScheduleToQuartz(String queryName, String subscriptionID, String dest, String cronExpression,
+			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTimeStr, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -1593,14 +1558,14 @@ public class MongoQueryService {
 				map.put("eventCountLimit", eventCountLimit);
 			if (maxEventCount != null)
 				map.put("maxEventCount", maxEventCount);
+			if (format != null)
+				map.put("format", format);
 			if (paramMap != null)
 				map.put("paramMap", paramMap);
-			JobDetail job = newJob(MongoSubscriptionTask.class)
-					.withIdentity(subscriptionID, queryName).setJobData(map)
+			JobDetail job = newJob(MongoSubscriptionTask.class).withIdentity(subscriptionID, queryName).setJobData(map)
 					.storeDurably(false).build();
 
-			Trigger trigger = newTrigger()
-					.withIdentity(subscriptionID, queryName).startNow()
+			Trigger trigger = newTrigger().withIdentity(subscriptionID, queryName).startNow()
 					.withSchedule(cronSchedule(cronExpression)).build();
 
 			// ClassPathXmlApplicationContext context = new
@@ -1613,84 +1578,63 @@ public class MongoQueryService {
 				MongoSubscription.sched.start();
 			MongoSubscription.sched.scheduleJob(job, trigger);
 
-			Configuration.logger.log(Level.INFO, "Subscription ID: "
-					+ subscriptionID + " is added to quartz scheduler. ");
+			Configuration.logger.log(Level.INFO,
+					"Subscription ID: " + subscriptionID + " is added to quartz scheduler. ");
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
 	@SuppressWarnings("resource")
-	private boolean addScheduleToDB(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty,
-			String initialRecordTime, String eventType, String GE_eventTime,
-			String LT_eventTime, String GE_recordTime, String LT_recordTime,
-			String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID,
-			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	private boolean addScheduleToDB(String queryName, String subscriptionID, String dest, String cronExpression,
+			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
 
-		SubscriptionType st = new SubscriptionType(queryName, subscriptionID,
-				dest, cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTime,
-				eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,
-				LE_quantity, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, paramMap);
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+		SubscriptionType st = new SubscriptionType(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent,
+				reportIfEmpty, initialRecordTime, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
+				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, format,
+				paramMap);
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> existenceTest = mongoOperation.find(new Query(
-				Criteria.where("subscriptionID").is(subscriptionID)),
-				SubscriptionType.class);
+		List<SubscriptionType> existenceTest = mongoOperation
+				.find(new Query(Criteria.where("subscriptionID").is(subscriptionID)), SubscriptionType.class);
 		if (existenceTest.size() != 0)
 			return false;
 		if (existenceTest.size() == 0)
 			mongoOperation.save(st);
 
-		Configuration.logger.log(Level.INFO, "Subscription ID: "
-				+ subscriptionID + " is added to DB. ");
+		Configuration.logger.log(Level.INFO, "Subscription ID: " + subscriptionID + " is added to DB. ");
 		((AbstractApplicationContext) ctx).close();
 		return true;
 	}
 
 	private void removeScheduleFromQuartz(SubscriptionType subscription) {
 		try {
-			MongoSubscription.sched.unscheduleJob(triggerKey(
-					subscription.getSubscriptionID(),
-					subscription.getQueryName()));
-			MongoSubscription.sched.deleteJob(jobKey(
-					subscription.getSubscriptionID(),
-					subscription.getQueryName()));
-			Configuration.logger.log(Level.INFO, "Subscription ID: "
-					+ subscription.getSubscriptionID()
-					+ " is removed from scheduler");
+			MongoSubscription.sched
+					.unscheduleJob(triggerKey(subscription.getSubscriptionID(), subscription.getQueryName()));
+			MongoSubscription.sched.deleteJob(jobKey(subscription.getSubscriptionID(), subscription.getQueryName()));
+			Configuration.logger.log(Level.INFO,
+					"Subscription ID: " + subscription.getSubscriptionID() + " is removed from scheduler");
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 	}
 
-	private void removeScheduleFromDB(MongoOperations mongoOperation,
-			SubscriptionType subscription) {
-		mongoOperation.remove(
-				new Query(Criteria.where("subscriptionID").is(
-						subscription.getSubscriptionID())),
+	private void removeScheduleFromDB(MongoOperations mongoOperation, SubscriptionType subscription) {
+		mongoOperation.remove(new Query(Criteria.where("subscriptionID").is(subscription.getSubscriptionID())),
 				SubscriptionType.class);
 		Configuration.logger.log(Level.INFO,
-				"Subscription ID: " + subscription.getSubscriptionID()
-						+ " is removed from DB");
+				"Subscription ID: " + subscription.getSubscriptionID() + " is removed from DB");
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1753,8 +1697,8 @@ public class MongoQueryService {
 		return null;
 	}
 
-	private DBCursor makeSortedLimitedCursor(DBCursor cursor, String orderBy,
-			String orderDirection, String eventCountLimit) {
+	private DBCursor makeSortedLimitedCursor(DBCursor cursor, String orderBy, String orderDirection,
+			String eventCountLimit) {
 		/**
 		 * orderBy : If specified, names a single field that will be used to
 		 * order the results. The orderDirection field specifies whether the
@@ -1789,18 +1733,15 @@ public class MongoQueryService {
 					if (orderDirection.trim().equals("ASC")) {
 						cursor = cursor.sort(new BasicDBObject("eventTime", 1));
 					} else if (orderDirection.trim().equals("DESC")) {
-						cursor = cursor
-								.sort(new BasicDBObject("eventTime", -1));
+						cursor = cursor.sort(new BasicDBObject("eventTime", -1));
 					}
 				}
 			} else if (orderBy.trim().equals("recordTime")) {
 				if (orderDirection != null) {
 					if (orderDirection.trim().equals("ASC")) {
-						cursor = cursor
-								.sort(new BasicDBObject("recordTime", 1));
+						cursor = cursor.sort(new BasicDBObject("recordTime", 1));
 					} else if (orderDirection.trim().equals("DESC")) {
-						cursor = cursor
-								.sort(new BasicDBObject("recordTime", -1));
+						cursor = cursor.sort(new BasicDBObject("recordTime", -1));
 					}
 				}
 			}
@@ -1833,19 +1774,14 @@ public class MongoQueryService {
 		return cursor;
 	}
 
-	private List<DBObject> makeQueryObjects(String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	private List<DBObject> makeQueryObjects(String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
+			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
+			String eventCountLimit, String maxEventCount, Map<String, String> paramMap) {
 		List<DBObject> queryList = new ArrayList<DBObject>();
 		try {
 			/**
@@ -1861,14 +1797,12 @@ public class MongoQueryService {
 			 * Verified
 			 */
 			if (GE_eventTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				GregorianCalendar geEventTimeCalendar = new GregorianCalendar();
 				geEventTimeCalendar.setTime(sdf.parse(GE_eventTime));
 				long geEventTimeMillis = geEventTimeCalendar.getTimeInMillis();
 				DBObject query = new BasicDBObject();
-				query.put("eventTime", new BasicDBObject("$gte",
-						geEventTimeMillis));
+				query.put("eventTime", new BasicDBObject("$gte", geEventTimeMillis));
 				queryList.add(query);
 			}
 			/**
@@ -1880,15 +1814,13 @@ public class MongoQueryService {
 			 * Verified
 			 */
 			if (LT_eventTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				GregorianCalendar ltEventTimeCalendar = new GregorianCalendar();
 				Date date = sdf.parse(LT_eventTime);
 				ltEventTimeCalendar.setTime(date);
 				long ltEventTimeMillis = ltEventTimeCalendar.getTimeInMillis();
 				DBObject query = new BasicDBObject();
-				query.put("eventTime", new BasicDBObject("$lt",
-						ltEventTimeMillis));
+				query.put("eventTime", new BasicDBObject("$lt", ltEventTimeMillis));
 				queryList.add(query);
 			}
 			/**
@@ -1903,16 +1835,13 @@ public class MongoQueryService {
 			 * Verified
 			 */
 			if (GE_recordTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				GregorianCalendar geRecordTimeCalendar = new GregorianCalendar();
 
 				geRecordTimeCalendar.setTime(sdf.parse(GE_recordTime));
-				long geRecordTimeMillis = geRecordTimeCalendar
-						.getTimeInMillis();
+				long geRecordTimeMillis = geRecordTimeCalendar.getTimeInMillis();
 				DBObject query = new BasicDBObject();
-				query.put("recordTime", new BasicDBObject("$gte",
-						geRecordTimeMillis));
+				query.put("recordTime", new BasicDBObject("$gte", geRecordTimeMillis));
 				queryList.add(query);
 			}
 			/**
@@ -1925,16 +1854,13 @@ public class MongoQueryService {
 			 * Verified
 			 */
 			if (LT_recordTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				GregorianCalendar ltRecordTimeCalendar = new GregorianCalendar();
 
 				ltRecordTimeCalendar.setTime(sdf.parse(LT_recordTime));
-				long ltRecordTimeMillis = ltRecordTimeCalendar
-						.getTimeInMillis();
+				long ltRecordTimeMillis = ltRecordTimeCalendar.getTimeInMillis();
 				DBObject query = new BasicDBObject();
-				query.put("recordTime", new BasicDBObject("$lt",
-						ltRecordTimeMillis));
+				query.put("recordTime", new BasicDBObject("$lt", ltRecordTimeMillis));
 				queryList.add(query);
 			}
 
@@ -2014,9 +1940,8 @@ public class MongoQueryService {
 				}
 				for (int i = 0; i < eqArr.length; i++) {
 					// Invoke vocabulary query with EQ_name and includeChildren
-					String masterReadPoint = pollMasterDataQuery(
-							"SimpleMasterDataQuery", null, false, true, null,
-							eqArr[i], null, null, null, null);
+					String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null,
+							eqArr[i], null, null, null, null, null);
 					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
 					childReadPointSet.add(eqArr[i]);
 
@@ -2038,8 +1963,7 @@ public class MongoQueryService {
 			 * bizLocation field.
 			 */
 			if (EQ_bizLocation != null) {
-				DBObject query = getINQueryObject("bizLocation.id",
-						EQ_bizLocation);
+				DBObject query = getINQueryObject("bizLocation.id", EQ_bizLocation);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2055,9 +1979,8 @@ public class MongoQueryService {
 				}
 				for (int i = 0; i < eqArr.length; i++) {
 					// Invoke vocabulary query with EQ_name and includeChildren
-					String masterReadPoint = pollMasterDataQuery(
-							"SimpleMasterDataQuery", null, false, true, null,
-							eqArr[i], null, null, null, null);
+					String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null,
+							eqArr[i], null, null, null, null, null);
 
 					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
 					childReadPointSet.add(eqArr[i]);
@@ -2085,8 +2008,7 @@ public class MongoQueryService {
 			 * field is equal to one of the values specified in this parameter.
 			 */
 			if (EQ_transformationID != null) {
-				DBObject query = getINQueryObject("transformationID",
-						EQ_transformationID);
+				DBObject query = getINQueryObject("transformationID", EQ_transformationID);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2106,8 +2028,7 @@ public class MongoQueryService {
 			 * Somewhat verified
 			 */
 			if (MATCH_epc != null) {
-				DBObject query = getINQueryObject(new String[] { "epcList.epc",
-						"childEPCs.epc" }, MATCH_epc);
+				DBObject query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2137,8 +2058,7 @@ public class MongoQueryService {
 			 * whether the inputEPCList field exists.
 			 */
 			if (MATCH_inputEPC != null) {
-				DBObject query = getINQueryObject("inputEPCList.epc",
-						MATCH_inputEPC);
+				DBObject query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2155,8 +2075,7 @@ public class MongoQueryService {
 			 * whether the inputEPCList field exists.
 			 */
 			if (MATCH_outputEPC != null) {
-				DBObject query = getINQueryObject("outputEPCList.epc",
-						MATCH_outputEPC);
+				DBObject query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2176,9 +2095,9 @@ public class MongoQueryService {
 			 */
 
 			if (MATCH_anyEPC != null) {
-				DBObject query = getINQueryObject(new String[] { "epcList.epc",
-						"childEPCs.epc", "inputEPCList.epc",
-						"outputEPCList.epc" }, MATCH_anyEPC);
+				DBObject query = getINQueryObject(
+						new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc" },
+						MATCH_anyEPC);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2197,9 +2116,8 @@ public class MongoQueryService {
 			 * Section 8.2.7.1.1.
 			 */
 			if (MATCH_epcClass != null) {
-				DBObject query = getINQueryObject(new String[] {
-						"extension.quantityList.epcClass",
-						"extension.childQuantityList.epcClass" },
+				DBObject query = getINQueryObject(
+						new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
 						MATCH_epcClass);
 				if (query != null)
 					queryList.add(query);
@@ -2215,8 +2133,7 @@ public class MongoQueryService {
 			 * of “matches” is as specified in Section 8.2.7.1.1.
 			 */
 			if (MATCH_inputEPCClass != null) {
-				DBObject query = getINQueryObject("inputQuantityList.epcClass",
-						MATCH_inputEPCClass);
+				DBObject query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2232,8 +2149,7 @@ public class MongoQueryService {
 			 */
 
 			if (MATCH_outputEPCClass != null) {
-				DBObject query = getINQueryObject(
-						"outputQuantityList.epcClass", MATCH_outputEPCClass);
+				DBObject query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2252,11 +2168,10 @@ public class MongoQueryService {
 			 * specified in Section 8.2.7.1.1.
 			 */
 			if (MATCH_anyEPCClass != null) {
-				DBObject query = getINQueryObject(new String[] {
-						"extension.quantityList.epcClass",
-						"extension.childQuantityList.epcClass",
-						"inputQuantityList.epcClass",
-						"outputQuantityList.epcClass" }, MATCH_anyEPCClass);
+				DBObject query = getINQueryObject(
+						new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
+								"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
+						MATCH_anyEPCClass);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2298,8 +2213,7 @@ public class MongoQueryService {
 				 */
 				if (paramName.contains("EQ_bizTransaction_")) {
 					String type = paramName.substring(18, paramName.length());
-					DBObject query = getINFamilyQueryObject(type,
-							"bizTransactionList", paramValues);
+					DBObject query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -2317,17 +2231,14 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQ_source_")) {
 					String type = paramName.substring(10, paramName.length());
-					if (eventType.equals("AggregationEvent")
-							|| eventType.equals("ObjectEvent")
+					if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 							|| eventType.equals("TransactionEvent")) {
-						DBObject query = getINFamilyQueryObject(type,
-								"extension.sourceList", paramValues);
+						DBObject query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
 						if (query != null)
 							queryList.add(query);
 					}
 					if (eventType.equals("TransformationEvent")) {
-						DBObject query = getINFamilyQueryObject(type,
-								"sourceList", paramValues);
+						DBObject query = getINFamilyQueryObject(type, "sourceList", paramValues);
 						if (query != null)
 							queryList.add(query);
 					}
@@ -2345,17 +2256,14 @@ public class MongoQueryService {
 				 */
 				if (paramName.contains("EQ_destination_")) {
 					String type = paramName.substring(15, paramName.length());
-					if (eventType.equals("AggregationEvent")
-							|| eventType.equals("ObjectEvent")
+					if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 							|| eventType.equals("TransactionEvent")) {
-						DBObject query = getINFamilyQueryObject(type,
-								"extension.destinationList", paramValues);
+						DBObject query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
 						if (query != null)
 							queryList.add(query);
 					}
 					if (eventType.equals("TransformationEvent")) {
-						DBObject query = getINFamilyQueryObject(type,
-								"destinationList", paramValues);
+						DBObject query = getINFamilyQueryObject(type, "destinationList", paramValues);
 						if (query != null)
 							queryList.add(query);
 					}
@@ -2380,8 +2288,7 @@ public class MongoQueryService {
 					 * sign (#), and the name of the extension field.
 					 */
 					if (paramName.startsWith("EQ_")) {
-						String type = paramName
-								.substring(3, paramName.length());
+						String type = paramName.substring(3, paramName.length());
 						/*
 						 * if (eventType.equals("AggregationEvent") ||
 						 * eventType.equals("ObjectEvent") ||
@@ -2399,9 +2306,7 @@ public class MongoQueryService {
 						 * if (query != null) queryList.add(query); }
 						 */
 						DBObject query = getINExtensionQueryObject(type,
-								new String[] { "any." + type,
-										"otherAttributes." + type },
-								paramValues);
+								new String[] { "any." + type, "otherAttributes." + type }, paramValues);
 						if (query != null)
 							queryList.add(query);
 					}
@@ -2417,12 +2322,9 @@ public class MongoQueryService {
 					 * EQ_fieldname.
 					 */
 
-					if (paramName.startsWith("GT_")
-							|| paramName.startsWith("GE_")
-							|| paramName.startsWith("LT_")
+					if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
 							|| paramName.startsWith("LE_")) {
-						String type = paramName
-								.substring(3, paramName.length());
+						String type = paramName.substring(3, paramName.length());
 
 						/*
 						 * if (eventType.equals("AggregationEvent") ||
@@ -2480,33 +2382,25 @@ public class MongoQueryService {
 						 */
 						if (paramName.startsWith("GT_")) {
 							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type,
-											"otherAttributes." + type },
-									paramValues, "GT");
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
 							if (query != null)
 								queryList.add(query);
 						}
 						if (paramName.startsWith("GE_")) {
 							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type,
-											"otherAttributes." + type },
-									paramValues, "GE");
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
 							if (query != null)
 								queryList.add(query);
 						}
 						if (paramName.startsWith("LT_")) {
 							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type,
-											"otherAttributes." + type },
-									paramValues, "LT");
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
 							if (query != null)
 								queryList.add(query);
 						}
 						if (paramName.startsWith("LE_")) {
 							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type,
-											"otherAttributes." + type },
-									paramValues, "LE");
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
 							if (query != null)
 								queryList.add(query);
 						}
@@ -2519,10 +2413,9 @@ public class MongoQueryService {
 		return queryList;
 	}
 
-	private List<DBObject> makeMasterQueryObjects(String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String maxElementCount, Map<String, String> paramMap) {
+	private List<DBObject> makeMasterQueryObjects(String vocabularyName, boolean includeAttributes,
+			boolean includeChildren, String attributeNames, String eQ_name, String wD_name, String hASATTR,
+			String maxElementCount, Map<String, String> paramMap) {
 
 		List<DBObject> queryList = new ArrayList<DBObject>();
 
@@ -2570,9 +2463,8 @@ public class MongoQueryService {
 			}
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
-				String masterReadPoint = pollMasterDataQuery(
-						"SimpleMasterDataQuery", null, false, true, null,
-						eqArr[i], null, null, null, null);
+				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
+						null, null, null, null, null);
 
 				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
 				childReadPointSet.add(eqArr[i]);
@@ -2598,8 +2490,7 @@ public class MongoQueryService {
 		 */
 
 		if (hASATTR != null) {
-			DBObject query = getINQueryObject(
-					"vocabularyList.attributeList.id", hASATTR);
+			DBObject query = getINQueryObject("vocabularyList.attributeList.id", hASATTR);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2619,8 +2510,7 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQATTR_")) {
 					String type = paramName.substring(7, paramName.length());
-					DBObject query = getVocFamilyQueryObject(type,
-							"vocabularyList.attributeList", paramValues);
+					DBObject query = getVocFamilyQueryObject(type, "vocabularyList.attributeList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -2632,11 +2522,9 @@ public class MongoQueryService {
 	private Set<String> makeDecendentSet(String vocString) {
 		Set<String> childReadPointSet = new HashSet<String>();
 		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory
-					.newInstance();
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputStream stream = new ByteArrayInputStream(
-					vocString.getBytes(StandardCharsets.UTF_8));
+			InputStream stream = new ByteArrayInputStream(vocString.getBytes(StandardCharsets.UTF_8));
 			Document doc = dBuilder.parse(stream);
 			NodeList nList = doc.getElementsByTagName("children");
 			for (int i = 0; i < nList.getLength(); i++) {
