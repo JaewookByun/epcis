@@ -13,7 +13,7 @@ public class SubscriptionType {
 	private boolean ignoreReceivedEvent;
 	private boolean reportIfEmpty;
 	private String initialRecordTime;
-	
+
 	public boolean isIgnoreReceivedEvent() {
 		return ignoreReceivedEvent;
 	}
@@ -70,6 +70,7 @@ public class SubscriptionType {
 	private String orderDirection;
 	private String eventCountLimit;
 	private String maxEventCount;
+	private String format;
 	private Map<String, String> paramMap;
 
 	public Map<String, String> getParamMap() {
@@ -80,20 +81,16 @@ public class SubscriptionType {
 		this.paramMap = paramMap;
 	}
 
-	public SubscriptionType(String queryName, String subscriptionID,
-			String dest, String cronExpression, boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
+	public SubscriptionType(String queryName, String subscriptionID, String dest, String cronExpression,
+			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
+			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			Map<String, String> paramMap) {
 		this.queryName = queryName;
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
@@ -127,7 +124,16 @@ public class SubscriptionType {
 		this.orderDirection = orderDirection;
 		this.eventCountLimit = eventCountLimit;
 		this.maxEventCount = maxEventCount;
+		this.format = format;
 		this.paramMap = paramMap;
+	}
+
+	public String getFormat() {
+		return format;
+	}
+
+	public void setFormat(String format) {
+		this.format = format;
 	}
 
 	public String getQueryName() {
