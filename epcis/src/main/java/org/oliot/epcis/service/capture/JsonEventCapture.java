@@ -19,6 +19,10 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.jsonschema.JsonSchemaLoader;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,6 +100,11 @@ public class JsonEventCapture implements ServletContextAware {
 				JSONObject json2 = json.getJSONObject("epcis");
 				JSONObject json3 = json2.getJSONObject("EPCISBody");
 				JSONArray json4 = json3.getJSONArray("EventList");
+				
+				ApplicationContext ctx = new GenericXmlApplicationContext(
+						"classpath:MongoConfig.xml");
+				MongoOperations mongoOperation = (MongoOperations) ctx
+						.getBean("mongoTemplate");
 				
 				for(int i = 0 ; i < json4.length(); i++){
 					
@@ -176,7 +185,7 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"));
+							m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"), mongoOperation);
 						}
 					}
 					else if(json4.getJSONObject(i).has("AggregationEvent") == true){
@@ -255,7 +264,7 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.aggregationevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"));
+							m.aggregationevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"), mongoOperation);
 						}
 					}
 					else if(json4.getJSONObject(i).has("TransformationEvent") == true){
@@ -334,7 +343,7 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
+							m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"), mongoOperation);
 						}
 					}
 					else if(json4.getJSONObject(i).has("TransactionEvent") == true){
@@ -413,7 +422,7 @@ public class JsonEventCapture implements ServletContextAware {
 						
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.transactionevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"));
+							m.transactionevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"), mongoOperation);
 						}
 					}
 					else{
@@ -439,34 +448,41 @@ public class JsonEventCapture implements ServletContextAware {
 			JSONObject json2 = json.getJSONObject("epcis");
 			JSONObject json3 = json2.getJSONObject("EPCISBody");
 			JSONArray json4 = json3.getJSONArray("EventList");	
+				
+			ApplicationContext ctx = new GenericXmlApplicationContext(
+					"classpath:MongoConfig.xml");
+			MongoOperations mongoOperation = (MongoOperations) ctx
+					.getBean("mongoTemplate");
 			
 			for(int i = 0 ; i < json4.length(); i++){
 				if(json4.getJSONObject(i).has("ObjectEvent") == true){
 					
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"));
+						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"), mongoOperation);
 					}
 				}
 				else if(json4.getJSONObject(i).has("AggregationEvent") == true){
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"));
+						m.aggregationevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"), mongoOperation);
 					}
 				}
 				else if(json4.getJSONObject(i).has("TransformationEvent") == true){
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
+						m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"), mongoOperation);
 					}
 				}
 				else if(json4.getJSONObject(i).has("TransactionEvent") == true){
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"));
+						m.transactionevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"), mongoOperation);
 					}
 				}
 			}
+			
+			((AbstractApplicationContext) ctx).close();
 			
 			return "EPCIS Document : Captured ";
 		}
