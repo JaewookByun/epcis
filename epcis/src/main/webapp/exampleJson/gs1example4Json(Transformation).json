@@ -3,10 +3,10 @@
         "EPCISBody": {
             "EventList": [
                 {
-                    "ObjectEvent": {
-                        "eventTime": "1383231536591",
+                    "TransformationEvent": {
+                        "eventTime": 1383231536591,
                         "eventTimeZoneOffset": "+02:00",
-                        "recordTime": "1441967664065",
+                        "recordTime": 1441967664065,
                         "inputEPCList": [
                             {
                                 "epc": "urn:epc:id:sgtin:4012345.011122.25"
