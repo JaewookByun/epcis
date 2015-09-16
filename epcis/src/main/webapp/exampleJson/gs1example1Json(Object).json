@@ -4,9 +4,9 @@
             "EventList": [
                 {
                     "ObjectEvent": {
-                        "eventTime": "1112582011116",
+                        "eventTime": 1112582011116,
                         "eventTimeZoneOffset": "-06:00",
-                        "recordTime": "1441967067073",
+                        "recordTime": 1441967067073,
                         "epcList": [
                             {
                                 "epc": "urn:epc:id:sgtin:0614141.107346.2017"
@@ -30,9 +30,9 @@
                 },
                 {
                     "ObjectEvent": {
-                        "eventTime": "1112668411116",
+                        "eventTime": 1112668411116,
                         "eventTimeZoneOffset": "-06:00",
-                        "recordTime": "1441967067206",
+                        "recordTime": 1441967067206,
                         "epcList": [
                             {
                                 "epc": "urn:epc:id:sgtin:0614141.107346.2018"

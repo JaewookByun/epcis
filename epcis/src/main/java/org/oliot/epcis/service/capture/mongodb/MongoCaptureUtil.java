@@ -113,11 +113,7 @@ public class MongoCaptureUtil {
 	//JsonObject event capture series..
 	
 	@SuppressWarnings("resource")
-	public void objectevent_capture(JSONObject event){
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+	public void objectevent_capture(JSONObject event, MongoOperations mongoOperation){
 		
 		DBCollection collection = mongoOperation
 				.getCollection("ObjectEvent");
@@ -125,14 +121,11 @@ public class MongoCaptureUtil {
 		DBObject dbObject = (DBObject) JSON.parse(event.toString());
 		
 		collection.save(dbObject);
+		Configuration.logger.info(" Event Saved ");
 	}
 	
 	@SuppressWarnings("resource")
-	public void aggregationevent_capture(JSONObject event){
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+	public void aggregationevent_capture(JSONObject event, MongoOperations mongoOperation){
 		
 		DBCollection collection = mongoOperation
 				.getCollection("AggregationEvent");
@@ -140,29 +133,22 @@ public class MongoCaptureUtil {
 		DBObject dbObject = (DBObject) JSON.parse(event.toString());
 		
 		collection.save(dbObject);
+		Configuration.logger.info(" Event Saved ");
 	}
 	
 	@SuppressWarnings("resource")
-	public void transformationevent_capture(JSONObject event){
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
-		
+	public void transformationevent_capture(JSONObject event, MongoOperations mongoOperation){
 		DBCollection collection = mongoOperation
 				.getCollection("TransformationEvent");
 		
 		DBObject dbObject = (DBObject) JSON.parse(event.toString());
 		
 		collection.save(dbObject);
+		Configuration.logger.info(" Event Saved ");
 	}
 	
 	@SuppressWarnings("resource")
-	public void transactionevent_capture(JSONObject event){
-		ApplicationContext ctx = new GenericXmlApplicationContext(
-				"classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx
-				.getBean("mongoTemplate");
+	public void transactionevent_capture(JSONObject event, MongoOperations mongoOperation){
 		
 		DBCollection collection = mongoOperation
 				.getCollection("TransactionEvent");
@@ -170,6 +156,7 @@ public class MongoCaptureUtil {
 		DBObject dbObject = (DBObject) JSON.parse(event.toString());
 		
 		collection.save(dbObject);
+		Configuration.logger.info(" Event Saved ");
 	}
 	
 	//JsonObject Eventcapture series..
