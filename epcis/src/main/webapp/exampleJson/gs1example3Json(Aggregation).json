@@ -3,10 +3,10 @@
         "EPCISBody": {
             "EventList": [
                 {
-                    "ObjectEvent": {
-                        "eventTime": "1370703536591",
+                    "AggregationEvent": {
+                        "eventTime": 1370703536591,
                         "eventTimeZoneOffset": "+02:00",
-                        "recordTime": "1441967564521",
+                        "recordTime": 1441967564521,
                         "parentID": "urn:epc:id:sscc:0614141.1234567890",
                         "childEPCs": [
                             {

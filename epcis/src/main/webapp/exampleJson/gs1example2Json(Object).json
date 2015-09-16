@@ -4,9 +4,9 @@
             "EventList": [
                 {
                     "ObjectEvent": {
-                        "eventTime": "1370703536591",
+                        "eventTime": 1370703536591,
                         "eventTimeZoneOffset": "+02:00",
-                        "recordTime": "1441967382985",
+                        "recordTime": 1441967382985,
                         "epcList": [],
                         "action": "OBSERVE",
                         "bizStep": "urn:epcglobal:cbv:bizstep:receiving",

@@ -5,7 +5,7 @@
   "properties": {
     "eventTime": {
       "id": "http://oliot.org/aggregationevent/eventTime",
-      "type": "string"
+      "type": "integer"
     },
     "eventTimeZoneOffset": {
       "id": "http://oliot.org/aggregationevent/eventTimeZoneOffset",
@@ -13,7 +13,7 @@
     },
     "recordTime": {
       "id": "http://oliot.org/aggregationevent/recordTime",
-      "type": "string"
+      "type": "integer"
     },
     "parentID": {
       "id": "http://oliot.org/aggregationevent/parentID",
@@ -154,7 +154,6 @@
   "required": [
     "eventTime",
     "eventTimeZoneOffset",
-    "recordTime",
     "action"
   ],
  "additionalProperties": false
