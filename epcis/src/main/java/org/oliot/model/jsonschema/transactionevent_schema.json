@@ -5,7 +5,7 @@
   "properties": {
     "eventTime": {
       "id": "http://oliot.org/transactionevent/eventTime",
-      "type": "string"
+      "type": "integer"
     },
     "eventTimeZoneOffset": {
       "id": "http://oliot.org/transactionevent/eventTimeZoneOffset",
@@ -13,7 +13,7 @@
     },
     "recordTime": {
       "id": "http://oliot.org/transactionevent/recordTime",
-      "type": "string"
+      "type": "integer"
     },
     "parentID": {
       "id": "http://oliot.org/transactionevent/parentID",

@@ -5,7 +5,7 @@
   "properties": {
     "eventTime": {
       "id": "http://oliot.org/obejctevent/eventTime",
-      "type": "string"
+      "type": "integer"
     },
     "eventTimeZoneOffset": {
       "id": "http://oliot.org/obejctevent/eventTimeZoneOffset",
@@ -13,7 +13,7 @@
     },
     "recordTime": {
       "id": "http://oliot.org/obejctevent/recordTime",
-      "type": "string"
+      "type": "integer"
     },
     "epcList": {
       "id": "http://oliot.org/obejctevent/epcList",
