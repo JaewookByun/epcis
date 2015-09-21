@@ -12,6 +12,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -37,7 +38,8 @@ public class Configuration implements ServletContextListener {
 	public static Logger logger;
 	public static String webInfoPath;
 	public static boolean isCaptureVerfificationOn;
-
+	public static boolean isServiceRegistryReportOn;
+	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 
@@ -107,10 +109,31 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger
 						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
+			
+			// Set up service_registry_report
+			String serviceRegistryReport = json.getString("service_registry_report");
+			if (serviceRegistryReport == null){
+				Configuration.logger
+				.error("service_registry_report is null, please make sure Configuration.json is correct, and restart.");
+			}
+			serviceRegistryReport = serviceRegistryReport.trim();
+			if (serviceRegistryReport.equals("on")){
+				Configuration.isServiceRegistryReportOn = true;
+				Configuration.logger.info("Service_Registry_Report - ON");
+				
+				DiscoveryServiceAgent.gtinMap.put("really", "works");
+				System.out.println(DiscoveryServiceAgent.gtinMap.get("really").toString());
+				
+			} else if (serviceRegistryReport.equals("off")){
+				Configuration.isServiceRegistryReportOn = false;
+				Configuration.logger.info("Service_Registry_Report - OFF");
+			} else {
+				Configuration.logger
+				.error("service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
-
 	}
 
 	private void loadExistingSubscription() {
