@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -42,27 +43,23 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 @Component
 @WritingConverter
-public class QuantityEventWriteConverter implements
-		Converter<QuantityEventType, DBObject> {
+public class QuantityEventWriteConverter implements Converter<QuantityEventType, DBObject> {
 
 	public DBObject convert(QuantityEventType quantityEventType) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (quantityEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = quantityEventType
-					.getBaseExtension();
+			EPCISEventExtensionType baseExtensionType = quantityEventType.getBaseExtension();
 			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (quantityEventType.getEventTime() != null)
-			dbo.put("eventTime", quantityEventType.getEventTime()
-					.toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime", quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time zone
 		if (quantityEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					quantityEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", quantityEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
@@ -85,8 +82,7 @@ public class QuantityEventWriteConverter implements
 		}
 		// BizLocation
 		if (quantityEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = quantityEventType
-					.getBizLocation();
+			BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
 			DBObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
@@ -102,10 +98,8 @@ public class QuantityEventWriteConverter implements
 
 		// BizTransaction
 		if (quantityEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = quantityEventType
-					.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType
-					.getBizTransaction();
+			BusinessTransactionListType bizListType = quantityEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
@@ -115,14 +109,16 @@ public class QuantityEventWriteConverter implements
 			DBObject extension = getQuantityEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
-		
+
 		if (Configuration.isServiceRegistryReportOn == true) {
 			HashSet<String> candidateSet = getCandidateEPCSet(quantityEventType);
-			// TODO:
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}
-	
+
 	private HashSet<String> getCandidateEPCSet(QuantityEventType quantityEventType) {
 		HashSet<String> candidateSet = new HashSet<String>();
 
@@ -130,21 +126,6 @@ public class QuantityEventWriteConverter implements
 		if (quantityEventType.getEpcClass() != null) {
 			candidateSet.add(quantityEventType.getEpcClass());
 		}
-		// ReadPoint
-		if (quantityEventType.getReadPoint() != null) {
-			ReadPointType readPointType = quantityEventType.getReadPoint();
-			if (readPointType.getId() != null) {
-				candidateSet.add(readPointType.getId());
-			}
-		}
-		// BizLocation
-		if (quantityEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
-			if (bizLocationType.getId() != null) {
-				candidateSet.add(bizLocationType.getId());
-			}
-		}
-
 		return candidateSet;
 	}
 }

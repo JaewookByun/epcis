@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -138,7 +139,9 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 
 		if (Configuration.isServiceRegistryReportOn == true) {
 			HashSet<String> candidateSet = getCandidateEPCSet(objectEventType);
-			// TODO:
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}
@@ -154,21 +157,6 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 				candidateSet.add(epcList.get(i).getValue());
 			}
 		}
-		// ReadPoint
-		if (objectEventType.getReadPoint() != null) {
-			ReadPointType readPointType = objectEventType.getReadPoint();
-			if (readPointType.getId() != null) {
-				candidateSet.add(readPointType.getId());
-			}
-		}
-		// BizLocation
-		if (objectEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = objectEventType.getBizLocation();
-			if (bizLocationType.getId() != null) {
-				candidateSet.add(bizLocationType.getId());
-			}
-		}
-
 		// Extension
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();

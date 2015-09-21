@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -47,27 +48,23 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 @Component
 @WritingConverter
-public class TransactionEventWriteConverter implements
-		Converter<TransactionEventType, DBObject> {
+public class TransactionEventWriteConverter implements Converter<TransactionEventType, DBObject> {
 
 	public DBObject convert(TransactionEventType transactionEventType) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (transactionEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = transactionEventType
-					.getBaseExtension();
+			EPCISEventExtensionType baseExtensionType = transactionEventType.getBaseExtension();
 			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (transactionEventType.getEventTime() != null)
-			dbo.put("eventTime", transactionEventType.getEventTime()
-					.toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime", transactionEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (transactionEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					transactionEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", transactionEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
@@ -102,17 +99,14 @@ public class TransactionEventWriteConverter implements
 			dbo.put("readPoint", readPoint);
 		}
 		if (transactionEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = transactionEventType
-					.getBizLocation();
+			BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 			DBObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (transactionEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = transactionEventType
-					.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType
-					.getBizTransaction();
+			BusinessTransactionListType bizListType = transactionEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
@@ -129,18 +123,20 @@ public class TransactionEventWriteConverter implements
 
 		// Extension
 		if (transactionEventType.getExtension() != null) {
-			TransactionEventExtensionType oee = transactionEventType
-					.getExtension();
+			TransactionEventExtensionType oee = transactionEventType.getExtension();
 			DBObject extension = getTransactionEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
-		
+
 		if (Configuration.isServiceRegistryReportOn == true) {
 			HashSet<String> candidateSet = getCandidateEPCSet(transactionEventType);
-			// TODO:
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}
+
 	private HashSet<String> getCandidateEPCSet(TransactionEventType transactionEventType) {
 		HashSet<String> candidateSet = new HashSet<String>();
 
@@ -156,21 +152,6 @@ public class TransactionEventWriteConverter implements
 				candidateSet.add(epcList.get(i).getValue());
 			}
 		}
-		// ReadPoint
-		if (transactionEventType.getReadPoint() != null) {
-			ReadPointType readPointType = transactionEventType.getReadPoint();
-			if (readPointType.getId() != null) {
-				candidateSet.add(readPointType.getId());
-			}
-		}
-		// BizLocation
-		if (transactionEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
-			if (bizLocationType.getId() != null) {
-				candidateSet.add(bizLocationType.getId());
-			}
-		}
-
 		// Extension
 		if (transactionEventType.getExtension() != null) {
 			TransactionEventExtensionType aee = transactionEventType.getExtension();

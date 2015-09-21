@@ -12,8 +12,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
-import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
-
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
  *
@@ -120,9 +118,6 @@ public class Configuration implements ServletContextListener {
 			if (serviceRegistryReport.equals("on")){
 				Configuration.isServiceRegistryReportOn = true;
 				Configuration.logger.info("Service_Registry_Report - ON");
-				
-				DiscoveryServiceAgent.gtinMap.put("really", "works");
-				System.out.println(DiscoveryServiceAgent.gtinMap.get("really").toString());
 				
 			} else if (serviceRegistryReport.equals("off")){
 				Configuration.isServiceRegistryReportOn = false;
