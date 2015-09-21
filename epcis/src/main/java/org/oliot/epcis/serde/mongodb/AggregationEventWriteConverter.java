@@ -2,9 +2,11 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -13,6 +15,8 @@ import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.QuantityElementType;
+import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
@@ -43,35 +47,31 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 @Component
 @WritingConverter
-public class AggregationEventWriteConverter implements
-		Converter<AggregationEventType, DBObject> {
+public class AggregationEventWriteConverter implements Converter<AggregationEventType, DBObject> {
 
 	public DBObject convert(AggregationEventType aggregationEventType) {
-
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (aggregationEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = aggregationEventType
-					.getBaseExtension();
+			EPCISEventExtensionType baseExtensionType = aggregationEventType.getBaseExtension();
 			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (aggregationEventType.getEventTime() != null)
-			dbo.put("eventTime", aggregationEventType.getEventTime()
-					.toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime", aggregationEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (aggregationEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					aggregationEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", aggregationEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", recordTimeMilis);
 
 		// Parent ID
-		if (aggregationEventType.getParentID() != null)
+		if (aggregationEventType.getParentID() != null) {
 			dbo.put("parentID", aggregationEventType.getParentID());
+		}
 		// Child EPCs
 		if (aggregationEventType.getChildEPCs() != null) {
 			EPCListType epcs = aggregationEventType.getChildEPCs();
@@ -102,17 +102,14 @@ public class AggregationEventWriteConverter implements
 		}
 		// BizLocation
 		if (aggregationEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = aggregationEventType
-					.getBizLocation();
+			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 			DBObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 
 		if (aggregationEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = aggregationEventType
-					.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType
-					.getBizTransaction();
+			BusinessTransactionListType bizListType = aggregationEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
@@ -129,11 +126,63 @@ public class AggregationEventWriteConverter implements
 
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
-			AggregationEventExtensionType oee = aggregationEventType
-					.getExtension();
-			DBObject extension = getAggregationEventExtensionObject(oee);
+			AggregationEventExtensionType aee = aggregationEventType.getExtension();
+			DBObject extension = getAggregationEventExtensionObject(aee);
 			dbo.put("extension", extension);
+
+		}
+
+		if (Configuration.isServiceRegistryReportOn == true) {
+			HashSet<String> candidateSet = getCandidateEPCSet(aggregationEventType);
+			// TODO:
 		}
 		return dbo;
+	}
+
+	private HashSet<String> getCandidateEPCSet(AggregationEventType aggregationEventType) {
+		HashSet<String> candidateSet = new HashSet<String>();
+
+		// Parent ID
+		if (aggregationEventType.getParentID() != null) {
+			candidateSet.add(aggregationEventType.getParentID());
+		}
+		// Child EPCs
+		if (aggregationEventType.getChildEPCs() != null) {
+			EPCListType epcs = aggregationEventType.getChildEPCs();
+			List<EPC> epcList = epcs.getEpc();
+			for (int i = 0; i < epcList.size(); i++) {
+				candidateSet.add(epcList.get(i).getValue());
+			}
+		}
+		// ReadPoint
+		if (aggregationEventType.getReadPoint() != null) {
+			ReadPointType readPointType = aggregationEventType.getReadPoint();
+			if (readPointType.getId() != null) {
+				candidateSet.add(readPointType.getId());
+			}
+		}
+		// BizLocation
+		if (aggregationEventType.getBizLocation() != null) {
+			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
+			if (bizLocationType.getId() != null) {
+				candidateSet.add(bizLocationType.getId());
+			}
+		}
+
+		// Extension
+		if (aggregationEventType.getExtension() != null) {
+			AggregationEventExtensionType aee = aggregationEventType.getExtension();
+			if (aee.getChildQuantityList() != null) {
+				QuantityListType qetl = aee.getChildQuantityList();
+				List<QuantityElementType> qetList = qetl.getQuantityElement();
+				for (int i = 0; i < qetList.size(); i++) {
+					QuantityElementType qet = qetList.get(i);
+					if (qet.getEpcClass() != null)
+						candidateSet.add(qet.getEpcClass().toString());
+				}
+			}
+		}
+
+		return candidateSet;
 	}
 }

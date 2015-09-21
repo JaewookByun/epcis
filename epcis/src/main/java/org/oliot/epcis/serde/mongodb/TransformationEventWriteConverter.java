@@ -2,9 +2,11 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -50,27 +52,23 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 @Component
 @WritingConverter
-public class TransformationEventWriteConverter implements
-		Converter<TransformationEventType, DBObject> {
+public class TransformationEventWriteConverter implements Converter<TransformationEventType, DBObject> {
 
 	public DBObject convert(TransformationEventType transformationEventType) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (transformationEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = transformationEventType
-					.getBaseExtension();
+			EPCISEventExtensionType baseExtensionType = transformationEventType.getBaseExtension();
 			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (transformationEventType.getEventTime() != null)
-			dbo.put("eventTime", transformationEventType.getEventTime()
-					.toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime", transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (transformationEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					transformationEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", transformationEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
@@ -103,8 +101,7 @@ public class TransformationEventWriteConverter implements
 		}
 		// TransformationID
 		if (transformationEventType.getTransformationID() != null) {
-			dbo.put("transformationID",
-					transformationEventType.getTransformationID());
+			dbo.put("transformationID", transformationEventType.getTransformationID());
 		}
 		// BizStep
 		if (transformationEventType.getBizStep() != null)
@@ -114,39 +111,33 @@ public class TransformationEventWriteConverter implements
 			dbo.put("disposition", transformationEventType.getDisposition());
 		// ReadPoint
 		if (transformationEventType.getReadPoint() != null) {
-			ReadPointType readPointType = transformationEventType
-					.getReadPoint();
+			ReadPointType readPointType = transformationEventType.getReadPoint();
 			DBObject readPoint = getReadPointObject(readPointType);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (transformationEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = transformationEventType
-					.getBizLocation();
+			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
 			DBObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
 		if (transformationEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = transformationEventType
-					.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType
-					.getBizTransaction();
+			BusinessTransactionListType bizListType = transformationEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
 		// Input Quantity List
 		if (transformationEventType.getInputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType
-					.getInputQuantityList();
+			QuantityListType qetl = transformationEventType.getInputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
 			List<DBObject> quantityList = getQuantityObjectList(qetList);
 			dbo.put("inputQuantityList", quantityList);
 		}
 		// Output Quantity List
 		if (transformationEventType.getOutputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType
-					.getOutputQuantityList();
+			QuantityListType qetl = transformationEventType.getOutputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
 			List<DBObject> quantityList = getQuantityObjectList(qetList);
 			dbo.put("outputQuantityList", quantityList);
@@ -160,8 +151,7 @@ public class TransformationEventWriteConverter implements
 		}
 		// Dest List
 		if (transformationEventType.getDestinationList() != null) {
-			DestinationListType sdtl = transformationEventType
-					.getDestinationList();
+			DestinationListType sdtl = transformationEventType.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
 			List<DBObject> dbList = getSourceDestObjectList(sdtList);
 			dbo.put("destinationList", dbList);
@@ -188,11 +178,80 @@ public class TransformationEventWriteConverter implements
 
 		// Extension
 		if (transformationEventType.getExtension() != null) {
-			TransformationEventExtensionType oee = transformationEventType
-					.getExtension();
+			TransformationEventExtensionType oee = transformationEventType.getExtension();
 			DBObject extension = getTransformationEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
+
+		if (Configuration.isServiceRegistryReportOn == true) {
+			HashSet<String> candidateSet = getCandidateEPCSet(transformationEventType);
+			// TODO:
+		}
 		return dbo;
+	}
+
+	private HashSet<String> getCandidateEPCSet(TransformationEventType transformationEventType) {
+		HashSet<String> candidateSet = new HashSet<String>();
+
+		// Input EPC List
+		if (transformationEventType.getInputEPCList() != null) {
+			EPCListType epcs = transformationEventType.getInputEPCList();
+			List<EPC> epcList = epcs.getEpc();
+			for (int i = 0; i < epcList.size(); i++) {
+				candidateSet.add(epcList.get(i).getValue());
+			}
+		}
+
+		// Input Quantity
+		if (transformationEventType.getInputQuantityList() != null) {
+			if (transformationEventType.getInputEPCList() != null) {
+				QuantityListType qetl = transformationEventType.getInputQuantityList();
+				List<QuantityElementType> qetList = qetl.getQuantityElement();
+				for (int i = 0; i < qetList.size(); i++) {
+					QuantityElementType qet = qetList.get(i);
+					if (qet.getEpcClass() != null)
+						candidateSet.add(qet.getEpcClass().toString());
+				}
+			}
+		}
+
+		// Output EPC List
+		if (transformationEventType.getOutputEPCList() != null) {
+			EPCListType epcs = transformationEventType.getOutputEPCList();
+			List<EPC> epcList = epcs.getEpc();
+			for (int i = 0; i < epcList.size(); i++) {
+				candidateSet.add(epcList.get(i).getValue());
+			}
+		}
+
+		// Output Quantity
+		if (transformationEventType.getOutputQuantityList() != null) {
+			if (transformationEventType.getOutputQuantityList() != null) {
+				QuantityListType qetl = transformationEventType.getOutputQuantityList();
+				List<QuantityElementType> qetList = qetl.getQuantityElement();
+				for (int i = 0; i < qetList.size(); i++) {
+					QuantityElementType qet = qetList.get(i);
+					if (qet.getEpcClass() != null)
+						candidateSet.add(qet.getEpcClass().toString());
+				}
+			}
+		}
+
+		// ReadPoint
+		if (transformationEventType.getReadPoint() != null) {
+			ReadPointType readPointType = transformationEventType.getReadPoint();
+			if (readPointType.getId() != null) {
+				candidateSet.add(readPointType.getId());
+			}
+		}
+		// BizLocation
+		if (transformationEventType.getBizLocation() != null) {
+			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
+			if (bizLocationType.getId() != null) {
+				candidateSet.add(bizLocationType.getId());
+			}
+		}
+
+		return candidateSet;
 	}
 }

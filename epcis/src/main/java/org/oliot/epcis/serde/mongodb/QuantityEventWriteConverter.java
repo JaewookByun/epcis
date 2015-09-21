@@ -1,9 +1,11 @@
 package org.oliot.epcis.serde.mongodb;
 
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -113,6 +115,36 @@ public class QuantityEventWriteConverter implements
 			DBObject extension = getQuantityEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
+		
+		if (Configuration.isServiceRegistryReportOn == true) {
+			HashSet<String> candidateSet = getCandidateEPCSet(quantityEventType);
+			// TODO:
+		}
 		return dbo;
+	}
+	
+	private HashSet<String> getCandidateEPCSet(QuantityEventType quantityEventType) {
+		HashSet<String> candidateSet = new HashSet<String>();
+
+		// EPC Class
+		if (quantityEventType.getEpcClass() != null) {
+			candidateSet.add(quantityEventType.getEpcClass());
+		}
+		// ReadPoint
+		if (quantityEventType.getReadPoint() != null) {
+			ReadPointType readPointType = quantityEventType.getReadPoint();
+			if (readPointType.getId() != null) {
+				candidateSet.add(readPointType.getId());
+			}
+		}
+		// BizLocation
+		if (quantityEventType.getBizLocation() != null) {
+			BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
+			if (bizLocationType.getId() != null) {
+				candidateSet.add(bizLocationType.getId());
+			}
+		}
+
+		return candidateSet;
 	}
 }
