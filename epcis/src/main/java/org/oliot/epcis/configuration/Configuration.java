@@ -37,6 +37,7 @@ public class Configuration implements ServletContextListener {
 	public static String webInfoPath;
 	public static boolean isCaptureVerfificationOn;
 	public static boolean isServiceRegistryReportOn;
+	public static String onsAddress;
 	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -125,6 +126,15 @@ public class Configuration implements ServletContextListener {
 			} else {
 				Configuration.logger
 				.error("service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
+			
+			// Set up ons_address
+			String ons_address = json.getString("ons_address");
+			if(ons_address == null){
+				Configuration.logger
+				.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
+			} else {
+				Configuration.onsAddress = ons_address;
 			}
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());

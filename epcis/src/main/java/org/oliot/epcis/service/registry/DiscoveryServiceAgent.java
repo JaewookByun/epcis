@@ -96,6 +96,7 @@ public class DiscoveryServiceAgent {
 
 	private HashSet<String> getDiscoveryServiceURL(String gtin) {
 		// TODO: gtin을 ONS에 물어봐서 해당하는 DS주소 해시셋에 넣어서 돌려준다
+		// TODO: Configuration.onsAddress 는 시작시 설정가능한 ons 주소를 갖고 있으므로 이용바람
 		HashSet<String> dsURLSet = new HashSet<String>();
 		// TODO: Some Logic
 		return dsURLSet;
