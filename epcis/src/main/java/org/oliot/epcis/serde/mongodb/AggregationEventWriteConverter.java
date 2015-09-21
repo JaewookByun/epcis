@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -134,7 +135,10 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 
 		if (Configuration.isServiceRegistryReportOn == true) {
 			HashSet<String> candidateSet = getCandidateEPCSet(aggregationEventType);
-			// TODO:
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger
+			.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}
@@ -154,21 +158,6 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 				candidateSet.add(epcList.get(i).getValue());
 			}
 		}
-		// ReadPoint
-		if (aggregationEventType.getReadPoint() != null) {
-			ReadPointType readPointType = aggregationEventType.getReadPoint();
-			if (readPointType.getId() != null) {
-				candidateSet.add(readPointType.getId());
-			}
-		}
-		// BizLocation
-		if (aggregationEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
-			if (bizLocationType.getId() != null) {
-				candidateSet.add(bizLocationType.getId());
-			}
-		}
-
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
@@ -182,7 +171,6 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 				}
 			}
 		}
-
 		return candidateSet;
 	}
 }

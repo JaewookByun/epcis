@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -185,7 +186,9 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 
 		if (Configuration.isServiceRegistryReportOn == true) {
 			HashSet<String> candidateSet = getCandidateEPCSet(transformationEventType);
-			// TODO:
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}
@@ -236,22 +239,6 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 				}
 			}
 		}
-
-		// ReadPoint
-		if (transformationEventType.getReadPoint() != null) {
-			ReadPointType readPointType = transformationEventType.getReadPoint();
-			if (readPointType.getId() != null) {
-				candidateSet.add(readPointType.getId());
-			}
-		}
-		// BizLocation
-		if (transformationEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-			if (bizLocationType.getId() != null) {
-				candidateSet.add(bizLocationType.getId());
-			}
-		}
-
 		return candidateSet;
 	}
 }
