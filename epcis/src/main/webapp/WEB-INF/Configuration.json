@@ -4,4 +4,7 @@
 	
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "on",
+	
+	"_service_registry_report" : "(on|off)",
+	"service_registry_report" : "on"
 }
