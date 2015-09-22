@@ -4,4 +4,10 @@
 	
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "on",
+	
+	"_service_registry_report" : "(on|off)",
+	"service_registry_report" : "on",
+	
+	"_ONS_Address" : "Some IP and Port",
+	"ons_address" : "143.248.1.177"
 }

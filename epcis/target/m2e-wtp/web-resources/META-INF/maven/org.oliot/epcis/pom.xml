@@ -51,7 +51,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.12.3</version>
+			<version>3.0.4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-mongodb</artifactId>
-			<version>1.5.2.RELEASE</version>
+			<version>1.8.0.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
@@ -129,6 +129,12 @@
 			<version>2.7.11</version>
 		</dependency>
 
+		<!-- Koloboke for Big collection -->
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>koloboke-impl-jdk6-7</artifactId>
+			<version>0.6.7</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>epcis</finalName>
