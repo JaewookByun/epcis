@@ -2,9 +2,12 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -15,6 +18,8 @@ import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
+import org.oliot.model.epcis.QuantityElementType;
+import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.WritingConverter;
@@ -45,27 +50,22 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 @Component
 @WritingConverter
-public class ObjectEventWriteConverter implements
-		Converter<ObjectEventType, DBObject> {
+public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBObject> {
 
 	public DBObject convert(ObjectEventType objectEventType) {
-
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (objectEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = objectEventType
-					.getBaseExtension();
+			EPCISEventExtensionType baseExtensionType = objectEventType.getBaseExtension();
 			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (objectEventType.getEventTime() != null)
-			dbo.put("eventTime", objectEventType.getEventTime()
-					.toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime", objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (objectEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset",
-					objectEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", objectEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
@@ -100,17 +100,14 @@ public class ObjectEventWriteConverter implements
 		}
 		// BizLocation
 		if (objectEventType.getBizLocation() != null) {
-			BusinessLocationType bizLocationType = objectEventType
-					.getBizLocation();
+			BusinessLocationType bizLocationType = objectEventType.getBizLocation();
 			DBObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
 		if (objectEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = objectEventType
-					.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType
-					.getBizTransaction();
+			BusinessTransactionListType bizListType = objectEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
@@ -139,6 +136,41 @@ public class ObjectEventWriteConverter implements
 			DBObject extension = getObjectEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
+
+		if (Configuration.isServiceRegistryReportOn == true) {
+			HashSet<String> candidateSet = getCandidateEPCSet(objectEventType);
+			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
+			int updatedEPCCount = dsa.registerEPC(candidateSet);
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
+		}
 		return dbo;
+	}
+
+	private HashSet<String> getCandidateEPCSet(ObjectEventType objectEventType) {
+		HashSet<String> candidateSet = new HashSet<String>();
+
+		// EPCList
+		if (objectEventType.getEpcList() != null) {
+			EPCListType epcs = objectEventType.getEpcList();
+			List<EPC> epcList = epcs.getEpc();
+			for (int i = 0; i < epcList.size(); i++) {
+				candidateSet.add(epcList.get(i).getValue());
+			}
+		}
+		// Extension
+		if (objectEventType.getExtension() != null) {
+			ObjectEventExtensionType oee = objectEventType.getExtension();
+			if (oee.getQuantityList() != null) {
+				QuantityListType qetl = oee.getQuantityList();
+				List<QuantityElementType> qetList = qetl.getQuantityElement();
+				for (int i = 0; i < qetList.size(); i++) {
+					QuantityElementType qet = qetList.get(i);
+					if (qet.getEpcClass() != null)
+						candidateSet.add(qet.getEpcClass().toString());
+				}
+			}
+		}
+
+		return candidateSet;
 	}
 }

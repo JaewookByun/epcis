@@ -12,7 +12,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
-
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
  *
@@ -37,7 +36,9 @@ public class Configuration implements ServletContextListener {
 	public static Logger logger;
 	public static String webInfoPath;
 	public static boolean isCaptureVerfificationOn;
-
+	public static boolean isServiceRegistryReportOn;
+	public static String onsAddress;
+	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 
@@ -107,10 +108,37 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger
 						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
+			
+			// Set up service_registry_report
+			String serviceRegistryReport = json.getString("service_registry_report");
+			if (serviceRegistryReport == null){
+				Configuration.logger
+				.error("service_registry_report is null, please make sure Configuration.json is correct, and restart.");
+			}
+			serviceRegistryReport = serviceRegistryReport.trim();
+			if (serviceRegistryReport.equals("on")){
+				Configuration.isServiceRegistryReportOn = true;
+				Configuration.logger.info("Service_Registry_Report - ON");
+				
+			} else if (serviceRegistryReport.equals("off")){
+				Configuration.isServiceRegistryReportOn = false;
+				Configuration.logger.info("Service_Registry_Report - OFF");
+			} else {
+				Configuration.logger
+				.error("service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
+			
+			// Set up ons_address
+			String ons_address = json.getString("ons_address");
+			if(ons_address == null){
+				Configuration.logger
+				.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
+			} else {
+				Configuration.onsAddress = ons_address;
+			}
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
-
 	}
 
 	private void loadExistingSubscription() {
