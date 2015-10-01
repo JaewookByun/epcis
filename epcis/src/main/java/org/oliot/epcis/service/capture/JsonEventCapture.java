@@ -1,16 +1,9 @@
 package org.oliot.epcis.service.capture;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletInputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,13 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchema;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
 /**
  * Copyright (C) 2015 Jaewook Jack Byun
@@ -97,7 +83,7 @@ public class JsonEventCapture implements ServletContextAware {
 				JSONObject json = new JSONObject(inputString);
 				JSONObject schema_json = schemaloader.getGeneralschema();
 
-				if (!validate(json, schema_json)) {
+				if (!CaptureUtil.validate(json, schema_json)) {
 					Configuration.logger.info("Json Document is invalid" + " about general_validcheck");
 					((AbstractApplicationContext) ctx).close();
 					return "Error: Json Document is not valid" + "general_validcheck";
@@ -114,7 +100,8 @@ public class JsonEventCapture implements ServletContextAware {
 
 						JSONObject objecteventschema_json = schemaloader.getObjectEventschema();
 
-						if (!validate(json4.getJSONObject(i).getJSONObject("ObjectEvent"), objecteventschema_json)) {
+						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("ObjectEvent"),
+								objecteventschema_json)) {
 
 							Configuration.logger
 									.info("Json Document is not valid" + " detail validation check for objectevent");
@@ -216,7 +203,7 @@ public class JsonEventCapture implements ServletContextAware {
 						 */
 						JSONObject aggregationeventschema_json = schemaloader.getAggregationEventschema();
 
-						if (!validate(json4.getJSONObject(i).getJSONObject("AggregationEvent"),
+						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("AggregationEvent"),
 								aggregationeventschema_json)) {
 
 							Configuration.logger.info(
@@ -322,7 +309,7 @@ public class JsonEventCapture implements ServletContextAware {
 						 */
 						JSONObject tranformationeventschema_json = schemaloader.getTransformationEventschema();
 
-						if (!validate(json4.getJSONObject(i).getJSONObject("TransformationEvent"),
+						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("TransformationEvent"),
 								tranformationeventschema_json)) {
 
 							Configuration.logger.info(
@@ -428,7 +415,7 @@ public class JsonEventCapture implements ServletContextAware {
 						 */
 						JSONObject transactioneventschema_json = schemaloader.getTransactionEventschema();
 
-						if (!validate(json4.getJSONObject(i).getJSONObject("TransactionEvent"),
+						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("TransactionEvent"),
 								transactioneventschema_json)) {
 
 							Configuration.logger.info(
@@ -581,46 +568,8 @@ public class JsonEventCapture implements ServletContextAware {
 					}
 				}
 			}
-
 			((AbstractApplicationContext) ctx).close();
-
 			return "EPCIS Document : Captured ";
 		}
 	}
-
-	static InputStream getXMLDocumentInputStream(String xmlString) {
-		InputStream stream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
-		return stream;
-	}
-
-	public static String getDataFromInputStream(ServletInputStream is) throws IOException {
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(is, writer, "UTF-8");
-		String data = writer.toString();
-		return data;
-	}
-
-	private static boolean validate(JSONObject Json, JSONObject schema_obj) {
-		try {
-
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode input_node = mapper.readTree(Json.toString());
-			JsonNode schema_node = mapper.readTree(schema_obj.toString());
-
-			final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-			final JsonSchema schema = factory.getJsonSchema(schema_node);
-			ProcessingReport report;
-			report = schema.validate(input_node);
-			Configuration.logger.info("validation process report : " + report);
-			return report.isSuccess();
-
-		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return false;
-		} catch (ProcessingException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return false;
-		}
-	}
-
 }

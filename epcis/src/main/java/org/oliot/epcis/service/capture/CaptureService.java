@@ -58,7 +58,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -98,7 +98,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -114,7 +114,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -130,7 +130,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -155,7 +155,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -169,7 +169,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -228,13 +228,7 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	public boolean isCorrectTimeZone(String timeZone) {
-
-		boolean isMatch = timeZone
-				.matches("^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$");
-
-		return isMatch;
-	}
+	
 
 	@Override
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
