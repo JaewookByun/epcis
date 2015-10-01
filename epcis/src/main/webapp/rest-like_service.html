@@ -42,23 +42,29 @@
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">This service allows you to
-									store your EPCIS Document into your backend storage (e.g. Mongo
-									DB)</li>
+									store your EPCIS Document into your backend storage</li>
 								<li class="list-group-item">Method: post</li>
 								<li class="list-group-item">Contents: raw-xml-text,
 									complying with <a
 									href="http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-schema-20140520/EPCglobal-epcis-1_1.xsd">EPCIS
 										v1.1 XML Schema</a>
 								</li>
-								<li class="list-group-item">Example URL: <br>
-									(Synchronous) http://{base-url}:{base-port}/epcis/Service/EventCapture <br> (Asynchronous) http://{base-url}:{base-port}/epcis/EventCapture  </li>
+								<li class="list-group-item">Example URL: <br> <code>Synchronous</code>
+									http://{base-url}:{base-port}/epcis/Service/EventCapture <br>
+									<code>Asynchronous</code>
+									http://{base-url}:{base-port}/epcis/EventCapture
+								</li>
 								<li class="list-group-item">Example EPCIS Document: <br>
-								<a href="./exampleXML/gs1example1(Object).xml">gs1example1(Object)</a><br>
+									<a href="./exampleXML/gs1example1(Object).xml">gs1example1(Object)</a><br>
 									<a href="./exampleXML/gs1example2(Object).xml">gs1example2(Object)</a><br>
 									<a href="./exampleXML/gs1example3(Aggregation).xml">gs1example3(Aggregation)</a><br>
 									<a href="./exampleXML/gs1example4(Transformation).xml">gs1example4(Transformation)</a><br>
 									<a href="./exampleXML/otherExample1(Quantity).xml">otherExample1(Quantity)</a><br>
-									<a href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a>
+									<a href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a><br>
+									<a href="./exampleXML/gs1Railexample1.xml">GS1 EPCIS for Rail standard example 1 <code>NEW</code></a><br>
+									<a href="./exampleXML/gs1Railexample2.xml">GS1 EPCIS for Rail standard example 2 <code>NEW</code></a><br>
+									<a href="./exampleXML/gs1Railexample3.xml">GS1 EPCIS for Rail standard example 3 <code>NEW</code></a>
+
 								</li>
 							</ul>
 						</td>
@@ -68,15 +74,17 @@
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">This service allows you to
-									store your Json Format EPCIS Document into your backend storage(e.g. Mongo
-									DB)</li>
+									store your Json Format EPCIS Document into your backend storage</li>
 								<li class="list-group-item">Method: post</li>
-								<li class="list-group-item">Contents: Json Object
+								<li class="list-group-item">Contents: Json Object</li>
+								<li class="list-group-item">Example URL: <br> <code>Synchronous</code>
+									http://{base-url}:{base-port}/epcis/Service/JsonEventCapture <br>
+									<code>Asynchronous</code>
+									http://{base-url}:{base-port}/epcis/JsonEventCapture
 								</li>
-								<li class="list-group-item">Example URL: <br>
-									(Synchronous) http://{base-url}:{base-port}/epcis/Service/JsonEventCapture <br> (Asynchronous) http://{base-url}:{base-port}/epcis/JsonEventCapture  </li>
-								<li class="list-group-item">Example EPCIS Document in Json format: <br>
-								<a href="./exampleJson/gs1example1Json(Object).json">gs1example1(Object)</a><br>
+								<li class="list-group-item">Example EPCIS Document in Json
+									format: <br> <a
+									href="./exampleJson/gs1example1Json(Object).json">gs1example1(Object)</a><br>
 									<a href="./exampleJson/gs1example2Json(Object).json">gs1example2(Object)</a><br>
 									<a href="./exampleJson/gs1example3Json(Aggregation).json">gs1example3(Aggregation)</a><br>
 									<a href="./exampleJson/gs1example4Json(Transformation).json">gs1example4(Transformation)</a><br>
@@ -91,15 +99,18 @@
 							<ul class="list-group">
 								<li class="list-group-item">This service allows you to
 									store your EPCIS Master Data Document into your backend storage
-									(e.g. Mongo DB)</li>
+								</li>
 								<li class="list-group-item">Method: post</li>
 								<li class="list-group-item">Contents: raw-xml-text,
 									complying with <a
 									href="http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-schema-20140520/EPCglobal-epcis-1_1.xsd">EPCIS
 										v1.1 XML Schema</a>
 								</li>
-								<li class="list-group-item">Example URL: <br>
-									(Synchronous) http://{base-url}:{base-port}/epcis/Service/VocabularyCapture <br> (Asynchronous) http://{base-url}:{base-port}/epcis/VocabularyCapture  </li>
+								<li class="list-group-item">Example URL: <br> <code>Synchronous</code>
+									http://{base-url}:{base-port}/epcis/Service/VocabularyCapture <br>
+									<code>Asynchronous</code>
+									http://{base-url}:{base-port}/epcis/VocabularyCapture
+								</li>
 								<li class="list-group-item">Example EPCIS Master Data
 									Document: <a href="./exampleXML/EPCISMasterDataDocument.xml">Example
 										of EPCIS Master Data Document</a>
@@ -217,7 +228,8 @@
 									list of names <br> (EQ|WD)_name : Comma separated
 									attribute names <br> HASATTR : Comma separated attribute
 									names <br> maxElementCount : yield error if # of events
-									exceeds specified number <br> format (NEW) : (XML|JSON) formatted Output
+									exceeds specified number <br> format : (XML|JSON)
+									formatted Output <code>NEW</code>
 								</li>
 								<li class="list-group-item"><a
 									href="./rest-like-query-examples.html">SimpleEventQuery
@@ -252,9 +264,9 @@
 								<li class="list-group-item">Additional Parameters: <br>
 									dest : Callback URL <br> cronExpression : <a
 									href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
-										CronTrigger Tutorial</a> <br> reportIfEmpty : do not receive
-									events if empty (true|false) <br> ignoreReceivedEvent
-									(NEW) : do not receive received events (true|false)
+										CronTrigger Tutorial</a> <code>NEW</code> <br> reportIfEmpty : do not receive
+									events if empty (true|false) <br> ignoreReceivedEvent : do
+									not receive received events (true|false) <code>NEW</code>
 								</li>
 								<li class="list-group-item">[Example] <br>
 									MATCH_epc=urn:epc:id:sgtin:1.1.1 <br> cronExpression=0/10

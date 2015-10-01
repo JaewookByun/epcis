@@ -35,6 +35,7 @@ public class Configuration implements ServletContextListener {
 	public static String backend;
 	public static Logger logger;
 	public static String webInfoPath;
+	public static String wsdlPath;
 	public static boolean isCaptureVerfificationOn;
 	public static boolean isServiceRegistryReportOn;
 	public static String onsAddress;
@@ -90,7 +91,8 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.info("Backend - " + Configuration.backend);
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
-
+			Configuration.wsdlPath = context.getRealPath("/wsdl");
+			
 			// Set up capture_verification
 			String captureVerification = json.getString("capture_verification");
 			if (captureVerification == null) {

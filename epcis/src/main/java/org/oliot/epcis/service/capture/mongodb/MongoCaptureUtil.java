@@ -135,7 +135,4 @@ public class MongoCaptureUtil {
 		collection.save(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
-
-	// JsonObject Eventcapture series..
-
 }
