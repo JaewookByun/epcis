@@ -16,6 +16,8 @@ import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -122,7 +124,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String eventCountLimit,
 			@RequestParam(required = false) String maxEventCount,
 			@RequestParam(required = false) String format,
-			Map<String, String> params) {
+			@RequestParam Map<String, String> params) {
 
 		if (initialRecordTime == null) {
 			GregorianCalendar cal = new GregorianCalendar();
@@ -167,17 +169,18 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * subscriptionID.
 	 */
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
-	public void unsubscribe(@PathVariable String subscriptionID) {
+	public ResponseEntity<?> unsubscribe(@PathVariable String subscriptionID) {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			mongoQueryService.unsubscribe(subscriptionID);
+			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"), HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
 
 		}
-
+		return new ResponseEntity<>(new String("Set up Backend correctly"), HttpStatus.BAD_REQUEST);
 	}
 
 	/**
@@ -319,8 +322,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetStandardVersion", method = RequestMethod.GET)
 	@ResponseBody
-	public String getStandardVersion() {
-		return "1.1";
+	public ResponseEntity<?> getStandardVersion() {
+		return new ResponseEntity<>(new String("1.1"), HttpStatus.OK);
 	}
 
 	/**
