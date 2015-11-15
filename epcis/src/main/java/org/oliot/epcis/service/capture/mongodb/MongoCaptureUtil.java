@@ -2,6 +2,7 @@ package org.oliot.epcis.service.capture.mongodb;
 
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.serde.mongodb.ObjectEventWriteConverter;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
@@ -50,6 +51,20 @@ public class MongoCaptureUtil {
 		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 		mongoOperation.save(event);
+		Configuration.logger.info(" Event Saved ");
+		((AbstractApplicationContext) ctx).close();
+	}
+	
+	public void securedCapture(ObjectEventType event, String fid, String accessModifier) {
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+		
+		// Get Object Event Write Converter
+		ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
+		DBObject object2Save = wc.convert(event);
+		object2Save.put("fid", fid);
+		object2Save.put("accessModifier", accessModifier);
+		mongoOperation.save(object2Save, "ObjectEvent");
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
 	}

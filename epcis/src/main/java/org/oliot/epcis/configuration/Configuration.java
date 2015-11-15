@@ -12,6 +12,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
+
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
  *
@@ -39,7 +40,8 @@ public class Configuration implements ServletContextListener {
 	public static boolean isCaptureVerfificationOn;
 	public static boolean isServiceRegistryReportOn;
 	public static String onsAddress;
-	
+	public static boolean isQueryAccessControlOn;
+
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 
@@ -92,12 +94,12 @@ public class Configuration implements ServletContextListener {
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
 			Configuration.wsdlPath = context.getRealPath("/wsdl");
-			
+
 			// Set up capture_verification
 			String captureVerification = json.getString("capture_verification");
 			if (captureVerification == null) {
-				Configuration.logger
-						.error("capture_verification is null, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"capture_verification is null, please make sure Configuration.json is correct, and restart.");
 			}
 			captureVerification = captureVerification.trim();
 			if (captureVerification.equals("on")) {
@@ -107,37 +109,57 @@ public class Configuration implements ServletContextListener {
 				Configuration.isCaptureVerfificationOn = false;
 				Configuration.logger.info("Capture_Verification - OFF ");
 			} else {
-				Configuration.logger
-						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
-			
+
 			// Set up service_registry_report
 			String serviceRegistryReport = json.getString("service_registry_report");
-			if (serviceRegistryReport == null){
-				Configuration.logger
-				.error("service_registry_report is null, please make sure Configuration.json is correct, and restart.");
+			if (serviceRegistryReport == null) {
+				Configuration.logger.error(
+						"service_registry_report is null, please make sure Configuration.json is correct, and restart.");
 			}
 			serviceRegistryReport = serviceRegistryReport.trim();
-			if (serviceRegistryReport.equals("on")){
+			if (serviceRegistryReport.equals("on")) {
 				Configuration.isServiceRegistryReportOn = true;
 				Configuration.logger.info("Service_Registry_Report - ON");
-				
-			} else if (serviceRegistryReport.equals("off")){
+
+			} else if (serviceRegistryReport.equals("off")) {
 				Configuration.isServiceRegistryReportOn = false;
 				Configuration.logger.info("Service_Registry_Report - OFF");
 			} else {
-				Configuration.logger
-				.error("service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
-			
+
 			// Set up ons_address
 			String ons_address = json.getString("ons_address");
-			if(ons_address == null){
+			if (ons_address == null) {
 				Configuration.logger
-				.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
+						.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
 			} else {
 				Configuration.onsAddress = ons_address;
 			}
+
+			// Query Access Control
+			// Set up capture_verification
+			String queryAC = json.getString("query_access_control");
+			if (queryAC == null) {
+				Configuration.logger.error(
+						"query_access_control, please make sure Configuration.json is correct, and restart.");
+			}
+			queryAC = queryAC.trim();
+			if (queryAC.equals("on")) {
+				Configuration.isQueryAccessControlOn = true;
+				Configuration.logger.info("Query_AccessControl - ON ");
+			} else if (captureVerification.equals("off")) {
+				Configuration.isQueryAccessControlOn = false;
+				Configuration.logger.info("Query_AccessControl - OFF ");
+			} else {
+				Configuration.logger.error(
+						"query_access_control should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
+
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
