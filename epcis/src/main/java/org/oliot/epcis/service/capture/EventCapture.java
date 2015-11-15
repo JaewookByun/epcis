@@ -5,6 +5,7 @@ import java.io.InputStream;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
+import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.DocumentIdentification;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
@@ -50,13 +52,30 @@ public class EventCapture implements ServletContextAware {
 	}
 
 	public ResponseEntity<?> asyncPost(String inputString) {
-		ResponseEntity<?> result = post(inputString);
+		ResponseEntity<?> result = post(inputString, null, null, null);
 		return result;
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString) {
+	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String fid,
+			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessModifier) {
+
+		// Request a protection on events
+		if (fid != null) {
+			// Check accessToken
+			if (!OAuthUtil.isValidated(accessToken, fid)) {
+				return new ResponseEntity<>(new String("Invalid AccessToken"), HttpStatus.BAD_REQUEST);
+			}
+			if (accessModifier == null) {
+				return new ResponseEntity<>(new String("Need AccessModifier (Private,Friend)"), HttpStatus.BAD_REQUEST);
+			}
+			accessModifier = accessModifier.trim();
+			if (!accessModifier.equals("Private") && !accessModifier.equals("Friend")) {
+				return new ResponseEntity<>(new String("Need AccessModifier (Private,Friend)"), HttpStatus.BAD_REQUEST);
+			}
+		}
+
 		Configuration.logger.info(" EPCIS Document Capture Started.... ");
 
 		if (Configuration.isCaptureVerfificationOn == true) {
@@ -122,8 +141,14 @@ public class EventCapture implements ServletContextAware {
 			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisDocument);
-			Configuration.logger.info(" EPCIS Document : Captured ");
+			// No Access Control
+			if (fid == null) {
+				cs.capture(epcisDocument);
+				Configuration.logger.info(" EPCIS Document : Captured ");
+			}else{
+				cs.securedCapture(epcisDocument, fid, accessModifier);
+				Configuration.logger.info(" EPCIS Document : Captured ");
+			}
 		}
 		return new ResponseEntity<>(new String("EPCIS Document : Captured "), HttpStatus.OK);
 	}
