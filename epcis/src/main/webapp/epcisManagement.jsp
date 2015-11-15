@@ -175,7 +175,6 @@
 			<h3 class="panel-title">EPCIS Access Control Management Tool</h3>
 		</div>
 		<div class="panel-body">
-
 			<fb:login-button
 				data-scope="public_profile,user_friends,user_about_me,user_events,user_likes,user_location,user_posts,user_relationships,user_relationship_details,email"
 				onlogin="checkLoginState();" auto_logout_link="true">
@@ -199,6 +198,5 @@
 			</div>
 		</div>
 	</div>
-
 </body>
 </html>
