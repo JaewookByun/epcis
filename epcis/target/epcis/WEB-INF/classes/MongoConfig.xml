@@ -50,6 +50,9 @@
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.MasterDataReadConverter" />
 			</mongo:converter>
+			<mongo:converter>
+				<bean class="org.oliot.epcis.serde.mongodb.SubscriptionReadConverter" />
+			</mongo:converter>	
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
 

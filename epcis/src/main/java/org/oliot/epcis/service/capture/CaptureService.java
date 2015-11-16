@@ -58,7 +58,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -98,7 +98,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -108,13 +108,29 @@ public class CaptureService implements CoreCaptureService {
 			m.capture(event);
 		}
 	}
+	
+	public void securedCapture(ObjectEventType event, String fid, String accessModifier) {
+
+		// General Exception Handling
+		// M7
+		String timeZone = event.getEventTimeZoneOffset();
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
+			Configuration.logger.error("Req. M7 Error");
+			return;
+		}
+
+		if (Configuration.backend.equals("MongoDB")) {
+			MongoCaptureUtil m = new MongoCaptureUtil();
+			m.securedCapture(event, fid, accessModifier);
+		}
+	}
 
 	public void capture(QuantityEventType event) {
 
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -130,7 +146,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -155,7 +171,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -169,7 +185,7 @@ public class CaptureService implements CoreCaptureService {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
-		if (!isCorrectTimeZone(timeZone)) {
+		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
 			Configuration.logger.error("Req. M7 Error");
 			return;
 		}
@@ -227,14 +243,49 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 	}
+	
+	@SuppressWarnings("rawtypes")
+	public void securedCapture(EPCISDocumentType epcisDocument, String fid, String accessModifier) {
+		if (epcisDocument.getEPCISBody() == null) {
+			Configuration.logger.info(" There is no DocumentBody ");
+			return;
+		}
+		if (epcisDocument.getEPCISBody().getEventList() == null) {
+			Configuration.logger.info(" There is no EventList ");
+			return;
+		}
+		EventListType eventListType = epcisDocument.getEPCISBody()
+				.getEventList();
+		List<Object> eventList = eventListType
+				.getObjectEventOrAggregationEventOrQuantityEvent();
 
-	public boolean isCorrectTimeZone(String timeZone) {
+		/*
+		 * JAXBElement<EPCISEventListExtensionType>
+		 * JAXBElement<TransactionEventType> Object
+		 * JAXBElement<QuantityEventType> JAXBElement<ObjectEventType>
+		 * JAXBElement<AggregationEventType> Element
+		 */
 
-		boolean isMatch = timeZone
-				.matches("^(?:Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])$");
-
-		return isMatch;
+		for (int i = 0; i < eventList.size(); i++) {
+			JAXBElement eventElement = (JAXBElement) eventList.get(i);
+			Object event = eventElement.getValue();
+			if (event instanceof ObjectEventType) {
+				securedCapture((ObjectEventType) event, fid, accessModifier);
+			} else if (event instanceof AggregationEventType) {
+				capture((AggregationEventType) event);
+			} else if (event instanceof TransactionEventType) {
+				capture((TransactionEventType) event);
+			} else if (event instanceof TransformationEventType) {
+				capture((TransformationEventType) event);
+			} else if (event instanceof QuantityEventType) {
+				capture((QuantityEventType) event);
+			} else if (event instanceof SensorEventType) {
+				capture((SensorEventType) event);
+			}
+		}
 	}
+
+	
 
 	@Override
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
