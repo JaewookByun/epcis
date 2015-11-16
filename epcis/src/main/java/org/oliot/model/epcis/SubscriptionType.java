@@ -13,33 +13,6 @@ public class SubscriptionType {
 	private boolean ignoreReceivedEvent;
 	private boolean reportIfEmpty;
 	private String initialRecordTime;
-
-	public boolean isIgnoreReceivedEvent() {
-		return ignoreReceivedEvent;
-	}
-
-	public void setIgnoreReceivedEvent(boolean ignoreReceivedEvent) {
-		this.ignoreReceivedEvent = ignoreReceivedEvent;
-	}
-
-	public String getInitialRecordTime() {
-		return initialRecordTime;
-	}
-
-	public void setInitialRecordTime(String initialRecordTime) {
-		this.initialRecordTime = initialRecordTime;
-	}
-
-	private String eventType;
-
-	public boolean isReportIfEmpty() {
-		return reportIfEmpty;
-	}
-
-	public void setReportIfEmpty(boolean reportIfEmpty) {
-		this.reportIfEmpty = reportIfEmpty;
-	}
-
 	private String GE_eventTime;
 	private String LT_eventTime;
 	private String GE_recordTime;
@@ -73,12 +46,7 @@ public class SubscriptionType {
 	private String format;
 	private Map<String, String> paramMap;
 
-	public Map<String, String> getParamMap() {
-		return paramMap;
-	}
-
-	public void setParamMap(Map<String, String> paramMap) {
-		this.paramMap = paramMap;
+	public SubscriptionType() {
 	}
 
 	public SubscriptionType(String queryName, String subscriptionID, String dest, String cronExpression,
@@ -125,6 +93,40 @@ public class SubscriptionType {
 		this.eventCountLimit = eventCountLimit;
 		this.maxEventCount = maxEventCount;
 		this.format = format;
+		this.paramMap = paramMap;
+	}
+
+	public boolean isIgnoreReceivedEvent() {
+		return ignoreReceivedEvent;
+	}
+
+	public void setIgnoreReceivedEvent(boolean ignoreReceivedEvent) {
+		this.ignoreReceivedEvent = ignoreReceivedEvent;
+	}
+
+	public String getInitialRecordTime() {
+		return initialRecordTime;
+	}
+
+	public void setInitialRecordTime(String initialRecordTime) {
+		this.initialRecordTime = initialRecordTime;
+	}
+
+	private String eventType;
+
+	public boolean isReportIfEmpty() {
+		return reportIfEmpty;
+	}
+
+	public void setReportIfEmpty(boolean reportIfEmpty) {
+		this.reportIfEmpty = reportIfEmpty;
+	}
+
+	public Map<String, String> getParamMap() {
+		return paramMap;
+	}
+
+	public void setParamMap(Map<String, String> paramMap) {
 		this.paramMap = paramMap;
 	}
 

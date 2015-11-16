@@ -38,6 +38,7 @@ import org.apache.log4j.Level;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.serde.mongodb.AggregationEventReadConverter;
 import org.oliot.epcis.serde.mongodb.MasterDataReadConverter;
 import org.oliot.epcis.serde.mongodb.ObjectEventReadConverter;
@@ -93,6 +94,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.restfb.FacebookClient;
 
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
@@ -176,7 +178,8 @@ public class MongoQueryService {
 			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
 			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
-			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
+			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -435,7 +438,8 @@ public class MongoQueryService {
 			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
 			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
-			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
+			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			Map<String, String> paramMap) {
 
 		// M20 : Throw an InvalidURIException for an incorrect dest argument in
 		// the subscribe method in EPCIS Query Control Interface
@@ -1019,7 +1023,7 @@ public class MongoQueryService {
 						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
 					}
 				} else {
-					if( retArray.length() > maxElement ){
+					if (retArray.length() > maxElement) {
 						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
 					}
 				}
@@ -1276,7 +1280,19 @@ public class MongoQueryService {
 			if (LT_recordTime != null)
 				sdf.parse(LT_recordTime);
 		} catch (ParseException e) {
-			return makeErrorResult(e.toString(), QueryParameterException.class);
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				if (GE_eventTime != null)
+					sdf.parse(GE_eventTime);
+				if (LT_eventTime != null)
+					sdf.parse(LT_eventTime);
+				if (GE_recordTime != null)
+					sdf.parse(GE_recordTime);
+				if (LT_recordTime != null)
+					sdf.parse(LT_recordTime);
+			} catch (ParseException e1) {
+				return makeErrorResult(e.toString(), QueryParameterException.class);
+			}
 		}
 
 		// M27
@@ -1486,7 +1502,8 @@ public class MongoQueryService {
 			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
 			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
-			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
+			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			Map<String, String> paramMap) {
 		try {
 			JobDataMap map = new JobDataMap();
 			map.put("queryName", queryName);
@@ -1594,7 +1611,8 @@ public class MongoQueryService {
 			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
 			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
 			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
-			String orderDirection, String eventCountLimit, String maxEventCount, String format, Map<String, String> paramMap) {
+			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			Map<String, String> paramMap) {
 
 		SubscriptionType st = new SubscriptionType(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent,
 				reportIfEmpty, initialRecordTime, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
@@ -1783,632 +1801,602 @@ public class MongoQueryService {
 			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
 			String eventCountLimit, String maxEventCount, Map<String, String> paramMap) {
 		List<DBObject> queryList = new ArrayList<DBObject>();
-		try {
-			/**
-			 * GE_eventTime: If specified, only events with eventTime greater
-			 * than or equal to the specified value will be included in the
-			 * result. If omitted, events are included regardless of their
-			 * eventTime (unless constrained by the LT_eventTime parameter).
-			 * Example: 2014-08-11T19:57:59.717+09:00 SimpleDateFormat sdf = new
-			 * SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			 * eventTime.setTime(sdf.parse(timeString)); e.g.
-			 * 1988-07-04T12:08:56.235-07:00
-			 * 
-			 * Verified
-			 */
-			if (GE_eventTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-				GregorianCalendar geEventTimeCalendar = new GregorianCalendar();
-				geEventTimeCalendar.setTime(sdf.parse(GE_eventTime));
-				long geEventTimeMillis = geEventTimeCalendar.getTimeInMillis();
-				DBObject query = new BasicDBObject();
-				query.put("eventTime", new BasicDBObject("$gte", geEventTimeMillis));
+		/**
+		 * GE_eventTime: If specified, only events with eventTime greater than
+		 * or equal to the specified value will be included in the result. If
+		 * omitted, events are included regardless of their eventTime (unless
+		 * constrained by the LT_eventTime parameter). Example:
+		 * 2014-08-11T19:57:59.717+09:00 SimpleDateFormat sdf = new
+		 * SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		 * eventTime.setTime(sdf.parse(timeString)); e.g.
+		 * 1988-07-04T12:08:56.235-07:00
+		 * 
+		 * Verified
+		 */
+		if (GE_eventTime != null) {
+			long geEventTimeMillis = getTimeMillis(GE_eventTime);
+			DBObject query = new BasicDBObject();
+			query.put("eventTime", new BasicDBObject("$gte", geEventTimeMillis));
+			queryList.add(query);
+		}
+		/**
+		 * LT_eventTime: If specified, only events with eventTime less than the
+		 * specified value will be included in the result. If omitted, events
+		 * are included regardless of their eventTime (unless constrained by the
+		 * GE_eventTime parameter).
+		 * 
+		 * Verified
+		 */
+		if (LT_eventTime != null) {
+			long ltEventTimeMillis = getTimeMillis(LT_eventTime);
+			DBObject query = new BasicDBObject();
+			query.put("eventTime", new BasicDBObject("$lt", ltEventTimeMillis));
+			queryList.add(query);
+		}
+		/**
+		 * GE_recordTime: If provided, only events with recordTime greater than
+		 * or equal to the specified value will be returned. The automatic
+		 * limitation based on event record time (Section 8.2.5.2) may
+		 * implicitly provide a constraint similar to this parameter. If
+		 * omitted, events are included regardless of their recordTime, other
+		 * than automatic limitation based on event record time (Section
+		 * 8.2.5.2).
+		 * 
+		 * Verified
+		 */
+		if (GE_recordTime != null) {
+			long geRecordTimeMillis = getTimeMillis(GE_recordTime);
+			DBObject query = new BasicDBObject();
+			query.put("recordTime", new BasicDBObject("$gte", geRecordTimeMillis));
+			queryList.add(query);
+		}
+		/**
+		 * LE_recordTime: If provided, only events with recordTime less than the
+		 * specified value will be returned. If omitted, events are included
+		 * regardless of their recordTime (unless constrained by the
+		 * GE_recordTime parameter or the automatic limitation based on event
+		 * record time).
+		 * 
+		 * Verified
+		 */
+		if (LT_recordTime != null) {
+			long ltRecordTimeMillis = getTimeMillis(LT_recordTime);
+			DBObject query = new BasicDBObject();
+			query.put("recordTime", new BasicDBObject("$lt", ltRecordTimeMillis));
+			queryList.add(query);
+		}
+
+		/**
+		 * EQ_action: If specified, the result will only include events that (a)
+		 * have an action field; and where (b) the value of the action field
+		 * matches one of the specified values. The elements of the value of
+		 * this parameter each must be one of the strings ADD, OBSERVE, or
+		 * DELETE; if not, the implementation SHALL raise a
+		 * QueryParameterException. If omitted, events are included regardless
+		 * of their action field.
+		 * 
+		 * Verified
+		 */
+		if (EQ_action != null) {
+			// Constrained already checked
+			DBObject query = new BasicDBObject();
+			query.put("action", EQ_action);
+			queryList.add(query);
+		}
+		/**
+		 * EQ_bizStep: If specified, the result will only include events that
+		 * (a) have a non-null bizStep field; and where (b) the value of the
+		 * bizStep field matches one of the specified values. If this parameter
+		 * is omitted, events are returned regardless of the value of the
+		 * bizStep field or whether the bizStep field exists at all.
+		 * 
+		 * Verified
+		 */
+		if (EQ_bizStep != null) {
+			DBObject query = getINQueryObject("bizStep", EQ_bizStep);
+			if (query != null)
 				queryList.add(query);
-			}
-			/**
-			 * LT_eventTime: If specified, only events with eventTime less than
-			 * the specified value will be included in the result. If omitted,
-			 * events are included regardless of their eventTime (unless
-			 * constrained by the GE_eventTime parameter).
-			 * 
-			 * Verified
-			 */
-			if (LT_eventTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-				GregorianCalendar ltEventTimeCalendar = new GregorianCalendar();
-				Date date = sdf.parse(LT_eventTime);
-				ltEventTimeCalendar.setTime(date);
-				long ltEventTimeMillis = ltEventTimeCalendar.getTimeInMillis();
-				DBObject query = new BasicDBObject();
-				query.put("eventTime", new BasicDBObject("$lt", ltEventTimeMillis));
+		}
+		/**
+		 * EQ_disposition: Like the EQ_bizStep parameter, but for the
+		 * disposition field.
+		 * 
+		 * Verified
+		 */
+		if (EQ_disposition != null) {
+			DBObject query = getINQueryObject("disposition", EQ_disposition);
+			if (query != null)
 				queryList.add(query);
-			}
-			/**
-			 * GE_recordTime: If provided, only events with recordTime greater
-			 * than or equal to the specified value will be returned. The
-			 * automatic limitation based on event record time (Section 8.2.5.2)
-			 * may implicitly provide a constraint similar to this parameter. If
-			 * omitted, events are included regardless of their recordTime,
-			 * other than automatic limitation based on event record time
-			 * (Section 8.2.5.2).
-			 * 
-			 * Verified
-			 */
-			if (GE_recordTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-				GregorianCalendar geRecordTimeCalendar = new GregorianCalendar();
-
-				geRecordTimeCalendar.setTime(sdf.parse(GE_recordTime));
-				long geRecordTimeMillis = geRecordTimeCalendar.getTimeInMillis();
-				DBObject query = new BasicDBObject();
-				query.put("recordTime", new BasicDBObject("$gte", geRecordTimeMillis));
+		}
+		/**
+		 * EQ_readPoint: If specified, the result will only include events that
+		 * (a) have a non-null readPoint field; and where (b) the value of the
+		 * readPoint field matches one of the specified values. If this
+		 * parameter and WD_readPoint are both omitted, events are returned
+		 * regardless of the value of the readPoint field or whether the
+		 * readPoint field exists at all.
+		 */
+		if (EQ_readPoint != null) {
+			DBObject query = getINQueryObject("readPoint.id", EQ_readPoint);
+			if (query != null)
 				queryList.add(query);
-			}
-			/**
-			 * LE_recordTime: If provided, only events with recordTime less than
-			 * the specified value will be returned. If omitted, events are
-			 * included regardless of their recordTime (unless constrained by
-			 * the GE_recordTime parameter or the automatic limitation based on
-			 * event record time).
-			 * 
-			 * Verified
-			 */
-			if (LT_recordTime != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-				GregorianCalendar ltRecordTimeCalendar = new GregorianCalendar();
+		}
 
-				ltRecordTimeCalendar.setTime(sdf.parse(LT_recordTime));
-				long ltRecordTimeMillis = ltRecordTimeCalendar.getTimeInMillis();
-				DBObject query = new BasicDBObject();
-				query.put("recordTime", new BasicDBObject("$lt", ltRecordTimeMillis));
-				queryList.add(query);
-			}
+		/**
+		 * WD_readPoint: If specified, the result will only include events that
+		 * (a) have a non-null readPoint field; and where (b) the value of the
+		 * readPoint field matches one of the specified values, or is a direct
+		 * or indirect descendant of one of the specified values. The meaning of
+		 * “direct or indirect descendant” is specified by master data, as
+		 * described in Section 6.5. (WD is an abbreviation for “with
+		 * descendants.”) If this parameter and EQ_readPoint are both omitted,
+		 * events are returned regardless of the value of the readPoint field or
+		 * whether the readPoint field exists at all.
+		 */
 
-			/**
-			 * EQ_action: If specified, the result will only include events that
-			 * (a) have an action field; and where (b) the value of the action
-			 * field matches one of the specified values. The elements of the
-			 * value of this parameter each must be one of the strings ADD,
-			 * OBSERVE, or DELETE; if not, the implementation SHALL raise a
-			 * QueryParameterException. If omitted, events are included
-			 * regardless of their action field.
-			 * 
-			 * Verified
-			 */
-			if (EQ_action != null) {
-				// Constrained already checked
-				DBObject query = new BasicDBObject();
-				query.put("action", EQ_action);
-				queryList.add(query);
-			}
-			/**
-			 * EQ_bizStep: If specified, the result will only include events
-			 * that (a) have a non-null bizStep field; and where (b) the value
-			 * of the bizStep field matches one of the specified values. If this
-			 * parameter is omitted, events are returned regardless of the value
-			 * of the bizStep field or whether the bizStep field exists at all.
-			 * 
-			 * Verified
-			 */
-			if (EQ_bizStep != null) {
-				DBObject query = getINQueryObject("bizStep", EQ_bizStep);
-				if (query != null)
-					queryList.add(query);
-			}
-			/**
-			 * EQ_disposition: Like the EQ_bizStep parameter, but for the
-			 * disposition field.
-			 * 
-			 * Verified
-			 */
-			if (EQ_disposition != null) {
-				DBObject query = getINQueryObject("disposition", EQ_disposition);
-				if (query != null)
-					queryList.add(query);
-			}
-			/**
-			 * EQ_readPoint: If specified, the result will only include events
-			 * that (a) have a non-null readPoint field; and where (b) the value
-			 * of the readPoint field matches one of the specified values. If
-			 * this parameter and WD_readPoint are both omitted, events are
-			 * returned regardless of the value of the readPoint field or
-			 * whether the readPoint field exists at all.
-			 */
-			if (EQ_readPoint != null) {
-				DBObject query = getINQueryObject("readPoint.id", EQ_readPoint);
-				if (query != null)
-					queryList.add(query);
-			}
+		if (WD_readPoint != null) {
 
-			/**
-			 * WD_readPoint: If specified, the result will only include events
-			 * that (a) have a non-null readPoint field; and where (b) the value
-			 * of the readPoint field matches one of the specified values, or is
-			 * a direct or indirect descendant of one of the specified values.
-			 * The meaning of “direct or indirect descendant” is specified by
-			 * master data, as described in Section 6.5. (WD is an abbreviation
-			 * for “with descendants.”) If this parameter and EQ_readPoint are
-			 * both omitted, events are returned regardless of the value of the
-			 * readPoint field or whether the readPoint field exists at all.
-			 */
+			String[] eqArr = WD_readPoint.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				eqArr[i] = eqArr[i].trim();
+			}
+			for (int i = 0; i < eqArr.length; i++) {
+				// Invoke vocabulary query with EQ_name and includeChildren
+				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
+						null, null, null, null, null);
+				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
+				childReadPointSet.add(eqArr[i]);
 
-			if (WD_readPoint != null) {
-
-				String[] eqArr = WD_readPoint.split(",");
-				for (int i = 0; i < eqArr.length; i++) {
-					eqArr[i] = eqArr[i].trim();
+				Iterator<String> crp = childReadPointSet.iterator();
+				String csv = "";
+				while (crp.hasNext()) {
+					csv += crp.next() + ",";
 				}
-				for (int i = 0; i < eqArr.length; i++) {
-					// Invoke vocabulary query with EQ_name and includeChildren
-					String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null,
-							eqArr[i], null, null, null, null, null);
-					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
-					childReadPointSet.add(eqArr[i]);
-
-					Iterator<String> crp = childReadPointSet.iterator();
-					String csv = "";
-					while (crp.hasNext()) {
-						csv += crp.next() + ",";
-					}
-					if (!csv.equals("")) {
-						csv.substring(0, csv.length() - 1);
-					}
-					DBObject query = getINQueryObject("readPoint.id", csv);
-					if (query != null)
-						queryList.add(query);
+				if (!csv.equals("")) {
+					csv.substring(0, csv.length() - 1);
 				}
-			}
-			/**
-			 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
-			 * bizLocation field.
-			 */
-			if (EQ_bizLocation != null) {
-				DBObject query = getINQueryObject("bizLocation.id", EQ_bizLocation);
+				DBObject query = getINQueryObject("readPoint.id", csv);
 				if (query != null)
 					queryList.add(query);
 			}
-			/**
-			 * WD_bizLocation: Like the WD_readPoint parameter, but for the
-			 * bizLocation field.
-			 */
-			if (WD_bizLocation != null) {
+		}
+		/**
+		 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
+		 * bizLocation field.
+		 */
+		if (EQ_bizLocation != null) {
+			DBObject query = getINQueryObject("bizLocation.id", EQ_bizLocation);
+			if (query != null)
+				queryList.add(query);
+		}
+		/**
+		 * WD_bizLocation: Like the WD_readPoint parameter, but for the
+		 * bizLocation field.
+		 */
+		if (WD_bizLocation != null) {
 
-				String[] eqArr = WD_bizLocation.split(",");
-				for (int i = 0; i < eqArr.length; i++) {
-					eqArr[i] = eqArr[i].trim();
+			String[] eqArr = WD_bizLocation.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				eqArr[i] = eqArr[i].trim();
+			}
+			for (int i = 0; i < eqArr.length; i++) {
+				// Invoke vocabulary query with EQ_name and includeChildren
+				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
+						null, null, null, null, null);
+
+				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
+				childReadPointSet.add(eqArr[i]);
+
+				Iterator<String> crp = childReadPointSet.iterator();
+				String csv = "";
+				while (crp.hasNext()) {
+					csv += crp.next() + ",";
 				}
-				for (int i = 0; i < eqArr.length; i++) {
-					// Invoke vocabulary query with EQ_name and includeChildren
-					String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null,
-							eqArr[i], null, null, null, null, null);
-
-					Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
-					childReadPointSet.add(eqArr[i]);
-
-					Iterator<String> crp = childReadPointSet.iterator();
-					String csv = "";
-					while (crp.hasNext()) {
-						csv += crp.next() + ",";
-					}
-					if (!csv.equals("")) {
-						csv.substring(0, csv.length() - 1);
-					}
-					DBObject query = getINQueryObject("bizLocation.id", csv);
-					if (query != null)
-						queryList.add(query);
-
+				if (!csv.equals("")) {
+					csv.substring(0, csv.length() - 1);
 				}
+				DBObject query = getINQueryObject("bizLocation.id", csv);
+				if (query != null)
+					queryList.add(query);
+
 			}
+		}
+
+		/**
+		 * EQ_transformationID: If this parameter is specified, the result will
+		 * only include events that (a) have a transformationID field (that is,
+		 * TransformationEvents or extension event type that extend
+		 * TransformationEvent); and where (b) the transformationID field is
+		 * equal to one of the values specified in this parameter.
+		 */
+		if (EQ_transformationID != null) {
+			DBObject query = getINQueryObject("transformationID", EQ_transformationID);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_epc: If this parameter is specified, the result will only
+		 * include events that (a) have an epcList or a childEPCs field (that
+		 * is, ObjectEvent, AggregationEvent, TransactionEvent or extension
+		 * event types that extend one of those three); and where (b) one of the
+		 * EPCs listed in the epcList or childEPCs field (depending on event
+		 * type) matches one of the EPC patterns or URIs specified in this
+		 * parameter, where the meaning of “matches” is as specified in Section
+		 * 8.2.7.1.1. If this parameter is omitted, events are included
+		 * regardless of their epcList or childEPCs field or whether the epcList
+		 * or childEPCs field exists.
+		 * 
+		 * Somewhat verified
+		 */
+		if (MATCH_epc != null) {
+			DBObject query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_parentID: Like MATCH_epc, but matches the parentID field of
+		 * AggregationEvent, the parentID field of TransactionEvent, and
+		 * extension event types that extend either AggregationEvent or
+		 * TransactionEvent. The meaning of “matches” is as specified in Section
+		 * 8.2.7.1.1.
+		 */
+		if (MATCH_parentID != null) {
+			DBObject query = getINQueryObject("parentID", MATCH_parentID);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_inputEPC: If this parameter is specified, the result will only
+		 * include events that (a) have an inputEPCList (that is,
+		 * TransformationEvent or an extension event type that extends
+		 * TransformationEvent); and where (b) one of the EPCs listed in the
+		 * inputEPCList field matches one of the EPC patterns or URIs specified
+		 * in this parameter. The meaning of “matches” is as specified in
+		 * Section 8.2.7.1.1. If this parameter is omitted, events are included
+		 * regardless of their inputEPCList field or whether the inputEPCList
+		 * field exists.
+		 */
+		if (MATCH_inputEPC != null) {
+			DBObject query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_outputEPC: If this parameter is specified, the result will only
+		 * include events that (a) have an inputEPCList (that is,
+		 * TransformationEvent or an extension event type that extends
+		 * TransformationEvent); and where (b) one of the EPCs listed in the
+		 * inputEPCList field matches one of the EPC patterns or URIs specified
+		 * in this parameter. The meaning of “matches” is as specified in
+		 * Section 8.2.7.1.1. If this parameter is omitted, events are included
+		 * regardless of their inputEPCList field or whether the inputEPCList
+		 * field exists.
+		 */
+		if (MATCH_outputEPC != null) {
+			DBObject query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_anyEPC: If this parameter is specified, the result will only
+		 * include events that (a) have an epcList field, a childEPCs field, a
+		 * parentID field, an inputEPCList field, or an outputEPCList field
+		 * (that is, ObjectEvent, AggregationEvent, TransactionEvent,
+		 * TransformationEvent, or extension event types that extend one of
+		 * those four); and where (b) the parentID field or one of the EPCs
+		 * listed in the epcList, childEPCs, inputEPCList, or outputEPCList
+		 * field (depending on event type) matches one of the EPC patterns or
+		 * URIs specified in this parameter. The meaning of “matches” is as
+		 * specified in Section 8.2.7.1.1.
+		 */
+
+		if (MATCH_anyEPC != null) {
+			DBObject query = getINQueryObject(
+					new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc" },
+					MATCH_anyEPC);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_epcClass: If this parameter is specified, the result will only
+		 * include events that (a) have a quantityList or a childQuantityList
+		 * field (that is, ObjectEvent, AggregationEvent, TransactionEvent or
+		 * extension event types that extend one of those three); and where (b)
+		 * one of the EPC classes listed in the quantityList or
+		 * childQuantityList field (depending on event type) matches one of the
+		 * EPC patterns or URIs specified in this parameter. The result will
+		 * also include QuantityEvents whose epcClass field matches one of the
+		 * EPC patterns or URIs specified in this parameter. The meaning of
+		 * “matches” is as specified in Section 8.2.7.1.1.
+		 */
+		if (MATCH_epcClass != null) {
+			DBObject query = getINQueryObject(
+					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
+					MATCH_epcClass);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_inputEPCClass: If this parameter is specified, the result will
+		 * only include events that (a) have an inputQuantityList field (that
+		 * is, TransformationEvent or extension event types that extend it); and
+		 * where (b) one of the EPC classes listed in the inputQuantityList
+		 * field (depending on event type) matches one of the EPC patterns or
+		 * URIs specified in this parameter. The meaning of “matches” is as
+		 * specified in Section 8.2.7.1.1.
+		 */
+		if (MATCH_inputEPCClass != null) {
+			DBObject query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_outputEPCClass: If this parameter is specified, the result will
+		 * only include events that (a) have an outputQuantityList field (that
+		 * is, TransformationEvent or extension event types that extend it); and
+		 * where (b) one of the EPC classes listed in the outputQuantityList
+		 * field (depending on event type) matches one of the EPC patterns or
+		 * URIs specified in this parameter. The meaning of “matches” is as
+		 * specified in Section 8.2.7.1.1.
+		 */
+
+		if (MATCH_outputEPCClass != null) {
+			DBObject query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * MATCH_anyEPCClass: If this parameter is specified, the result will
+		 * only include events that (a) have a quantityList, childQuantityList,
+		 * inputQuantityList, or outputQuantityList field (that is, ObjectEvent,
+		 * AggregationEvent, TransactionEvent, TransformationEvent, or extension
+		 * event types that extend one of those four); and where (b) one of the
+		 * EPC classes listed in any of those fields matches one of the EPC
+		 * patterns or URIs specified in this parameter. The result will also
+		 * include QuantityEvents whose epcClass field matches one of the EPC
+		 * patterns or URIs specified in this parameter. The meaning of
+		 * “matches” is as specified in Section 8.2.7.1.1.
+		 */
+		if (MATCH_anyEPCClass != null) {
+			DBObject query = getINQueryObject(
+					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
+							"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
+					MATCH_anyEPCClass);
+			if (query != null)
+				queryList.add(query);
+		}
+
+		/**
+		 * (DEPCRECATED in EPCIS 1.1) EQ_quantity; GT_quantity; GE_quantity;
+		 * LT_quantity; LE_quantity
+		 **/
+
+		/**
+		 * EQ_fieldname: This is not a single parameter, but a family of
+		 * parameters. If a parameter of this form is specified, the result will
+		 * only include events that (a) have a field named fieldname whose type
+		 * is either String or a vocabulary type; and where (b) the value of
+		 * that field matches one of the values specified in this parameter.
+		 * Fieldname is the fully qualified name of an extension field. The name
+		 * of an extension field is an XML qname; that is, a pair consisting of
+		 * an XML namespace URI and a name. The name of the corresponding query
+		 * parameter is constructed by concatenating the following: the string
+		 * EQ_, the namespace URI for the extension field, a pound sign (#), and
+		 * the name of the extension field.
+		 */
+
+		Iterator<String> paramIter = paramMap.keySet().iterator();
+		while (paramIter.hasNext()) {
+			String paramName = paramIter.next();
+			String paramValues = paramMap.get(paramName);
 
 			/**
-			 * EQ_transformationID: If this parameter is specified, the result
-			 * will only include events that (a) have a transformationID field
-			 * (that is, TransformationEvents or extension event type that
-			 * extend TransformationEvent); and where (b) the transformationID
-			 * field is equal to one of the values specified in this parameter.
+			 * EQ_bizTransaction_type: This is not a single parameter, but a
+			 * family of parameters. If a parameter of this form is specified,
+			 * the result will only include events that (a) include a
+			 * bizTransactionList; (b) where the business transaction list
+			 * includes an entry whose type subfield is equal to type extracted
+			 * from the name of this parameter; and (c) where the bizTransaction
+			 * subfield of that entry is equal to one of the values specified in
+			 * this parameter.
 			 */
-			if (EQ_transformationID != null) {
-				DBObject query = getINQueryObject("transformationID", EQ_transformationID);
+			if (paramName.contains("EQ_bizTransaction_")) {
+				String type = paramName.substring(18, paramName.length());
+				DBObject query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
 				if (query != null)
 					queryList.add(query);
 			}
 
 			/**
-			 * MATCH_epc: If this parameter is specified, the result will only
-			 * include events that (a) have an epcList or a childEPCs field
-			 * (that is, ObjectEvent, AggregationEvent, TransactionEvent or
-			 * extension event types that extend one of those three); and where
-			 * (b) one of the EPCs listed in the epcList or childEPCs field
-			 * (depending on event type) matches one of the EPC patterns or URIs
-			 * specified in this parameter, where the meaning of “matches” is as
-			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
-			 * events are included regardless of their epcList or childEPCs
-			 * field or whether the epcList or childEPCs field exists.
-			 * 
-			 * Somewhat verified
-			 */
-			if (MATCH_epc != null) {
-				DBObject query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_parentID: Like MATCH_epc, but matches the parentID field of
-			 * AggregationEvent, the parentID field of TransactionEvent, and
-			 * extension event types that extend either AggregationEvent or
-			 * TransactionEvent. The meaning of “matches” is as specified in
-			 * Section 8.2.7.1.1.
-			 */
-			if (MATCH_parentID != null) {
-				DBObject query = getINQueryObject("parentID", MATCH_parentID);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_inputEPC: If this parameter is specified, the result will
-			 * only include events that (a) have an inputEPCList (that is,
-			 * TransformationEvent or an extension event type that extends
-			 * TransformationEvent); and where (b) one of the EPCs listed in the
-			 * inputEPCList field matches one of the EPC patterns or URIs
-			 * specified in this parameter. The meaning of “matches” is as
-			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
-			 * events are included regardless of their inputEPCList field or
-			 * whether the inputEPCList field exists.
-			 */
-			if (MATCH_inputEPC != null) {
-				DBObject query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_outputEPC: If this parameter is specified, the result will
-			 * only include events that (a) have an inputEPCList (that is,
-			 * TransformationEvent or an extension event type that extends
-			 * TransformationEvent); and where (b) one of the EPCs listed in the
-			 * inputEPCList field matches one of the EPC patterns or URIs
-			 * specified in this parameter. The meaning of “matches” is as
-			 * specified in Section 8.2.7.1.1. If this parameter is omitted,
-			 * events are included regardless of their inputEPCList field or
-			 * whether the inputEPCList field exists.
-			 */
-			if (MATCH_outputEPC != null) {
-				DBObject query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_anyEPC: If this parameter is specified, the result will
-			 * only include events that (a) have an epcList field, a childEPCs
-			 * field, a parentID field, an inputEPCList field, or an
-			 * outputEPCList field (that is, ObjectEvent, AggregationEvent,
-			 * TransactionEvent, TransformationEvent, or extension event types
-			 * that extend one of those four); and where (b) the parentID field
-			 * or one of the EPCs listed in the epcList, childEPCs,
-			 * inputEPCList, or outputEPCList field (depending on event type)
-			 * matches one of the EPC patterns or URIs specified in this
-			 * parameter. The meaning of “matches” is as specified in Section
-			 * 8.2.7.1.1.
-			 */
-
-			if (MATCH_anyEPC != null) {
-				DBObject query = getINQueryObject(
-						new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc" },
-						MATCH_anyEPC);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_epcClass: If this parameter is specified, the result will
-			 * only include events that (a) have a quantityList or a
-			 * childQuantityList field (that is, ObjectEvent, AggregationEvent,
-			 * TransactionEvent or extension event types that extend one of
-			 * those three); and where (b) one of the EPC classes listed in the
-			 * quantityList or childQuantityList field (depending on event type)
-			 * matches one of the EPC patterns or URIs specified in this
-			 * parameter. The result will also include QuantityEvents whose
-			 * epcClass field matches one of the EPC patterns or URIs specified
-			 * in this parameter. The meaning of “matches” is as specified in
-			 * Section 8.2.7.1.1.
-			 */
-			if (MATCH_epcClass != null) {
-				DBObject query = getINQueryObject(
-						new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
-						MATCH_epcClass);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_inputEPCClass: If this parameter is specified, the result
-			 * will only include events that (a) have an inputQuantityList field
-			 * (that is, TransformationEvent or extension event types that
-			 * extend it); and where (b) one of the EPC classes listed in the
-			 * inputQuantityList field (depending on event type) matches one of
-			 * the EPC patterns or URIs specified in this parameter. The meaning
-			 * of “matches” is as specified in Section 8.2.7.1.1.
-			 */
-			if (MATCH_inputEPCClass != null) {
-				DBObject query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_outputEPCClass: If this parameter is specified, the result
-			 * will only include events that (a) have an outputQuantityList
-			 * field (that is, TransformationEvent or extension event types that
-			 * extend it); and where (b) one of the EPC classes listed in the
-			 * outputQuantityList field (depending on event type) matches one of
-			 * the EPC patterns or URIs specified in this parameter. The meaning
-			 * of “matches” is as specified in Section 8.2.7.1.1.
-			 */
-
-			if (MATCH_outputEPCClass != null) {
-				DBObject query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * MATCH_anyEPCClass: If this parameter is specified, the result
-			 * will only include events that (a) have a quantityList,
-			 * childQuantityList, inputQuantityList, or outputQuantityList field
-			 * (that is, ObjectEvent, AggregationEvent, TransactionEvent,
-			 * TransformationEvent, or extension event types that extend one of
-			 * those four); and where (b) one of the EPC classes listed in any
-			 * of those fields matches one of the EPC patterns or URIs specified
-			 * in this parameter. The result will also include QuantityEvents
-			 * whose epcClass field matches one of the EPC patterns or URIs
-			 * specified in this parameter. The meaning of “matches” is as
-			 * specified in Section 8.2.7.1.1.
-			 */
-			if (MATCH_anyEPCClass != null) {
-				DBObject query = getINQueryObject(
-						new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
-								"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
-						MATCH_anyEPCClass);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * (DEPCRECATED in EPCIS 1.1) EQ_quantity; GT_quantity; GE_quantity;
-			 * LT_quantity; LE_quantity
-			 **/
-
-			/**
-			 * EQ_fieldname: This is not a single parameter, but a family of
+			 * EQ_source_type: This is not a single parameter, but a family of
 			 * parameters. If a parameter of this form is specified, the result
-			 * will only include events that (a) have a field named fieldname
-			 * whose type is either String or a vocabulary type; and where (b)
-			 * the value of that field matches one of the values specified in
-			 * this parameter. Fieldname is the fully qualified name of an
-			 * extension field. The name of an extension field is an XML qname;
-			 * that is, a pair consisting of an XML namespace URI and a name.
-			 * The name of the corresponding query parameter is constructed by
-			 * concatenating the following: the string EQ_, the namespace URI
-			 * for the extension field, a pound sign (#), and the name of the
-			 * extension field.
+			 * will only include events that (a) include a sourceList; (b) where
+			 * the source list includes an entry whose type subfield is equal to
+			 * type extracted from the name of this parameter; and (c) where the
+			 * source subfield of that entry is equal to one of the values
+			 * specified in this parameter.
 			 */
 
-			Iterator<String> paramIter = paramMap.keySet().iterator();
-			while (paramIter.hasNext()) {
-				String paramName = paramIter.next();
-				String paramValues = paramMap.get(paramName);
+			if (paramName.contains("EQ_source_")) {
+				String type = paramName.substring(10, paramName.length());
+				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
+						|| eventType.equals("TransactionEvent")) {
+					DBObject query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+				if (eventType.equals("TransformationEvent")) {
+					DBObject query = getINFamilyQueryObject(type, "sourceList", paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+			}
+
+			/**
+			 * EQ_destination_type: This is not a single parameter, but a family
+			 * of parameters. If a parameter of this form is specified, the
+			 * result will only include events that (a) include a
+			 * destinationList; (b) where the destination list includes an entry
+			 * whose type subfield is equal to type extracted from the name of
+			 * this parameter; and (c) where the destination subfield of that
+			 * entry is equal to one of the values specified in this parameter.
+			 */
+			if (paramName.contains("EQ_destination_")) {
+				String type = paramName.substring(15, paramName.length());
+				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
+						|| eventType.equals("TransactionEvent")) {
+					DBObject query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+				if (eventType.equals("TransformationEvent")) {
+					DBObject query = getINFamilyQueryObject(type, "destinationList", paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+			}
+			boolean isExtraParam = isExtraParameter(paramName);
+
+			if (isExtraParam == true) {
 
 				/**
-				 * EQ_bizTransaction_type: This is not a single parameter, but a
-				 * family of parameters. If a parameter of this form is
-				 * specified, the result will only include events that (a)
-				 * include a bizTransactionList; (b) where the business
-				 * transaction list includes an entry whose type subfield is
-				 * equal to type extracted from the name of this parameter; and
-				 * (c) where the bizTransaction subfield of that entry is equal
-				 * to one of the values specified in this parameter.
+				 * EQ_fieldname: This is not a single parameter, but a family of
+				 * parameters. If a parameter of this form is specified, the
+				 * result will only include events that (a) have a field named
+				 * fieldname whose type is either String or a vocabulary type;
+				 * and where (b) the value of that field matches one of the
+				 * values specified in this parameter. Fieldname is the fully
+				 * qualified name of an extension field. The name of an
+				 * extension field is an XML qname; that is, a pair consisting
+				 * of an XML namespace URI and a name. The name of the
+				 * corresponding query parameter is constructed by concatenating
+				 * the following: the string EQ_, the namespace URI for the
+				 * extension field, a pound sign (#), and the name of the
+				 * extension field.
 				 */
-				if (paramName.contains("EQ_bizTransaction_")) {
-					String type = paramName.substring(18, paramName.length());
-					DBObject query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
+				if (paramName.startsWith("EQ_")) {
+					String type = paramName.substring(3, paramName.length());
+					/*
+					 * if (eventType.equals("AggregationEvent") ||
+					 * eventType.equals("ObjectEvent") ||
+					 * eventType.equals("TransactionEvent")) { DBObject query =
+					 * getINExtensionQueryObject(type, new String[] {
+					 * "extension.extension.any." + type,
+					 * "extension.extension.otherAttributes." + type },
+					 * paramValues); if (query != null) queryList.add(query); }
+					 * if (eventType.equals("QuantityEvent") ||
+					 * eventType.equals("TransformationEvent")) { DBObject query
+					 * = getINExtensionQueryObject( type, new String[] {
+					 * "extension.any." + type, "extension.otherAttributes." +
+					 * type }, paramValues); if (query != null)
+					 * queryList.add(query); }
+					 */
+					DBObject query = getINExtensionQueryObject(type,
+							new String[] { "any." + type, "otherAttributes." + type }, paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 
 				/**
-				 * EQ_source_type: This is not a single parameter, but a family
-				 * of parameters. If a parameter of this form is specified, the
-				 * result will only include events that (a) include a
-				 * sourceList; (b) where the source list includes an entry whose
-				 * type subfield is equal to type extracted from the name of
-				 * this parameter; and (c) where the source subfield of that
-				 * entry is equal to one of the values specified in this
-				 * parameter.
+				 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described above,
+				 * but may be applied to a field of type Int, Float, or Time.
+				 * The result will include events that (a) have a field named
+				 * fieldname; and where (b) the type of the field matches the
+				 * type of this parameter (Int, Float, or Time); and where (c)
+				 * the value of the field is greater than the specified value.
+				 * Fieldname is constructed as for EQ_fieldname.
 				 */
 
-				if (paramName.contains("EQ_source_")) {
-					String type = paramName.substring(10, paramName.length());
-					if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
-							|| eventType.equals("TransactionEvent")) {
-						DBObject query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
-						if (query != null)
-							queryList.add(query);
-					}
-					if (eventType.equals("TransformationEvent")) {
-						DBObject query = getINFamilyQueryObject(type, "sourceList", paramValues);
-						if (query != null)
-							queryList.add(query);
-					}
-				}
+				if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
+						|| paramName.startsWith("LE_")) {
+					String type = paramName.substring(3, paramName.length());
 
-				/**
-				 * EQ_destination_type: This is not a single parameter, but a
-				 * family of parameters. If a parameter of this form is
-				 * specified, the result will only include events that (a)
-				 * include a destinationList; (b) where the destination list
-				 * includes an entry whose type subfield is equal to type
-				 * extracted from the name of this parameter; and (c) where the
-				 * destination subfield of that entry is equal to one of the
-				 * values specified in this parameter.
-				 */
-				if (paramName.contains("EQ_destination_")) {
-					String type = paramName.substring(15, paramName.length());
-					if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
-							|| eventType.equals("TransactionEvent")) {
-						DBObject query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
-						if (query != null)
-							queryList.add(query);
-					}
-					if (eventType.equals("TransformationEvent")) {
-						DBObject query = getINFamilyQueryObject(type, "destinationList", paramValues);
-						if (query != null)
-							queryList.add(query);
-					}
-				}
-				boolean isExtraParam = isExtraParameter(paramName);
-
-				if (isExtraParam == true) {
-
-					/**
-					 * EQ_fieldname: This is not a single parameter, but a
-					 * family of parameters. If a parameter of this form is
-					 * specified, the result will only include events that (a)
-					 * have a field named fieldname whose type is either String
-					 * or a vocabulary type; and where (b) the value of that
-					 * field matches one of the values specified in this
-					 * parameter. Fieldname is the fully qualified name of an
-					 * extension field. The name of an extension field is an XML
-					 * qname; that is, a pair consisting of an XML namespace URI
-					 * and a name. The name of the corresponding query parameter
-					 * is constructed by concatenating the following: the string
-					 * EQ_, the namespace URI for the extension field, a pound
-					 * sign (#), and the name of the extension field.
+					/*
+					 * if (eventType.equals("AggregationEvent") ||
+					 * eventType.equals("ObjectEvent") ||
+					 * eventType.equals("TransactionEvent")) { if
+					 * (paramName.startsWith("GT_")) { DBObject query =
+					 * getCompExtensionQueryObject( type, new String[] {
+					 * "extension.extension.any." + type,
+					 * "extension.extension.otherAttributes." + type },
+					 * paramValues, "GT"); if (query != null)
+					 * queryList.add(query); } if (paramName.startsWith("GE_"))
+					 * { DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.extension.any." + type,
+					 * "extension.extension.otherAttributes." + type },
+					 * paramValues, "GE"); if (query != null)
+					 * queryList.add(query); } if (paramName.startsWith("LT_"))
+					 * { DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.extension.any." + type,
+					 * "extension.extension.otherAttributes." + type },
+					 * paramValues, "LT"); if (query != null)
+					 * queryList.add(query); } if (paramName.startsWith("LE_"))
+					 * { DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.extension.any." + type,
+					 * "extension.extension.otherAttributes." + type },
+					 * paramValues, "LE"); if (query != null)
+					 * queryList.add(query); } } if
+					 * (eventType.equals("QuantityEvent") ||
+					 * eventType.equals("TransformationEvent")) { if
+					 * (paramName.startsWith("GT_")) {
+					 * 
+					 * DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.any." + type,
+					 * "extension.otherAttributes." + type }, paramValues,
+					 * "GT"); if (query != null) queryList.add(query); } if
+					 * (paramName.startsWith("GE_")) {
+					 * 
+					 * DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.any." + type,
+					 * "extension.otherAttributes." + type }, paramValues,
+					 * "GE"); if (query != null) queryList.add(query); } if
+					 * (paramName.startsWith("LT_")) { DBObject query =
+					 * getCompExtensionQueryObject( type, new String[] {
+					 * "extension.any." + type, "extension.otherAttributes." +
+					 * type }, paramValues, "LT"); if (query != null)
+					 * queryList.add(query); } if (paramName.startsWith("LE_"))
+					 * {
+					 * 
+					 * DBObject query = getCompExtensionQueryObject( type, new
+					 * String[] { "extension.any." + type,
+					 * "extension.otherAttributes." + type }, paramValues,
+					 * "LE"); if (query != null) queryList.add(query); } }
 					 */
-					if (paramName.startsWith("EQ_")) {
-						String type = paramName.substring(3, paramName.length());
-						/*
-						 * if (eventType.equals("AggregationEvent") ||
-						 * eventType.equals("ObjectEvent") ||
-						 * eventType.equals("TransactionEvent")) { DBObject
-						 * query = getINExtensionQueryObject(type, new String[]
-						 * { "extension.extension.any." + type,
-						 * "extension.extension.otherAttributes." + type },
-						 * paramValues); if (query != null)
-						 * queryList.add(query); } if
-						 * (eventType.equals("QuantityEvent") ||
-						 * eventType.equals("TransformationEvent")) { DBObject
-						 * query = getINExtensionQueryObject( type, new String[]
-						 * { "extension.any." + type,
-						 * "extension.otherAttributes." + type }, paramValues);
-						 * if (query != null) queryList.add(query); }
-						 */
-						DBObject query = getINExtensionQueryObject(type,
-								new String[] { "any." + type, "otherAttributes." + type }, paramValues);
+					if (paramName.startsWith("GT_")) {
+						DBObject query = getCompExtensionQueryObject(type,
+								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
 						if (query != null)
 							queryList.add(query);
 					}
-
-					/**
-					 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described
-					 * above, but may be applied to a field of type Int, Float,
-					 * or Time. The result will include events that (a) have a
-					 * field named fieldname; and where (b) the type of the
-					 * field matches the type of this parameter (Int, Float, or
-					 * Time); and where (c) the value of the field is greater
-					 * than the specified value. Fieldname is constructed as for
-					 * EQ_fieldname.
-					 */
-
-					if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
-							|| paramName.startsWith("LE_")) {
-						String type = paramName.substring(3, paramName.length());
-
-						/*
-						 * if (eventType.equals("AggregationEvent") ||
-						 * eventType.equals("ObjectEvent") ||
-						 * eventType.equals("TransactionEvent")) { if
-						 * (paramName.startsWith("GT_")) { DBObject query =
-						 * getCompExtensionQueryObject( type, new String[] {
-						 * "extension.extension.any." + type,
-						 * "extension.extension.otherAttributes." + type },
-						 * paramValues, "GT"); if (query != null)
-						 * queryList.add(query); } if
-						 * (paramName.startsWith("GE_")) { DBObject query =
-						 * getCompExtensionQueryObject( type, new String[] {
-						 * "extension.extension.any." + type,
-						 * "extension.extension.otherAttributes." + type },
-						 * paramValues, "GE"); if (query != null)
-						 * queryList.add(query); } if
-						 * (paramName.startsWith("LT_")) { DBObject query =
-						 * getCompExtensionQueryObject( type, new String[] {
-						 * "extension.extension.any." + type,
-						 * "extension.extension.otherAttributes." + type },
-						 * paramValues, "LT"); if (query != null)
-						 * queryList.add(query); } if
-						 * (paramName.startsWith("LE_")) { DBObject query =
-						 * getCompExtensionQueryObject( type, new String[] {
-						 * "extension.extension.any." + type,
-						 * "extension.extension.otherAttributes." + type },
-						 * paramValues, "LE"); if (query != null)
-						 * queryList.add(query); } } if
-						 * (eventType.equals("QuantityEvent") ||
-						 * eventType.equals("TransformationEvent")) { if
-						 * (paramName.startsWith("GT_")) {
-						 * 
-						 * DBObject query = getCompExtensionQueryObject( type,
-						 * new String[] { "extension.any." + type,
-						 * "extension.otherAttributes." + type }, paramValues,
-						 * "GT"); if (query != null) queryList.add(query); } if
-						 * (paramName.startsWith("GE_")) {
-						 * 
-						 * DBObject query = getCompExtensionQueryObject( type,
-						 * new String[] { "extension.any." + type,
-						 * "extension.otherAttributes." + type }, paramValues,
-						 * "GE"); if (query != null) queryList.add(query); } if
-						 * (paramName.startsWith("LT_")) { DBObject query =
-						 * getCompExtensionQueryObject( type, new String[] {
-						 * "extension.any." + type, "extension.otherAttributes."
-						 * + type }, paramValues, "LT"); if (query != null)
-						 * queryList.add(query); } if
-						 * (paramName.startsWith("LE_")) {
-						 * 
-						 * DBObject query = getCompExtensionQueryObject( type,
-						 * new String[] { "extension.any." + type,
-						 * "extension.otherAttributes." + type }, paramValues,
-						 * "LE"); if (query != null) queryList.add(query); } }
-						 */
-						if (paramName.startsWith("GT_")) {
-							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
-							if (query != null)
-								queryList.add(query);
-						}
-						if (paramName.startsWith("GE_")) {
-							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
-							if (query != null)
-								queryList.add(query);
-						}
-						if (paramName.startsWith("LT_")) {
-							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
-							if (query != null)
-								queryList.add(query);
-						}
-						if (paramName.startsWith("LE_")) {
-							DBObject query = getCompExtensionQueryObject(type,
-									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
-							if (query != null)
-								queryList.add(query);
-						}
+					if (paramName.startsWith("GE_")) {
+						DBObject query = getCompExtensionQueryObject(type,
+								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
+						if (query != null)
+							queryList.add(query);
+					}
+					if (paramName.startsWith("LT_")) {
+						DBObject query = getCompExtensionQueryObject(type,
+								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
+						if (query != null)
+							queryList.add(query);
+					}
+					if (paramName.startsWith("LE_")) {
+						DBObject query = getCompExtensionQueryObject(type,
+								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
+						if (query != null)
+							queryList.add(query);
 					}
 				}
 			}
-		} catch (ParseException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return queryList;
 	}
@@ -2549,5 +2537,431 @@ public class MongoQueryService {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return childReadPointSet;
+	}
+
+	private long getTimeMillis(String standardDateString) {
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+			eventTimeCalendar.setTime(sdf.parse(standardDateString));
+			return eventTimeCalendar.getTimeInMillis();
+		} catch (ParseException e) {
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+				eventTimeCalendar.setTime(sdf.parse(standardDateString));
+				return eventTimeCalendar.getTimeInMillis();
+			} catch (ParseException e1) {
+				Configuration.logger.log(Level.ERROR, e1.toString());
+			}
+		}
+		// Never Happened
+		return 0;
+	}
+
+	// Access Control Logic
+	public String securedPoll(@PathVariable String queryName, String eventType, String GE_eventTime,
+			String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
+			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
+			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
+			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
+			String orderDirection, String eventCountLimit, String maxEventCount,
+
+	String vocabularyName, boolean includeAttributes, boolean includeChildren, String attributeNames, String EQ_name,
+			String WD_name, String HASATTR, String maxElementCount, String format, FacebookClient facebookClient,
+			String fid, Map<String, String> paramMap) {
+
+		// M24
+		if (queryName == null) {
+			// It is not possible, automatically filtered by URI param
+			return makeErrorResult("queryName is mandatory field in poll method", QueryParameterException.class);
+		}
+
+		if (queryName.equals("SimpleEventQuery"))
+			return securedPollEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
+					maxEventCount, format, facebookClient, fid, paramMap);
+
+		if (queryName.equals("SimpleMasterDataQuery"))
+			return pollMasterDataQuery(queryName, vocabularyName, includeAttributes, includeChildren, attributeNames,
+					EQ_name, WD_name, HASATTR, maxElementCount, format, paramMap);
+		return "";
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String securedPollEventQuery(String queryName, String eventType, String GE_eventTime, String LT_eventTime,
+			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
+			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
+			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
+			String eventCountLimit, String maxEventCount, String format, FacebookClient facebookClient, String fid,
+			Map<String, String> paramMap) {
+
+		// M27 - query params' constraint
+		// M39 - query params' constraint
+		String reason = checkConstraintSimpleEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
+				maxEventCount, paramMap);
+		if (reason != null) {
+			return makeErrorResult(reason, QueryParameterException.class);
+		}
+
+		// Make Base Result Document
+		EPCISQueryDocumentType epcisQueryDocumentType = null;
+		JSONObject retJSON = new JSONObject();
+
+		if (format == null || format.equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		} else if (format.equals("JSON")) {
+			// Do Nothing
+		} else {
+			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
+		}
+
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		// Prepare container which query results are included
+		// eventObjects : Container which all the query results (events) will be
+		// contained
+		List<Object> eventObjects = null;
+		if (format == null || format.equals("XML")) {
+			eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody().getEventList()
+					.getObjectEventOrAggregationEventOrQuantityEvent();
+		} else {
+			// foramt == JSON -> Do Nothing
+		}
+		// To be filtered by eventType
+		boolean toGetAggregationEvent = true;
+		boolean toGetObjectEvent = true;
+		boolean toGetQuantityEvent = true;
+		boolean toGetTransactionEvent = true;
+		boolean toGetTransformationEvent = true;
+
+		/**
+		 * EventType : If specified, the result will only include events whose
+		 * type matches one of the types specified in the parameter value. Each
+		 * element of the parameter value may be one of the following strings:
+		 * ObjectEvent, AggregationEvent, QuantityEvent, TransactionEvent, or
+		 * TransformationEvent. An element of the parameter value may also be
+		 * the name of an extension event type. If omitted, all event types will
+		 * be considered for inclusion in the result.
+		 */
+		if (eventType != null) {
+			toGetAggregationEvent = false;
+			toGetObjectEvent = false;
+			toGetQuantityEvent = false;
+			toGetTransactionEvent = false;
+			toGetTransformationEvent = false;
+
+			String[] eventTypeArray = eventType.split(",");
+
+			for (int i = 0; i < eventTypeArray.length; i++) {
+				String eventTypeString = eventTypeArray[i];
+
+				if (eventTypeString != null)
+					eventTypeString = eventTypeString.trim();
+
+				if (eventTypeString.equals("AggregationEvent"))
+					toGetAggregationEvent = true;
+				else if (eventTypeString.equals("ObjectEvent"))
+					toGetObjectEvent = true;
+				else if (eventTypeString.equals("QuantityEvent"))
+					toGetQuantityEvent = true;
+				else if (eventTypeString.equals("TransactionEvent"))
+					toGetTransactionEvent = true;
+				else if (eventTypeString.equals("TransformationEvent"))
+					toGetTransformationEvent = true;
+			}
+		}
+
+		if (toGetAggregationEvent == true) {
+			// Aggregation Event Collection
+			DBCollection collection = mongoOperation.getCollection("AggregationEvent");
+			// Queries
+			List<DBObject> queryList = makeQueryObjects("AggregationEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
+
+			// Merge All the queries with $and
+			DBObject baseQuery = new BasicDBObject();
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
+			}
+			// Sort and Limit
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray aggrJSONArray = new JSONArray();
+
+			while (cursor.hasNext()) {
+				DBObject dbObject = cursor.next();
+				if (format == null || format.equals("XML")) {
+					AggregationEventReadConverter con = new AggregationEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					aggrJSONArray.put(dbObject);
+				}
+			}
+			if (aggrJSONArray.length() > 0) {
+				retJSON.put("AggregationEvent", aggrJSONArray);
+			}
+		}
+
+		// For Each Event Type!
+		if (toGetObjectEvent == true) {
+
+			// Aggregation Event Collection
+			DBCollection collection = mongoOperation.getCollection("ObjectEvent");
+			// Queries
+			List<DBObject> queryList = makeQueryObjects("ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
+
+			// Merge All the queries with $and
+			DBObject baseQuery = new BasicDBObject();
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
+			}
+			// Sort and Limit
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray objJSONArray = new JSONArray();
+
+			while (cursor.hasNext()) {
+				DBObject dbObject = cursor.next();
+
+				if (OAuthUtil.isAccessible(facebookClient, fid, dbObject) == false) {
+					continue;
+				}
+				if (format == null || format.equals("XML")) {
+					ObjectEventReadConverter con = new ObjectEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					objJSONArray.put(dbObject);
+				}
+			}
+			if (objJSONArray.length() > 0) {
+				retJSON.put("ObjectEvent", objJSONArray);
+			}
+		}
+		if (toGetQuantityEvent == true) {
+			// Aggregation Event Collection
+			DBCollection collection = mongoOperation.getCollection("QuantityEvent");
+			// Queries
+			List<DBObject> queryList = makeQueryObjects("QuantityEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
+
+			// Merge All the queries with $and
+			DBObject baseQuery = new BasicDBObject();
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
+			}
+			// Sort and Limit
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray qntJSONArray = new JSONArray();
+
+			while (cursor.hasNext()) {
+				DBObject dbObject = cursor.next();
+				if (format == null || format.equals("XML")) {
+					QuantityEventReadConverter con = new QuantityEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					qntJSONArray.put(dbObject);
+				}
+			}
+			if (qntJSONArray.length() > 0) {
+				retJSON.put("QuantityEvent", qntJSONArray);
+			}
+		}
+		if (toGetTransactionEvent == true) {
+			// Aggregation Event Collection
+			DBCollection collection = mongoOperation.getCollection("TransactionEvent");
+			// Queries
+			List<DBObject> queryList = makeQueryObjects("TransactionEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
+
+			// Merge All the queries with $and
+			DBObject baseQuery = new BasicDBObject();
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
+			}
+			// Sort and Limit
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray transactionJSONArray = new JSONArray();
+
+			while (cursor.hasNext()) {
+				DBObject dbObject = cursor.next();
+
+				if (format == null || format.equals("XML")) {
+					TransactionEventReadConverter con = new TransactionEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
+							con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					transactionJSONArray.put(dbObject);
+				}
+			}
+			if (transactionJSONArray.length() > 0) {
+				retJSON.put("TransactionEvent", transactionJSONArray);
+			}
+		}
+		if (toGetTransformationEvent == true) {
+			// Aggregation Event Collection
+			DBCollection collection = mongoOperation.getCollection("TransformationEvent");
+			// Queries
+			List<DBObject> queryList = makeQueryObjects("TransformationEvent", GE_eventTime, LT_eventTime,
+					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
+					orderDirection, eventCountLimit, maxEventCount, paramMap);
+
+			// Merge All the queries with $and
+			DBObject baseQuery = new BasicDBObject();
+			DBCursor cursor;
+			if (queryList.isEmpty() == false) {
+				BasicDBList aggreQueryList = new BasicDBList();
+				for (int i = 0; i < queryList.size(); i++) {
+					aggreQueryList.add(queryList.get(i));
+				}
+				baseQuery.put("$and", aggreQueryList);
+				// Query
+				cursor = collection.find(baseQuery);
+			} else {
+				cursor = collection.find();
+			}
+			// Sort and Limit
+			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+
+			JSONArray transformationJSONArray = new JSONArray();
+
+			while (cursor.hasNext()) {
+				DBObject dbObject = cursor.next();
+
+				if (format == null || format.equals("XML")) {
+					TransformationEventReadConverter con = new TransformationEventReadConverter();
+					JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
+							TransformationEventType.class, con.convert(dbObject));
+					eventObjects.add(element);
+				} else {
+					dbObject.removeField("_id");
+					transformationJSONArray.put(dbObject);
+				}
+			}
+			if (transformationJSONArray.length() > 0) {
+				retJSON.put("TransformationEvent", transformationJSONArray);
+			}
+		}
+
+		// M44
+		if (maxEventCount != null) {
+			if (format == null || format.equals("XML")) {
+				if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
+					((AbstractApplicationContext) ctx).close();
+					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+				}
+			} else {
+				int cnt = 0;
+				if (!retJSON.isNull("AggregationEvent")) {
+					cnt += retJSON.getJSONArray("AggregationEvent").length();
+				}
+				if (!retJSON.isNull("ObjectEvent")) {
+					cnt += retJSON.getJSONArray("ObjectEvent").length();
+				}
+				if (!retJSON.isNull("QuantityEvent")) {
+					cnt += retJSON.getJSONArray("QuantityEvent").length();
+				}
+				if (!retJSON.isNull("TransactionEvent")) {
+					cnt += retJSON.getJSONArray("TransactionEvent").length();
+				}
+				if (!retJSON.isNull("TransformationEvent")) {
+					cnt += retJSON.getJSONArray("TransformationEvent").length();
+				}
+				if (cnt > Integer.parseInt(maxEventCount)) {
+					((AbstractApplicationContext) ctx).close();
+					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+				}
+			}
+		}
+		((AbstractApplicationContext) ctx).close();
+		if (format == null || format.equals("XML")) {
+			StringWriter sw = new StringWriter();
+			JAXB.marshal(epcisQueryDocumentType, sw);
+			return sw.toString();
+		} else {
+			return retJSON.toString(1);
+		}
 	}
 }
