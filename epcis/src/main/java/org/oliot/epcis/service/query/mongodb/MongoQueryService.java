@@ -94,7 +94,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.restfb.FacebookClient;
 
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
@@ -2570,8 +2569,8 @@ public class MongoQueryService {
 			String orderDirection, String eventCountLimit, String maxEventCount,
 
 	String vocabularyName, boolean includeAttributes, boolean includeChildren, String attributeNames, String EQ_name,
-			String WD_name, String HASATTR, String maxElementCount, String format, FacebookClient facebookClient,
-			String fid, Map<String, String> paramMap) {
+			String WD_name, String HASATTR, String maxElementCount, String format, 
+			String fid, List<String> friendList, Map<String, String> paramMap) {
 
 		// M24
 		if (queryName == null) {
@@ -2585,7 +2584,7 @@ public class MongoQueryService {
 					EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
 					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
 					GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit,
-					maxEventCount, format, facebookClient, fid, paramMap);
+					maxEventCount, format, fid, friendList, paramMap);
 
 		if (queryName.equals("SimpleMasterDataQuery"))
 			return pollMasterDataQuery(queryName, vocabularyName, includeAttributes, includeChildren, attributeNames,
@@ -2601,7 +2600,7 @@ public class MongoQueryService {
 			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
 			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
 			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
-			String eventCountLimit, String maxEventCount, String format, FacebookClient facebookClient, String fid,
+			String eventCountLimit, String maxEventCount, String format, String fid, List<String> friendList,
 			Map<String, String> paramMap) {
 
 		// M27 - query params' constraint
@@ -2767,7 +2766,7 @@ public class MongoQueryService {
 			while (cursor.hasNext()) {
 				DBObject dbObject = cursor.next();
 
-				if (OAuthUtil.isAccessible(facebookClient, fid, dbObject) == false) {
+				if (OAuthUtil.isAccessible(fid, friendList, dbObject) == false) {
 					continue;
 				}
 				if (format == null || format.equals("XML")) {

@@ -1,5 +1,7 @@
 package org.oliot.epcis.service.query;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -18,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+import com.restfb.Connection;
 import com.restfb.FacebookClient;
+import com.restfb.types.User;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -87,15 +91,29 @@ public class SecuredQueryService implements ServletContextAware {
 			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String maxElementCount,
 
-	@RequestParam(required = false) String format, @RequestParam(required = false) String fid, @RequestParam(required = false) String accessToken,
-			@RequestParam Map<String, String> params) {
+	@RequestParam(required = false) String format, @RequestParam(required = false) String fid,
+			@RequestParam(required = false) String accessToken, @RequestParam Map<String, String> params) {
 
+		// Access Control is not mandatory
+		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
-		
-		if (fid != null){
+		List<String> friendList = null;
+		if (fid != null) {
+			// Check accessToken
 			fc = OAuthUtil.isValidatedFacebookClient(accessToken, fid);
+			if (fc == null) {
+				return "Token invalidated";
+			}
+			friendList = new ArrayList<String>();
+
+			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+			for (List<User> friends : friendConnection) {
+				for (User friend : friends) {
+					friendList.add(friend.getId());
+				}
+			}
 		}
-		
+
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			return mongoQueryService.securedPoll(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
@@ -104,7 +122,7 @@ public class SecuredQueryService implements ServletContextAware {
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
 					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount, format, fc, fid, params);
+					EQ_name, WD_name, HASATTR, maxElementCount, format, fid, friendList, params);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {

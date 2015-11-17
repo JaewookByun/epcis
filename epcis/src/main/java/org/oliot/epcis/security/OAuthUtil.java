@@ -3,7 +3,6 @@ package org.oliot.epcis.security;
 import java.util.List;
 
 import com.mongodb.DBObject;
-import com.restfb.Connection;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
@@ -40,7 +39,7 @@ public class OAuthUtil {
 	}
 
 	// For MongoDB Document
-	public static boolean isAccessible(FacebookClient fc, String fid, DBObject doc) {
+	public static boolean isAccessible(String fid, List<String> friendList, DBObject doc) {
 
 		String am = (String) doc.get("accessModifier");
 		String providerID = (String) doc.get("fid");
@@ -49,9 +48,9 @@ public class OAuthUtil {
 		if (providerID == null || am == null) {
 			return true;
 		}
-		
+
 		// Non-public document && No authorization
-		if( fid == null ){
+		if (fid == null) {
 			return false;
 		}
 
@@ -62,14 +61,10 @@ public class OAuthUtil {
 
 		// If Not Owner
 		if (am.equals("Friend")) {
-			Connection<User> friendList = fc.fetchConnection("me/friends", User.class);
-			for (List<User> friends : friendList) {
-				for (User friend : friends) {
-					String friendID = friend.getId();
-					if (providerID.equals(friendID)) {
-						return true;
-					}
-				}
+			if (friendList.contains(providerID)) {
+				return true;
+			} else {
+				return false;
 			}
 		}
 
