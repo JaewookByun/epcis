@@ -39,10 +39,10 @@ public class OAuthUtil {
 	}
 
 	// For MongoDB Document
-	public static boolean isAccessible(String fid, List<String> friendList, DBObject doc) {
+	public static boolean isAccessible(String userID, List<String> friendList, DBObject doc) {
 
 		String am = (String) doc.get("accessModifier");
-		String providerID = (String) doc.get("fid");
+		String providerID = (String) doc.get("userID");
 
 		// Public Document
 		if (providerID == null || am == null) {
@@ -50,12 +50,12 @@ public class OAuthUtil {
 		}
 
 		// Non-public document && No authorization
-		if (fid == null) {
+		if (userID == null) {
 			return false;
 		}
 
 		// If Owner, accessible
-		if (providerID.equals(fid)) {
+		if (providerID.equals(userID)) {
 			return true;
 		}
 

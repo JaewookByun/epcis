@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -27,8 +28,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+import com.restfb.Connection;
+import com.restfb.FacebookClient;
+import com.restfb.types.User;
+
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -36,7 +41,7 @@ import org.springframework.web.context.ServletContextAware;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -87,59 +92,44 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Subscribe/{queryName}/{subscriptionID}", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> subscribe(@PathVariable String queryName,
-			@PathVariable String subscriptionID, @RequestParam String dest,
-			@RequestParam String cronExpression,
+	public ResponseEntity<?> subscribe(@PathVariable String queryName, @PathVariable String subscriptionID,
+			@RequestParam String dest, @RequestParam String cronExpression,
 			@RequestParam(required = false) boolean reportIfEmpty,
-			@RequestParam(required = false) boolean ignoreReceivedEvent, 
-			@RequestParam(required = false) String initialRecordTime,
-			@RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime,
-			@RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime,
-			@RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action,
-			@RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition,
-			@RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint,
-			@RequestParam(required = false) String EQ_bizLocation,
+			@RequestParam(required = false) boolean ignoreReceivedEvent,
+			@RequestParam(required = false) String initialRecordTime, @RequestParam(required = false) String eventType,
+			@RequestParam(required = false) String GE_eventTime, @RequestParam(required = false) String LT_eventTime,
+			@RequestParam(required = false) String GE_recordTime, @RequestParam(required = false) String LT_recordTime,
+			@RequestParam(required = false) String EQ_action, @RequestParam(required = false) String EQ_bizStep,
+			@RequestParam(required = false) String EQ_disposition, @RequestParam(required = false) String EQ_readPoint,
+			@RequestParam(required = false) String WD_readPoint, @RequestParam(required = false) String EQ_bizLocation,
 			@RequestParam(required = false) String WD_bizLocation,
 			@RequestParam(required = false) String EQ_transformationID,
-			@RequestParam(required = false) String MATCH_epc,
-			@RequestParam(required = false) String MATCH_parentID,
+			@RequestParam(required = false) String MATCH_epc, @RequestParam(required = false) String MATCH_parentID,
 			@RequestParam(required = false) String MATCH_inputEPC,
-			@RequestParam(required = false) String MATCH_outputEPC,
-			@RequestParam(required = false) String MATCH_anyEPC,
+			@RequestParam(required = false) String MATCH_outputEPC, @RequestParam(required = false) String MATCH_anyEPC,
 			@RequestParam(required = false) String MATCH_epcClass,
 			@RequestParam(required = false) String MATCH_inputEPCClass,
 			@RequestParam(required = false) String MATCH_outputEPCClass,
 			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity,
-			@RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity,
-			@RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String orderBy,
+			@RequestParam(required = false) String EQ_quantity, @RequestParam(required = false) String GT_quantity,
+			@RequestParam(required = false) String GE_quantity, @RequestParam(required = false) String LT_quantity,
+			@RequestParam(required = false) String LE_quantity, @RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount,
-			@RequestParam(required = false) String format,
+			@RequestParam(required = false) String maxEventCount, @RequestParam(required = false) String format,
 			@RequestParam Map<String, String> params) {
 
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
-		
+
 		if (initialRecordTime == null) {
 			GregorianCalendar cal = new GregorianCalendar();
 			Date curTime = cal.getTime();
-			SimpleDateFormat sdf = new SimpleDateFormat(
-					"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			initialRecordTime = sdf.format(curTime);
 		} else {
 			try {
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				sdf.parse(initialRecordTime);
 			} catch (ParseException e) {
 				String error = e.toString();
@@ -150,17 +140,13 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.subscribe(queryName, subscriptionID, dest,
-					cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTime,
-					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
-					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, format, params);
+			String result = mongoQueryService.subscribe(queryName, subscriptionID, dest, cronExpression,
+					ignoreReceivedEvent, reportIfEmpty, initialRecordTime, eventType, GE_eventTime, LT_eventTime,
+					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
+					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
+					orderDirection, eventCountLimit, maxEventCount, format, params);
 			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
@@ -178,12 +164,13 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	public ResponseEntity<?> unsubscribe(@PathVariable String subscriptionID) {
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.add("Content-Type", "text/html; charset=utf-8");		
-		
+		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
+
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			mongoQueryService.unsubscribe(subscriptionID);
-			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"), responseHeaders, HttpStatus.OK);
+			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"),
+					responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -200,12 +187,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> getSubscriptionIDsREST(@PathVariable String queryName) {
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.add("Content-Type", "application/json; charset=utf-8");		
-		
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
 		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mongoQueryService = new MongoQueryService(); 
+			MongoQueryService mongoQueryService = new MongoQueryService();
 			String result = mongoQueryService.getSubscriptionIDsREST(queryName);
-			return new ResponseEntity<>(result,responseHeaders, HttpStatus.OK);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -217,68 +204,71 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> poll(@PathVariable String queryName,
-			@RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime,
-			@RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime,
-			@RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action,
-			@RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition,
-			@RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint,
-			@RequestParam(required = false) String EQ_bizLocation,
+	public ResponseEntity<?> poll(@PathVariable String queryName, @RequestParam(required = false) String eventType,
+			@RequestParam(required = false) String GE_eventTime, @RequestParam(required = false) String LT_eventTime,
+			@RequestParam(required = false) String GE_recordTime, @RequestParam(required = false) String LT_recordTime,
+			@RequestParam(required = false) String EQ_action, @RequestParam(required = false) String EQ_bizStep,
+			@RequestParam(required = false) String EQ_disposition, @RequestParam(required = false) String EQ_readPoint,
+			@RequestParam(required = false) String WD_readPoint, @RequestParam(required = false) String EQ_bizLocation,
 			@RequestParam(required = false) String WD_bizLocation,
 			@RequestParam(required = false) String EQ_transformationID,
-			@RequestParam(required = false) String MATCH_epc,
-			@RequestParam(required = false) String MATCH_parentID,
+			@RequestParam(required = false) String MATCH_epc, @RequestParam(required = false) String MATCH_parentID,
 			@RequestParam(required = false) String MATCH_inputEPC,
-			@RequestParam(required = false) String MATCH_outputEPC,
-			@RequestParam(required = false) String MATCH_anyEPC,
+			@RequestParam(required = false) String MATCH_outputEPC, @RequestParam(required = false) String MATCH_anyEPC,
 			@RequestParam(required = false) String MATCH_epcClass,
 			@RequestParam(required = false) String MATCH_inputEPCClass,
 			@RequestParam(required = false) String MATCH_outputEPCClass,
 			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity,
-			@RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity,
-			@RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity,
-			@RequestParam(required = false) String orderBy,
+			@RequestParam(required = false) String EQ_quantity, @RequestParam(required = false) String GT_quantity,
+			@RequestParam(required = false) String GE_quantity, @RequestParam(required = false) String LT_quantity,
+			@RequestParam(required = false) String LE_quantity, @RequestParam(required = false) String orderBy,
 			@RequestParam(required = false) String orderDirection,
 			@RequestParam(required = false) String eventCountLimit,
 			@RequestParam(required = false) String maxEventCount,
 
-			@RequestParam(required = false) String vocabularyName,
-			@RequestParam(required = false) boolean includeAttributes,
+	@RequestParam(required = false) String vocabularyName, @RequestParam(required = false) boolean includeAttributes,
 			@RequestParam(required = false) boolean includeChildren,
-			@RequestParam(required = false) String attributeNames,
-			@RequestParam(required = false) String EQ_name,
-			@RequestParam(required = false) String WD_name,
-			@RequestParam(required = false) String HASATTR,
+			@RequestParam(required = false) String attributeNames, @RequestParam(required = false) String EQ_name,
+			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String maxElementCount,
-			
-			@RequestParam(required = false) String format,
-			@RequestParam Map<String, String> params) {
+
+	@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
+			@RequestParam(required = false) String accessToken,
+
+	@RequestParam Map<String, String> params) {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
-		
+
+		// Access Control is not mandatory
+		// However, if fid and accessToken provided, more information provided
+		FacebookClient fc = null;
+		List<String> friendList = null;
+		if (userID != null) {
+			// Check accessToken
+			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+			if (fc == null) {
+				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+			}
+			friendList = new ArrayList<String>();
+
+			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+			for (List<User> friends : friendConnection) {
+				for (User friend : friends) {
+					friendList.add(friend.getId());
+				}
+			}
+		}
+
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.poll(queryName, eventType, GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					vocabularyName, includeAttributes, includeChildren,
-					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format,
-					params);
-			return new ResponseEntity<>(result,responseHeaders, HttpStatus.OK);
+			String result = mongoQueryService.poll(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren, attributeNames,
+					EQ_name, WD_name, HASATTR, maxElementCount, format, userID, friendList, params);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -303,14 +293,14 @@ public class RESTLikeQueryService implements ServletContextAware {
 	public ResponseEntity<?> getQueryNamesREST() {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
-		
+
 		JSONArray jsonArray = new JSONArray();
 		List<String> queryNames = getQueryNames();
 		for (int i = 0; i < queryNames.size(); i++) {
 			jsonArray.put(queryNames.get(i));
 		}
-		
-		return new ResponseEntity<>(jsonArray.toString(1),responseHeaders, HttpStatus.OK);
+
+		return new ResponseEntity<>(jsonArray.toString(1), responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -344,7 +334,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	public ResponseEntity<?> getStandardVersion() {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
-		return new ResponseEntity<>(new String("1.1"),responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(new String("1.1"), responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -367,7 +357,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 		// It is not a version of Vendor
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
-		
+
 		return new ResponseEntity<>(new String(), responseHeaders, HttpStatus.OK);
 	}
 }
