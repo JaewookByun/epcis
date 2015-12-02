@@ -13,6 +13,7 @@
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
 	<bean id="securedQuery" class="org.oliot.epcis.service.query.SecuredQueryService"></bean>
 	<bean id="utilityService" class="org.oliot.epcis.service.query.UtilityService"></bean>
+	<bean id="codeParser" class="org.oliot.epcis.service.codeparser.CodeParserService"></bean>
 		
 	<!-- SOAP/HTTP Test Class, describing how to consume SOAP services  -->
 	<!-- <bean id="soaptest" class="org.oliot.epcis.service.query.SoapTest"></bean>-->
