@@ -20,7 +20,7 @@
 <title>EPCIS v1.1 Tutorial - the cow's life</title>
 
 <link rel="stylesheet" href="./css/bootstrap.min.css">
-<link href="carousel.css" rel="stylesheet">
+<link href="./css/carousel.css" rel="stylesheet">
 
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -92,8 +92,9 @@ body {
 						baseURL
 								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
-							xmlDoc = $.parseXML(data);
-							$xml = $(xmlDoc);
+							var text = new XMLSerializer().serializeToString(data);
+							xmlDoc = $.parseXML(text);
+							$xml = $(xmlDoc);		
 							if ($xml.find("eventTime").length == 0) {
 								alert("No Events, please capture your events first\nGo to Capture Tutorial");
 								document.location.href = "./captureService1.jsp";
@@ -140,7 +141,8 @@ body {
 						baseURL
 								+ "/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
 						function(data) {
-							xmlDoc = $.parseXML(data);
+							var text = new XMLSerializer().serializeToString(data);
+							xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							$eventTime = $xml.find("eventTime")[0];
 							$inputEPCList = $xml.find("inputEPCList");
@@ -226,7 +228,8 @@ body {
 						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_epc="
 								+ $origin,
 						function(data) {
-							xmlDoc = $.parseXML(data);
+							var text = new XMLSerializer().serializeToString(data);
+							xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							$eventTime = $xml.find("eventTime")[0];
 							$inputEPCList = $xml.find("inputEPCList");
