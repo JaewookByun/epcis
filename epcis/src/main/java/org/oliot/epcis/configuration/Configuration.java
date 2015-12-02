@@ -41,6 +41,7 @@ public class Configuration implements ServletContextListener {
 	public static boolean isServiceRegistryReportOn;
 	public static String onsAddress;
 	public static boolean isQueryAccessControlOn;
+	public static String facebookAppID;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -159,6 +160,14 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.error(
 						"query_access_control should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
+			
+			// Facebook Application ID
+			String fai = json.getString("facebook_app_id");
+			if (fai == null) {
+				Configuration.logger.error(
+						"facebook_app_id, please make sure Configuration.json is correct, and restart.");
+			}
+			facebookAppID = fai.trim();
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());

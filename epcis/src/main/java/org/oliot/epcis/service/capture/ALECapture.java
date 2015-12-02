@@ -107,7 +107,7 @@ public class ALECapture implements ServletContextAware {
 				for (int i = 0; i < objectEventArray.size(); i++) {
 					ObjectEventType oet = objectEventArray.get(i);
 					CaptureService capture = new CaptureService();
-					capture.capture(oet);
+					capture.capture(oet, null, null);
 				}
 			} else if (eventType.equals("QuantityEvent")) {
 

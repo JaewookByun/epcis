@@ -10,11 +10,11 @@ import com.restfb.exception.FacebookOAuthException;
 import com.restfb.types.User;
 
 public class OAuthUtil {
-	public static boolean isValidated(String accessToken, String fid) {
+	public static boolean isValidated(String accessToken, String userID) {
 		try {
-			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_2);
+			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_4);
 			String id = fc.fetchObject("me", User.class).getId();
-			if (!id.equals(fid)) {
+			if (!id.equals(userID)) {
 				return false;
 			}
 			return true;
@@ -24,11 +24,11 @@ public class OAuthUtil {
 		}
 	}
 
-	public static FacebookClient isValidatedFacebookClient(String accessToken, String fid) {
+	public static FacebookClient isValidatedFacebookClient(String accessToken, String userID) {
 		try {
 			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_4);
 			String id = fc.fetchObject("me", User.class).getId();
-			if (!id.equals(fid)) {
+			if (!id.equals(userID)) {
 				return null;
 			}
 			return fc;
@@ -66,19 +66,6 @@ public class OAuthUtil {
 			} else {
 				return false;
 			}
-		}
-
-		// If Not Owner
-		if (am.equals("Follow")) {
-			return false;
-			// Facebook's subscribers are now deprecated, just return false;
-			/*
-			 * Connection<User> followerList =
-			 * fc.fetchConnection("me/subscribers", User.class); for (List<User>
-			 * followers : followerList) { for (User follower : followers) {
-			 * String followerID = follower.getId(); if
-			 * (ownerSet.contains(followerID)) { return true; } } }
-			 */
 		}
 
 		return false;
