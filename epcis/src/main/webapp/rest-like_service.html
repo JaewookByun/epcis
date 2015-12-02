@@ -26,6 +26,49 @@
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
+			<h3 class="panel-title">EPCIS Code Parsing Service</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<td>Method Name</td>
+						<td>Description</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Parse GS1Code</td>
+						<td>
+							<ul class="list-group">
+								<li class="list-group-item">This service allows you to get
+									EPCs included in GS1 Barcode/QR-code ( Refer to <a
+									href="http://www.gs1.org/docs/barcodes/GS1_General_Specifications.pdf">GS1
+										General Specification</a> )
+								</li>
+								<li class="list-group-item">Method: get</li>
+								<li class="list-group-item">REST URL: <br> <code>http://{base-url}:{base-port}/epcis/Service/CodeParser/{code}
+									</code> <br> Additional Parameter: <br> <code>gcpLength
+										= {integer}</code> <br> Result Format: <br> <code>
+										application/json </code> <br>
+								<br> Example Query: <br> <code>http://localhost:8081/epcis/Service/CodeParser/(01)80614141123458(21)6789(10)4222(414)0614141123452(254)333?gcpLength=7</code>
+									<br> Result of the example: <br> { "sgtin":
+									"urn:epc:id:sgtin:0614141.812345.6789", "sgln":
+									"urn:epc:id:sgln:0614141.12345.333", "lgtin":
+									"urn:epc:class:lgtin:0614141.812345.4222" } 
+							</ul>
+						</td>
+					</tr>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+
+
+	<div class="panel panel-info">
+		<div class="panel-heading">
 			<h3 class="panel-title">EPCIS Capture Service</h3>
 		</div>
 		<div class="panel-body">
@@ -61,9 +104,13 @@
 									<a href="./exampleXML/gs1example4(Transformation).xml">gs1example4(Transformation)</a><br>
 									<a href="./exampleXML/otherExample1(Quantity).xml">otherExample1(Quantity)</a><br>
 									<a href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a><br>
-									<a href="./exampleXML/gs1Railexample1.xml">GS1 EPCIS for Rail standard example 1 <code>NEW</code></a><br>
-									<a href="./exampleXML/gs1Railexample2.xml">GS1 EPCIS for Rail standard example 2 <code>NEW</code></a><br>
-									<a href="./exampleXML/gs1Railexample3.xml">GS1 EPCIS for Rail standard example 3 <code>NEW</code></a>
+									<a href="./exampleXML/gs1Railexample1.xml">GS1 EPCIS for
+										Rail standard example 1 <code>NEW</code>
+								</a><br> <a href="./exampleXML/gs1Railexample2.xml">GS1
+										EPCIS for Rail standard example 2 <code>NEW</code>
+								</a><br> <a href="./exampleXML/gs1Railexample3.xml">GS1
+										EPCIS for Rail standard example 3 <code>NEW</code>
+								</a>
 
 								</li>
 							</ul>
@@ -264,9 +311,10 @@
 								<li class="list-group-item">Additional Parameters: <br>
 									dest : Callback URL <br> cronExpression : <a
 									href="http://www.quartz-scheduler.org/documentation/quartz-1.x/tutorials/crontrigger">Quartz
-										CronTrigger Tutorial</a> <code>NEW</code> <br> reportIfEmpty : do not receive
-									events if empty (true|false) <br> ignoreReceivedEvent : do
-									not receive received events (true|false) <code>NEW</code>
+										CronTrigger Tutorial</a> <code>NEW</code> <br> reportIfEmpty
+									: do not receive events if empty (true|false) <br>
+									ignoreReceivedEvent : do not receive received events
+									(true|false) <code>NEW</code>
 								</li>
 								<li class="list-group-item">[Example] <br>
 									MATCH_epc=urn:epc:id:sgtin:1.1.1 <br> cronExpression=0/10
