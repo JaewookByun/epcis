@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdt:epcTagDataTranslation version="1.6" date="2011-01-20T12:20:00Z" epcTDSVersion="1.6" xmlns:tdt="urn:epcglobal:tdt:xsd:1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:epcglobal:tdt:xsd:1 EpcTagDataTranslation.xsd">
+
+	<scheme name="ADI-var">
+
+		<level type="BINARY" prefixMatch="00111011" requiredFormattingParameters="filter,taglength">
+
+			<!-- CAGE + SER (UID Construct 1) -->
+			<option optionKey="1" pattern="00111011([01]{6})100000((?:[01]{6}){5})000000((?!100011)((?:[01]{6})+))000000" grammar="'00111011' filter '100000' cage '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="5" bitLength="30" name="cage"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="2" pattern="00111011([01]{6})100000((?:[01]{6}){5})((?:[01]{6})+)000000((?!100011)(?:[01]{6})+)000000" grammar="'00111011' filter '100000' cage originalpartnumber '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="5" bitLength="30" name="cage"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="originalpartnumber"/>
+				<field seq="4" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- CAGE + serial number for traditionally non-serialized parts -->
+			<option optionKey="3" pattern="00111011([01]{6})100000((?:[01]{6}){5})000000(100011(?:[01]{6})+)000000" grammar="'00111011' filter '100000' cage '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="5" bitLength="30" name="cage"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="4" pattern="00111011([01]{6})100000((?:[01]{6}){5})((?:[01]{6})+)000000(100011(?:[01]{6})+)000000" grammar="'00111011' filter '100000' cage originalpartnumber '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="5" bitLength="30" name="cage"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="originalpartnumber"/>
+				<field seq="4" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- DODAAC + SER (UID Construct 1) -->
+			<option optionKey="5" pattern="00111011([01]{6})((?!100000)(?:[01]{6}){6})000000((?!100011)((?:[01]{6})+))000000" grammar="'00111011' filter dodaac '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="6" bitLength="36" name="dodaac"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="6" pattern="00111011([01]{6})((?!100000)(?:[01]{6}){6})((?:[01]{6})+)000000((?!100011)(?:[01]{6})+)000000" grammar="'00111011' filter dodaac originalpartnumber '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="6" bitLength="36" name="dodaac"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="originalpartnumber"/>
+				<field seq="4" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- DODAAC + serial number for traditionally non-serialized parts -->
+			<option optionKey="7" pattern="00111011([01]{6})((?!100000)(?:[01]{6}){6})000000(100011(?:[01]{6})+)000000" grammar="'00111011' filter dodaac '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="6" bitLength="36" name="dodaac"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="8" pattern="00111011([01]{6})((?!100000)(?:[01]{6}){6})((?:[01]{6})+)000000(100011(?:[01]{6})+)000000" grammar="'00111011' filter dodaac originalpartnumber '000000' serial '000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[01]*" bitPadDir="LEFT" bitLength="6" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="6" bitLength="36" name="dodaac"/>
+				<field seq="3" characterSet="[01]*" compaction="6-bit" name="originalpartnumber"/>
+				<field seq="4" characterSet="[01]*" compaction="6-bit" name="serial"/>
+			</option>
+
+		</level>
+
+		<level type="TAG_ENCODING" prefixMatch="urn:epc:tag:adi-var" requiredFormattingParameters="filter,taglength">
+
+			<!-- CAGE + SER (UID Construct 1) -->
+			<option optionKey="1" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{5})\.\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:tag:adi-var:' filter '.' cage '.'  '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="2" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{5})\.([0-9A-Z/-]{1,32})\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:tag:adi-var:' filter '.' cage '.' originalpartnumber '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="4" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + serial number for traditionally non-serialized parts -->
+			<option optionKey="3" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{5})\.\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:tag:adi-var:' filter '.' cage '.'  '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="3" characterSet="#[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="4" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{5})\.([0-9A-Z/-]{1,32})\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:tag:adi-var:' filter '.' cage '.' originalpartnumber '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="4" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+			
+			<!-- DODAAC + SER (UID Construct 1) -->
+			<option optionKey="5" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{6})\.\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:tag:adi-var:' filter '.' dodaac '.'  '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="6" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{6})\.([0-9A-Z/-]{1,32})\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:tag:adi-var:' filter '.' dodaac '.' originalpartnumber '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="4" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + serial number for traditionally non-serialized parts -->
+			<option optionKey="7" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{6})\.\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:tag:adi-var:' filter '.' dodaac '.'  '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="3" characterSet="#[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="8" pattern="urn:epc:tag:adi-var:([0-9]+)\.([0-9A-HJ-NP-Z]{6})\.([0-9A-Z/-]{1,32})\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:tag:adi-var:' filter '.' dodaac '.' originalpartnumber '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="63" characterSet="[0-9]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="4" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+		</level>
+		
+		
+		<level type="PURE_IDENTITY" prefixMatch="urn:epc:id:adi">
+
+			<!-- CAGE + SER (UID Construct 1) -->
+			<option optionKey="1" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\.\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:id:adi:' cage '.' '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="2" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\.([0-9A-Z/-]{1,32})\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:id:adi:' cage '.' originalpartnumber '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + serial number for traditionally non-serialized parts -->
+			<option optionKey="3" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\.\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:id:adi:' cage '.' '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="4" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\.([0-9A-Z/-]{1,32})\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:id:adi:' cage '.' originalpartnumber '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + SER (UID Construct 1) -->
+			<option optionKey="5" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\.\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:id:adi:' dodaac '.' '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="6" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\.([0-9A-Z/-]{1,32})\.([0-9A-Z/-]{1,30})" grammar="'urn:epc:id:adi:' dodaac '.' originalpartnumber '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + serial number for traditionally non-serialized parts -->
+			<option optionKey="7" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\.\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:id:adi:' dodaac '.' '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="#[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="8" pattern="urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\.([0-9A-Z/-]{1,32})\.(#[0-9A-Z/-]{1,29})" grammar="'urn:epc:id:adi:' dodaac '.' originalpartnumber '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+		</level>
+
+
+		<level type="TEI" prefixMatch="ADI ">
+
+			<!-- CAGE + SER (UID Construct 1) -->
+			<option optionKey="1" pattern="ADI CAG ([0-9A-HJ-NP-Z]{5})/SER ([0-9A-Z/-]{1,30})" grammar="'ADI CAG ' cage '/SER ' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="2" pattern="ADI CAG ([0-9A-HJ-NP-Z]{5})/PNO ([0-9A-Z/-]{1,32})/SEQ ([0-9A-Z/-]{1,30})" grammar="'ADI CAG ' cage '/PNO ' originalpartnumber '/SEQ ' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + serial number for traditionally non-serialized parts -->
+			<option optionKey="3" pattern="ADI CAG ([0-9A-HJ-NP-Z]{5})/serial=([#][0-9A-Z/-]{1,29})" grammar="'ADI CAG ' cage '/serial=' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="#[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- CAGE + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="4" pattern="ADI CAG ([0-9A-HJ-NP-Z]{5})/PNO ([0-9A-Z/-]{1,32})/serial=([#][0-9A-Z/-]{1,29})" grammar="'ADI CAG ' cage '/PNO ' originalpartnumber '/serial=' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + SER (UID Construct 1) -->
+			<option optionKey="5" pattern="ADI DAC ([0-9A-HJ-NP-Z]{6})/SER ([0-9A-Z/-]{1,30})" grammar="'ADI DAC ' dodaac '/SER ' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="6" pattern="ADI DAC ([0-9A-HJ-NP-Z]{6})/PNO ([0-9A-Z/-]{1,32})/SEQ ([0-9A-Z/-]{1,30})" grammar="'ADI DAC ' dodaac '/PNO ' originalpartnumber '/SEQ ' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + serial number for traditionally non-serialized parts -->
+			<option optionKey="7" pattern="ADI DAC ([0-9A-HJ-NP-Z]{6})/serial=([#][0-9A-Z/-]{1,29})" grammar="'ADI DAC ' dodaac '/serial=' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="#[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+			<!-- DODAAC + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="8" pattern="ADI DAC ([0-9A-HJ-NP-Z]{6})/PNO ([0-9A-Z/-]{1,32})/serial=([#][0-9A-Z/-]{1,29})" grammar="'ADI DAC ' dodaac '/PNO ' originalpartnumber '/serial=' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+				<field seq="2" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="3" characterSet="[0-9A-Z/-]+" name="serial"/>
+			</option>
+
+		</level>
+
+		
+		<level type="ONS_HOSTNAME">
+
+			<!-- CAGE + SER (UID Construct 1) -->
+			<option optionKey="1" grammar="cage '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+			</option>
+
+			<!-- CAGE + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="2" grammar="originalpartnumber '.' cage '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+			</option>
+
+			<!-- CAGE + serial number for traditionally non-serialized parts -->
+			<option optionKey="3" grammar="cage '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+			</option>
+
+			<!-- CAGE + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="4" grammar="cage '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="cage"/>
+			</option>
+
+			<!-- DODAAC + SER (UID Construct 1) -->
+			<option optionKey="5" grammar="'dodaac '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+			</option>
+
+			<!-- DODAAC + PNO + SEQ (UID Construct 2) -->
+			<option optionKey="6" grammar="originalpartnumber '.' dodaac '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-Z/-]+" name="originalpartnumber"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+			</option>
+
+			<!-- DODAAC + serial number for traditionally non-serialized parts -->
+			<option optionKey="7" grammar="dodaac '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+			</option>
+
+			<!-- DODAAC + PNO + serial number for traditionally non-serialized parts -->
+			<option optionKey="8" grammar="dodaac '.adi.id.onsepc.com'">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]+" name="dodaac"/>
+			</option>
+			
+		</level>
+
+	</scheme>
+
+</tdt:epcTagDataTranslation>
+

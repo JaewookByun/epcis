@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdt:epcTagDataTranslation version="1.6" date="2011-01-20T12:20:00Z" epcTDSVersion="1.6" xmlns:tdt="urn:epcglobal:tdt:xsd:1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:epcglobal:tdt:xsd:1 EpcTagDataTranslation.xsd">
+	<scheme name="GID-96" optionKey="1" tagLength="96">
+		<level type="BINARY" prefixMatch="00110101" requiredFormattingParameters="taglength">
+			<option optionKey="1" pattern="00110101([01]{28})([01]{24})([01]{36})" grammar="'00110101' generalmanager objectclass serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="268435455" characterSet="[01]*" bitPadDir="LEFT" bitLength="28" name="generalmanager"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[01]*" bitPadDir="LEFT" bitLength="24" name="objectclass"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="68719476735" characterSet="[01]*" bitPadDir="LEFT" bitLength="36" name="serial"/>
+			</option>
+		</level>
+		<level type="TAG_ENCODING" prefixMatch="urn:epc:tag:gid-96" requiredFormattingParameters="taglength">
+			<option optionKey="1" pattern="urn:epc:tag:gid-96:([0-9]{1,9})\.([0-9]{1,8})\.([0-9]{1,11})" grammar="'urn:epc:tag:gid-96:' generalmanager '.' objectclass '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="268435455" characterSet="[0-9]*" name="generalmanager"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="objectclass"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="68719476735" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="PURE_IDENTITY" prefixMatch="urn:epc:id:gid">
+			<option optionKey="1" pattern="urn:epc:id:gid:([0-9]{1,9})\.([0-9]{1,8})\.([0-9]{1,11})" grammar="'urn:epc:id:gid:' generalmanager '.' objectclass '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="268435455" characterSet="[0-9]*" name="generalmanager"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="objectclass"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="68719476735" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="LEGACY" prefixMatch="generalmanager=">
+			<option optionKey="1" pattern="generalmanager=([0-9]{1,9});objectclass=([0-9]{1,8});serial=([0-9]{1,11})" grammar="'generalmanager=' generalmanager ';objectclass=' objectclass ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="268435455" characterSet="[0-9]*" name="generalmanager"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="objectclass"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="68719476735" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="ONS_HOSTNAME">
+			<option optionKey="1" grammar="objectclass '.' generalmanager '.gid.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="objectclass"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="268435455" characterSet="[0-9]*" name="generalmanager"/>
+			</option>
+		</level>
+	</scheme>
+</tdt:epcTagDataTranslation>
