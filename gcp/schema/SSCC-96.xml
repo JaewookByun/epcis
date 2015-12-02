@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdt:epcTagDataTranslation version="1.6" date="2011-01-20T12:20:00Z" epcTDSVersion="1.6" xmlns:tdt="urn:epcglobal:tdt:xsd:1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:epcglobal:tdt:xsd:1 EpcTagDataTranslation.xsd">
+	<scheme name="SSCC-96" optionKey="gs1companyprefixlength" tagLength="96">
+		<level type="BINARY" prefixMatch="00110001" requiredFormattingParameters="filter,taglength">
+			<option optionKey="12" pattern="00110001([01]{3})000([01]{40})([01]{18})000000000000000000000000" grammar="'00110001' filter '000' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="40" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999" characterSet="[01]*" bitPadDir="LEFT" bitLength="18" name="serialref"/>
+			</option>
+			<option optionKey="11" pattern="00110001([01]{3})001([01]{37})([01]{21})000000000000000000000000" grammar="'00110001' filter '001' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="37" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="21" name="serialref"/>
+			</option>
+			<option optionKey="10" pattern="00110001([01]{3})010([01]{34})([01]{24})000000000000000000000000" grammar="'00110001' filter '010' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="34" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="24" name="serialref"/>
+			</option>
+			<option optionKey="9" pattern="00110001([01]{3})011([01]{30})([01]{28})000000000000000000000000" grammar="'00110001' filter '011' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="30" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="28" name="serialref"/>
+			</option>
+			<option optionKey="8" pattern="00110001([01]{3})100([01]{27})([01]{31})000000000000000000000000" grammar="'00110001' filter '100' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="27" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="31" name="serialref"/>
+			</option>
+			<option optionKey="7" pattern="00110001([01]{3})101([01]{24})([01]{34})000000000000000000000000" grammar="'00110001' filter '101' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="24" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="34" name="serialref"/>
+			</option>
+			<option optionKey="6" pattern="00110001([01]{3})110([01]{20})([01]{38})000000000000000000000000" grammar="'00110001' filter '110' gs1companyprefix serialref '000000000000000000000000'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="38" name="serialref"/>
+			</option>
+		</level>
+		<level type="TAG_ENCODING" prefixMatch="urn:epc:tag:sscc-96" requiredFormattingParameters="filter,taglength">
+			<option optionKey="12" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{12})\.([0-9]{5})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999" characterSet="[0-9]*" length="5" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="11" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{11})\.([0-9]{6})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="10" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{10})\.([0-9]{7})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="9" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{9})\.([0-9]{8})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="8" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{8})\.([0-9]{9})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="7" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{7})\.([0-9]{10})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="6" pattern="urn:epc:tag:sscc-96:([0-7]{1})\.([0-9]{6})\.([0-9]{11})" grammar="'urn:epc:tag:sscc-96:' filter '.' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+		</level>
+		<level type="PURE_IDENTITY" prefixMatch="urn:epc:id:sscc">
+			<option optionKey="12" pattern="urn:epc:id:sscc:([0-9]{12})\.([0-9]{5})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999" characterSet="[0-9]*" length="5" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="11" pattern="urn:epc:id:sscc:([0-9]{11})\.([0-9]{6})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="10" pattern="urn:epc:id:sscc:([0-9]{10})\.([0-9]{7})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="9" pattern="urn:epc:id:sscc:([0-9]{9})\.([0-9]{8})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="8" pattern="urn:epc:id:sscc:([0-9]{8})\.([0-9]{9})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="7" pattern="urn:epc:id:sscc:([0-9]{7})\.([0-9]{10})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+			<option optionKey="6" pattern="urn:epc:id:sscc:([0-9]{6})\.([0-9]{11})" grammar="'urn:epc:id:sscc:' gs1companyprefix '.' serialref">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="serialref"/>
+			</option>
+		</level>
+		<level type="LEGACY" prefixMatch="sscc=" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="11" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="10" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="9" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="8" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="7" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="6" pattern="sscc=([0-9]{18})" grammar="'sscc=' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="ssccprefixremainder" characterSet="[0-9]*" length="16" function="SUBSTR(sscc,1,16)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(sscc,0,1)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="4" newFieldName="serialref" characterSet="[0-9]*" function="CONCAT(extensiondigit,serialrefremainder)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="5" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(serialref,0,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(serialref,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="3" newFieldName="ssccprefix" characterSet="[0-9]*" length="17" function="CONCAT(extensiondigit,gs1companyprefix,serialrefremainder)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="4" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(ssccprefix)"/>
+		</level>
+		<level type="LEGACY_AI" prefixMatch="(00)" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="11" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="10" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="9" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="8" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="7" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="6" pattern="\(00\)([0-9]{18})" grammar="'(00)' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="ssccprefixremainder" characterSet="[0-9]*" length="16" function="SUBSTR(sscc,1,16)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(sscc,0,1)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="4" newFieldName="serialref" characterSet="[0-9]*" function="CONCAT(extensiondigit,serialrefremainder)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="5" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(serialref,0,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(serialref,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="3" newFieldName="ssccprefix" characterSet="[0-9]*" length="17" function="CONCAT(extensiondigit,gs1companyprefix,serialrefremainder)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="4" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(ssccprefix)"/>
+		</level>
+		<level type="ELEMENT_STRING" prefixMatch="00" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="11" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="10" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="9" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="8" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="7" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<option optionKey="6" pattern="00([0-9]{18})" grammar="'00' extensiondigit gs1companyprefix serialrefremainder checkdigit">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999999999" characterSet="[0-9]*" length="18" padChar="0" padDir="LEFT" name="sscc"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="ssccprefixremainder" characterSet="[0-9]*" length="16" function="SUBSTR(sscc,1,16)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(sscc,0,1)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="4" newFieldName="serialref" characterSet="[0-9]*" function="CONCAT(extensiondigit,serialrefremainder)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="5" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(ssccprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="extensiondigit" characterSet="[0-9]*" length="1" function="SUBSTR(serialref,0,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="serialrefremainder" characterSet="[0-9]*" function="SUBSTR(serialref,1)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="3" newFieldName="ssccprefix" characterSet="[0-9]*" length="17" function="CONCAT(extensiondigit,gs1companyprefix,serialrefremainder)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="4" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(ssccprefix)"/>
+		</level>
+		<level type="ONS_HOSTNAME">
+			<option optionKey="12" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="11" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="10" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="9" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="8" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="7" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="6" grammar="gs1companyprefix '.sscc.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+		</level>
+	</scheme>
+</tdt:epcTagDataTranslation>

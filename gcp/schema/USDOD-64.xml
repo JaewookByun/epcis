@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdt:epcTagDataTranslation version="1.4" date="2009-06-16T10:57:00Z" epcTDSVersion="1.4" xmlns:tdt="urn:epcglobal:tdt:xsd:1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:epcglobal:tdt:xsd:1 EpcTagDataTranslation.xsd">
+	<scheme name="USDOD-64" optionKey="1" tagLength="64">
+		<level type="BINARY" prefixMatch="11001110" requiredFormattingParameters="filter,taglength">
+			<option optionKey="1" pattern="11001110([01]{2})([01]{30})([01]{24})" grammar="'11001110' filter cageordodaac serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="3" characterSet="[01]*" bitPadDir="LEFT" bitLength="2" name="filter"/>
+				<field seq="2" characterSet="[01]*" compaction="6-bit" length="5" padChar=" " padDir="LEFT" bitLength="30" name="cageordodaac"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="16777215" characterSet="[01]*" bitPadDir="LEFT" bitLength="24" name="serial"/>
+			</option>
+		</level>
+		<level type="TAG_ENCODING" prefixMatch="urn:epc:tag:usdod-64" requiredFormattingParameters="filter,taglength">
+			<option optionKey="1" pattern="urn:epc:tag:usdod-64:([0-9])\.([0-9A-HJ-NP-Z]{5})\.([0-9]{1,8})" grammar="'urn:epc:tag:usdod-64:' filter '.' cageordodaac '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="3" characterSet="[0-3]*" name="filter"/>
+				<field seq="2" characterSet="[0-9A-HJ-NP-Z]*" name="cageordodaac"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="PURE_IDENTITY" prefixMatch="urn:epc:id:usdod">
+			<option optionKey="1" pattern="urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\.([0-9]{1,8})" grammar="'urn:epc:id:usdod:' cageordodaac '.' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]*" name="cageordodaac"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="LEGACY" prefixMatch="cageordodaac=">
+			<option optionKey="1" pattern="cageordodaac=([0-9A-HJ-NP-Z]{5});serial=([0-9]{1,8})" grammar="'cageordodaac=' cageordodaac ';serial=' serial">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]*" name="cageordodaac"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16777215" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="ONS_HOSTNAME" >
+			<option optionKey="1" grammar="cageordodaac '.usdod.id.onsepc.com' ">
+				<field seq="1" characterSet="[0-9A-HJ-NP-Z]*" name="cageordodaac"/>
+			</option>
+		</level>
+	</scheme>
+</tdt:epcTagDataTranslation>

@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tdt:epcTagDataTranslation version="1.6" date="2011-01-20T12:20:00Z" epcTDSVersion="1.6" xmlns:tdt="urn:epcglobal:tdt:xsd:1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:epcglobal:tdt:xsd:1 EpcTagDataTranslation.xsd">
+	<scheme name="SGLN-64" optionKey="gs1companyprefixlength" tagLength="64">
+		<level type="BINARY" prefixMatch="00001001" requiredFormattingParameters="filter,taglength">
+			<option optionKey="12" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="0" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="00001001([01]{3})([01]{14})([01]{20})([01]{19})" grammar="'00001001' filter gs1companyprefixindex locationref serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[01]*" bitPadDir="LEFT" bitLength="3" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="16383" characterSet="[01]*" bitPadDir="LEFT" bitLength="14" name="gs1companyprefixindex"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999" characterSet="[01]*" bitPadDir="LEFT" bitLength="20" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[01]*" bitPadDir="LEFT" bitLength="19" name="serial"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="TABLELOOKUP(gs1companyprefixindex,tdt64bitcpi,gs1companyprefixindex,gs1companyprefix)" tableURL="http://www.onsepc.com/ManagerTranslation.xml" tableXPath="/GEPC64Table/entry[@index='$1']/@companyPrefix" tableParams="gs1companyprefixindex"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="gs1companyprefixlength" characterSet="[0-9]*" function="LENGTH(gs1companyprefix)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="gs1companyprefixindex" characterSet="[0-9]*" function="TABLELOOKUP(gs1companyprefix,tdt64bitcpi,gs1companyprefix,gs1companyprefixindex)" tableURL="http://www.onsepc.com/ManagerTranslation.xml" tableXPath="/GEPC64Table/entry[@companyPrefix='$1']/@index" tableParams="gs1companyprefix"/>
+		</level>
+		<level type="TAG_ENCODING" prefixMatch="urn:epc:tag:sgln-64" requiredFormattingParameters="filter,taglength">
+			<option optionKey="12" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{12})\.([0-9]{0})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="0" characterSet="[0-9]*" length="0" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{11})\.([0-9]{1})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9" characterSet="[0-9]*" length="1" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{10})\.([0-9]{2})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99" characterSet="[0-9]*" length="2" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{9})\.([0-9]{3})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999" characterSet="[0-9]*" length="3" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{8})\.([0-9]{4})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="9999" characterSet="[0-9]*" length="4" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{7})\.([0-9]{5})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="99999" characterSet="[0-9]*" length="5" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="urn:epc:tag:sgln-64:([0-7]{1})\.([0-9]{6})\.([0-9]{6})\.([0-9]{1,6})" grammar="'urn:epc:tag:sgln-64:' filter '.' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="7" characterSet="[0-7]*" length="1" padChar="0" padDir="LEFT" name="filter"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="4" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="PURE_IDENTITY" prefixMatch="urn:epc:id:sgln">
+			<option optionKey="12" pattern="urn:epc:id:sgln:([0-9]{12})\.([0-9]{0})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="0" characterSet="[0-9]*" length="0" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="urn:epc:id:sgln:([0-9]{11})\.([0-9]{1})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9" characterSet="[0-9]*" length="1" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="urn:epc:id:sgln:([0-9]{10})\.([0-9]{2})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99" characterSet="[0-9]*" length="2" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="urn:epc:id:sgln:([0-9]{9})\.([0-9]{3})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999" characterSet="[0-9]*" length="3" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="urn:epc:id:sgln:([0-9]{8})\.([0-9]{4})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999" characterSet="[0-9]*" length="4" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="urn:epc:id:sgln:([0-9]{7})\.([0-9]{5})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999" characterSet="[0-9]*" length="5" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="urn:epc:id:sgln:([0-9]{6})\.([0-9]{6})\.([0-9]{1,6})" grammar="'urn:epc:id:sgln:' gs1companyprefix '.' locationref '.' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="3" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+		</level>
+		<level type="LEGACY" prefixMatch="gln=" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="gln=([0-9]{13});serial=([0-9]{1,6})" grammar="'gln=' gs1companyprefix locationref checkdigit ';serial=' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="glnprefixremainder" characterSet="[0-9]*" length="12" function="SUBSTR(gln,0,12)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="locationref" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="glnprefix" characterSet="[0-9]*" length="12" function="CONCAT(gs1companyprefix,locationref)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(glnprefix)"/>
+		</level>
+		<level type="LEGACY_AI" prefixMatch="(414)" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="\(414\)([0-9]{13})\(254\)([0-9]*)" grammar="'(414)' gs1companyprefix locationref checkdigit '(254)' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="glnprefixremainder" characterSet="[0-9]*" length="12" function="SUBSTR(gln,0,12)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="locationref" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="glnprefix" characterSet="[0-9]*" length="12" function="CONCAT(gs1companyprefix,locationref)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(glnprefix)"/>
+		</level>
+		<level type="ELEMENT_STRING" prefixMatch="414" requiredParsingParameters="gs1companyprefixlength">
+			<option optionKey="12" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="11" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="10" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="9" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="8" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="7" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<option optionKey="6" pattern="414([0-9]{13})254([0-9]*)" grammar="'414' gs1companyprefix locationref checkdigit '254' serial">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999999999999" characterSet="[0-9]*" length="13" padChar="0" padDir="LEFT" name="gln"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="524287" characterSet="[0-9]*" name="serial"/>
+			</option>
+			<rule type="EXTRACT" inputFormat="STRING" seq="1" newFieldName="glnprefixremainder" characterSet="[0-9]*" length="12" function="SUBSTR(gln,0,12)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="2" newFieldName="locationref" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,gs1companyprefixlength)"/>
+			<rule type="EXTRACT" inputFormat="STRING" seq="3" newFieldName="gs1companyprefix" characterSet="[0-9]*" function="SUBSTR(glnprefixremainder,0,gs1companyprefixlength)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="1" newFieldName="glnprefix" characterSet="[0-9]*" length="12" function="CONCAT(gs1companyprefix,locationref)"/>
+			<rule type="FORMAT" inputFormat="STRING" seq="2" newFieldName="checkdigit" characterSet="[0-9]*" length="1" function="GS1CHECKSUM(glnprefix)"/>
+		</level>
+		<level type="ONS_HOSTNAME">
+			<option optionKey="12" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="0" characterSet="[0-9]*" length="0" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999999" characterSet="[0-9]*" length="12" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="11" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9" characterSet="[0-9]*" length="1" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999999" characterSet="[0-9]*" length="11" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="10" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99" characterSet="[0-9]*" length="2" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999999" characterSet="[0-9]*" length="10" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="9" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999" characterSet="[0-9]*" length="3" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999999" characterSet="[0-9]*" length="9" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="8" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="9999" characterSet="[0-9]*" length="4" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="99999999" characterSet="[0-9]*" length="8" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="7" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="99999" characterSet="[0-9]*" length="5" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="9999999" characterSet="[0-9]*" length="7" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+			<option optionKey="6" grammar="locationref '.' gs1companyprefix '.sgln.id.onsepc.com'">
+				<field seq="1" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="locationref"/>
+				<field seq="2" decimalMinimum="0" decimalMaximum="999999" characterSet="[0-9]*" length="6" padChar="0" padDir="LEFT" name="gs1companyprefix"/>
+			</option>
+		</level>
+	</scheme>
+</tdt:epcTagDataTranslation>
