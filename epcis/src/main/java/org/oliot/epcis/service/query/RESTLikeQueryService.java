@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -86,7 +87,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Subscribe/{queryName}/{subscriptionID}", method = RequestMethod.GET)
 	@ResponseBody
-	public String subscribe(@PathVariable String queryName,
+	public ResponseEntity<?> subscribe(@PathVariable String queryName,
 			@PathVariable String subscriptionID, @RequestParam String dest,
 			@RequestParam String cronExpression,
 			@RequestParam(required = false) boolean reportIfEmpty,
@@ -126,6 +127,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String format,
 			@RequestParam Map<String, String> params) {
 
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
+		
 		if (initialRecordTime == null) {
 			GregorianCalendar cal = new GregorianCalendar();
 			Date curTime = cal.getTime();
@@ -138,13 +142,15 @@ public class RESTLikeQueryService implements ServletContextAware {
 						"yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 				sdf.parse(initialRecordTime);
 			} catch (ParseException e) {
-				return e.toString();
+				String error = e.toString();
+				return new ResponseEntity<>(error, responseHeaders, HttpStatus.BAD_REQUEST);
+
 			}
 		}
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			return mongoQueryService.subscribe(queryName, subscriptionID, dest,
+			String result = mongoQueryService.subscribe(queryName, subscriptionID, dest,
 					cronExpression, ignoreReceivedEvent, reportIfEmpty, initialRecordTime,
 					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
@@ -155,6 +161,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
 					LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, format, params);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -170,11 +177,13 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
 	public ResponseEntity<?> unsubscribe(@PathVariable String subscriptionID) {
-
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "text/html; charset=utf-8");		
+		
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
 			mongoQueryService.unsubscribe(subscriptionID);
-			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"), HttpStatus.OK);
+			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"), responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -189,11 +198,14 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetSubscriptionIDs/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
-	public String getSubscriptionIDsREST(@PathVariable String queryName) {
-
+	public ResponseEntity<?> getSubscriptionIDsREST(@PathVariable String queryName) {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");		
+		
 		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mongoQueryService = new MongoQueryService();
-			return mongoQueryService.getSubscriptionIDsREST(queryName);
+			MongoQueryService mongoQueryService = new MongoQueryService(); 
+			String result = mongoQueryService.getSubscriptionIDsREST(queryName);
+			return new ResponseEntity<>(result,responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -205,7 +217,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
-	public String poll(@PathVariable String queryName,
+	public ResponseEntity<?> poll(@PathVariable String queryName,
 			@RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime,
 			@RequestParam(required = false) String LT_eventTime,
@@ -249,10 +261,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 			
 			@RequestParam(required = false) String format,
 			@RequestParam Map<String, String> params) {
-
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
+		
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			return mongoQueryService.poll(queryName, eventType, GE_eventTime,
+			String result = mongoQueryService.poll(queryName, eventType, GE_eventTime,
 					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
 					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
@@ -264,6 +278,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					vocabularyName, includeAttributes, includeChildren,
 					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format,
 					params);
+			return new ResponseEntity<>(result,responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -285,13 +300,17 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetQueryNames", method = RequestMethod.GET)
 	@ResponseBody
-	public String getQueryNamesREST() {
+	public ResponseEntity<?> getQueryNamesREST() {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		
 		JSONArray jsonArray = new JSONArray();
 		List<String> queryNames = getQueryNames();
 		for (int i = 0; i < queryNames.size(); i++) {
 			jsonArray.put(queryNames.get(i));
 		}
-		return jsonArray.toString(1);
+		
+		return new ResponseEntity<>(jsonArray.toString(1),responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -323,7 +342,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@RequestMapping(value = "/GetStandardVersion", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getStandardVersion() {
-		return new ResponseEntity<>(new String("1.1"), HttpStatus.OK);
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
+		return new ResponseEntity<>(new String("1.1"),responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -342,8 +363,11 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetVendorVersion", method = RequestMethod.GET)
 	@ResponseBody
-	public String getVendorVersion() {
+	public ResponseEntity<?> getVendorVersion() {
 		// It is not a version of Vendor
-		return null;
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
+		
+		return new ResponseEntity<>(new String(), responseHeaders, HttpStatus.OK);
 	}
 }

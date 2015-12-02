@@ -180,6 +180,7 @@ public class MongoSubscriptionTask implements Job {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			conn.setRequestProperty("Content-Length", "" + Integer.toString(resultString.getBytes().length));
+			conn.setRequestProperty("Content-Type", "application/xml; charset=utf-8");
 			DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
 			wr.writeBytes(resultString);
 			wr.flush();
