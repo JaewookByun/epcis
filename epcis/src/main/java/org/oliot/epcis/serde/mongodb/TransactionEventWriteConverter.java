@@ -19,9 +19,6 @@ import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.TransactionEventExtensionType;
 import org.oliot.model.epcis.TransactionEventType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -46,11 +43,9 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class TransactionEventWriteConverter implements Converter<TransactionEventType, DBObject> {
+public class TransactionEventWriteConverter {
 
-	public DBObject convert(TransactionEventType transactionEventType) {
+	public DBObject convert(TransactionEventType transactionEventType, Integer gcpLength) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
@@ -71,7 +66,7 @@ public class TransactionEventWriteConverter implements Converter<TransactionEven
 		dbo.put("recordTime", recordTimeMilis);
 		// Parent ID
 		if (transactionEventType.getParentID() != null)
-			dbo.put("parentID", transactionEventType.getParentID());
+			dbo.put("parentID", MongoWriterUtil.getInstanceEPC(transactionEventType.getParentID(),gcpLength));
 		// EPC List
 		if (transactionEventType.getEpcList() != null) {
 			EPCListType epcs = transactionEventType.getEpcList();
@@ -79,7 +74,7 @@ public class TransactionEventWriteConverter implements Converter<TransactionEven
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(),gcpLength));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("epcList", epcDBList);
@@ -95,12 +90,12 @@ public class TransactionEventWriteConverter implements Converter<TransactionEven
 			dbo.put("disposition", transactionEventType.getDisposition());
 		if (transactionEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transactionEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType);
+			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		if (transactionEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType);
+			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 
@@ -124,7 +119,7 @@ public class TransactionEventWriteConverter implements Converter<TransactionEven
 		// Extension
 		if (transactionEventType.getExtension() != null) {
 			TransactionEventExtensionType oee = transactionEventType.getExtension();
-			DBObject extension = getTransactionEventExtensionObject(oee);
+			DBObject extension = getTransactionEventExtensionObject(oee, gcpLength);
 			dbo.put("extension", extension);
 		}
 

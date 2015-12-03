@@ -14,9 +14,6 @@ import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.QuantityEventExtensionType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.ReadPointType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -41,11 +38,9 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class QuantityEventWriteConverter implements Converter<QuantityEventType, DBObject> {
+public class QuantityEventWriteConverter {
 
-	public DBObject convert(QuantityEventType quantityEventType) {
+	public DBObject convert(QuantityEventType quantityEventType, Integer gcpLength) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
@@ -66,7 +61,7 @@ public class QuantityEventWriteConverter implements Converter<QuantityEventType,
 		dbo.put("recordTime", recordTimeMilis);
 		// EPC Class
 		if (quantityEventType.getEpcClass() != null)
-			dbo.put("epcClass", quantityEventType.getEpcClass());
+			dbo.put("epcClass", MongoWriterUtil.getClassEPC(quantityEventType.getEpcClass(),gcpLength));
 		dbo.put("quantity", quantityEventType.getQuantity());
 		// Business Step
 		if (quantityEventType.getBizStep() != null)
@@ -77,13 +72,13 @@ public class QuantityEventWriteConverter implements Converter<QuantityEventType,
 		// Read Point
 		if (quantityEventType.getReadPoint() != null) {
 			ReadPointType readPointType = quantityEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType);
+			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (quantityEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType);
+			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 
