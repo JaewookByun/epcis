@@ -71,9 +71,10 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", recordTimeMilis);
 		// EPC List
+		List<EPC> epcList = null;
 		if (objectEventType.getEpcList() != null) {
 			EPCListType epcs = objectEventType.getEpcList();
-			List<EPC> epcList = epcs.getEpc();
+			epcList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 
 			for (int i = 0; i < epcList.size(); i++) {
@@ -119,6 +120,10 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
+				if (epcList != null) {
+					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+					mdConverter.capture(epcList, map2Save);
+				}
 			}
 		}
 		// Vendor Extension
