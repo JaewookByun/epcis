@@ -42,114 +42,89 @@ import com.mongodb.util.JSON;
 
 public class MongoCaptureUtil {
 
-	public void capture(AggregationEventType event, String userID, String accessModifier) {
+	public void capture(AggregationEventType event, String userID, String accessModifier, Integer gcpLength) {
 		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		if (userID == null || accessModifier == null) {
-			mongoOperation.save(event);
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		} else {
-			// Utilize Aggregation Event Write Converter itself
-			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
-			DBObject object2Save = wc.convert(event);
+		// Utilize Aggregation Event Write Converter itself
+		AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
+		DBObject object2Save = wc.convert(event, gcpLength);
+		if (userID != null && accessModifier != null) {
 			object2Save.put("userID", userID);
 			object2Save.put("accessModifier", accessModifier);
-			mongoOperation.save(object2Save, "AggregationEvent");
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
 		}
+		mongoOperation.save(object2Save, "AggregationEvent");
+		Configuration.logger.info(" Event Saved ");
+		((AbstractApplicationContext) ctx).close();
+
 	}
 
-	public void capture(ObjectEventType event, String userID, String accessModifier) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-		if (userID == null || accessModifier == null) {
-			mongoOperation.save(event);
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		} else {
-			// Utilize Object Event Write Converter itself
-			ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
-			DBObject object2Save = wc.convert(event);
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
-			mongoOperation.save(object2Save, "ObjectEvent");
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		}
-	}
-/*
-	public void securedCapture(ObjectEventType event, String fid, String accessModifier) {
+	public void capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
 		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		// Get Object Event Write Converter
+		// Utilize Object Event Write Converter itself
 		ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
-		DBObject object2Save = wc.convert(event);
-		object2Save.put("fid", fid);
-		object2Save.put("accessModifier", accessModifier);
+		DBObject object2Save = wc.convert(event, gcpLength);
+		if (userID != null && accessModifier != null) {
+			object2Save.put("userID", userID);
+			object2Save.put("accessModifier", accessModifier);
+		}
 		mongoOperation.save(object2Save, "ObjectEvent");
 		Configuration.logger.info(" Event Saved ");
 		((AbstractApplicationContext) ctx).close();
-	}
-*/
-	public void capture(QuantityEventType event, String userID, String accessModifier) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-		if (userID == null || accessModifier == null) {
-			mongoOperation.save(event);
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		} else {
-			// Utilize Quantity Event Write Converter itself
-			QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
-			DBObject object2Save = wc.convert(event);
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
-			mongoOperation.save(object2Save, "QuantityEvent");
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		}
+
 	}
 
-	public void capture(TransactionEventType event, String userID, String accessModifier) {
+	public void capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
 		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-		if (userID == null || accessModifier == null) {
-			mongoOperation.save(event);
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		} else {
-			// Utilize Transaction Event Write Converter itself
-			TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
-			DBObject object2Save = wc.convert(event);
+
+		// Utilize Quantity Event Write Converter itself
+		QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
+		DBObject object2Save = wc.convert(event, gcpLength);
+		if (userID != null && accessModifier != null) {
 			object2Save.put("userID", userID);
 			object2Save.put("accessModifier", accessModifier);
-			mongoOperation.save(object2Save, "TransactionEvent");
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
 		}
+		mongoOperation.save(object2Save, "QuantityEvent");
+		Configuration.logger.info(" Event Saved ");
+		((AbstractApplicationContext) ctx).close();
+
 	}
 
-	public void capture(TransformationEventType event, String userID, String accessModifier) {
+	public void capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
 		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
 		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-		if (userID == null || accessModifier == null) {
-			mongoOperation.save(event);
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
-		} else {
-			// Utilize Transaction Event Write Converter itself
-			TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
-			DBObject object2Save = wc.convert(event);
+
+		// Utilize Transaction Event Write Converter itself
+		TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
+		DBObject object2Save = wc.convert(event, gcpLength);
+		if (userID != null && accessModifier != null) {
 			object2Save.put("userID", userID);
 			object2Save.put("accessModifier", accessModifier);
-			mongoOperation.save(object2Save, "TransformationEvent");
-			Configuration.logger.info(" Event Saved ");
-			((AbstractApplicationContext) ctx).close();
 		}
+		mongoOperation.save(object2Save, "TransactionEvent");
+		Configuration.logger.info(" Event Saved ");
+		((AbstractApplicationContext) ctx).close();
+
+	}
+
+	public void capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		// Utilize Transaction Event Write Converter itself
+		TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
+		DBObject object2Save = wc.convert(event, gcpLength);
+		if (userID != null && accessModifier != null) {
+			object2Save.put("userID", userID);
+			object2Save.put("accessModifier", accessModifier);
+		}
+		mongoOperation.save(object2Save, "TransformationEvent");
+		Configuration.logger.info(" Event Saved ");
+		((AbstractApplicationContext) ctx).close();
+
 	}
 
 	public void capture(VocabularyType vocabulary) {
