@@ -21,9 +21,6 @@ import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -48,11 +45,9 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBObject> {
+public class ObjectEventWriteConverter {
 
-	public DBObject convert(ObjectEventType objectEventType) {
+	public DBObject convert(ObjectEventType objectEventType, Integer gcpLength) {
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (objectEventType.getBaseExtension() != null) {
@@ -71,14 +66,15 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", recordTimeMilis);
 		// EPC List
+		List<EPC> epcList = null;
 		if (objectEventType.getEpcList() != null) {
 			EPCListType epcs = objectEventType.getEpcList();
-			List<EPC> epcList = epcs.getEpc();
+			epcList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(),gcpLength));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("epcList", epcDBList);
@@ -95,13 +91,13 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 		// Read Point
 		if (objectEventType.getReadPoint() != null) {
 			ReadPointType readPointType = objectEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType);
+			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (objectEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = objectEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType);
+			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
@@ -119,6 +115,10 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
+				if (epcList != null) {
+					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+					mdConverter.capture(epcList, map2Save);
+				}
 			}
 		}
 		// Vendor Extension
@@ -133,7 +133,7 @@ public class ObjectEventWriteConverter implements Converter<ObjectEventType, DBO
 		// Extension
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
-			DBObject extension = getObjectEventExtensionObject(oee);
+			DBObject extension = getObjectEventExtensionObject(oee, gcpLength);
 			dbo.put("extension", extension);
 		}
 

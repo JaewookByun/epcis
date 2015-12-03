@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.axis.message.MessageElement;
+import org.oliot.gcp.core.CodeParser;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -56,6 +57,45 @@ import com.mongodb.DBObject;
 
 public class MongoWriterUtil {
 
+	static String getInstanceEPC(String code, Integer gcpLength){
+		if( gcpLength == null ){
+			return code;
+		}
+		CodeParser codeParser = new CodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if( collection.containsKey("sgtin") ){
+			return collection.get("sgtin");
+		}
+		return code;
+	}
+	
+	static String getClassEPC(String code, Integer gcpLength){
+		if( gcpLength == null ){
+			return code;
+		}
+		CodeParser codeParser = new CodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if( collection.containsKey("lgtin") ){
+			return collection.get("lgtin");
+		}
+		if( collection.containsKey("gtin")){
+			return collection.get("gtin");
+		}
+		return code;
+	}
+	
+	static String getLocationEPC(String code, Integer gcpLength){
+		if( gcpLength == null ){
+			return code;
+		}
+		CodeParser codeParser = new CodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if( collection.containsKey("sgln") ){
+			return collection.get("sgln");
+		}
+		return code;
+	}
+	
 	static DBObject getDBObjectFromMessageElement(MessageElement any) {
 		NamedNodeMap attributes = any.getAttributes();
 		DBObject attrObject = new BasicDBObject();
@@ -90,10 +130,10 @@ public class MongoWriterUtil {
 		return baseExtension;
 	}
 
-	static DBObject getReadPointObject(ReadPointType readPointType) {
+	static DBObject getReadPointObject(ReadPointType readPointType, Integer gcpLength) {
 		DBObject readPoint = new BasicDBObject();
 		if (readPointType.getId() != null)
-			readPoint.put("id", readPointType.getId());
+			readPoint.put("id", getLocationEPC(readPointType.getId(),gcpLength));
 		// ReadPoint ExtensionType is not currently supported
 		/*
 		 * ReadPointExtensionType readPointExtensionType = readPointType
@@ -120,10 +160,10 @@ public class MongoWriterUtil {
 		return readPoint;
 	}
 
-	static DBObject getBizLocationObject(BusinessLocationType bizLocationType) {
+	static DBObject getBizLocationObject(BusinessLocationType bizLocationType, Integer gcpLength) {
 		DBObject bizLocation = new BasicDBObject();
 		if (bizLocationType.getId() != null)
-			bizLocation.put("id", bizLocationType.getId());
+			bizLocation.put("id", getLocationEPC(bizLocationType.getId(),gcpLength));
 
 		BusinessLocationExtensionType bizLocationExtensionType = bizLocationType
 				.getExtension();
@@ -181,7 +221,7 @@ public class MongoWriterUtil {
 	}
 
 	static DBObject getAggregationEventExtensionObject(
-			AggregationEventExtensionType oee) {
+			AggregationEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getChildQuantityList() != null) {
 			QuantityListType qetl = oee.getChildQuantityList();
@@ -191,7 +231,7 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(),gcpLength));
 				quantity.put("quantity", qet.getQuantity());
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
@@ -252,7 +292,7 @@ public class MongoWriterUtil {
 		return map2Save;
 	}
 
-	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee) {
+	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -262,7 +302,7 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(),gcpLength));
 				quantity.put("quantity", qet.getQuantity());
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
@@ -353,7 +393,7 @@ public class MongoWriterUtil {
 	}
 
 	static DBObject getTransactionEventExtensionObject(
-			TransactionEventExtensionType oee) {
+			TransactionEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -363,7 +403,7 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(),gcpLength));
 				quantity.put("quantity", qet.getQuantity());
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
@@ -417,13 +457,13 @@ public class MongoWriterUtil {
 	}
 
 	static List<DBObject> getQuantityObjectList(
-			List<QuantityElementType> qetList) {
+			List<QuantityElementType> qetList, Integer gcpLength) {
 		List<DBObject> quantityList = new ArrayList<DBObject>();
 		for (int i = 0; i < qetList.size(); i++) {
 			DBObject quantity = new BasicDBObject();
 			QuantityElementType qet = qetList.get(i);
 			if (qet.getEpcClass() != null)
-				quantity.put("epcClass", qet.getEpcClass().toString());
+				quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(),gcpLength));
 			quantity.put("quantity", qet.getQuantity());
 			if (qet.getUom() != null)
 				quantity.put("uom", qet.getUom().toString());

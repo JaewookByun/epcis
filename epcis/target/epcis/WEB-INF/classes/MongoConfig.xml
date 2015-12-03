@@ -15,31 +15,16 @@
 	<mongo:mapping-converter base-package="org.oliot.epcis.serde">
 		<mongo:custom-converters>
 			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.ObjectEventWriteConverter" />
-			</mongo:converter>
-			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.ObjectEventReadConverter" />
-			</mongo:converter>
-			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.TransformationEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.TransformationEventReadConverter" />
 			</mongo:converter>
 			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.AggregationEventWriteConverter" />
-			</mongo:converter>
-			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.AggregationEventReadConverter" />
 			</mongo:converter>
 			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.TransactionEventWriteConverter" />
-			</mongo:converter>
-			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.TransactionEventReadConverter" />
-			</mongo:converter>
-			<mongo:converter>
-				<bean class="org.oliot.epcis.serde.mongodb.QuantityEventWriteConverter" />
 			</mongo:converter>
 			<mongo:converter>
 				<bean class="org.oliot.epcis.serde.mongodb.QuantityEventReadConverter" />

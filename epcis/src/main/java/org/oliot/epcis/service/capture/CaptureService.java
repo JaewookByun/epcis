@@ -17,6 +17,7 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
@@ -25,7 +26,6 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
-import org.oliot.model.epcis.SensorEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyElementType;
@@ -34,7 +34,7 @@ import org.oliot.model.epcis.VocabularyType;
 import org.oliot.tdt.SimplePureIdentityFilter;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -53,7 +53,7 @@ import org.oliot.tdt.SimplePureIdentityFilter;
 
 public class CaptureService implements CoreCaptureService {
 
-	public void capture(AggregationEventType event) {
+	public void capture(AggregationEventType event, String userID, String accessModifier, Integer gcpLength) {
 
 		// General Exception Handling
 		// M7
@@ -89,11 +89,11 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
+			m.capture(event, userID, accessModifier, gcpLength);
 		}
 	}
 
-	public void capture(ObjectEventType event) {
+	public void capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
 
 		// General Exception Handling
 		// M7
@@ -105,11 +105,11 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
+			m.capture(event, userID, accessModifier, gcpLength);
 		}
 	}
-	
-	public void securedCapture(ObjectEventType event, String fid, String accessModifier) {
+
+	public void capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
 
 		// General Exception Handling
 		// M7
@@ -121,27 +121,11 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.securedCapture(event, fid, accessModifier);
+			m.capture(event, userID, accessModifier, gcpLength);
 		}
 	}
 
-	public void capture(QuantityEventType event) {
-
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return;
-		}
-
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
-		}
-	}
-
-	public void capture(TransactionEventType event) {
+	public void capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
 
 		// General Exception Handling
 		// M7
@@ -163,11 +147,11 @@ public class CaptureService implements CoreCaptureService {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
+			m.capture(event, userID, accessModifier, gcpLength);
 		}
 	}
 
-	public void capture(TransformationEventType event) {
+	public void capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
 		// General Exception Handling
 		// M7
 		String timeZone = event.getEventTimeZoneOffset();
@@ -177,28 +161,18 @@ public class CaptureService implements CoreCaptureService {
 		}
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
-		}
-	}
-
-	public void capture(SensorEventType event) {
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return;
-		}
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(event);
+			m.capture(event, userID, accessModifier, gcpLength);
 		}
 	}
 
 	public void capture(VocabularyType vocabulary) {
 		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			m.capture(vocabulary);
+			// Previous Logic
+			//MongoCaptureUtil m = new MongoCaptureUtil();
+			//m.capture(vocabulary);
+		
+			MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+			mdConverter.capture(vocabulary);
 		}
 	}
 
@@ -229,23 +203,21 @@ public class CaptureService implements CoreCaptureService {
 			JAXBElement eventElement = (JAXBElement) eventList.get(i);
 			Object event = eventElement.getValue();
 			if (event instanceof ObjectEventType) {
-				capture((ObjectEventType) event);
+				capture((ObjectEventType) event, null, null, null);
 			} else if (event instanceof AggregationEventType) {
-				capture((AggregationEventType) event);
+				capture((AggregationEventType) event, null, null, null);
 			} else if (event instanceof TransactionEventType) {
-				capture((TransactionEventType) event);
+				capture((TransactionEventType) event, null, null, null);
 			} else if (event instanceof TransformationEventType) {
-				capture((TransformationEventType) event);
+				capture((TransformationEventType) event, null, null, null);
 			} else if (event instanceof QuantityEventType) {
-				capture((QuantityEventType) event);
-			} else if (event instanceof SensorEventType) {
-				capture((SensorEventType) event);
+				capture((QuantityEventType) event, null, null, null);
 			}
 		}
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void securedCapture(EPCISDocumentType epcisDocument, String fid, String accessModifier) {
+	public void capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
 		if (epcisDocument.getEPCISBody() == null) {
 			Configuration.logger.info(" There is no DocumentBody ");
 			return;
@@ -270,18 +242,16 @@ public class CaptureService implements CoreCaptureService {
 			JAXBElement eventElement = (JAXBElement) eventList.get(i);
 			Object event = eventElement.getValue();
 			if (event instanceof ObjectEventType) {
-				securedCapture((ObjectEventType) event, fid, accessModifier);
+				capture((ObjectEventType) event, userID, accessModifier, gcpLength);
 			} else if (event instanceof AggregationEventType) {
-				capture((AggregationEventType) event);
+				capture((AggregationEventType) event, userID, accessModifier, gcpLength);
 			} else if (event instanceof TransactionEventType) {
-				capture((TransactionEventType) event);
+				capture((TransactionEventType) event, userID, accessModifier, gcpLength);
 			} else if (event instanceof TransformationEventType) {
-				capture((TransformationEventType) event);
+				capture((TransformationEventType) event, userID, accessModifier, gcpLength);
 			} else if (event instanceof QuantityEventType) {
-				capture((QuantityEventType) event);
-			} else if (event instanceof SensorEventType) {
-				capture((SensorEventType) event);
-			}
+				capture((QuantityEventType) event, userID, accessModifier, gcpLength);
+			} 
 		}
 	}
 
