@@ -236,9 +236,13 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String accessToken,
 
 	@RequestParam Map<String, String> params) {
+		
 		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
-
+		if (format != null && format.equals("JSON")) {
+			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		}else{
+			responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
+		}
 		// Access Control is not mandatory
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
