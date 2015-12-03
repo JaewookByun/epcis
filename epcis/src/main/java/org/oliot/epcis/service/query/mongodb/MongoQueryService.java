@@ -4,14 +4,10 @@ import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,9 +26,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.json.JSONArray;
@@ -80,11 +73,6 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import static org.quartz.TriggerKey.*;
 import static org.quartz.JobKey.*;
@@ -964,67 +952,87 @@ public class MongoQueryService {
 			if (format == null || format.equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
 				VocabularyType vt = con.convert(dbObject);
-				if (includeAttributes == false || includeChildren == false) {
-					if (vt.getVocabularyElementList() != null) {
-						if (vt.getVocabularyElementList().getVocabularyElement() != null) {
-							List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
-							for (int i = 0; i < vetList.size(); i++) {
-								VocabularyElementType vet = vetList.get(i);
-								if (includeAttributes == false) {
-									vet.setAttribute(null);
-								} else if (includeAttributes == true && attributeNames != null) {
-									/**
-									 * attributeNames : If specified, only those
-									 * attributes whose names match one of the
-									 * specified names will be included in the
-									 * results. If omitted, all attributes for
-									 * each matching vocabulary element will be
-									 * included. (To obtain a list of vocabulary
-									 * element names with no attributes, specify
-									 * false for includeAttributes.) The value
-									 * of this parameter SHALL be ignored if
-									 * includeAttributes is false. Note that
-									 * this parameter does not affect which
-									 * vocabulary elements are included in the
-									 * result; it only limits which attributes
-									 * will be included with each vocabulary
-									 * element.
-									 */
-									String[] attrArr = attributeNames.split(",");
-									for (int j = 0; j < attrArr.length; j++) {
-										attrArr[j] = attrArr[j].trim();
-									}
 
-									List<AttributeType> atList = vet.getAttribute();
-									for (int j = 0; j < atList.size(); j++) {
-										boolean isMatched = false;
-										for (int k = 0; k < attrArr.length; k++) {
-											if (attrArr[k].equals(atList.get(j).getId())) {
-												isMatched = true;
-											}
-										}
-										if (isMatched == false) {
-											atList.remove(j);
-											if (atList.size() == 0)
-												break;
-											else {
-												j = -1;
-												continue;
-											}
-										}
+				boolean isMatched = true;
+				if (vt.getVocabularyElementList() != null) {
+					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
+						List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
+						for (int i = 0; i < vetList.size(); i++) {
+							VocabularyElementType vet = vetList.get(i);
+							if (includeAttributes == false) {
+								vet.setAttribute(null);
+							} else if (includeAttributes == true && attributeNames != null) {
+								/**
+								 * attributeNames : If specified, only those
+								 * attributes whose names match one of the
+								 * specified names will be included in the
+								 * results. If omitted, all attributes for each
+								 * matching vocabulary element will be included.
+								 * (To obtain a list of vocabulary element names
+								 * with no attributes, specify false for
+								 * includeAttributes.) The value of this
+								 * parameter SHALL be ignored if
+								 * includeAttributes is false. Note that this
+								 * parameter does not affect which vocabulary
+								 * elements are included in the result; it only
+								 * limits which attributes will be included with
+								 * each vocabulary element.
+								 */
+								isMatched = false;
+								String[] attrArr = attributeNames.split(",");
+								Set<String> attrSet = new HashSet<String>();
+								for (int j = 0; j < attrArr.length; j++) {
+									attrSet.add(attrArr[j].trim());
+								}
+
+								List<AttributeType> atList = vet.getAttribute();
+								for (int j = 0; j < atList.size(); j++) {
+									if (attrSet.contains(atList.get(j).getId())) {
+										isMatched = true;
 									}
 								}
-								if (includeChildren == false) {
-									vet.setChildren(null);
-								}
+							}
+
+							if (includeChildren == false) {
+								vet.setChildren(null);
 							}
 						}
 					}
 				}
-				vList.add(vt);
+				if (isMatched == true)
+					vList.add(vt);
 			} else {
+				boolean isMatched = true;
 				dbObject.removeField("_id");
-				retArray.put(dbObject);
+				if (includeAttributes == false) {
+					dbObject.removeField("attributes");
+				} else if (includeAttributes == true && attributeNames != null) {
+					String[] attrArr = attributeNames.split(",");
+					Set<String> attrSet = new HashSet<String>();
+					for (int j = 0; j < attrArr.length; j++) {
+						attrSet.add(attrArr[j].trim());
+					}
+					Object attrObject = dbObject.get("attributes");
+					isMatched = false;
+					if (attrObject != null) {
+						DBObject attrDBObject = (DBObject) attrObject;
+						Iterator<String> attrKeys = attrDBObject.keySet().iterator();
+						while (attrKeys.hasNext()) {
+							String attrKey = attrKeys.next();
+							if (attrSet.contains(attrKey)) {
+								isMatched = true;
+							}
+						}
+					}
+
+				}
+				if (includeChildren == false) {
+					dbObject.removeField("children");
+				}
+
+				if (isMatched == true) {
+					retArray.put(dbObject);
+				}
 			}
 		}
 
@@ -1940,10 +1948,13 @@ public class MongoQueryService {
 		 * regardless of the value of the readPoint field or whether the
 		 * readPoint field exists at all.
 		 */
+		Set<String> readPointSet = new HashSet<String>();
 		if (EQ_readPoint != null) {
-			DBObject query = getINQueryObject("readPoint.id", EQ_readPoint);
-			if (query != null)
-				queryList.add(query);
+			String[] eqArr = EQ_readPoint.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				String eqString = eqArr[i].trim();
+				readPointSet.add(eqString);
+			}
 		}
 
 		/**
@@ -1966,64 +1977,47 @@ public class MongoQueryService {
 			}
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
-				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
-						null, null, null, null, null);
-				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
-				childReadPointSet.add(eqArr[i]);
-
-				Iterator<String> crp = childReadPointSet.iterator();
-				String csv = "";
-				while (crp.hasNext()) {
-					csv += crp.next() + ",";
-				}
-				if (!csv.equals("")) {
-					csv.substring(0, csv.length() - 1);
-				}
-				DBObject query = getINQueryObject("readPoint.id", csv);
-				if (query != null)
-					queryList.add(query);
+				readPointSet = getWDList(readPointSet, eqArr[i]);
 			}
 		}
+
+		if (!readPointSet.isEmpty()) {
+			DBObject query = getINQueryObject("readPoint.id", readPointSet);
+			if (query != null)
+				queryList.add(query);
+		}
+
 		/**
 		 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
 		 * bizLocation field.
 		 */
+		Set<String> bizLocationSet = new HashSet<String>();
 		if (EQ_bizLocation != null) {
-			DBObject query = getINQueryObject("bizLocation.id", EQ_bizLocation);
-			if (query != null)
-				queryList.add(query);
+			String[] eqArr = EQ_bizLocation.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				String eqString = eqArr[i].trim();
+				bizLocationSet.add(eqString);
+			}
 		}
 		/**
 		 * WD_bizLocation: Like the WD_readPoint parameter, but for the
 		 * bizLocation field.
 		 */
 		if (WD_bizLocation != null) {
-
 			String[] eqArr = WD_bizLocation.split(",");
 			for (int i = 0; i < eqArr.length; i++) {
 				eqArr[i] = eqArr[i].trim();
 			}
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
-				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
-						null, null, null, null, null);
-
-				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
-				childReadPointSet.add(eqArr[i]);
-
-				Iterator<String> crp = childReadPointSet.iterator();
-				String csv = "";
-				while (crp.hasNext()) {
-					csv += crp.next() + ",";
-				}
-				if (!csv.equals("")) {
-					csv.substring(0, csv.length() - 1);
-				}
-				DBObject query = getINQueryObject("bizLocation.id", csv);
-				if (query != null)
-					queryList.add(query);
-
+				bizLocationSet = getWDList(bizLocationSet, eqArr[i]);
 			}
+		}
+
+		if (!bizLocationSet.isEmpty()) {
+			DBObject query = getINQueryObject("bizLocation.id", bizLocationSet);
+			if (query != null)
+				queryList.add(query);
 		}
 
 		/**
@@ -2451,11 +2445,13 @@ public class MongoQueryService {
 		 * this parameter and WD_name are both omitted, vocabulary elements are
 		 * included regardless of their names.
 		 */
-
+		Set<String> idSet = new HashSet<String>();
 		if (eQ_name != null) {
-			DBObject query = getINQueryObject("vocabularyList.id", eQ_name);
-			if (query != null)
-				queryList.add(query);
+			String[] eqArr = eQ_name.split(",");
+			for (int i = 0; i < eqArr.length; i++) {
+				String eqString = eqArr[i].trim();
+				idSet.add(eqString);
+			}
 		}
 
 		/**
@@ -2475,24 +2471,14 @@ public class MongoQueryService {
 			}
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
-				String masterReadPoint = pollMasterDataQuery("SimpleMasterDataQuery", null, false, true, null, eqArr[i],
-						null, null, null, null, null);
-
-				Set<String> childReadPointSet = makeDecendentSet(masterReadPoint);
-				childReadPointSet.add(eqArr[i]);
-
-				Iterator<String> crp = childReadPointSet.iterator();
-				String csv = "";
-				while (crp.hasNext()) {
-					csv += crp.next() + ",";
-				}
-				if (!csv.equals("")) {
-					csv.substring(0, csv.length() - 1);
-				}
-				DBObject query = getINQueryObject("vocabularyList.id", csv);
-				if (query != null)
-					queryList.add(query);
+				idSet = getWDList(idSet, eqArr[i]);
 			}
+		}
+
+		if (!idSet.isEmpty()) {
+			DBObject query = getINQueryObject("id", idSet);
+			if (query != null)
+				queryList.add(query);
 		}
 
 		/**
@@ -2502,9 +2488,13 @@ public class MongoQueryService {
 		 */
 
 		if (hASATTR != null) {
-			DBObject query = getINQueryObject("vocabularyList.attributeList.id", hASATTR);
-			if (query != null)
-				queryList.add(query);
+			String[] attrArr = hASATTR.split(",");
+			for (int i = 0; i < attrArr.length; i++) {
+				String attrString = attrArr[i].trim();
+				DBObject query = getExistsQueryObject("attributes", attrString);
+				if (query != null)
+					queryList.add(query);
+			}
 		}
 
 		/**
@@ -2522,45 +2512,13 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQATTR_")) {
 					String type = paramName.substring(7, paramName.length());
-					DBObject query = getVocFamilyQueryObject(type, "vocabularyList.attributeList", paramValues);
+					DBObject query = getVocFamilyQueryObject(type, "attributes", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 			}
 		}
 		return queryList;
-	}
-
-	private Set<String> makeDecendentSet(String vocString) {
-		Set<String> childReadPointSet = new HashSet<String>();
-		try {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			InputStream stream = new ByteArrayInputStream(vocString.getBytes(StandardCharsets.UTF_8));
-			Document doc = dBuilder.parse(stream);
-			NodeList nList = doc.getElementsByTagName("children");
-			for (int i = 0; i < nList.getLength(); i++) {
-				Node child = nList.item(i);
-				if (child.getNodeType() == Node.ELEMENT_NODE) {
-					Element childElement = (Element) child;
-					NodeList idList = childElement.getElementsByTagName("id");
-					for (int j = 0; j < idList.getLength(); j++) {
-						Node id = idList.item(j);
-						if (id.getNodeType() == Node.ELEMENT_NODE) {
-							Element idElement = (Element) id;
-							childReadPointSet.add(idElement.getTextContent());
-						}
-					}
-				}
-			}
-		} catch (ParserConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		} catch (SAXException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		}
-		return childReadPointSet;
 	}
 
 	private long getTimeMillis(String standardDateString) {
