@@ -88,14 +88,15 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 			dbo.put("inputEPCList", epcDBList);
 		}
 		// Output EPCList
+		List<EPC> outputList = null;
 		if (transformationEventType.getOutputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getOutputEPCList();
-			List<EPC> epcList = epcs.getEpc();
+			outputList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 
-			for (int i = 0; i < epcList.size(); i++) {
+			for (int i = 0; i < outputList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", outputList.get(i).getValue());
 				epcDBList.add(epcDB);
 			}
 			dbo.put("outputEPCList", epcDBList);
@@ -165,6 +166,10 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
+				if (outputList != null) {
+					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+					mdConverter.capture(outputList, map2Save);
+				}
 			}
 		}
 
