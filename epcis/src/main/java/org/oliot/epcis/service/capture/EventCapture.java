@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -52,19 +52,19 @@ public class EventCapture implements ServletContextAware {
 	}
 
 	public ResponseEntity<?> asyncPost(String inputString) {
-		ResponseEntity<?> result = post(inputString, null, null, null);
+		ResponseEntity<?> result = post(inputString, null, null, null, null);
 		return result;
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String fid,
-			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessModifier) {
+	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String userID,
+			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessModifier, @RequestParam(required = false) Integer gcpLength) {
 
 		// Request a protection on events
-		if (fid != null) {
+		if (userID != null) {
 			// Check accessToken
-			if (!OAuthUtil.isValidated(accessToken, fid)) {
+			if (!OAuthUtil.isValidated(accessToken, userID)) {
 				return new ResponseEntity<>(new String("Invalid AccessToken"), HttpStatus.BAD_REQUEST);
 			}
 			if (accessModifier == null) {
@@ -135,20 +135,14 @@ public class EventCapture implements ServletContextAware {
 			}
 
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisDocument);
+			cs.capture(epcisDocument, userID, accessModifier, gcpLength);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		} else {
 			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
 			CaptureService cs = new CaptureService();
-			// No Access Control
-			if (fid == null) {
-				cs.capture(epcisDocument);
-				Configuration.logger.info(" EPCIS Document : Captured ");
-			}else{
-				cs.securedCapture(epcisDocument, fid, accessModifier);
-				Configuration.logger.info(" EPCIS Document : Captured ");
-			}
+			cs.capture(epcisDocument, userID, accessModifier, gcpLength);
+			Configuration.logger.info(" EPCIS Document : Captured ");
 		}
 		return new ResponseEntity<>(new String("EPCIS Document : Captured "), HttpStatus.OK);
 	}

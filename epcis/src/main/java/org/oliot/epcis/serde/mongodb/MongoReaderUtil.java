@@ -89,7 +89,8 @@ public class MongoReaderUtil {
 					if (namespace != null) {
 						element.setAttribute("xmlns:" + namespace, namespaceURI);
 					}
-					element.appendChild(node);
+					//element.appendChild(node);
+					element.setTextContent(value);
 					elementList.add(element);
 				}
 			}

@@ -24,9 +24,6 @@ import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
 import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.oliot.model.epcis.TransformationEventType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -51,11 +48,9 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class TransformationEventWriteConverter implements Converter<TransformationEventType, DBObject> {
+public class TransformationEventWriteConverter {
 
-	public DBObject convert(TransformationEventType transformationEventType) {
+	public DBObject convert(TransformationEventType transformationEventType, Integer gcpLength) {
 
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
@@ -82,20 +77,21 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(),gcpLength));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("inputEPCList", epcDBList);
 		}
 		// Output EPCList
+		List<EPC> outputList = null;
 		if (transformationEventType.getOutputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getOutputEPCList();
-			List<EPC> epcList = epcs.getEpc();
+			outputList = epcs.getEpc();
 			List<DBObject> epcDBList = new ArrayList<DBObject>();
 
-			for (int i = 0; i < epcList.size(); i++) {
+			for (int i = 0; i < outputList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(outputList.get(i).getValue(),gcpLength));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("outputEPCList", epcDBList);
@@ -113,13 +109,13 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 		// ReadPoint
 		if (transformationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transformationEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType);
+			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (transformationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType);
+			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
@@ -133,14 +129,14 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 		if (transformationEventType.getInputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getInputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			List<DBObject> quantityList = getQuantityObjectList(qetList);
+			List<DBObject> quantityList = getQuantityObjectList(qetList, gcpLength);
 			dbo.put("inputQuantityList", quantityList);
 		}
 		// Output Quantity List
 		if (transformationEventType.getOutputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getOutputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			List<DBObject> quantityList = getQuantityObjectList(qetList);
+			List<DBObject> quantityList = getQuantityObjectList(qetList, gcpLength);
 			dbo.put("outputQuantityList", quantityList);
 		}
 		// Source List
@@ -165,6 +161,10 @@ public class TransformationEventWriteConverter implements Converter<Transformati
 				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
+				if (outputList != null) {
+					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+					mdConverter.capture(outputList, map2Save);
+				}
 			}
 		}
 

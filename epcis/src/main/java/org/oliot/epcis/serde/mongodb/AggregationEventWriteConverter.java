@@ -19,9 +19,6 @@ import org.oliot.model.epcis.EPCListType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -46,11 +43,10 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class AggregationEventWriteConverter implements Converter<AggregationEventType, DBObject> {
 
-	public DBObject convert(AggregationEventType aggregationEventType) {
+public class AggregationEventWriteConverter {
+
+	public DBObject convert(AggregationEventType aggregationEventType, Integer gcpLength) {
 		DBObject dbo = new BasicDBObject();
 		// Base Extension
 		if (aggregationEventType.getBaseExtension() != null) {
@@ -70,8 +66,8 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 		dbo.put("recordTime", recordTimeMilis);
 
 		// Parent ID
-		if (aggregationEventType.getParentID() != null) {
-			dbo.put("parentID", aggregationEventType.getParentID());
+		if (aggregationEventType.getParentID() != null) {			
+			dbo.put("parentID", MongoWriterUtil.getInstanceEPC(aggregationEventType.getParentID(),gcpLength));
 		}
 		// Child EPCs
 		if (aggregationEventType.getChildEPCs() != null) {
@@ -81,7 +77,7 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 
 			for (int i = 0; i < epcList.size(); i++) {
 				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", epcList.get(i).getValue());
+				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(),gcpLength));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("childEPCs", epcDBList);
@@ -98,13 +94,13 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 		// ReadPoint
 		if (aggregationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = aggregationEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType);
+			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (aggregationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType);
+			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 
@@ -128,7 +124,7 @@ public class AggregationEventWriteConverter implements Converter<AggregationEven
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
-			DBObject extension = getAggregationEventExtensionObject(aee);
+			DBObject extension = getAggregationEventExtensionObject(aee, gcpLength);
 			dbo.put("extension", extension);
 
 		}
