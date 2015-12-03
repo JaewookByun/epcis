@@ -41,6 +41,13 @@ public class CodeParser {
 		// Initialize identifiedEPCMap
 		collection = new HashMap<String, String>();
 
+		if (applicationIdentifierMap.containsKey("01")) {
+			String gtin = generateGtin(gcpLength);
+			if (gtin != null) {
+				collection.put("gtin", gtin);
+			}
+		}
+		
 		// 01 & 21 formulate SGTIN
 		if (applicationIdentifierMap.containsKey("01") && applicationIdentifierMap.containsKey("21")) {
 			String sgtin = generateSgtin(gcpLength);
@@ -68,6 +75,31 @@ public class CodeParser {
 		// 11 / 13 / 30 / 310n / 390n
 		generateOtherInformation();
 		return collection;
+	}
+	private String generateGtin(int gcpLength) {
+		// GTIN
+		// System.out.println("[System] SGTIN exists");
+
+		// Validation Check
+		String gtin = applicationIdentifierMap.get("01");
+		if (gtin.matches("([0-9]{14})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isGtinCheckDigitCorrect(gtin) == false) {
+			return null;
+		}
+	
+		String gcp = gtin.substring(1, gcpLength + 1);
+		// System.out.println("[System] GTIN: " + gcp);
+		String itemref = gtin.substring(gcpLength + 1, gtin.length() - 1);
+		// System.out.println("[System] Itemref Suffix: " + itemref);
+		itemref = gtin.substring(0, 1) + itemref;
+		// System.out.println("[System] Itemref: " + itemref);
+
+		String gtinEPC = "urn:epc:idpat:sgtin:" + gcp + "." + itemref + ".*";
+		// System.out.println("[System] GTIN: " + gtin);
+		return gtinEPC;
 	}
 
 	private String generateSgtin(int gcpLength) {
