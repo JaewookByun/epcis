@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.axis.message.MessageElement;
-import org.oliot.gcp.core.CodeParser;
+import org.oliot.gcp.core.AICodeParser;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -61,7 +61,7 @@ public class MongoWriterUtil {
 		if (gcpLength == null) {
 			return code;
 		}
-		CodeParser codeParser = new CodeParser();
+		AICodeParser codeParser = new AICodeParser();
 		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
 		if (collection.containsKey("sgtin")) {
 			return collection.get("sgtin");
@@ -83,7 +83,7 @@ public class MongoWriterUtil {
 		if (gcpLength == null) {
 			return code;
 		}
-		CodeParser codeParser = new CodeParser();
+		AICodeParser codeParser = new AICodeParser();
 		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
 
 		// Priority LGTIN -> GTIN
@@ -100,7 +100,7 @@ public class MongoWriterUtil {
 		if (gcpLength == null) {
 			return code;
 		}
-		CodeParser codeParser = new CodeParser();
+		AICodeParser codeParser = new AICodeParser();
 		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
 		if (collection.containsKey("sgln")) {
 			return collection.get("sgln");
