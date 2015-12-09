@@ -3,7 +3,7 @@ package org.oliot.epcis.service.codeparser;
 import javax.servlet.ServletContext;
 
 import org.json.JSONObject;
-import org.oliot.gcp.core.CodeParser;
+import org.oliot.gcp.core.AICodeParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,7 +42,7 @@ public class CodeParserService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 		
-		CodeParser codeParser = new CodeParser();
+		AICodeParser codeParser = new AICodeParser();
 		JSONObject result = new JSONObject(codeParser.parse(code, gcpLength));
 		
 		return new ResponseEntity<>(result.toString(1), responseHeaders, HttpStatus.OK);
