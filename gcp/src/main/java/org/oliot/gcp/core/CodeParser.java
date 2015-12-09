@@ -41,13 +41,22 @@ public class CodeParser {
 		// Initialize identifiedEPCMap
 		collection = new HashMap<String, String>();
 
+		// 00 formulate SSCC
+		if (applicationIdentifierMap.containsKey("00")) {
+			String sscc = generateSscc(gcpLength);
+			if (sscc != null) {
+				collection.put("sscc", sscc);
+			}
+		}
+
+		// 01 formulate GTIN
 		if (applicationIdentifierMap.containsKey("01")) {
 			String gtin = generateGtin(gcpLength);
 			if (gtin != null) {
 				collection.put("gtin", gtin);
 			}
 		}
-		
+
 		// 01 & 21 formulate SGTIN
 		if (applicationIdentifierMap.containsKey("01") && applicationIdentifierMap.containsKey("21")) {
 			String sgtin = generateSgtin(gcpLength);
@@ -64,6 +73,22 @@ public class CodeParser {
 			}
 		}
 
+		// 253 formulate GDTI
+		if (applicationIdentifierMap.containsKey("253")) {
+			String gdti = generateGdti(gcpLength);
+			if (gdti != null) {
+				collection.put("gdti", gdti);
+			}
+		}
+
+		// 255 formulate SGCN
+		if (applicationIdentifierMap.containsKey("255")) {
+			String sgcn = generateSgcn(gcpLength);
+			if (sgcn != null) {
+				collection.put("sgcn", sgcn);
+			}
+		}
+
 		// 414 ( SGLN without extension ) 414 & 254 ( SGLN with extension )
 		if (applicationIdentifierMap.containsKey("414")) {
 			String sgln = generateSgln(gcpLength);
@@ -72,10 +97,77 @@ public class CodeParser {
 			}
 		}
 
+		// 8003 formulate GRAI
+		if (applicationIdentifierMap.containsKey("8003")) {
+			String grai = generateGrai(gcpLength);
+			if (grai != null) {
+				collection.put("grai", grai);
+			}
+		}
+
+		// 8004 formulate GIAI
+		if (applicationIdentifierMap.containsKey("8004")) {
+			String giai = generateGiai(gcpLength);
+			if (giai != null) {
+				collection.put("giai", giai);
+			}
+		}
+
+		// 8010 and 8011 formulate CPI
+		if (applicationIdentifierMap.containsKey("8010") && applicationIdentifierMap.containsKey("8011")) {
+			String cpi = generateCpi(gcpLength);
+			if (cpi != null) {
+				collection.put("cpi", cpi);
+			}
+		}
+
+		// 8017 formulate GSRNP
+		if (applicationIdentifierMap.containsKey("8017")) {
+			String gsrnp = generateGsrnp(gcpLength);
+			if (gsrnp != null) {
+				collection.put("gsrnp", gsrnp);
+			}
+		}
+
+		// 8018 formulate GSRN
+		if (applicationIdentifierMap.containsKey("8018")) {
+			String gsrn = generateGsrn(gcpLength);
+			if (gsrn != null) {
+				collection.put("gsrn", gsrn);
+			}
+		}
+
 		// 11 / 13 / 30 / 310n / 390n
 		generateOtherInformation();
 		return collection;
 	}
+
+	private String generateSscc(int gcpLength) {
+		// SSCC
+		// System.out.println("[System] SSCC exists");
+
+		// Validation Check
+		String sscc = applicationIdentifierMap.get("00");
+		if (sscc.matches("([0-9]{18})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isSsccCheckDigitCorrect(sscc) == false) {
+			return null;
+		}
+
+		String gcp = sscc.substring(1, gcpLength + 1);
+		// System.out.println("[System] SSCC: " + gcp);
+		String serialref = sscc.substring(gcpLength + 1, sscc.length() - 1);
+		// System.out.println("[System] Serialref Suffix: " + serialref);
+		serialref = sscc.substring(0, 1) + serialref;
+		// System.out.println("[System] Serialref: " + serialref);
+
+		String ssccEPC = "urn:epc:id:sscc:" + gcp + "." + serialref;
+		// System.out.println("[System] SSCC: " + ssccEPC);
+		return ssccEPC;
+	}
+
 	private String generateGtin(int gcpLength) {
 		// GTIN
 		// System.out.println("[System] SGTIN exists");
@@ -89,7 +181,7 @@ public class CodeParser {
 		if (isGtinCheckDigitCorrect(gtin) == false) {
 			return null;
 		}
-	
+
 		String gcp = gtin.substring(1, gcpLength + 1);
 		// System.out.println("[System] GTIN: " + gcp);
 		String itemref = gtin.substring(gcpLength + 1, gtin.length() - 1);
@@ -120,6 +212,7 @@ public class CodeParser {
 		if (serial.matches("([!%-?A-Z_a-z\"]{1,20})") == false) {
 			return null;
 		}
+		serial = applySerialEncoding(serial);
 
 		String gcp = gtin.substring(1, gcpLength + 1);
 		// System.out.println("[System] GTIN: " + gcp);
@@ -151,6 +244,7 @@ public class CodeParser {
 		if (lot.matches("([!%-?A-Z_a-z\"]{1,20})") == false) {
 			return null;
 		}
+		lot = applySerialEncoding(lot);
 
 		String gcp = gtin.substring(1, gcpLength + 1);
 		// System.out.println("[System] GTIN: " + gcp);
@@ -162,6 +256,58 @@ public class CodeParser {
 		String lgtin = "urn:epc:class:lgtin:" + gcp + "." + itemref + "." + lot;
 		// System.out.println("[System] LGTIN: " + lgtin);
 		return lgtin;
+	}
+
+	private String generateGdti(int gcpLength) {
+		// GDTI
+		// System.out.println("[System] GDTI exists");
+
+		// Validation Check
+		String gdti = applicationIdentifierMap.get("253");
+		if (gdti.matches("([0-9]{13})([0-9]{1,17})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isGdtiCheckDigitCorrect(gdti) == false) {
+			return null;
+		}
+
+		String gcp = gdti.substring(0, gcpLength);
+		// System.out.println("[System] GCP: " + gcp);
+		String docType = gdti.substring(gcpLength, 12);
+		// System.out.println("[System] Document Type: " + docType);
+		String serial = gdti.substring(13, gdti.length());
+		// System.out.println("[System] Serial: " + serial);
+
+		String gdtiEPC = "urn:epc:id:gdti:" + gcp + "." + docType + "." + serial;
+		// System.out.println("[System] GDTI: " + gdtiEPC);
+		return gdtiEPC;
+	}
+
+	private String generateSgcn(int gcpLength) {
+		// SGCN
+		// System.out.println("[System] SGCN exists");
+
+		// Validation Check
+		String sgcn = applicationIdentifierMap.get("255");
+		if (sgcn.matches("([0-9]{13})([0-9]{1,12})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isSgcnCheckDigitCorrect(sgcn) == false) {
+			return null;
+		}
+
+		String gcp = sgcn.substring(0, gcpLength);
+		// System.out.println("[System] GCP: " + gcp);
+		String couponRef = sgcn.substring(gcpLength, 12);
+		// System.out.println("[System] Coupon Reference: " + couponRef);
+		String serial = sgcn.substring(13, sgcn.length());
+		// System.out.println("[System] Serial: " + serial);
+
+		String sgcnEPC = "urn:epc:id:sgcn:" + gcp + "." + couponRef + "." + serial;
+		// System.out.println("[System] SGCN: " + sgcnEPC);
+		return sgcnEPC;
 	}
 
 	private String generateSgln(int gcpLength) {
@@ -192,7 +338,166 @@ public class CodeParser {
 		String sgln = "urn:epc:id:sgln:" + gcp + "." + locref + "." + serial;
 		// System.out.println("[System] SGLN: " + sgln);
 		return sgln;
+	}
 
+	private String generateGrai(int gcpLength) {
+		// GRAI
+		// System.out.println("[System] GRAI exists");
+
+		// Validation Check
+		String grai = applicationIdentifierMap.get("8003");
+		if (grai.matches("0([0-9]{13})([!%-?A-Z_a-z\"]{1,16})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isGraiCheckDigitCorrect(grai) == false) {
+			return null;
+		}
+
+		String gcp = grai.substring(1, gcpLength + 1);
+		// System.out.println("[System] GCP: " + gcp);
+		String assetType = grai.substring(gcpLength + 1, 13);
+		// System.out.println("[System] Asset Type: " + assetType);
+		String serial = grai.substring(14, grai.length());
+		serial = applySerialEncoding(serial);
+		// System.out.println("[System] Serial: " + serial);
+
+		String graiEPC = "urn:epc:id:grai:" + gcp + "." + assetType + "." + serial;
+		// System.out.println("[System] GRAI: " + graiEPC);
+		return graiEPC;
+	}
+
+	private String generateGiai(int gcpLength) {
+		// GIAI
+		// System.out.println("[System] GIAI exists");
+
+		// Validation Check
+		String giai = applicationIdentifierMap.get("8004");
+		String gcp;
+		String assetReference;
+		if (gcpLength == 6 && giai.matches("([0-9]{6})([!%-?A-Z_a-z\"]{1,24})")) {
+			gcp = giai.substring(0, 6);
+			assetReference = giai.substring(6, giai.length());
+		} else if (gcpLength == 7 && giai.matches("([0-9]{7})([!%-?A-Z_a-z\"]{1,23})")) {
+			gcp = giai.substring(0, 7);
+			assetReference = giai.substring(7, giai.length());
+		} else if (gcpLength == 8 && giai.matches("([0-9]{8})([!%-?A-Z_a-z\"]{1,22})")) {
+			gcp = giai.substring(0, 8);
+			assetReference = giai.substring(8, giai.length());
+		} else if (gcpLength == 9 && giai.matches("([0-9]{9})([!%-?A-Z_a-z\"]{1,21})")) {
+			gcp = giai.substring(0, 9);
+			assetReference = giai.substring(9, giai.length());
+		} else if (gcpLength == 10 && giai.matches("([0-9]{10})([!%-?A-Z_a-z\"]{1,20})")) {
+			gcp = giai.substring(0, 10);
+			assetReference = giai.substring(10, giai.length());
+		} else if (gcpLength == 11 && giai.matches("([0-9]{11})([!%-?A-Z_a-z\"]{1,19})")) {
+			gcp = giai.substring(0, 11);
+			assetReference = giai.substring(11, giai.length());
+		} else if (gcpLength == 12 && giai.matches("([0-9]{12})([!%-?A-Z_a-z\"]{1,18})")) {
+			gcp = giai.substring(0, 12);
+			assetReference = giai.substring(12, giai.length());
+		} else {
+			return null;
+		}
+		assetReference = applySerialEncoding(assetReference);
+
+		// System.out.println("[System] GCP: " + gcp);
+		// System.out.println("[System] assetReference: " + assetReference);
+		String giaiEPC = "urn:epc:id:giai:" + gcp + "." + assetReference;
+		// System.out.println("[System] GIAI: " + giaiEPC);
+		return giaiEPC;
+	}
+
+	private String generateGsrnp(int gcpLength) {
+		// GSRNP
+		// System.out.println("[System] GSRNP exists");
+
+		// Validation Check
+		String gsrnp = applicationIdentifierMap.get("8017");
+		if (gsrnp.matches("([0-9]{18})") == false) {
+			return null;
+		}
+		// Check digit validation, GSRN and GSRNP shares common check digit
+		// logic
+		if (isGsrnCheckDigitCorrect(gsrnp) == false) {
+			return null;
+		}
+
+		String gcp = gsrnp.substring(0, gcpLength);
+		// System.out.println("[System] GSRNP: " + gcp);
+		String serviceref = gsrnp.substring(gcpLength, gsrnp.length() - 1);
+		// System.out.println("[System] Serviceref Suffix: " + serviceref);
+
+		String gsrnpEPC = "urn:epc:id:gsrnp:" + gcp + "." + serviceref;
+		// System.out.println("[System] GSRN: " + gsrnEPC);
+		return gsrnpEPC;
+	}
+
+	private String generateGsrn(int gcpLength) {
+		// GSRN
+		// System.out.println("[System] GSRN exists");
+
+		// Validation Check
+		String gsrn = applicationIdentifierMap.get("8018");
+		if (gsrn.matches("([0-9]{18})") == false) {
+			return null;
+		}
+		// Check digit validation
+		if (isGsrnCheckDigitCorrect(gsrn) == false) {
+			return null;
+		}
+
+		String gcp = gsrn.substring(0, gcpLength);
+		// System.out.println("[System] GSRN: " + gcp);
+		String serviceref = gsrn.substring(gcpLength, gsrn.length() - 1);
+		// System.out.println("[System] Serviceref Suffix: " + serviceref);
+
+		String gsrnEPC = "urn:epc:id:gsrn:" + gcp + "." + serviceref;
+		// System.out.println("[System] GSRN: " + gsrnEPC);
+		return gsrnEPC;
+	}
+
+	private String generateCpi(int gcpLength) {
+		// CPI
+		// System.out.println("[System] CPI exists");
+
+		// Validation Check
+		String cp = applicationIdentifierMap.get("8010");
+		String cpserial = applicationIdentifierMap.get("8011");
+
+		String gcp;
+		String cpref;
+		if (gcpLength == 6 && cp.matches("([0-9]{6})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 6);
+			cpref = cp.substring(6, cp.length());
+		} else if (gcpLength == 7 && cp.matches("([0-9]{7})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 7);
+			cpref = cp.substring(7, cp.length());
+		} else if (gcpLength == 8 && cp.matches("([0-9]{8})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 8);
+			cpref = cp.substring(8, cp.length());
+		} else if (gcpLength == 9 && cp.matches("([0-9]{9})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 9);
+			cpref = cp.substring(9, cp.length());
+		} else if (gcpLength == 10 && cp.matches("([0-9]{10})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 10);
+			cpref = cp.substring(10, cp.length());
+		} else if (gcpLength == 11 && cp.matches("([0-9]{11})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 11);
+			cpref = cp.substring(11, cp.length());
+		} else if (gcpLength == 12 && cp.matches("([0-9]{12})([!%-?A-Z_a-z\"]+)")) {
+			gcp = cp.substring(0, 12);
+			cpref = cp.substring(12, cp.length());
+		} else {
+			return null;
+		}
+		cpref = applySerialEncoding(cpref);
+		// System.out.println("[System] GCP: " + gcp);
+		// System.out.println("[System] CP Reference: " + cpref);
+		// System.out.println("[System] CP Serial: " + cpserial);
+		String cpiEPC = "urn:epc:id:cpi:" + gcp + "." + cpref + "." + cpserial;
+		// System.out.println("[System] CPI: " + cpiEPC);
+		return cpiEPC;
 	}
 
 	private int generateOtherInformation() {
@@ -203,8 +508,8 @@ public class CodeParser {
 			String productionDate = applicationIdentifierMap.get("11");
 			try {
 				sdf.parse(productionDate);
-				collection.put("urn:id:epc:ai:11", productionDate);
-				// System.out.println("[System] " + "urn:id:epc:ai:11" +
+				collection.put("urn:epc:id:ai:11", productionDate);
+				// System.out.println("[System] " + "urn:epc:id:ai:11" +
 				// productionDate);
 				cnt++;
 			} catch (ParseException e) {
@@ -219,8 +524,8 @@ public class CodeParser {
 			String packagingDate = applicationIdentifierMap.get("13");
 			try {
 				sdf.parse(packagingDate);
-				collection.put("urn:id:epc:ai:13", packagingDate);
-				// System.out.println("[System] " + "urn:id:epc:ai:13" +
+				collection.put("urn:epc:id:ai:13", packagingDate);
+				// System.out.println("[System] " + "urn:epc:id:ai:13" +
 				// packagingDate);
 				cnt++;
 			} catch (ParseException e) {
@@ -236,8 +541,8 @@ public class CodeParser {
 			if (itemCount.length() <= 8) {
 				try {
 					int count = Integer.parseInt(itemCount);
-					collection.put("urn:id:epc:ai:30", String.valueOf(count));
-					// System.out.println("[System] " + "urn:id:epc:ai:30" +
+					collection.put("urn:epc:id:ai:30", String.valueOf(count));
+					// System.out.println("[System] " + "urn:epc:id:ai:30" +
 					// count);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -253,8 +558,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// weight);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -268,8 +573,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 10));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 10));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 10));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -283,8 +588,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 100));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 100));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 100));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -298,8 +603,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 1000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 1000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 1000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -313,8 +618,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 1000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 1000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 1000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -328,8 +633,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 10000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 10000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 10000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -343,8 +648,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 100000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 100000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 100000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -358,8 +663,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 1000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 1000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 1000000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -373,8 +678,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 10000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 10000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 10000000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -388,8 +693,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 100000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 100000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 100000000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -403,8 +708,8 @@ public class CodeParser {
 			if (kiloWeight.length() == 6) {
 				try {
 					float weight = Float.parseFloat(kiloWeight);
-					collection.put("urn:id:epc:ai:310n", String.valueOf(weight / 1000000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:310n " +
+					collection.put("urn:epc:id:ai:310n", String.valueOf(weight / 1000000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:310n " +
 					// String.valueOf(weight / 1000000000));
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -424,8 +729,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" + String.valueOf(priceDouble));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -441,8 +746,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 10));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 10));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 10);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -458,8 +763,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 100));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 100));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 100);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -475,8 +780,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 1000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 1000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 1000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -492,8 +797,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 10000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 10000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 10000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -509,8 +814,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 100000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 100000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 100000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -526,8 +831,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 1000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 1000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 1000000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -543,8 +848,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 10000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 10000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 10000000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -560,8 +865,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 100000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 100000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 100000000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -577,8 +882,8 @@ public class CodeParser {
 			if (price.length() <= 15) {
 				try {
 					double priceDouble = Double.parseDouble(price);
-					collection.put("urn:id:epc:ai:393n", currencyCode + "|" +  String.valueOf(priceDouble / 1000000000));
-					// System.out.println("[System] " + "urn:id:epc:ai:393n:" +
+					collection.put("urn:epc:id:ai:393n", currencyCode + "|" + String.valueOf(priceDouble / 1000000000));
+					// System.out.println("[System] " + "urn:epc:id:ai:393n:" +
 					// currencyCode + " " + priceDouble / 1000000000);
 					cnt++;
 				} catch (NumberFormatException e) {
@@ -603,8 +908,8 @@ public class CodeParser {
 			if (codeFragment2.length != 2) {
 				continue;
 			}
-			String applicationIdentifier = codeFragment2[0].trim();
-			String elementString = codeFragment2[1].trim();
+			String applicationIdentifier = codeFragment2[0].replaceAll("\\s", "");
+			String elementString = codeFragment2[1].replaceAll("\\s", "");
 
 			try {
 				@SuppressWarnings("unused")
@@ -618,6 +923,24 @@ public class CodeParser {
 			// ES: " + elementString);
 		}
 		return applicationIdentifierMap;
+	}
+
+	private boolean isSsccCheckDigitCorrect(String sscc) {
+		if (sscc.length() != 18) {
+			return false;
+		}
+		int[] e = toIntArray(sscc);
+
+		for (int i = 0; i < sscc.length(); i++) {
+			e[i] = Integer.parseInt(sscc.charAt(i) + "");
+		}
+
+		if (!(e[17] == (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1] + e[3]
+				+ e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
 	}
 
 	private boolean isGtinCheckDigitCorrect(String gtin) {
@@ -640,6 +963,47 @@ public class CodeParser {
 		return true;
 	}
 
+	private boolean isGdtiCheckDigitCorrect(String gdti) {
+		if (gdti.length() < 14) {
+			return false;
+		}
+
+		String exceptSerial = gdti.substring(0, 13);
+
+		int[] e = toIntArray(exceptSerial);
+
+		for (int i = 0; i < exceptSerial.length(); i++) {
+			e[i] = Integer.parseInt(exceptSerial.charAt(i) + "");
+		}
+
+		if (!(e[12] == (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isSgcnCheckDigitCorrect(String sgcn) {
+		// Length already checked
+		String exceptSerial = sgcn.substring(0, 13);
+
+		int[] e = toIntArray(exceptSerial);
+
+		for (int i = 0; i < exceptSerial.length(); i++) {
+			e[i] = Integer.parseInt(exceptSerial.charAt(i) + "");
+		}
+
+		if (!(e[12] == (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
+	}
+
 	private boolean isGlnCheckDigitCorrect(String gln) {
 		if (gln.length() != 13) {
 			return false;
@@ -655,6 +1019,42 @@ public class CodeParser {
 		return true;
 	}
 
+	private boolean isGraiCheckDigitCorrect(String grai) {
+		if (grai.length() < 15) {
+			return false;
+		}
+
+		String exceptSerial = grai.substring(0, 14);
+
+		int[] e = toIntArray(exceptSerial);
+
+		for (int i = 0; i < exceptSerial.length(); i++) {
+			e[i] = Integer.parseInt(exceptSerial.charAt(i) + "");
+		}
+
+		if (!(e[12] == (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
+	}
+
+	private boolean isGsrnCheckDigitCorrect(String gsrn) {
+		if (gsrn.length() != 18) {
+			return false;
+		}
+		int[] e = toIntArray(gsrn);
+
+		if (!(e[17] == (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1] + e[3]
+				+ e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
+	}
+
 	private int[] toIntArray(String str) {
 		int[] e = new int[str.length()];
 
@@ -662,6 +1062,11 @@ public class CodeParser {
 			e[i] = Integer.parseInt(str.charAt(i) + "");
 		}
 		return e;
+	}
+
+	private String applySerialEncoding(String serial) {
+		serial = serial.replaceAll("/", "%2F");
+		return serial;
 	}
 
 }
