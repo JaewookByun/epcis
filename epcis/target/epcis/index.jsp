@@ -43,7 +43,7 @@
 			
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">EPCIS v1.1 compliance<br>Dynamic Web Service over Tomcat 8<br>Java 7, Servlet 3.1<br>Maven<br>Spring Framework<br></a>
+					href="#" class="list-group-item">EPCIS v1.1 compliance<br>Dynamic Web Service over Tomcat 8<br>Java 8, Servlet 3.1<br>Maven<br>Spring Framework<br>MongoDB 3</a>
 			</div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Contact </a> <a href="#"

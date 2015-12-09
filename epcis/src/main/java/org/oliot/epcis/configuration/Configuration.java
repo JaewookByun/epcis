@@ -94,8 +94,8 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.info("Backend - " + Configuration.backend);
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
-			Configuration.wsdlPath = context.getRealPath("/wsdl");
-
+			Configuration.wsdlPath = context.getRealPath("/wsdl");			
+			
 			// Set up capture_verification
 			String captureVerification = json.getString("capture_verification");
 			if (captureVerification == null) {
