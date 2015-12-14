@@ -3,7 +3,7 @@
 	"backend" : "MongoDB",
 	
 	"_capture_verification" : "(on|off)",
-	"capture_verification" : "off",
+	"capture_verification" : "on",
 	
 	"_query_access_control" : "(on|off)",
 	"query_access_control" : "on",

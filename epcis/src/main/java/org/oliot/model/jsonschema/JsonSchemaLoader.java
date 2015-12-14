@@ -40,6 +40,7 @@ import org.json.simple.parser.ParseException;
 public class JsonSchemaLoader {
 	
 	JSONObject schema_json;
+	JSONObject schema_json_md;
 	JSONObject objecteventschema_json;
 	JSONObject aggregationeventschema_json;
 	JSONObject tranformationeventschema_json;
@@ -47,15 +48,17 @@ public class JsonSchemaLoader {
 	
 	public JsonSchemaLoader(){
 		JSONParser parser = new JSONParser();
-		Object g_schemaobj,objecteventobj,aggregationeventobj,tranformationeventobj,transactioneventobj;
+		Object g_schemaobj,g_schemaobj_md,objecteventobj,aggregationeventobj,tranformationeventobj,transactioneventobj;
 		
 		URL g_url = getClass().getResource("general_schema.json");
+		URL g_url_md = getClass().getResource("general_schema_md.json");
 		URL objecteventurl = getClass().getResource("obejctevent_schema.json");
 		URL aggregationeventurl = getClass().getResource("aggregationevent_schema.json");
 		URL tranformationeventurl = getClass().getResource("transformationevent_schema.json");
 		URL transactioneventurl = getClass().getResource("transactionevent_schema.json");
 		
 		File g_schema_file = new File(g_url.getPath());
+		File g_schema_md_file = new File(g_url_md.getPath());
 		File objecteventfile = new File(objecteventurl.getPath());
 		File aggregationeventfile = new File(aggregationeventurl.getPath());
 		File tranformationeventfile = new File(tranformationeventurl.getPath());
@@ -64,12 +67,14 @@ public class JsonSchemaLoader {
 		
 		try {
 			g_schemaobj = parser.parse(new FileReader(g_schema_file));
+			g_schemaobj_md = parser.parse(new FileReader(g_schema_md_file));
 			objecteventobj = parser.parse(new FileReader(objecteventfile));
 			aggregationeventobj = parser.parse(new FileReader(aggregationeventfile));
 			tranformationeventobj = parser.parse(new FileReader(tranformationeventfile));
 			transactioneventobj = parser.parse(new FileReader(transactioneventfile));
 			
 			schema_json = new JSONObject(g_schemaobj.toString());
+			schema_json_md = new JSONObject(g_schemaobj_md.toString());
 			objecteventschema_json = new JSONObject(objecteventobj.toString());
 			aggregationeventschema_json = new JSONObject(aggregationeventobj.toString());
 			tranformationeventschema_json = new JSONObject(tranformationeventobj.toString());
@@ -88,6 +93,12 @@ public class JsonSchemaLoader {
 		
 		return this.schema_json;
 	}
+	
+	public JSONObject getGeneralschema_md(){
+		
+		return this.schema_json_md;
+	}
+	
 	
 	public JSONObject getObjectEventschema(){
 		
