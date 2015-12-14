@@ -1,11 +1,17 @@
 package org.oliot.epcis.serde.mongodb;
 
+import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.getAnyMap;
+import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.getOtherAttributesMap;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.IDListType;
@@ -25,7 +31,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -219,6 +224,77 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 		((AbstractApplicationContext) ctx).close();
 		return 0;
 	}
+	
+	public int json_capture(JSONObject event) {
+
+		DBObject dbo = new BasicDBObject();
+
+		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		DBCollection collection = mongoOperation.getCollection("MasterData");
+
+				// ID is mandatory
+				if (event.has("id") == false) {
+					System.out.println("no id!!");
+				}
+
+				// Existence Check
+				String vocID = event.getString("id");
+
+				// each id should have one document
+				DBObject voc = collection.findOne(new BasicDBObject("id", vocID));
+
+				if (voc == null) {
+					voc = new BasicDBObject();
+
+				}
+
+				if (event.has("type") != false)
+					dbo.put("type", event.getString("type"));
+				if (event.has("id") != false)
+					dbo.put("id", event.getString("id"));
+
+				// Prepare vocabularyList JSONObject
+				Object tempAttrObj = dbo.get("attributes");
+				DBObject attrObj = null;
+				if (tempAttrObj == null) {
+					attrObj = new BasicDBObject();
+				} else {
+					attrObj = (DBObject) tempAttrObj;
+				}
+
+				// According to XML rule
+				// Specification is not possible
+				// Select Simple Content as one of two option
+				if (event.getJSONObject("attributes") != null) {
+					JSONObject json_attr = event.getJSONObject("attributes");
+					Iterator<String> json_iter = json_attr.keys();
+					while(json_iter.hasNext()){
+						String temp = json_iter.next();
+						attrObj.put(temp, json_attr.get(temp));					
+					}
+					attrObj.put("lastUpdated", System.currentTimeMillis());
+					dbo.put("attributes", attrObj);
+				}
+				
+				// If children found, overwrite previous one(s)
+				if (event.has("children") == true){
+					List<String> abc = new ArrayList<String>();
+					JSONArray abc_json = event.getJSONArray("children");
+					
+					for(int i = 0 ; i <abc_json.length() ; i++){
+						abc.add(abc_json.get(i).toString());
+					}
+					dbo.put("children", abc);
+				}
+				
+				collection.update(new BasicDBObject("id", vocID), dbo, true, false);
+		
+		((AbstractApplicationContext) ctx).close();
+		return 0;
+	}
+	
 
 	public int capture(List<EPC> epcList, Map<String, String> map2Save) {
 		if (map2Save == null) {
