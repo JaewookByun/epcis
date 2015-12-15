@@ -108,6 +108,68 @@ public class MongoWriterUtil {
 		return code;
 	}
 
+	static String getSourceDestinationEPC(String code, Integer gcpLength) {
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if (collection.containsKey("sgln")) {
+			return collection.get("sgln");
+		} else if (collection.containsKey("gsrn")) {
+			return collection.get("gsrn");
+		}
+		return code;
+	}
+
+	static String getVocabularyEPC(String vocType, String code, Integer gcpLength) {
+		if (vocType == null) {
+			return code;
+		}
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		
+		if(vocType.equals("urn:epcglobal:epcis:vtype:BusinessLocation")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:ReadPoint")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:EPCClass")){
+			if (collection.containsKey("lgtin")) {
+				return collection.get("lgtin");
+			}else if(collection.containsKey("gtin")){
+				return collection.get("lgtin");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:SourceDest")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			} else if (collection.containsKey("gsrn")) {
+				return collection.get("gsrn");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:EPCInstance")){
+			if (collection.containsKey("sgtin")) {
+				return collection.get("sgtin");
+			} else if (collection.containsKey("sscc")) {
+				return collection.get("sscc");
+			} else if (collection.containsKey("grai")) {
+				return collection.get("grai");
+			} else if (collection.containsKey("giai")) {
+				return collection.get("giai");
+			} else if (collection.containsKey("gsrn")) {
+				return collection.get("gsrn");
+			} else if (collection.containsKey("gdti")) {
+				return collection.get("gdti");
+			}
+		}
+		return code;
+	}
+
 	static DBObject getDBObjectFromMessageElement(MessageElement any) {
 		NamedNodeMap attributes = any.getAttributes();
 		DBObject attrObject = new BasicDBObject();
@@ -237,7 +299,9 @@ public class MongoWriterUtil {
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
 					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
-				quantity.put("quantity", qet.getQuantity());
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -252,7 +316,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -264,7 +328,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -307,7 +371,9 @@ public class MongoWriterUtil {
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
 					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
-				quantity.put("quantity", qet.getQuantity());
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -321,7 +387,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -333,7 +399,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -406,7 +472,9 @@ public class MongoWriterUtil {
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
 					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
-				quantity.put("quantity", qet.getQuantity());
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -420,7 +488,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -432,7 +500,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -465,7 +533,9 @@ public class MongoWriterUtil {
 			QuantityElementType qet = qetList.get(i);
 			if (qet.getEpcClass() != null)
 				quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
-			quantity.put("quantity", qet.getQuantity());
+			if (qet.getQuantity() != 0) {
+				quantity.put("quantity", qet.getQuantity());
+			}
 			if (qet.getUom() != null)
 				quantity.put("uom", qet.getUom().toString());
 			quantityList.add(quantity);
@@ -473,12 +543,12 @@ public class MongoWriterUtil {
 		return quantityList;
 	}
 
-	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList) {
+	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList, Integer gcpLength) {
 		List<DBObject> dbList = new ArrayList<DBObject>();
 		for (int i = 0; i < sdtList.size(); i++) {
 			SourceDestType sdt = sdtList.get(i);
 			DBObject dbObj = new BasicDBObject();
-			dbObj.put(sdt.getType(), sdt.getValue());
+			dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 			dbList.add(dbObj);
 		}
 		return dbList;

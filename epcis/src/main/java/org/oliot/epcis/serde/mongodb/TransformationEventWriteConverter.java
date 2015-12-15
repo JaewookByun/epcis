@@ -143,14 +143,14 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getSourceList() != null) {
 			SourceListType sdtl = transformationEventType.getSourceList();
 			List<SourceDestType> sdtList = sdtl.getSource();
-			List<DBObject> dbList = getSourceDestObjectList(sdtList);
+			List<DBObject> dbList = getSourceDestObjectList(sdtList, gcpLength);
 			dbo.put("sourceList", dbList);
 		}
 		// Dest List
 		if (transformationEventType.getDestinationList() != null) {
 			DestinationListType sdtl = transformationEventType.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
-			List<DBObject> dbList = getSourceDestObjectList(sdtList);
+			List<DBObject> dbList = getSourceDestObjectList(sdtList, gcpLength);
 			dbo.put("destinationList", dbList);
 		}
 		// ILMD
@@ -172,7 +172,7 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getAny() != null) {
 			List<Object> objList = transformationEventType.getAny();
 			Map<String, String> map2Save = getAnyMap(objList);
-			if (map2Save != null)
+			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
 		}
