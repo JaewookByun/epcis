@@ -61,7 +61,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 		if (vocabulary.getAny() != null && vocabulary.getAny().isEmpty() == false) {
 			List<Object> objList = vocabulary.getAny();
 			Map<String, String> map2Save = getAnyMap(objList);
-			if (map2Save.isEmpty() == false)
+			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 		}
 
@@ -151,7 +151,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 		return dbo;
 	}
 
-	public int capture(VocabularyType vocabulary) {
+	public int capture(VocabularyType vocabulary, Integer gcpLength) {
 
 		DBObject dbo = new BasicDBObject();
 
@@ -175,6 +175,9 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 				// Existence Check
 				String vocID = vocabularyElement.getId();
 
+				// Barcode Transform
+				vocID = MongoWriterUtil.getVocabularyEPC(vocabulary.getType(), vocID, gcpLength);
+				
 				// each id should have one document
 				DBObject voc = collection.findOne(new BasicDBObject("id", vocID));
 
@@ -186,7 +189,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 				if (vocabulary.getType() != null)
 					dbo.put("type", vocabulary.getType());
 				if (vocabularyElement.getId() != null)
-					dbo.put("id", vocabularyElement.getId());
+					dbo.put("id", vocID);
 
 				// Prepare vocabularyList JSONObject
 				Object tempAttrObj = dbo.get("attributes");
@@ -225,6 +228,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 		return 0;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public int json_capture(JSONObject event) {
 
 		DBObject dbo = new BasicDBObject();

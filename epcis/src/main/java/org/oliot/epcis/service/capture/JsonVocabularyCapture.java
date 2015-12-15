@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
-import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.jsonschema.JsonSchemaLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -58,6 +57,7 @@ public class JsonVocabularyCapture implements ServletContextAware {
 		return result;
 	}
 
+	@SuppressWarnings({ "unused", "resource" })
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString) {

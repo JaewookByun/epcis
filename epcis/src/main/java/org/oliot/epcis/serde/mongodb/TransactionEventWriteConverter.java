@@ -111,7 +111,7 @@ public class TransactionEventWriteConverter {
 		if (transactionEventType.getAny() != null) {
 			List<Object> objList = transactionEventType.getAny();
 			Map<String, String> map2Save = getAnyMap(objList);
-			if (map2Save != null)
+			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
 		}
