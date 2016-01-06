@@ -1,5 +1,5 @@
 ### Oliot EPCIS Repository ###
-Copyright (C) 2014 Jaewook Jack Byun
+Copyright (C) 2014-2016 Jaewook Byun
 > Note: This Repo could be folked from [URL](https://github.com/JaewookByun)
 
 > This project is part of Oliot ([Oliot Homepage](http://oliot.org)), pursuing the implementation of
