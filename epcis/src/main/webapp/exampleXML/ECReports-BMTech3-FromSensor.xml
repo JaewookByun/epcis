@@ -1,0 +1,44 @@
+<ns2:ECReports terminationCondition="WhenDataAvailable"
+	totalMilliseconds="5223" ALEID="ETHZ-ALE2107423299" date="2016-01-14T05:16:36.983Z"
+	specName="test" creationDate="2016-01-14T05:16:36.983Z" schemaVersion="1.1"
+	xmlns:ns2="urn:epcglobal:ale:xsd:1">
+	<reports>
+		<report reportName="report1">
+			<group>
+				<groupList>
+					<member>
+						<epc>urn:epc:id:sgtin:0693472.058672.137438953501</epc>
+						<tag>urn:epc:tag:sgtin-96:3.0693472.058672.137438953501</tag>
+						<rawHex>urn:epc:raw:96.x30742A5380394C200000001D</rawHex>
+						<rawDecimal>urn:epc:raw:96.14995715746211398736897114141
+						</rawDecimal>
+						<extension>
+							<fieldList>
+								<field>
+									<name>BMTech_data_barcode</name>
+									<value>1234567890</value>
+								</field>
+								<field>
+									<name>BMTech_data_nodeid</name>
+									<value>1</value>
+								</field>
+								<field>
+									<name>BMTech_time</name>
+									<value>2016-01-14-14-09-17</value>
+								</field>
+								<field>
+									<name>BMTech_data_insecticide</name>
+									<value>none</value>
+								</field>
+								<field>
+									<name>BMTech_did</name>
+									<value>30742A5380394C200000001D</value>
+								</field>
+							</fieldList>
+						</extension>
+					</member>
+				</groupList>
+			</group>
+		</report>
+	</reports>
+</ns2:ECReports>
