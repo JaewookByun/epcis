@@ -48,14 +48,70 @@
 									&& insecticide.childNodes.length >= 1) {
 								var text = insecticide.childNodes[1].textContent
 										.toLowerCase();
+
+								var b1 = $("#b1");
+								var b2 = $("#b2");
+								var b3 = $("#b3");
+								var b4 = $("#b4");
+
 								if (text === "none") {
 									$("#image")[0].src = "./image/a1.png";
+
+									if (b1.hasClass("disabled")) {
+										b1.removeClass("disabled");
+									}
+									if (!b2.hasClass("disabled")) {
+										b2.addClass("disabled");
+									}
+									if (!b3.hasClass("disabled")) {
+										b3.addClass("disabled");
+									}
+									if (!b4.hasClass("disabled")) {
+										b4.addClass("disabled");
+									}
 								} else if (text === "low") {
 									$("#image")[0].src = "./image/a2.png";
+									
+									if (!b1.hasClass("disabled")) {
+										b1.addClass("disabled");
+									}
+									if (b2.hasClass("disabled")) {
+										b2.removeClass("disabled");
+									}
+									if (!b3.hasClass("disabled")) {
+										b3.addClass("disabled");
+									}
+									if (!b4.hasClass("disabled")) {
+										b4.addClass("disabled");
+									}
 								} else if (text === "medium") {
 									$("#image")[0].src = "./image/a3.png";
+									if (!b1.hasClass("disabled")) {
+										b1.addClass("disabled");
+									}
+									if (!b2.hasClass("disabled")) {
+										b2.addClass("disabled");
+									}
+									if (b3.hasClass("disabled")) {
+										b3.removeClass("disabled");
+									}
+									if (!b4.hasClass("disabled")) {
+										b4.addClass("disabled");
+									}
 								} else {
 									$("#image")[0].src = "./image/a4.png";
+									if (!b1.hasClass("disabled")) {
+										b1.addClass("disabled");
+									}
+									if (!b2.hasClass("disabled")) {
+										b2.removeClass("disabled");
+									}
+									if (!b3.hasClass("disabled")) {
+										b3.addClass("disabled");
+									}
+									if (b4.hasClass("disabled")) {
+										b4.removeClass("disabled");
+									}
 								}
 							}
 
@@ -150,17 +206,20 @@
 				</div>
 				<div class="col-md-3">
 					<h4>Insecticide Level</h4>
-					<button type="button" class="btn btn-primary btn-sm disabled"
-						style="width: 140px">No Insecticide</button>
+					<button id="b1" type="button"
+						class="btn btn-primary btn-sm disabled" style="width: 140px">No
+						Insecticide</button>
 					<br>
-					<button type="button" class="btn btn-info btn-sm disabled"
+					<button id="b2" type="button" class="btn btn-info btn-sm disabled"
 						style="width: 140px">Low Insecticide</button>
 					<br>
-					<button type="button" class="btn btn-warning btn-sm disabled"
-						style="width: 140px">Medium Insecticide</button>
+					<button id="b3" type="button"
+						class="btn btn-warning btn-sm disabled" style="width: 140px">Medium
+						Insecticide</button>
 					<br>
-					<button type="button" class="btn btn-danger btn-sm disabled"
-						style="width: 140px">High Insecticide</button>
+					<button id="b4" type="button"
+						class="btn btn-danger btn-sm disabled" style="width: 140px">High
+						Insecticide</button>
 				</div>
 			</div>
 
