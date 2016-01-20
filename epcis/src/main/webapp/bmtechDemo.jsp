@@ -25,7 +25,7 @@
 
 		var btn = $("#btn");
 		if (btn.text().indexOf("Start") > -1) {
-			timer = setInterval(monitor, 3000);
+			timer = setInterval(monitor, 1000);
 			btn.text("Stop Monitoring");
 		} else {
 			clearInterval(timer);
@@ -70,7 +70,7 @@
 										b4.addClass("disabled");
 									}
 								} else if (text === "low") {
-									$("#image")[0].src = "./image/a2.png";
+									$("#image")[0].src = "./image/a3.png";
 									
 									if (!b1.hasClass("disabled")) {
 										b1.addClass("disabled");
@@ -80,20 +80,6 @@
 									}
 									if (!b3.hasClass("disabled")) {
 										b3.addClass("disabled");
-									}
-									if (!b4.hasClass("disabled")) {
-										b4.addClass("disabled");
-									}
-								} else if (text === "medium") {
-									$("#image")[0].src = "./image/a3.png";
-									if (!b1.hasClass("disabled")) {
-										b1.addClass("disabled");
-									}
-									if (!b2.hasClass("disabled")) {
-										b2.addClass("disabled");
-									}
-									if (b3.hasClass("disabled")) {
-										b3.removeClass("disabled");
 									}
 									if (!b4.hasClass("disabled")) {
 										b4.addClass("disabled");
@@ -210,12 +196,8 @@
 						class="btn btn-primary btn-sm disabled" style="width: 140px">No
 						Insecticide</button>
 					<br>
-					<button id="b2" type="button" class="btn btn-info btn-sm disabled"
+					<button id="b2" type="button" class="btn btn-warning btn-sm disabled"
 						style="width: 140px">Low Insecticide</button>
-					<br>
-					<button id="b3" type="button"
-						class="btn btn-warning btn-sm disabled" style="width: 140px">Medium
-						Insecticide</button>
 					<br>
 					<button id="b4" type="button"
 						class="btn btn-danger btn-sm disabled" style="width: 140px">High
