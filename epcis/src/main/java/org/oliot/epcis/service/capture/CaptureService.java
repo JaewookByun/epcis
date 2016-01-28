@@ -65,13 +65,11 @@ public class CaptureService implements CoreCaptureService {
 
 		// Mandatory Field: Action
 		if (event.getAction() == null) {
-			Configuration.logger
-					.error("Aggregation Event should have 'Action' field ");
+			Configuration.logger.error("Aggregation Event should have 'Action' field ");
 			return;
 		}
 		// M13
-		if (event.getAction() == ActionType.ADD
-				|| event.getAction() == ActionType.DELETE) {
+		if (event.getAction() == ActionType.ADD || event.getAction() == ActionType.DELETE) {
 			if (event.getParentID() == null) {
 				Configuration.logger.error("Req. M13 Error");
 				return;
@@ -165,14 +163,14 @@ public class CaptureService implements CoreCaptureService {
 		}
 	}
 
-	public void capture(VocabularyType vocabulary) {
+	public void capture(VocabularyType vocabulary, Integer gcpLength) {
 		if (Configuration.backend.equals("MongoDB")) {
 			// Previous Logic
-			//MongoCaptureUtil m = new MongoCaptureUtil();
-			//m.capture(vocabulary);
-		
+			// MongoCaptureUtil m = new MongoCaptureUtil();
+			// m.capture(vocabulary);
+
 			MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-			mdConverter.capture(vocabulary);
+			mdConverter.capture(vocabulary, gcpLength);
 		}
 	}
 
@@ -187,10 +185,8 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.info(" There is no EventList ");
 			return;
 		}
-		EventListType eventListType = epcisDocument.getEPCISBody()
-				.getEventList();
-		List<Object> eventList = eventListType
-				.getObjectEventOrAggregationEventOrQuantityEvent();
+		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
+		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
 
 		/*
 		 * JAXBElement<EPCISEventListExtensionType>
@@ -215,7 +211,7 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
 		if (epcisDocument.getEPCISBody() == null) {
@@ -226,10 +222,8 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.info(" There is no EventList ");
 			return;
 		}
-		EventListType eventListType = epcisDocument.getEPCISBody()
-				.getEventList();
-		List<Object> eventList = eventListType
-				.getObjectEventOrAggregationEventOrQuantityEvent();
+		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
+		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
 
 		/*
 		 * JAXBElement<EPCISEventListExtensionType>
@@ -251,11 +245,9 @@ public class CaptureService implements CoreCaptureService {
 				capture((TransformationEventType) event, userID, accessModifier, gcpLength);
 			} else if (event instanceof QuantityEventType) {
 				capture((QuantityEventType) event, userID, accessModifier, gcpLength);
-			} 
+			}
 		}
 	}
-
-	
 
 	@Override
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
@@ -270,36 +262,69 @@ public class CaptureService implements CoreCaptureService {
 			return;
 		}
 
-		VocabularyListType vocabularyListType = epcisMasterDataDocument
-				.getEPCISBody().getVocabularyList();
+		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
 
-		List<VocabularyType> vocabularyTypeList = vocabularyListType
-				.getVocabulary();
+		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
 
 		for (int i = 0; i < vocabularyTypeList.size(); i++) {
 			VocabularyType vocabulary = vocabularyTypeList.get(i);
-			if( vocabulary.getVocabularyElementList() != null )
-			{
-				if( vocabulary.getVocabularyElementList().getVocabularyElement() != null )
-				{
+			if (vocabulary.getVocabularyElementList() != null) {
+				if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
 					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
 					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
-					for(int j = 0 ; j < vetList.size() ; j++ )
-					{
+					for (int j = 0; j < vetList.size(); j++) {
 						VocabularyElementType vet = vetList.get(j);
 						VocabularyElementType vetTemp = new VocabularyElementType();
 						vetTemp = vet;
 						vetTempList.add(vetTemp);
-					}	
-					for(int j = 0 ; j < vetTempList.size() ; j++ )
-					{
+					}
+					for (int j = 0; j < vetTempList.size(); j++) {
 						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
 						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
-						capture(vocabulary);						
+						capture(vocabulary, null);
 					}
 				}
 			}
-			
+
+		}
+	}
+
+	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
+
+		if (epcisMasterDataDocument.getEPCISBody() == null) {
+			Configuration.logger.info(" There is no DocumentBody ");
+			return;
+		}
+
+		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
+			Configuration.logger.info(" There is no Vocabulary List ");
+			return;
+		}
+
+		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
+
+		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
+
+		for (int i = 0; i < vocabularyTypeList.size(); i++) {
+			VocabularyType vocabulary = vocabularyTypeList.get(i);
+			if (vocabulary.getVocabularyElementList() != null) {
+				if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
+					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
+					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
+					for (int j = 0; j < vetList.size(); j++) {
+						VocabularyElementType vet = vetList.get(j);
+						VocabularyElementType vetTemp = new VocabularyElementType();
+						vetTemp = vet;
+						vetTempList.add(vetTemp);
+					}
+					for (int j = 0; j < vetTempList.size(); j++) {
+						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
+						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
+						capture(vocabulary, gcpLength);
+					}
+				}
+			}
+
 		}
 	}
 

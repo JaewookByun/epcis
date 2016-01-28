@@ -10,6 +10,7 @@
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="jsoneventCapture" class="org.oliot.epcis.service.capture.JsonEventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
+	<bean id="jsonvocabularyCapture" class="org.oliot.epcis.service.capture.JsonVocabularyCapture"></bean>
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
 	<bean id="utilityService" class="org.oliot.epcis.service.query.UtilityService"></bean>
 	<bean id="codeParser" class="org.oliot.epcis.service.codeparser.CodeParserService"></bean>

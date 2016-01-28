@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
@@ -47,13 +48,13 @@ public class VocabularyCapture implements ServletContextAware {
 	}
 
 	public ResponseEntity<?> asyncPost(String inputString) {
-		ResponseEntity<?> result = post(inputString);
+		ResponseEntity<?> result = post(inputString, null);
 		return result;
 	}
 
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString) {
+	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
 
 		if (Configuration.isCaptureVerfificationOn == true) {
@@ -72,14 +73,14 @@ public class VocabularyCapture implements ServletContextAware {
 					EPCISMasterDataDocumentType.class);
 
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisMasterDataDocument);
+			cs.capture(epcisMasterDataDocument, gcpLength);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		} else {
 			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
 					EPCISMasterDataDocumentType.class);
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisMasterDataDocument);
+			cs.capture(epcisMasterDataDocument, gcpLength);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		}
 		return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);

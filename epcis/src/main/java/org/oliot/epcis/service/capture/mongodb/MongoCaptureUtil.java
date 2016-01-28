@@ -167,6 +167,16 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 	}
 
+	public void masterdata_capture(JSONObject event, MongoOperations mongoOperation) {
+
+		DBCollection collection = mongoOperation.getCollection("MasterData");
+
+		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+
+		collection.save(dbObject);
+		Configuration.logger.info(" Event Saved ");
+	}
+	
 	public void transactionevent_capture(JSONObject event, MongoOperations mongoOperation) {
 
 		DBCollection collection = mongoOperation.getCollection("TransactionEvent");

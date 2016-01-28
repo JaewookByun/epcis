@@ -366,7 +366,7 @@ body {
 			<p class="lead"
 				style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 			<p>
-				Jaewook Jack Byun, Ph.D student<br>Korea Advanced Institute of
+				Jaewook Byun, Ph.D student<br>Korea Advanced Institute of
 				Science and Technology (KAIST) <br>bjw0829@kaist.ac.kr,
 				bjw0829@gmail.com
 			</p>
