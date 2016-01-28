@@ -1,7 +1,6 @@
 package org.oliot.epcis.service.capture;
 
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 import javax.servlet.ServletContext;
 
@@ -67,6 +66,7 @@ public class JsonEventCapture implements ServletContextAware {
 		return result;
 	}
 
+	@SuppressWarnings("unchecked")
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public String post(@RequestBody String inputString) {

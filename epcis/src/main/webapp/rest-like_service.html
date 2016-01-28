@@ -48,7 +48,10 @@
 								</li>
 								<li class="list-group-item">Method: get</li>
 								<li class="list-group-item">REST URL: <br> <code>http://{base-url}:{base-port}/epcis/Service/CodeParser/{code}
-									</code> <br> Additional Parameter: <br> <code>gcpLength
+									</code> <br> Supported EPC: <br> <code> SGTIN, SSCC,
+										SGLN, GRAI, GIAI, GSRN, GSRNP, GDTI, CPI, SGCN, LGTIN, GTIN </code> <br>
+									Supported AI: <br> <code>(11), (13), (30), (310n),
+										(390n)</code> <br> Additional Parameter: <br> <code>gcpLength
 										= {integer}</code> <br> Result Format: <br> <code>
 										application/json </code> <br> <br> Example Query: <br>
 									<code>http://localhost:8080/epcis/Service/CodeParser/(01)80614141123458(21)6789(10)4222(414)0614141123452(254)333?gcpLength=7</code>
@@ -100,7 +103,7 @@
 									Additional Parameters: (Access Control) <code>NEW</code> <br>
 									userID : your Facebook ID <br> accessToken : your Facebook
 									AccessToken <br> accessModifier : (Private|Friend) <br>
-									gcpLength: length of GS1 Global Company Prefix (Integer) 
+									gcpLength: length of GS1 Global Company Prefix (Integer)
 								</li>
 								<li class="list-group-item">Example EPCIS Document: <br>
 									<a href="./exampleXML/gs1example1(Object).xml">gs1example1(Object)</a><br>
@@ -109,17 +112,15 @@
 									<a href="./exampleXML/gs1example4(Transformation).xml">gs1example4(Transformation)</a><br>
 									<a href="./exampleXML/otherExample1(Quantity).xml">otherExample1(Quantity)</a><br>
 									<a href="./exampleXML/otherExample3(Transaction).xml">otherExample2(Transaction)</a><br>
-									<a href="./exampleXML/otherExample4(Object).xml">otherExample3(Object(ILMD)) <code>NEW</code></a><br>
-									
-									<a href="./exampleXML/gs1Railexample1.xml">GS1 EPCIS for
-										Rail standard example 1 <code>NEW</code>
-										
-									<br>
-									<a href="./exampleXML/barcodeExample1(Object).xml">barcodeExample1(Object)<code>NEW</code></a><br>
-									<a href="./exampleXML/barcodeExample2(Aggregation).xml">barcodeExample2(Aggregation)<code>NEW</code></a><br>
-									<a href="./exampleXML/barcodeExample3(Transformation).xml">barcodeExample3(Transformation)<code>NEW</code></a><br>
-									<a href="./exampleXML/barcodeExample4(Quantity).xml">barcodeExample4(Quantity)<code>NEW</code></a><br>	
-									<a href="./exampleXML/barcodeExample5(Transaction).xml">barcodeExample5(Transaction)<code>NEW</code></a><br>		
+									<a href="./exampleXML/otherExample4(Object).xml">otherExample3(Object(ILMD))
+										<code>NEW</code>
+								</a><br> <a href="./exampleXML/gs1Railexample1.xml">GS1
+										EPCIS for Rail standard example 1 <code>NEW</code> <br> <a
+										href="./exampleXML/barcodeExample1(Object).xml">barcodeExample1(Object)<code>NEW</code></a><br>
+										<a href="./exampleXML/barcodeExample2(Aggregation).xml">barcodeExample2(Aggregation)<code>NEW</code></a><br>
+										<a href="./exampleXML/barcodeExample3(Transformation).xml">barcodeExample3(Transformation)<code>NEW</code></a><br>
+										<a href="./exampleXML/barcodeExample4(Quantity).xml">barcodeExample4(Quantity)<code>NEW</code></a><br>
+										<a href="./exampleXML/barcodeExample5(Transaction).xml">barcodeExample5(Transaction)<code>NEW</code></a><br>
 								</a><br> <a href="./exampleXML/gs1Railexample2.xml">GS1
 										EPCIS for Rail standard example 2 <code>NEW</code>
 								</a><br> <a href="./exampleXML/gs1Railexample3.xml">GS1
@@ -173,9 +174,38 @@
 									http://{base-url}:{base-port}/epcis/VocabularyCapture
 								</li>
 								<li class="list-group-item">Example EPCIS Master Data
-									Document: <br> 
-										<a href="./exampleXML/gs1example5(Master).xml">gs1example5(Master) <code>NEW</code></a><br>
-										<a href="./exampleXML/otherExample5(Master).xml">otherExample4(Master) <code>NEW</code></a><br>
+									Document: <br> <a
+									href="./exampleXML/gs1example5(Master).xml">gs1example5(Master)
+										<code>NEW</code>
+								</a><br> <a href="./exampleXML/otherExample5(Master).xml">otherExample4(Master)
+										<code>NEW</code>
+								</a><br>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<td>JSON Vocabulary Capture</td>
+						<td>
+							<ul class="list-group">
+								<li class="list-group-item">This service allows you to
+									store your EPCIS Master Data Document into your backend storage using JSON format
+								</li>
+								<li class="list-group-item">Method: post</li>
+								<li class="list-group-item">Contents: JSON Object
+								</li>
+								<li class="list-group-item">Example URL: <br> <code>Synchronous</code>
+									http://{base-url}:{base-port}/epcis/Service/JsonVocabularyCapture <br>
+									<code>Asynchronous</code>
+									http://{base-url}:{base-port}/epcis/VocabularyCapture
+								</li>
+								<li class="list-group-item">Example EPCIS Master Data
+									Document: <br> <a
+									href="./exampleJson/example1(Master).json">gs1example5(Master)
+										<code>NEW</code>
+								</a><br> <a href="./exampleJson/example2(Master).json">otherExample4(Master)
+										<code>NEW</code>
+								</a><br>
 								</li>
 							</ul>
 						</td>
