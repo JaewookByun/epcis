@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	creationDate="2015-01-01T09:33:30.0Z" schemaVersion="1.1">
+<EPCISBody>
+	<EventList>
+		<TransactionEvent>
+			<!-- Event Time: When the cow departs from dairy -->
+			<eventTime>2015-01-01T09:33:31.116-10:00</eventTime>
+			<eventTimeZoneOffset>-10:00</eventTimeZoneOffset>
+			<epcList>
+				<!-- EPC of the Cow -->
+				<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+			</epcList>
+			<action>OBSERVE</action>
+			<!-- The cow is in transit status and departing from the dairy -->
+			<bizStep>urn:epcglobal:cbv:bizstep:departing</bizStep>
+			<disposition>urn:epcglobal:cbv:disp:in_transit</disposition>
+			<bizLocation>
+				<!-- bizLocation indicates the location of dairy -->
+				<id>urn:epc:id:sgln:0614141.07346.1234</id>
+				<extension>
+					<geo>20.019786,-155.681829</geo>
+				</extension>
+			</bizLocation>
+			<extension>
+				<!-- source and destination represents the transfer of ownership -->
+				<sourceList>
+					<!-- Source indicates the dairy farm -->
+					<source type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:4012345.00001.0</source>
+				</sourceList>
+				<destinationList>
+					<!-- Destination indicates the party buys the cow -->
+					<destination type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:0614141.00001.0</destination>
+				</destinationList>
+			</extension>
+		</TransactionEvent>
+	</EventList>
+</EPCISBody>
+</epcis:EPCISDocument>

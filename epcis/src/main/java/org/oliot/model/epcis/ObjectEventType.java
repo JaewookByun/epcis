@@ -74,7 +74,6 @@ public class ObjectEventType extends EPCISEventType {
 	protected BusinessLocationType bizLocation;
 	protected BusinessTransactionListType bizTransactionList;
 	protected ILMDType ilmd;
-	
 	protected ObjectEventExtensionType extension;
 	@XmlAnyElement(lax = true)
 	protected List<Object> any;
@@ -301,7 +300,5 @@ public class ObjectEventType extends EPCISEventType {
 		}
 		return this.any;
 	}
-
-	
 
 }

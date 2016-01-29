@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:example="http://ns.example.com/epcis"
+	creationDate="2005-07-11T11:30:47.0Z"
+	schemaVersion="1.1">
+	<EPCISBody>
+		<EventList>
+			<ObjectEvent>
+				<eventTime>2005-04-03T20:33:31.116-06:00</eventTime>
+				<eventTimeZoneOffset>-06:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>(01)80614141123458(21)6789</epc>
+					<epc>(01)80614141123458(21)6790</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:shipping</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_transit</disposition>
+				<readPoint>
+					<id>(414)0614141123452(254)333</id>
+				</readPoint>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
+				</bizTransactionList>
+				<extension>
+					<quantityList>
+						<quantityElement>
+							<epcClass>(01)80614141123458(10)4222</epcClass>
+							<quantity>200</quantity>
+							<uom>KGM</uom>
+							<!-- Meaning: 200 kg of GTIN '04012345123456' belonging to lot '4222' -->
+						</quantityElement>
+					</quantityList>
+				</extension>
+			</ObjectEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>

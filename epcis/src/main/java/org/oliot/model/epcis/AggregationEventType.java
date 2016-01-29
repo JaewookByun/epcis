@@ -89,7 +89,11 @@ public class AggregationEventType
     @XmlAnyElement(lax = true)
     protected List<Object> any;
 
-    /**
+    public void setAny(List<Object> any) {
+		this.any = any;
+	}
+
+	/**
      * Gets the value of the parentID property.
      * 
      * @return
@@ -113,13 +117,7 @@ public class AggregationEventType
         this.parentID = value;
     }
 
-   
-
-	public void setAny(List<Object> any) {
-		this.any = any;
-	}
-
-	/**
+    /**
      * Gets the value of the childEPCs property.
      * 
      * @return

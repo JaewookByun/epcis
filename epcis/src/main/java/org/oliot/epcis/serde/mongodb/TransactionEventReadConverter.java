@@ -36,10 +36,11 @@ import org.springframework.stereotype.Component;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -47,14 +48,15 @@ import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Component
 @ReadingConverter
 public class TransactionEventReadConverter implements
@@ -63,19 +65,24 @@ public class TransactionEventReadConverter implements
 	public TransactionEventType convert(DBObject dbObject) {
 		try {
 			TransactionEventType transactionEventType = new TransactionEventType();
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				transactionEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if (eventTimeZoneOffset.split(":").length == 2) {
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone * 60);
 				transactionEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				transactionEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -83,6 +90,7 @@ public class TransactionEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone * 60);
 				transactionEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("parentID") != null)
@@ -178,6 +186,13 @@ public class TransactionEventReadConverter implements
 				}
 				btlt.setBizTransaction(bizTranArrayList);
 				transactionEventType.setBizTransactionList(btlt);
+			}
+
+			// Vendor Extension
+			if (dbObject.get("any") != null) {
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				transactionEventType.setAny(any);
 			}
 
 			// Extension Field

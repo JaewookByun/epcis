@@ -45,7 +45,6 @@ import org.w3c.dom.Element;
 @XmlType(name = "AggregationEventExtension2Type", propOrder = {
     "any"
 })
-
 public class AggregationEventExtension2Type {
 
     @XmlAnyElement(lax = true)

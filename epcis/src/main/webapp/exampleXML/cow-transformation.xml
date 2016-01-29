@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.1"
+	creationDate="2015-01-02T09:33:30.099+02:00" xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<TransformationEvent>
+				<!-- Event Time: When the cow is butchered -->
+				<eventTime>2015-01-02T14:58:56.591-10:00</eventTime>
+				<eventTimeZoneOffset>-10:00</eventTimeZoneOffset>
+				<inputEPCList>
+					<!-- EPC of the Cow -->
+					<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+				</inputEPCList>
+				<outputEPCList>
+					<!-- EPCs of the Beef Parts -->
+					<epc>urn:epc:id:sgtin:4012345.077889.25</epc>
+					<epc>urn:epc:id:sgtin:4012345.077889.26</epc>
+					<epc>urn:epc:id:sgtin:4012345.077889.27</epc>
+				</outputEPCList>
+				<!-- The cow is now transforming -->
+				<bizStep>urn:epcglobal:cbv:bizstep:transforming</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_progress</disposition>
+				<bizLocation>
+					<!-- bizLocation indicates the location of butcher shop -->
+					<id>urn:epc:id:sgln:4012345.00001.0</id>
+					<extension>
+						<geo>19.634746,-155.986547</geo>
+					</extension>
+				</bizLocation>
+			</TransformationEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>

@@ -3,9 +3,6 @@ package org.oliot.epcis.configuration;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -14,19 +11,10 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
-import org.oliot.epcis.service.capture.CaptureMQListener;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
-import org.oliot.epcis.service.query.mysql.MysqlSubscription;
-//import org.oliot.epcis.service.query.mysql.MysqlSubscription;
-import org.springframework.amqp.core.AmqpAdmin;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -34,35 +22,30 @@ import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class Configuration implements ServletContextListener {
 
 	public static String backend;
 	public static Logger logger;
 	public static String webInfoPath;
+	public static String wsdlPath;
 	public static boolean isCaptureVerfificationOn;
-	public static boolean isMessageQueueOn;
-	public static int numCaptureListener;
-	public static String captureQueue;
-	public static String queryExchange;
-
-	public static boolean isRestMessageQueueOn;
-	public static int numRestCaptureListener;
-	public static String restCaptureQueue;
-	public static String restQueryExchange;
-
-	public static List<SimpleMessageListenerContainer> MQContainerList;
+	public static boolean isServiceRegistryReportOn;
+	public static String onsAddress;
+	public static boolean isQueryAccessControlOn;
+	public static String facebookAppID;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-	
+
 	}
 
 	@Override
@@ -73,10 +56,6 @@ public class Configuration implements ServletContextListener {
 
 		// Set Basic Configuration with Configuration.json
 		setBasicConfiguration(servletContextEvent.getServletContext());
-
-		// Set Capture Message Queue
-		MQContainerList = new ArrayList<SimpleMessageListenerContainer>();
-		setCaptureMessageQueue();
 
 		// load existing subscription
 		loadExistingSubscription();
@@ -115,12 +94,13 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.info("Backend - " + Configuration.backend);
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
-
+			Configuration.wsdlPath = context.getRealPath("/wsdl");			
+			
 			// Set up capture_verification
 			String captureVerification = json.getString("capture_verification");
 			if (captureVerification == null) {
-				Configuration.logger
-						.error("capture_verification is null, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"capture_verification is null, please make sure Configuration.json is correct, and restart.");
 			}
 			captureVerification = captureVerification.trim();
 			if (captureVerification.equals("on")) {
@@ -130,81 +110,67 @@ public class Configuration implements ServletContextListener {
 				Configuration.isCaptureVerfificationOn = false;
 				Configuration.logger.info("Capture_Verification - OFF ");
 			} else {
-				Configuration.logger
-						.error("capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
 
-			// Set up Message Queue
-			String message_queue = json.getString("message_queue");
-			if (message_queue.equals("on")) {
-				Configuration.isMessageQueueOn = true;
-				Configuration.logger.info("Message Queue - ON ");
-			} else if (message_queue.equals("off")) {
-				Configuration.isMessageQueueOn = false;
-				Configuration.logger.info("Message Queue - OFF ");
+			// Set up service_registry_report
+			String serviceRegistryReport = json.getString("service_registry_report");
+			if (serviceRegistryReport == null) {
+				Configuration.logger.error(
+						"service_registry_report is null, please make sure Configuration.json is correct, and restart.");
+			}
+			serviceRegistryReport = serviceRegistryReport.trim();
+			if (serviceRegistryReport.equals("on")) {
+				Configuration.isServiceRegistryReportOn = true;
+				Configuration.logger.info("Service_Registry_Report - ON");
+
+			} else if (serviceRegistryReport.equals("off")) {
+				Configuration.isServiceRegistryReportOn = false;
+				Configuration.logger.info("Service_Registry_Report - OFF");
 			} else {
-				Configuration.logger
-						.error("message_queue should be (on|off), please make sure Configuration.json is correct, and restart.");
+				Configuration.logger.error(
+						"service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
-			String numListener = json
-					.getString("message_queue_capture_listener");
-			captureQueue = json.getString("message_queue_capture_name");
-			if (isMessageQueueOn == true
-					&& (numListener == null || captureQueue == null)) {
+
+			// Set up ons_address
+			String ons_address = json.getString("ons_address");
+			if (ons_address == null) {
 				Configuration.logger
-						.error("if message_queue on, number of capture listener should be described, please make sure Configuration.json is correct, and restart.");
+						.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
 			} else {
-				try {
-					numCaptureListener = Integer.parseInt(numListener);
-				} catch (NumberFormatException e) {
-					Configuration.logger
-							.error("number of capture listener should be integer, please make sure Configuration.json is correct, and restart.");
-				}
+				Configuration.onsAddress = ons_address;
 			}
-			queryExchange = json.getString("message_queue_exchange_query");
-			if (isMessageQueueOn == true && queryExchange == null) {
-				Configuration.logger
-						.error("if message_queue on, query exchange should be described, please make sure Configuration.json is correct, and restart.");
+
+			// Query Access Control
+			// Set up capture_verification
+			String queryAC = json.getString("query_access_control");
+			if (queryAC == null) {
+				Configuration.logger.error(
+						"query_access_control, please make sure Configuration.json is correct, and restart.");
 			}
+			queryAC = queryAC.trim();
+			if (queryAC.equals("on")) {
+				Configuration.isQueryAccessControlOn = true;
+				Configuration.logger.info("Query_AccessControl - ON ");
+			} else if (captureVerification.equals("off")) {
+				Configuration.isQueryAccessControlOn = false;
+				Configuration.logger.info("Query_AccessControl - OFF ");
+			} else {
+				Configuration.logger.error(
+						"query_access_control should be (on|off), please make sure Configuration.json is correct, and restart.");
+			}
+			
+			// Facebook Application ID
+			String fai = json.getString("facebook_app_id");
+			if (fai == null) {
+				Configuration.logger.error(
+						"facebook_app_id, please make sure Configuration.json is correct, and restart.");
+			}
+			facebookAppID = fai.trim();
+
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
-		}
-
-	}
-
-	private void setCaptureMessageQueue() {
-		if (Configuration.isMessageQueueOn == true) {
-			Configuration.logger.info("Message Queue Service - Started ");
-			Configuration.logger
-					.info("Message Queue Service - Number of Capture Listener: "
-							+ Configuration.numCaptureListener);
-			Configuration.logger
-					.info("Message Queue Service - Capture Queue Name: "
-							+ Configuration.captureQueue);
-
-			// Message Queue Initialization
-			ConnectionFactory connectionFactory = new CachingConnectionFactory();
-			AmqpAdmin admin = new RabbitAdmin(connectionFactory);
-			boolean isExistQueue = admin
-					.deleteQueue(Configuration.captureQueue);
-			if (isExistQueue == true) {
-				Configuration.logger.info("Capture Queue Initialized");
-			}
-			Queue queue = new Queue(Configuration.captureQueue);
-			admin.declareQueue(queue);
-
-			for (int i = 0; i < Configuration.numCaptureListener; i++) {
-				SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-				container.setConnectionFactory(connectionFactory);
-				container.setQueueNames(Configuration.captureQueue);
-				CaptureMQListener listener = new CaptureMQListener();
-				container.setMessageListener(listener);
-				container.start();
-				MQContainerList.add(container);
-				Configuration.logger
-						.info("Message Queue Service - Capture Listener "
-								+ (i + 1) + " started");
-			}
 		}
 	}
 
@@ -215,9 +181,7 @@ public class Configuration implements ServletContextListener {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-			MysqlSubscription ms = new MysqlSubscription();
-			ms.init();
-			
+
 		}
 	}
 }

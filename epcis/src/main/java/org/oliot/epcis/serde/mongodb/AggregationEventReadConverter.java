@@ -36,10 +36,11 @@ import org.springframework.stereotype.Component;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -47,14 +48,15 @@ import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 @Component
 @ReadingConverter
 public class AggregationEventReadConverter implements
@@ -64,22 +66,24 @@ public class AggregationEventReadConverter implements
 
 		try {
 			AggregationEventType aggregationEventType = new AggregationEventType();
-			if (dbObject.get("parentID") != null)
-				aggregationEventType.setParentID(dbObject.get("parentID")
-						.toString());
+			int zone = 0;
+			if (dbObject.get("eventTimeZoneOffset") != null) {
+				String eventTimeZoneOffset = (String) dbObject
+						.get("eventTimeZoneOffset");
+				aggregationEventType
+						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				if (eventTimeZoneOffset.split(":").length == 2) {
+					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
+				}
+			}
 			if (dbObject.get("eventTime") != null) {
 				long eventTime = (long) dbObject.get("eventTime");
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				xmlEventTime.setTimezone(zone * 60);
 				aggregationEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				aggregationEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = (long) dbObject.get("recordTime");
@@ -87,8 +91,12 @@ public class AggregationEventReadConverter implements
 				recordCalendar.setTimeInMillis(eventTime);
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
 						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				xmlRecordTime.setTimezone(zone * 60);
 				aggregationEventType.setRecordTime(xmlRecordTime);
 			}
+			if (dbObject.get("parentID") != null)
+				aggregationEventType.setParentID(dbObject.get("parentID")
+						.toString());
 			if (dbObject.get("childEPCs") != null) {
 				BasicDBList epcListM = (BasicDBList) dbObject.get("childEPCs");
 				EPCListType epcListType = new EPCListType();
@@ -179,6 +187,13 @@ public class AggregationEventReadConverter implements
 				}
 				btlt.setBizTransaction(bizTranArrayList);
 				aggregationEventType.setBizTransactionList(btlt);
+			}
+
+			// Vendor Extension
+			if (dbObject.get("any") != null) {
+				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				List<Object> any = putAny(anyObject);
+				aggregationEventType.setAny(any);
 			}
 
 			// Extension Field

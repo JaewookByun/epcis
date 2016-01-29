@@ -9,8 +9,10 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.axis.message.MessageElement;
+import org.oliot.gcp.core.AICodeParser;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
+import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.DestinationListType;
@@ -36,7 +38,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2014 Jaewook Jack Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -44,15 +46,129 @@ import com.mongodb.DBObject;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Jack Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class MongoWriterUtil {
+
+	static String getInstanceEPC(String code, Integer gcpLength) {
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if (collection.containsKey("sgtin")) {
+			return collection.get("sgtin");
+		} else if (collection.containsKey("sscc")) {
+			return collection.get("sscc");
+		} else if (collection.containsKey("grai")) {
+			return collection.get("grai");
+		} else if (collection.containsKey("giai")) {
+			return collection.get("giai");
+		} else if (collection.containsKey("gsrn")) {
+			return collection.get("gsrn");
+		} else if (collection.containsKey("gdti")) {
+			return collection.get("gdti");
+		}
+		return code;
+	}
+
+	static String getClassEPC(String code, Integer gcpLength) {
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+
+		// Priority LGTIN -> GTIN
+		if (collection.containsKey("lgtin")) {
+			return collection.get("lgtin");
+		}
+		if (collection.containsKey("gtin")) {
+			return collection.get("gtin");
+		}
+		return code;
+	}
+
+	static String getLocationEPC(String code, Integer gcpLength) {
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if (collection.containsKey("sgln")) {
+			return collection.get("sgln");
+		}
+		return code;
+	}
+
+	static String getSourceDestinationEPC(String code, Integer gcpLength) {
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		if (collection.containsKey("sgln")) {
+			return collection.get("sgln");
+		} else if (collection.containsKey("gsrn")) {
+			return collection.get("gsrn");
+		}
+		return code;
+	}
+
+	static String getVocabularyEPC(String vocType, String code, Integer gcpLength) {
+		if (vocType == null) {
+			return code;
+		}
+		if (gcpLength == null) {
+			return code;
+		}
+		AICodeParser codeParser = new AICodeParser();
+		HashMap<String, String> collection = codeParser.parse(code, gcpLength.intValue());
+		
+		if(vocType.equals("urn:epcglobal:epcis:vtype:BusinessLocation")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:ReadPoint")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:EPCClass")){
+			if (collection.containsKey("lgtin")) {
+				return collection.get("lgtin");
+			}else if(collection.containsKey("gtin")){
+				return collection.get("lgtin");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:SourceDest")){
+			if (collection.containsKey("sgln")) {
+				return collection.get("sgln");
+			} else if (collection.containsKey("gsrn")) {
+				return collection.get("gsrn");
+			}
+		}else if(vocType.equals("urn:epcglobal:epcis:vtype:EPCInstance")){
+			if (collection.containsKey("sgtin")) {
+				return collection.get("sgtin");
+			} else if (collection.containsKey("sscc")) {
+				return collection.get("sscc");
+			} else if (collection.containsKey("grai")) {
+				return collection.get("grai");
+			} else if (collection.containsKey("giai")) {
+				return collection.get("giai");
+			} else if (collection.containsKey("gsrn")) {
+				return collection.get("gsrn");
+			} else if (collection.containsKey("gdti")) {
+				return collection.get("gdti");
+			}
+		}
+		return code;
+	}
 
 	static DBObject getDBObjectFromMessageElement(MessageElement any) {
 		NamedNodeMap attributes = any.getAttributes();
@@ -66,12 +182,10 @@ public class MongoWriterUtil {
 		}
 		return attrObject;
 	}
-	
-	static DBObject getBaseExtensionObject(
-			EPCISEventExtensionType baseExtensionType) {
+
+	static DBObject getBaseExtensionObject(EPCISEventExtensionType baseExtensionType) {
 		DBObject baseExtension = new BasicDBObject();
-		if (baseExtensionType.getAny() != null
-				&& baseExtensionType.getAny().isEmpty() == false) {
+		if (baseExtensionType.getAny() != null && baseExtensionType.getAny().isEmpty() == false) {
 			List<Object> objList = baseExtensionType.getAny();
 			Map<String, String> map2Save = getAnyMap(objList);
 			if (map2Save.isEmpty() == false)
@@ -88,10 +202,10 @@ public class MongoWriterUtil {
 		return baseExtension;
 	}
 
-	static DBObject getReadPointObject(ReadPointType readPointType) {
+	static DBObject getReadPointObject(ReadPointType readPointType, Integer gcpLength) {
 		DBObject readPoint = new BasicDBObject();
 		if (readPointType.getId() != null)
-			readPoint.put("id", readPointType.getId());
+			readPoint.put("id", getLocationEPC(readPointType.getId(), gcpLength));
 		// ReadPoint ExtensionType is not currently supported
 		/*
 		 * ReadPointExtensionType readPointExtensionType = readPointType
@@ -118,40 +232,50 @@ public class MongoWriterUtil {
 		return readPoint;
 	}
 
-	static DBObject getBizLocationObject(BusinessLocationType bizLocationType) {
+	static DBObject getBizLocationObject(BusinessLocationType bizLocationType, Integer gcpLength) {
 		DBObject bizLocation = new BasicDBObject();
 		if (bizLocationType.getId() != null)
-			bizLocation.put("id", bizLocationType.getId());
-		// Business Location Extension is not currently supported
-		/*
-		 * BusinessLocationExtensionType bizLocationExtensionType =
-		 * bizLocationType .getExtension(); if (bizLocationExtensionType !=
-		 * null) { DBObject extension = new BasicDBObject(); if
-		 * (bizLocationExtensionType.getAny() != null) { Map<String, String>
-		 * map2Save = new HashMap<String, String>(); List<Object> objList =
-		 * bizLocationExtensionType.getAny(); for (int i = 0; i <
-		 * objList.size(); i++) { Object obj = objList.get(i); if (obj
-		 * instanceof Element) { Element element = (Element) obj; if
-		 * (element.getFirstChild() != null) { String name =
-		 * element.getLocalName(); String value = element.getFirstChild()
-		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save !=
-		 * null) extension.put("any", map2Save); }
-		 * 
-		 * if (bizLocationExtensionType.getOtherAttributes() != null) {
-		 * Map<QName, String> map = bizLocationExtensionType
-		 * .getOtherAttributes(); Map<String, String> map2Save = new
-		 * HashMap<String, String>(); Iterator<QName> iter =
-		 * map.keySet().iterator(); while (iter.hasNext()) { QName qName =
-		 * iter.next(); String value = map.get(qName);
-		 * map2Save.put(qName.toString(), value); }
-		 * extension.put("otherAttributes", map2Save); }
-		 * bizLocation.put("extension", extension); }
-		 */
+			bizLocation.put("id", getLocationEPC(bizLocationType.getId(), gcpLength));
+
+		BusinessLocationExtensionType bizLocationExtensionType = bizLocationType.getExtension();
+		if (bizLocationExtensionType != null) {
+			DBObject extension = new BasicDBObject();
+			if (bizLocationExtensionType.getAny() != null) {
+				Map<String, String> map2Save = new HashMap<String, String>();
+				List<Object> objList = bizLocationExtensionType.getAny();
+				for (int i = 0; i < objList.size(); i++) {
+					Object obj = objList.get(i);
+					if (obj instanceof Element) {
+						Element element = (Element) obj;
+						if (element.getFirstChild() != null) {
+							String name = element.getLocalName();
+							String value = element.getFirstChild().getTextContent();
+							map2Save.put(name, value);
+						}
+					}
+				}
+				if (map2Save != null)
+					extension.put("any", map2Save);
+			}
+
+			if (bizLocationExtensionType.getOtherAttributes() != null) {
+				Map<QName, String> map = bizLocationExtensionType.getOtherAttributes();
+				Map<String, String> map2Save = new HashMap<String, String>();
+				Iterator<QName> iter = map.keySet().iterator();
+				while (iter.hasNext()) {
+					QName qName = iter.next();
+					String value = map.get(qName);
+					map2Save.put(qName.toString(), value);
+				}
+				extension.put("otherAttributes", map2Save);
+			}
+			bizLocation.put("extension", extension);
+		}
+
 		return bizLocation;
 	}
 
-	static List<DBObject> getBizTransactionObjectList(
-			List<BusinessTransactionType> bizList) {
+	static List<DBObject> getBizTransactionObjectList(List<BusinessTransactionType> bizList) {
 		List<DBObject> bizTranList = new ArrayList<DBObject>();
 		for (int i = 0; i < bizList.size(); i++) {
 			BusinessTransactionType bizTranType = bizList.get(i);
@@ -164,8 +288,7 @@ public class MongoWriterUtil {
 		return bizTranList;
 	}
 
-	static DBObject getAggregationEventExtensionObject(
-			AggregationEventExtensionType oee) {
+	static DBObject getAggregationEventExtensionObject(AggregationEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getChildQuantityList() != null) {
 			QuantityListType qetl = oee.getChildQuantityList();
@@ -175,8 +298,10 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
-				quantity.put("quantity", qet.getQuantity());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -191,7 +316,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -203,7 +328,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -229,14 +354,13 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static Map<String, String> getILMDExtensionMap(
-			ILMDExtensionType ilmdExtension) {
+	static Map<String, String> getILMDExtensionMap(ILMDExtensionType ilmdExtension) {
 		List<Object> objList = ilmdExtension.getAny();
 		Map<String, String> map2Save = getAnyMap(objList);
 		return map2Save;
 	}
 
-	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee) {
+	static DBObject getObjectEventExtensionObject(ObjectEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -246,8 +370,10 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
-				quantity.put("quantity", qet.getQuantity());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -261,7 +387,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -273,7 +399,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -299,8 +425,7 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static DBObject getQuantityEventExtensionObject(
-			QuantityEventExtensionType oee) {
+	static DBObject getQuantityEventExtensionObject(QuantityEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
@@ -336,8 +461,7 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static DBObject getTransactionEventExtensionObject(
-			TransactionEventExtensionType oee) {
+	static DBObject getTransactionEventExtensionObject(TransactionEventExtensionType oee, Integer gcpLength) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
@@ -347,8 +471,10 @@ public class MongoWriterUtil {
 				DBObject quantity = new BasicDBObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", qet.getEpcClass().toString());
-				quantity.put("quantity", qet.getQuantity());
+					quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
+				if (qet.getQuantity() != 0) {
+					quantity.put("quantity", qet.getQuantity());
+				}
 				if (qet.getUom() != null)
 					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
@@ -362,7 +488,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -374,7 +500,7 @@ public class MongoWriterUtil {
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
 				DBObject dbObj = new BasicDBObject();
-				dbObj.put(sdt.getType(), sdt.getValue());
+				dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -400,15 +526,16 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static List<DBObject> getQuantityObjectList(
-			List<QuantityElementType> qetList) {
+	static List<DBObject> getQuantityObjectList(List<QuantityElementType> qetList, Integer gcpLength) {
 		List<DBObject> quantityList = new ArrayList<DBObject>();
 		for (int i = 0; i < qetList.size(); i++) {
 			DBObject quantity = new BasicDBObject();
 			QuantityElementType qet = qetList.get(i);
 			if (qet.getEpcClass() != null)
-				quantity.put("epcClass", qet.getEpcClass().toString());
-			quantity.put("quantity", qet.getQuantity());
+				quantity.put("epcClass", getClassEPC(qet.getEpcClass().toString(), gcpLength));
+			if (qet.getQuantity() != 0) {
+				quantity.put("quantity", qet.getQuantity());
+			}
 			if (qet.getUom() != null)
 				quantity.put("uom", qet.getUom().toString());
 			quantityList.add(quantity);
@@ -416,19 +543,18 @@ public class MongoWriterUtil {
 		return quantityList;
 	}
 
-	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList) {
+	static List<DBObject> getSourceDestObjectList(List<SourceDestType> sdtList, Integer gcpLength) {
 		List<DBObject> dbList = new ArrayList<DBObject>();
 		for (int i = 0; i < sdtList.size(); i++) {
 			SourceDestType sdt = sdtList.get(i);
 			DBObject dbObj = new BasicDBObject();
-			dbObj.put(sdt.getType(), sdt.getValue());
+			dbObj.put(sdt.getType(), getSourceDestinationEPC(sdt.getValue(), gcpLength));
 			dbList.add(dbObj);
 		}
 		return dbList;
 	}
 
-	static DBObject getTransformationEventExtensionObject(
-			TransformationEventExtensionType oee) {
+	static DBObject getTransformationEventExtensionObject(TransformationEventExtensionType oee) {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
@@ -457,8 +583,7 @@ public class MongoWriterUtil {
 					// Process Namespace
 					String[] checkArr = name.split(":");
 					if (checkArr.length == 2) {
-						map2Save.put("@" + checkArr[0],
-								element.getNamespaceURI());
+						map2Save.put("@" + checkArr[0], element.getNamespaceURI());
 					}
 					String value = element.getFirstChild().getTextContent();
 					map2Save.put(name, value);

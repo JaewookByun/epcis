@@ -31,7 +31,7 @@ import org.w3c.dom.Node;
 import com.mongodb.BasicDBObject;
 
 /**
- * Copyright (C) 2014 KAIST RESL
+ * Copyright (C) 2015 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -39,16 +39,68 @@ import com.mongodb.BasicDBObject;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jack Jaewook Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
  *         Real-time Embedded System Laboratory(RESL)
  * 
- *         bjw0829@kaist.ac.kr
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
+
 public class MongoReaderUtil {
 
+	static List<Object> putAny(BasicDBObject anyObject) {
+		try {
+			// Get Namespaces
+			Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
+			Map<String, String> nsMap = new HashMap<String, String>();
+			while (anyKeysIterN.hasNext()) {
+				String anyKeyN = anyKeysIterN.next();
+				String valueN = anyObject.get(anyKeyN).toString();
+				if (anyKeyN.startsWith("@")) {
+					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
+				}
+			}
+			Iterator<String> anyKeysIter = anyObject.keySet().iterator();
+			List<Object> elementList = new ArrayList<Object>();
+			while (anyKeysIter.hasNext()) {
+				String anyKey = anyKeysIter.next();
+				if (anyKey.startsWith("@"))
+					continue;
+				String value = anyObject.get(anyKey).toString();
+				// Get Namespace
+				String[] anyKeyCheck = anyKey.split(":");
+				String namespace = null;
+				String namespaceURI = null;
+				if (anyKeyCheck.length == 2) {
+					namespace = anyKeyCheck[0];
+					namespaceURI = nsMap.get(namespace).toString();
+				}
+				if (anyKey != null && value != null) {
+					DocumentBuilderFactory dbf = DocumentBuilderFactory
+							.newInstance();
+					DocumentBuilder builder = dbf.newDocumentBuilder();
+					Document doc = builder.newDocument();
+
+					Node node = doc.createElement("value");
+					node.setTextContent(value);
+					Element element = doc.createElement(anyKey);
+					if (namespace != null) {
+						element.setAttribute("xmlns:" + namespace, namespaceURI);
+					}
+					//element.appendChild(node);
+					element.setTextContent(value);
+					elementList.add(element);
+				}
+			}
+			return elementList;
+		} catch (ParserConfigurationException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		}
+		return null;
+	}
+	
 	static ILMDType putILMD(ILMDType ilmd, BasicDBObject anyObject) {
 		try {
 			ILMDExtensionType ilmdExtension = new ILMDExtensionType();
