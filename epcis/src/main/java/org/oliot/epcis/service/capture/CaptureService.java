@@ -19,6 +19,7 @@ import javax.xml.bind.JAXBElement;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
+import org.oliot.epcis.service.capture.mysql.MysqlCaptureUtil;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -88,6 +89,9 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event, userID, accessModifier, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -104,6 +108,9 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event, userID, accessModifier, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -120,6 +127,9 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event, userID, accessModifier, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -146,6 +156,9 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event, userID, accessModifier, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -160,6 +173,9 @@ public class CaptureService implements CoreCaptureService {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoCaptureUtil m = new MongoCaptureUtil();
 			m.capture(event, userID, accessModifier, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(event);
 		}
 	}
 
@@ -171,6 +187,9 @@ public class CaptureService implements CoreCaptureService {
 
 			MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
 			mdConverter.capture(vocabulary, gcpLength);
+		}else if(Configuration.backend.equals("MySQL")){
+			MysqlCaptureUtil m = new MysqlCaptureUtil();
+			m.capture(vocabulary);
 		}
 	}
 

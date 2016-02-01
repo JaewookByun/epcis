@@ -95,6 +95,55 @@ public class SubscriptionType {
 		this.format = format;
 		this.paramMap = paramMap;
 	}
+	//back compatibility
+	public SubscriptionType(String queryName, String subscriptionID,
+			String dest, String cronExpression, boolean reportIfEmpty, String initialRecordTime, String eventType,
+			String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep,
+			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
+			String EQ_bizLocation, String WD_bizLocation,
+			String EQ_transformationID, String MATCH_epc,
+			String MATCH_parentID, String MATCH_inputEPC,
+			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
+			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
+			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
+			String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit,
+			String maxEventCount, Map<String, String> paramMap) {
+		this.queryName = queryName;
+		this.subscriptionID = subscriptionID;
+		this.dest = dest;
+		this.cronExpression = cronExpression;
+		this.reportIfEmpty = reportIfEmpty;
+		this.initialRecordTime = initialRecordTime;
+		this.eventType = eventType;
+		this.GE_eventTime = GE_eventTime;
+		this.LT_eventTime = LT_eventTime;
+		this.GE_recordTime = GE_recordTime;
+		this.LT_recordTime = LT_recordTime;
+		this.EQ_action = EQ_action;
+		this.EQ_bizStep = EQ_bizStep;
+		this.EQ_disposition = EQ_disposition;
+		this.WD_bizLocation = WD_bizLocation;
+		this.EQ_transformationID = EQ_transformationID;
+		this.MATCH_epc = MATCH_epc;
+		this.MATCH_parentID = MATCH_parentID;
+		this.MATCH_inputEPC = MATCH_inputEPC;
+		this.MATCH_outputEPC = MATCH_outputEPC;
+		this.MATCH_anyEPC = MATCH_anyEPC;
+		this.MATCH_epcClass = MATCH_epcClass;
+		this.MATCH_anyEPCClass = MATCH_anyEPCClass;
+		this.EQ_quantity = EQ_quantity;
+		this.GT_quantity = GT_quantity;
+		this.GE_quantity = GE_quantity;
+		this.LT_quantity = LT_quantity;
+		this.LE_quantity = LE_quantity;
+		this.orderBy = orderBy;
+		this.orderDirection = orderDirection;
+		this.eventCountLimit = eventCountLimit;
+		this.maxEventCount = maxEventCount;
+		this.paramMap = paramMap;
+	}
 
 	public boolean isIgnoreReceivedEvent() {
 		return ignoreReceivedEvent;

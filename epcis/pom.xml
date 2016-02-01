@@ -147,6 +147,44 @@
 			<artifactId>gcp</artifactId>
 			<version>0.0.3</version>	
 		</dependency>
+		
+		<!-- MySQL -->
+		
+		<!-- Added for handling hibernate -->
+		<dependency> 
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.6.10.Final</version>
+		</dependency>
+		<!-- Added for handling dbcp-jdbc -->
+		<dependency> 
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+		<version>1.2.2</version>
+		</dependency>
+		<!-- Added for handling mysql -->
+		<dependency>
+			<groupId>org.springframework.data</groupId> 
+  		  	<artifactId>spring-data-jdbc-core</artifactId>
+ 		  	 <version>1.0.0.RELEASE</version>
+		</dependency>
+		<!-- Added for handling mysql -->
+		<dependency>  
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.9</version>
+        </dependency>
+        		<dependency>
+   		 <groupId>org.springframework</groupId>
+   			 <artifactId>spring-orm</artifactId>
+    		<version>3.1.1.RELEASE</version>
+		</dependency>
+		
+		<dependency>
+    	<groupId>javassist</groupId>
+    			<artifactId>javassist</artifactId>
+    			<version>3.12.1.GA</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>epcis</finalName>

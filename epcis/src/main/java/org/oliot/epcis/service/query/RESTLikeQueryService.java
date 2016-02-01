@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.epcis.service.query.mysql.MysqlQueryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -151,7 +152,19 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService=new MysqlQueryService();
+			String result = mysqlQueryService.subscribe(queryName, subscriptionID, dest,
+					cronExpression, reportIfEmpty, initialRecordTime,
+					eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
+					EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, params);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		}
 
 		return null;
@@ -174,7 +187,10 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			mysqlQueryService.unsubscribe(subscriptionID);
+			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"),
+					responseHeaders, HttpStatus.OK);
 		}
 		return new ResponseEntity<>(new String("Set up Backend correctly"), HttpStatus.BAD_REQUEST);
 	}
@@ -196,7 +212,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			String result = mysqlQueryService.getSubscriptionIDsREST(queryName);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		}
 
 		return null;
@@ -276,7 +294,20 @@ public class RESTLikeQueryService implements ServletContextAware {
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
 		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
+			MysqlQueryService mysqlQueryService = new MysqlQueryService();
+			String result = mysqlQueryService.poll(queryName, eventType, GE_eventTime,
+					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
+					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
+					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
+					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
+					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
+					orderBy, orderDirection, eventCountLimit, maxEventCount,
+					vocabularyName, includeAttributes, includeChildren,
+					attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
+					params);
+			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		}
 
 		return null;

@@ -496,7 +496,8 @@ public class MysqlQueryService {
 	}
 	
 
-	@SuppressWarnings({ "unchecked", "rawtypes", "unused" })
+	@SuppressWarnings({ "unchecked", "rawtypes"})
+	
 	public String pollEventQuery(String queryName, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime,
 			String LT_recordTime, String EQ_action, String EQ_bizStep,
@@ -621,12 +622,10 @@ public class MysqlQueryService {
 				eventObjects.add(element);
 			}
 		}
-
-		// For Each Event Type!
+		
 		if (toGetObjectEvent == true) {
-
-			// Aggregation Event Collection
-		//	DBCollection collection = mongoOperation.getCollection("ObjectEvent");
+		// Aggregation Event Collection
+		//	DBCollection collection = mongoOperation.getCollection("AggregationEvent");
 			
 			 
 			 Criteria criteria=mysqlOperationdao.makeQueryCriteria("ObjectEvent",
@@ -640,20 +639,46 @@ public class MysqlQueryService {
 					LT_quantity, LE_quantity, orderBy, orderDirection,
 					eventCountLimit, maxEventCount, paramMap);
 			
-			List<ObjectEvent> aggregationEventList=criteria.list();
+			
+			List<ObjectEvent> objectEventList=criteria.list();
 			EventToEventTypeConverter conv=new EventToEventTypeConverter();
-			for(int i=0;i<aggregationEventList.size()&&(eventCount<countLimit);i++,eventCount++){
-				System.out.println("in object count= "+ eventCount);
-				ObjectEvent objectEvent=aggregationEventList.get(i);
+			for(int i=0;(i<objectEventList.size())&&(eventCount<countLimit);i++,eventCount++){
+				ObjectEvent objectEvent=objectEventList.get(i);
 				JAXBElement element = new JAXBElement(new QName(
 						"ObjectEvent"), ObjectEventType.class,
 						conv.convert(objectEvent));
 				eventObjects.add(element);
 			}
 		}
+		/*
+		if (toGetObjectEvent == true) {
+
+			 Criteria criteria=mysqlOperationdao.makeQueryCriteria("ObjectEvent",
+					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
+					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
+					WD_readPoint, EQ_bizLocation, WD_bizLocation,
+					EQ_transformationID, MATCH_epc, MATCH_parentID,
+					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
+					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
+					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
+					LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
+			
+			List<ObjectEvent> objectEventList=criteria.list();
+			EventToEventTypeConverter conv=new EventToEventTypeConverter();
+			for(int i=0;i<objectEventList.size()&&(eventCount<countLimit);i++,eventCount++){
+				System.out.println("in object count= "+ eventCount);
+				System.out.println("--------------------------------------------------------");
+				ObjectEvent objectEvent=objectEventList.get(i);
+				JAXBElement element = new JAXBElement(new QName(
+						"ObjectEvent"), ObjectEventType.class,
+						conv.convert(objectEvent));
+				eventObjects.add(element);
+			}
+		}
+		*/
+		
 		if (toGetQuantityEvent == true) {
-			// Aggregation Event Collection
-			//DBCollection collection = mongoOperation.getCollection("QuantityEvent");
 			
 			 
 			 Criteria criteria=mysqlOperationdao.makeQueryCriteria("QuantityEvent",
@@ -750,7 +775,7 @@ public class MysqlQueryService {
 		return sw.toString();
 	}
 
-	@SuppressWarnings({ "unused", "unchecked" })
+	@SuppressWarnings({  "unchecked" })
 	public String pollMasterDataQuery(String queryName, String vocabularyName,
 			boolean includeAttributes, boolean includeChildren,
 			String attributeNames, String eQ_name, String wD_name,

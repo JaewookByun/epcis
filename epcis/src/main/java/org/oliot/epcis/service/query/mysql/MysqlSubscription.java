@@ -41,15 +41,16 @@ public class MysqlSubscription {
 			sched = schedFact.getScheduler();
 			if (sched.isStarted() == false)
 				sched.start();
-
+			
+			Configuration.logger.log(Level.INFO,
+					"Loading pre-existing subscription ...");
 			ApplicationContext ctx=new ClassPathXmlApplicationContext("MysqlConfig.xml");
 			QueryOprationBackend mysqlOperationdao=ctx.getBean
 					("queryOprationBackend", QueryOprationBackend.class);
 			List<SubscriptionType> allSubscription=mysqlOperationdao.findAllSubscriptionType();
 			
 			MysqlQueryService queryService = new MysqlQueryService();
-			Configuration.logger.log(Level.INFO,
-					"Loading pre-existing subscription");
+			
 			for (int i = 0; i < allSubscription.size(); i++) {
 				SubscriptionType subscription = allSubscription.get(i);
 				queryService.addScheduleToQuartz(subscription);

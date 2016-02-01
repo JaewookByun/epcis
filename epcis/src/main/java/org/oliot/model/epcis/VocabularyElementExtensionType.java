@@ -98,5 +98,10 @@ public class VocabularyElementExtensionType {
 	public Map<QName, String> getOtherAttributes() {
 		return otherAttributes;
 	}
+	
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
+	
 
 }

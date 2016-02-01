@@ -10,6 +10,7 @@ import javax.xml.bind.JAXB;
 
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.epcis.service.query.mysql.MysqlQueryService;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
@@ -45,7 +46,8 @@ public class SoapQueryService implements CoreQueryService {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mqs = new MysqlQueryService();
+			mqs.subscribe(queryName, params, dest, controls, subscriptionID);
 		}
 	}
 
@@ -58,7 +60,8 @@ public class SoapQueryService implements CoreQueryService {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mqs = new MysqlQueryService();
+			mqs.unsubscribe(subscriptionID);
 		}
 	}
 
@@ -84,7 +87,22 @@ public class SoapQueryService implements CoreQueryService {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mqs = new MysqlQueryService();
+			String queryResultString = mqs.poll(queryName, params);
+			// QueryResults Cannot Contains Error Message if according to SPEC
+			EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(
+					queryResultString), EPCISQueryDocumentType.class);
+			if (resultXML != null
+					&& resultXML.getEPCISBody() != null
+					&& resultXML.getEPCISBody().getQueryResults() != null
+					&& resultXML.getEPCISBody().getQueryResults()
+							.getResultsBody() != null) {
+				QueryResults queryResults = new QueryResults();
+				queryResults.setQueryName(queryName);
+				queryResults.setResultsBody(resultXML.getEPCISBody()
+						.getQueryResults().getResultsBody());
+				return queryResults;
+			}
 		}
 		return null;
 	}
@@ -105,7 +123,8 @@ public class SoapQueryService implements CoreQueryService {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlQueryService mqs = new MysqlQueryService();
+			return mqs.getSubscriptionIDs(queryName);
 		}
 		return null;
 	}

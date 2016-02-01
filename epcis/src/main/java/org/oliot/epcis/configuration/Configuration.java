@@ -12,6 +12,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
+import org.oliot.epcis.service.query.mysql.MySQLBackendCheck;
+import org.oliot.epcis.service.query.mysql.MysqlSubscription;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -92,6 +94,13 @@ public class Configuration implements ServletContextListener {
 			} else {
 				Configuration.backend = backend;
 				Configuration.logger.info("Backend - " + Configuration.backend);
+				if (Configuration.backend.equals("MariaDB")){
+					Configuration.backend="MySQL";
+				}
+				if (Configuration.backend.equals("MySQL")){
+					MySQLBackendCheck check=new MySQLBackendCheck();
+					check.createDatabaseIfNotExist();
+				}
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
 			Configuration.wsdlPath = context.getRealPath("/wsdl");			
@@ -181,7 +190,8 @@ public class Configuration implements ServletContextListener {
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
-
+			MysqlSubscription ms = new MysqlSubscription();
+			ms.init();
 		}
 	}
 }

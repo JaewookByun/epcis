@@ -41,7 +41,7 @@ public class VocabularyElement {
 	@JoinColumn(name="vocabularyElementExtension_id")
 	protected VocabularyElementExtension extension;
 	
-	@XmlAttribute(name = "id", required = true)
+	@XmlAttribute(name = "sId", required = true)
 	@XmlSchemaType(name = "anyURI")
 	protected String sId;
 	

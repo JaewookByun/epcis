@@ -1,6 +1,6 @@
 {
-	"_backend" : "Backend Database : (MongoDB|...|...)",
-	"backend" : "MongoDB",
+	"_backend" : "Backend Database : (MongoDB|MySQL|MariaDB|...)",
+	"backend" : "MariaDB",
 	
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "on",

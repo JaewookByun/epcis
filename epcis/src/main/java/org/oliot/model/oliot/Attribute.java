@@ -55,7 +55,7 @@ public class Attribute {
 	private int id;
 	@XmlValue
 	protected String value;
-	@XmlAttribute(name = "id", required = true)
+	@XmlAttribute(name = "sId", required = true)
 	protected String sId;
 	
 	

@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 
-import org.w3c.dom.Element;
+//import org.w3c.dom.Element;
 
 @Entity
 //@PrimaryKeyJoinColumn (name="EPCISEvent_id")

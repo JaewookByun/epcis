@@ -3,10 +3,8 @@ package org.oliot.epcis.serde.mysql;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -73,10 +71,27 @@ import org.oliot.model.oliot.TransformationEvent;
 import org.oliot.model.oliot.Vocabulary;
 import org.oliot.model.oliot.VocabularyElement;
 
+/**
+ * Copyright (C) 2015 Yalew Kidane
+ *
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
+ *
+ * @author Yalew Kidane, MSc student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
+ */
 
 public class EventToEventTypeConverter {
 	
-	@SuppressWarnings("rawtypes")
+	
 	public AggregationEventType convert(AggregationEvent aggregationEvent) {
 		try{
 		AggregationEventType aggregationEventType = new AggregationEventType();
@@ -261,7 +276,7 @@ public class EventToEventTypeConverter {
 		return null;
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	public ObjectEventType convert(ObjectEvent objectEvent) {
 
 		try{
@@ -470,7 +485,7 @@ public class EventToEventTypeConverter {
 			objectEventType.setEpcList(objectEventEPCs);
 
 		}
-		
+		return objectEventType;
 		} catch (DatatypeConfigurationException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
@@ -575,7 +590,7 @@ public class EventToEventTypeConverter {
 
 	}
 	
-	@SuppressWarnings("rawtypes")
+	
 	public TransactionEventType convert(TransactionEvent transactionEvent) {
 		
 
@@ -770,7 +785,7 @@ public class EventToEventTypeConverter {
 
 	}
 
-	@SuppressWarnings("rawtypes")
+
 	public TransformationEventType convert(TransformationEvent transformationEvent) {
 
 		try{

@@ -78,6 +78,23 @@ import org.oliot.model.oliot.VocabularyExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Copyright (C) 2015 Yalew Kidane
+ *
+ * This project is part of Oliot (oliot.org), pursuing the implementation of
+ * Electronic Product Code Information Service(EPCIS) v1.1 specification in
+ * EPCglobal.
+ * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+ * 
+ *
+ * @author Yalew Kidane, MSc student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
+ */
 
 @Repository
 public class CaptureOperationsBackend {

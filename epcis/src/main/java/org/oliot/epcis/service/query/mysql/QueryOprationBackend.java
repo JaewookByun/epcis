@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.transform.DistinctRootEntityResultTransformer;
 import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.oliot.Action;
 import org.oliot.model.oliot.AggregationEvent;
@@ -322,6 +322,23 @@ public class QueryOprationBackend {
 			List<String> subStringList=MysqlQueryUtil.getStringList(vocabularyName);
 			criteria.add(Restrictions.in("type", subStringList));
 		}
+		
+		/**If specified, the result will only
+		 * include vocabulary elements whose
+		 * names are equal to one of the
+		 * specified values.
+		 * If this parameter and WD_name are
+		 * both omitted, vocabulary elements
+		 * are included regardless of their names.	 
+		 */
+		criteria.createAlias("vocabularyElementList.vocabularyElement","vocAll");
+		criteria.createAlias("vocAll.attribute","attAll");
+		criteria.setResultTransformer( DistinctRootEntityResultTransformer.INSTANCE );
+		if(eQ_name != null){
+			List<String> subStringList=MysqlQueryUtil.getStringList(eQ_name);
+			//criteria.createAlias("vocabularyElementList.vocabularyElement","voceq");
+			criteria.add(Restrictions.in("vocAll.sId", subStringList));
+		}
 		/**If specified, only those attributes
 		 * whose names match one of the
 		 * specified names will be included in the results.
@@ -338,23 +355,13 @@ public class QueryOprationBackend {
 		 */
 		if(attributeNames != null){
 			List<String> subStringList=MysqlQueryUtil.getStringList(attributeNames);
-			criteria.createAlias("vocabularyElementList.vocabularyElement","voc");
-			criteria.createAlias("voc.attribute","at");
-			criteria.add(Restrictions.in("at.sId", subStringList));
+			
+			//criteria.createAlias("vocabularyElementList.vocabularyElement","vocatr");
+			//criteria.createAlias("vocAll.attribute","at1");
+			criteria.add(Restrictions.in("attAll.sId", subStringList));
+			
 		}
-		/**If specified, the result will only
-		 * include vocabulary elements whose
-		 * names are equal to one of the
-		 * specified values.
-		 * If this parameter and WD_name are
-		 * both omitted, vocabulary elements
-		 * are included regardless of their names.	 
-		 */
-		if(eQ_name != null){
-			List<String> subStringList=MysqlQueryUtil.getStringList(eQ_name);
-			criteria.createAlias("vocabularyElementList.vocabularyElement","voc");
-			criteria.add(Restrictions.in("voc.sId", subStringList));
-		}
+		
 		/**	 If specified, the result will only
 		 * include vocabulary elements that
 		 * either match one of the specified
@@ -389,12 +396,14 @@ public class QueryOprationBackend {
 		 * name matches one of the values
 		 * specified in this parameter.
 		 */
+		
 		if(hASATTR != null){
 			List<String> subStringList=MysqlQueryUtil.getStringList(hASATTR);
-			criteria.createAlias("vocabularyElementList.vocabularyElement","voc");
-			criteria.createAlias("voc.attribute","at");
-			criteria.add(Restrictions.in("at.value", subStringList));
+			criteria.createAlias("vocabularyElementList.vocabularyElement","hasvoc");
+			criteria.createAlias("hasvoc.attribute","hasat");
+			criteria.add(Restrictions.in("hasat.sId", subStringList));
 		}
+		
 		
 		Iterator<String> paramIter = paramMap.keySet().iterator();
 		while (paramIter.hasNext()) {
@@ -403,11 +412,11 @@ public class QueryOprationBackend {
 			if (paramName.contains("EQATTR_")) {
 				String name = paramName.substring(7, paramName.length());
 				List<String> subStringList=MysqlQueryUtil.getStringList(paramValues);
-				criteria.createAlias("vocabularyElementList.vocabularyElement","voc");
-				criteria.createAlias("voc.attribute","at");
+				//criteria.createAlias("vocabularyElementList.vocabularyElement","vocpar");
+				//criteria.createAlias("vocAll.attribute","atpar");
 				criteria.add(Restrictions.and(
-						Restrictions.like("at.sId", name),
-						Restrictions.in("sl.value", subStringList)));
+						Restrictions.like("attAll.sId", name),
+						Restrictions.in("attAll.value", subStringList)));
 			}
 			
 			}
