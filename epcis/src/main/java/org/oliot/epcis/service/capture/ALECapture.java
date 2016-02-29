@@ -2,20 +2,16 @@ package org.oliot.epcis.service.capture;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.Configuration;
@@ -26,21 +22,19 @@ import org.oliot.model.ale.ECReportGroupListMember;
 import org.oliot.model.ale.ECReportMemberField;
 import org.oliot.model.ale.ECReports;
 import org.oliot.model.ale.ECReportGroupListMemberExtension.FieldList;
-import org.oliot.model.epcis.ActionType;
-import org.oliot.model.epcis.BusinessLocationType;
-import org.oliot.model.epcis.EPC;
-import org.oliot.model.epcis.EPCListType;
-import org.oliot.model.epcis.ObjectEventExtension2Type;
-import org.oliot.model.epcis.ObjectEventExtensionType;
-import org.oliot.model.epcis.ObjectEventType;
-import org.oliot.model.epcis.ReadPointType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
+import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.ServletContextAware;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -99,7 +93,9 @@ public class ALECapture implements ServletContextAware {
 				ecReports = JAXB.unmarshal(is, ECReports.class);
 			}
 
-			// Event Type branch
+			capture(ecReports, request);
+			
+			/*
 			if (eventType.equals("AggregationEvent")) {
 
 			} else if (eventType.equals("ObjectEvent")) {
@@ -116,6 +112,7 @@ public class ALECapture implements ServletContextAware {
 			} else if (eventType.equals("TransformationEvent")) {
 
 			}
+			*/
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
@@ -126,142 +123,105 @@ public class ALECapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
-	private List<ObjectEventType> makeObjectEvent(ECReports ecReports, HttpServletRequest request) {
+	private boolean capture(ECReports ecReports, HttpServletRequest request) {
 
-		try {
-			List<ObjectEventType> oetList = new ArrayList<ObjectEventType>();
-			List<ECReport> ecReportList = ecReports.getReports().getReport();
-			for (int i = 0; i < ecReportList.size(); i++) {
-				ECReport ecReport = ecReportList.get(i);
-				if (ecReport.getGroup() == null)
+		// Event Time in timemillis , type long
+		long eventTime = CaptureUtil.getEventTime(ecReports).toGregorianCalendar().getTimeInMillis();
+		// Event Time Zone
+		String eventTimeZoneOffset = request.getParameter("eventTimeZoneOffset");
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMillis = recordTime.getTimeInMillis();
+		// Action
+		String action = request.getParameter("action");
+		// Biz Step
+		String bizStep = request.getParameter("bizStep");
+		// Disposition
+		String disposition = request.getParameter("disposition");
+		// Read Point
+		String readPoint = request.getParameter("readPoint");
+		// BizLocation
+		String bizLocation = request.getParameter("bizLocation");
+
+		List<ECReport> ecReportList = ecReports.getReports().getReport();
+		for (int i = 0; i < ecReportList.size(); i++) {
+			ECReport ecReport = ecReportList.get(i);
+			if (ecReport.getGroup() == null)
+				continue;
+			List<ECReportGroup> ecReportGroups = ecReport.getGroup();
+			for (int j = 0; j < ecReportGroups.size(); j++) {
+				ECReportGroup ecReportGroup = ecReportGroups.get(j);
+				if (ecReportGroup.getGroupList() == null)
 					continue;
-				List<ECReportGroup> ecReportGroups = ecReport.getGroup();
-				for (int j = 0; j < ecReportGroups.size(); j++) {
-					ECReportGroup ecReportGroup = ecReportGroups.get(j);
-					if (ecReportGroup.getGroupList() == null)
+				ECReportGroupList ecReportGroupList = ecReportGroup.getGroupList();
+				List<ECReportGroupListMember> members = ecReportGroupList.getMember();
+				for (int k = 0; k < members.size(); k++) {
+					ECReportGroupListMember member = members.get(k);
+					String epcString = member.getEpc().getValue();
+					if (member.getExtension() == null)
 						continue;
-					ECReportGroupList ecReportGroupList = ecReportGroup.getGroupList();
-					List<ECReportGroupListMember> members = ecReportGroupList.getMember();
-					for (int k = 0; k < members.size(); k++) {
-						ECReportGroupListMember member = members.get(k);
-						ObjectEventType oet = makeBaseObjectEvent(ecReports, request);
-						EPCListType elt = new EPCListType();
-						List<EPC> epcList = elt.getEpc();
-						EPC epc = new EPC();
-						epc.setValue(member.getEpc().getValue());
-						epcList.add(epc);
-						oet.setEpcList(elt);
-
-						ObjectEventExtensionType oeet = new ObjectEventExtensionType();
-						ObjectEventExtension2Type oee2t = new ObjectEventExtension2Type();
-
-						if (member.getExtension() == null)
-							continue;
-						if (member.getExtension().getFieldList() == null)
-							continue;
-						FieldList fieldList = member.getExtension().getFieldList();
-						List<ECReportMemberField> fields = fieldList.getField();
-						List<Object> elementList = new ArrayList<Object>();
-						for (int l = 0; l < fields.size(); l++) {
-							ECReportMemberField field = fields.get(l);
-
-							if (field.getName() != null && field.getValue() != null) {
-								DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-								DocumentBuilder builder = dbf.newDocumentBuilder();
-								Document doc = builder.newDocument();
-
-								Node node = doc.createElement("value");
-								node.setTextContent(field.getValue());
-								Element element = doc.createElement(field.getName());
-								element.appendChild(node);
-								elementList.add(element);
-							}
-						}
-						oee2t.setAny(elementList);
-						oeet.setExtension(oee2t);
-						oet.setExtension(oeet);
-						oetList.add(oet);
+					if (member.getExtension().getFieldList() == null)
+						continue;
+					FieldList fieldList = member.getExtension().getFieldList();
+					List<ECReportMemberField> fields = fieldList.getField();
+					Map<String, String> extMap = new HashMap<String, String>();
+					for (int l = 0; l < fields.size(); l++) {
+						ECReportMemberField field = fields.get(l);
+						extMap.put(field.getName(), field.getValue());
 					}
-
+					
+					DBObject dbo = new BasicDBObject();
+					
+					// EPC
+					BasicDBList epcList = new BasicDBList();
+					DBObject epc = new BasicDBObject();
+					epc.put("epc", epcString);
+					epcList.add(epc);
+					dbo.put("epcList", epcList);
+					dbo.put("eventTime", eventTime);
+					if(eventTimeZoneOffset == null ){
+						dbo.put("eventTimeZoneOffset", "+09:00");
+					}else{
+						dbo.put("eventTimeZoneOffset", eventTimeZoneOffset);						
+					}
+					dbo.put("recordTime", recordTimeMillis);
+					if(action == null){
+						dbo.put("action", "OBSERVE");
+					}else{
+						dbo.put("action", action);
+					}
+					if(bizStep != null){
+						dbo.put("bizStep", bizStep);
+					}
+					if(disposition != null){
+						dbo.put("dispsition", disposition);
+					}
+					if(readPoint != null){
+						dbo.put("readPoint", new BasicDBObject("id", readPoint));
+					}
+					if(bizLocation != null){
+						dbo.put("bizLocation", new BasicDBObject("id", bizLocation));
+					}					
+					// Extension Field
+					if( extMap.isEmpty() == false ){
+						Iterator<String> keyIterator = extMap.keySet().iterator();
+						DBObject any = new BasicDBObject();
+						any.put("@ale", "http://"+request.getLocalAddr()+":"+request.getLocalPort()+request.getContextPath()+"/schema/aleCapture.xsd");
+						while(keyIterator.hasNext()){
+							String key = keyIterator.next();
+							String value = extMap.get(key);
+							any.put("ale:"+key, value);
+						}
+						dbo.put("any", any);
+					}
+					ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
+					MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+					DBCollection collection = mongoOperation.getCollection("ObjectEvent");
+					collection.save(dbo);
+					((AbstractApplicationContext) ctx).close();
 				}
 			}
-			return oetList;
-		} catch (ParserConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return null;
 		}
-	}
-
-	@SuppressWarnings("deprecation")
-	private ObjectEventType makeBaseObjectEvent(ECReports ecReports, HttpServletRequest request) {
-
-		try {
-			ObjectEventType oet = new ObjectEventType();
-			// get extra param : action
-			String actionString = request.getParameter("action");
-			// Mandatory Field : Default - OBSERVE
-			ActionType actionType;
-			if (actionString == null)
-				actionType = ActionType.OBSERVE;
-			else
-				actionType = ActionType.valueOf(actionString);
-			// Optional Field
-			String bizStep = request.getParameter("bizStep");
-			// Optional Field
-			String disposition = request.getParameter("disposition");
-			// Optional Field
-			String readPoint = request.getParameter("readPoint");
-			// Optional Field
-			String bizLocation = request.getParameter("bizLocation");
-
-			XMLGregorianCalendar eventTime = CaptureUtil.getEventTime(ecReports);
-
-			String eventTimeZoneOffset = null;
-
-			if (eventTime.getTimezone() == -2147483648) {
-				GregorianCalendar cal = new GregorianCalendar();
-				eventTimeZoneOffset = CaptureUtil.makeTimeZoneString(cal.getTime().getTimezoneOffset());
-			} else {
-				eventTimeZoneOffset = CaptureUtil.makeTimeZoneString(eventTime.getTimezone());
-			}
-
-			GregorianCalendar recordCalendar = new GregorianCalendar();
-			DatatypeFactory df = DatatypeFactory.newInstance();
-			XMLGregorianCalendar recordTime = df.newXMLGregorianCalendar(recordCalendar);
-
-			// Null Reports Check
-			boolean isNull = CaptureUtil.isReportNull(ecReports);
-			if (isNull == true) {
-				return null;
-			}
-
-			// Start to make EPCIS Object
-			if (eventTime != null)
-				oet.setEventTime(eventTime);
-			if (eventTimeZoneOffset != null)
-				oet.setEventTimeZoneOffset(eventTimeZoneOffset);
-			if (recordTime != null)
-				oet.setRecordTime(recordTime);
-			if (actionType != null)
-				oet.setAction(actionType);
-			if (bizStep != null)
-				oet.setBizStep(bizStep);
-			if (bizLocation != null) {
-				BusinessLocationType blt = new BusinessLocationType();
-				blt.setId(bizLocation);
-				oet.setBizLocation(blt);
-			}
-			if (disposition != null)
-				oet.setDisposition(disposition);
-			if (readPoint != null) {
-				ReadPointType rpt = new ReadPointType();
-				rpt.setId(readPoint);
-				oet.setReadPoint(rpt);
-			}
-			return oet;
-		} catch (DatatypeConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return null;
-		}
+		return true;
 	}
 }
