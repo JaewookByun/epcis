@@ -142,11 +142,6 @@
 			<artifactId>restfb</artifactId>
 			<version>1.14.1</version>
 		</dependency>	
-		<dependency>
-			<groupId>org.oliot</groupId>
-			<artifactId>gcp</artifactId>
-			<version>0.0.3</version>	
-		</dependency>
 	</dependencies>
 	<build>
 		<finalName>epcis</finalName>
