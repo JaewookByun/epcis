@@ -4,9 +4,6 @@
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
-        <dependent-module archiveName="gcp-0.0.3.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/gcp/gcp">
-            <dependency-type>uses</dependency-type>
-        </dependent-module>
         <property name="context-root" value="epcis"/>
         <property name="java-output-path" value="/epcis/target/classes"/>
     </wb-module>

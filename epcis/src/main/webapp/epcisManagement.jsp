@@ -63,8 +63,7 @@
 
 		window.fbAsyncInit = function() {
 			FB.init({
-				appId : "<%=facebookAppID%>
-		",
+				appId : "<%=facebookAppID%>",
 				cookie : true, // enable cookies to allow the server to access 
 				// the session
 				xfbml : true, // parse social plugins on this page
@@ -117,12 +116,11 @@
 		<div class="panel-heading">
 			<h3 class="panel-title">Oliot EPCIS Access Control Tool</h3>
 		</div>
-		<div class="panel-body">
 			<fb:login-button
 				data-scope="public_profile,user_friends,user_about_me,user_events,user_likes,user_location,user_posts,user_relationships,user_relationship_details,email"
-				onlogin="checkLoginState();" auto_logout_link="true">
+				onlogin="checkLoginState();" auto_logout_link="true" class="panel-body">
 			</fb:login-button>
-			<a href="#" class="list-group-item"><div id="consoleMsg"></div> </a>
+			<div id="consoleMsg"></div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Get Your Facebook ID
 					and AccessToken </a>
@@ -130,9 +128,7 @@
 				<div id="fEmail" hidden="true"></div>
 				<div id="fid"></div>
 				<div id="fAccessToken"></div>
-
 			</div>
-		</div>
 	</div>
 </body>
 </html>
