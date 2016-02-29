@@ -72,6 +72,7 @@ public class JsonEventCapture implements ServletContextAware {
 	public String post(@RequestBody String inputString) {
 		Configuration.logger.info(" EPCIS Json Document Capture Started.... ");
 		if (Configuration.isCaptureVerfificationOn == true) {
+						
 			// JSONParser parser = new JSONParser();
 			JsonSchemaLoader schemaloader = new JsonSchemaLoader();
 
