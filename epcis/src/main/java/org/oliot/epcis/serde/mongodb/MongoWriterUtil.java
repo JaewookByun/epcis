@@ -187,7 +187,7 @@ public class MongoWriterUtil {
 		DBObject baseExtension = new BasicDBObject();
 		if (baseExtensionType.getAny() != null && baseExtensionType.getAny().isEmpty() == false) {
 			List<Object> objList = baseExtensionType.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save.isEmpty() == false)
 				baseExtension.put("any", map2Save);
 		}
@@ -338,7 +338,7 @@ public class MongoWriterUtil {
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				Map<String, String> map2Save = getAnyMap(objList);
+				Map<String, Object> map2Save = getAnyMap(objList);
 				if (map2Save.isEmpty() == false)
 					extension2.put("any", map2Save);
 			}
@@ -354,9 +354,9 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static Map<String, String> getILMDExtensionMap(ILMDExtensionType ilmdExtension) {
+	static Map<String, Object> getILMDExtensionMap(ILMDExtensionType ilmdExtension) {
 		List<Object> objList = ilmdExtension.getAny();
-		Map<String, String> map2Save = getAnyMap(objList);
+		Map<String, Object> map2Save = getAnyMap(objList);
 		return map2Save;
 	}
 
@@ -409,7 +409,7 @@ public class MongoWriterUtil {
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				Map<String, String> map2Save = getAnyMap(objList);
+				Map<String, Object> map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
@@ -429,7 +429,7 @@ public class MongoWriterUtil {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
@@ -447,7 +447,7 @@ public class MongoWriterUtil {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
@@ -510,7 +510,7 @@ public class MongoWriterUtil {
 			DBObject extension2 = new BasicDBObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				Map<String, String> map2Save = getAnyMap(objList);
+				Map<String, Object> map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
@@ -558,7 +558,7 @@ public class MongoWriterUtil {
 		DBObject extension = new BasicDBObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
@@ -572,8 +572,8 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static Map<String, String> getAnyMap(List<Object> objList) {
-		Map<String, String> map2Save = new HashMap<String, String>();
+	static Map<String, Object> getAnyMap(List<Object> objList) {
+		Map<String, Object> map2Save = new HashMap<String, Object>();
 		for (int i = 0; i < objList.size(); i++) {
 			Object obj = objList.get(i);
 			if (obj instanceof Element) {
@@ -586,7 +586,7 @@ public class MongoWriterUtil {
 						map2Save.put("@" + checkArr[0], element.getNamespaceURI());
 					}
 					String value = element.getFirstChild().getTextContent();
-					map2Save.put(name, value);
+					map2Save.put(name, converseType(value));
 				}
 			}
 		}
@@ -602,5 +602,30 @@ public class MongoWriterUtil {
 			map2Save.put(qName.toString(), value);
 		}
 		return map2Save;
+	}
+	
+	static Object converseType(String value){
+		String[] valArr = value.split("\\^");
+		if (valArr.length != 2) {
+			return value;
+		}
+		try {
+			String type = valArr[1];
+			if (type.equals("int")) {
+				return Integer.parseInt(valArr[0]);
+			} else if (type.equals("long")) {
+				return Long.parseLong(valArr[0]);
+			} else if (type.equals("float")) {
+				return Float.parseFloat(valArr[0]);
+			} else if (type.equals("double")) {
+				return Double.parseDouble(valArr[0]);
+			} else if (type.equals("boolean")) {
+				return Boolean.parseBoolean(valArr[0]);
+			} else {
+				return value;
+			}
+		} catch (NumberFormatException e) {
+			return value;
+		}
 	}
 }

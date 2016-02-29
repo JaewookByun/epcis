@@ -112,7 +112,7 @@ public class ObjectEventWriteConverter {
 			ILMDType ilmd = objectEventType.getIlmd();
 			if (ilmd.getExtension() != null) {
 				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
+				Map<String, Object> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
 				if (epcList != null) {
@@ -124,7 +124,7 @@ public class ObjectEventWriteConverter {
 		// Vendor Extension
 		if (objectEventType.getAny() != null) {
 			List<Object> objList = objectEventType.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 

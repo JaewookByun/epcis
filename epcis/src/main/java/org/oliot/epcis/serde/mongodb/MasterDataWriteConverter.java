@@ -60,7 +60,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 
 		if (vocabulary.getAny() != null && vocabulary.getAny().isEmpty() == false) {
 			List<Object> objList = vocabulary.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 		}
@@ -78,7 +78,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 			VocabularyExtensionType vet = vocabulary.getExtension();
 			if (vet.getAny() != null) {
 				List<Object> objList = vet.getAny();
-				Map<String, String> map2Save = getAnyMap(objList);
+				Map<String, Object> map2Save = getAnyMap(objList);
 				if (map2Save.isEmpty() == false)
 					extension.put("any", map2Save);
 			}
@@ -120,7 +120,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 						String key = attribute.getId();
 						String value = attribute.getValue();
 						attrObject.put("id", key);
-						attrObject.put("value", value);
+						attrObject.put("value", MongoWriterUtil.converseType(value));
 						attrList.add(attrObject);
 					}
 					elementObject.put("attributeList", attrList);
@@ -133,7 +133,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 
 				if (vocabularyElement.getAny() != null) {
 					List<Object> objList = vocabularyElement.getAny();
-					Map<String, String> map2Save = getAnyMap(objList);
+					Map<String, Object> map2Save = getAnyMap(objList);
 					if (map2Save.isEmpty() == false)
 						elementObject.put("any", map2Save);
 				}
@@ -210,7 +210,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 						String key = attribute.getId();
 						key = encodeMongoObjectKey(key);
 						String value = attribute.getValue();
-						attrObj.put(key, value);
+						attrObj.put(key, MongoWriterUtil.converseType(value));
 					}
 					attrObj.put("lastUpdated", System.currentTimeMillis());
 					dbo.put("attributes", attrObj);
@@ -300,7 +300,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 	}
 	
 
-	public int capture(List<EPC> epcList, Map<String, String> map2Save) {
+	public int capture(List<EPC> epcList, Map<String, Object> map2Save) {
 		if (map2Save == null) {
 			return 0;
 		}
@@ -341,7 +341,7 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 			while (mapIter.hasNext()) {
 				String key = mapIter.next();
 				key = encodeMongoObjectKey(key);
-				String value = map2Save.get(key);
+				Object value = map2Save.get(key);
 				attrObj.put(key, value);
 			}
 

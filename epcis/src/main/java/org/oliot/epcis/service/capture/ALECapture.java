@@ -95,24 +95,6 @@ public class ALECapture implements ServletContextAware {
 
 			capture(ecReports, request);
 			
-			/*
-			if (eventType.equals("AggregationEvent")) {
-
-			} else if (eventType.equals("ObjectEvent")) {
-				List<ObjectEventType> objectEventArray = makeObjectEvent(ecReports, request);
-				for (int i = 0; i < objectEventArray.size(); i++) {
-					ObjectEventType oet = objectEventArray.get(i);
-					CaptureService capture = new CaptureService();
-					capture.capture(oet, null, null, null);
-				}
-			} else if (eventType.equals("QuantityEvent")) {
-
-			} else if (eventType.equals("TransactionEvent")) {
-
-			} else if (eventType.equals("TransformationEvent")) {
-
-			}
-			*/
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
@@ -164,14 +146,36 @@ public class ALECapture implements ServletContextAware {
 						continue;
 					FieldList fieldList = member.getExtension().getFieldList();
 					List<ECReportMemberField> fields = fieldList.getField();
-					Map<String, String> extMap = new HashMap<String, String>();
+					Map<String, Object> extMap = new HashMap<String, Object>();
 					for (int l = 0; l < fields.size(); l++) {
 						ECReportMemberField field = fields.get(l);
-						extMap.put(field.getName(), field.getValue());
-					}
-					
+						String key = field.getName();
+						String value = field.getValue();
+						String[] valArr = value.split("\\^");
+						if (valArr.length != 2) {
+							extMap.put(key, value);
+							continue;
+						}
+						try {
+							String type = valArr[1];
+							if (type.equals("int")) {
+								extMap.put(key, Integer.parseInt(valArr[0]));
+							} else if (type.equals("long")) {
+								extMap.put(key, Long.parseLong(valArr[0]));
+							} else if (type.equals("float")) {
+								extMap.put(key, Float.parseFloat(valArr[0]));
+							} else if (type.equals("double")) {
+								extMap.put(key, Double.parseDouble(valArr[0]));
+							} else if (type.equals("boolean")) {
+								extMap.put(key, Boolean.parseBoolean(valArr[0]));
+							} else {
+								extMap.put(key, valArr[0]);
+							}
+						} catch (NumberFormatException e) {
+							extMap.put(key, valArr[0]);
+						}
+					}				
 					DBObject dbo = new BasicDBObject();
-					
 					// EPC
 					BasicDBList epcList = new BasicDBList();
 					DBObject epc = new BasicDBObject();
@@ -209,7 +213,8 @@ public class ALECapture implements ServletContextAware {
 						any.put("@ale", "http://"+request.getLocalAddr()+":"+request.getLocalPort()+request.getContextPath()+"/schema/aleCapture.xsd");
 						while(keyIterator.hasNext()){
 							String key = keyIterator.next();
-							String value = extMap.get(key);
+							Object value = extMap.get(key);
+							
 							any.put("ale:"+key, value);
 						}
 						dbo.put("any", any);
