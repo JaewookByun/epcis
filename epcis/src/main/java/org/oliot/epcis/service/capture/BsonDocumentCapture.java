@@ -1,9 +1,18 @@
 package org.oliot.epcis.service.capture;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.util.Iterator;
+
 import javax.servlet.ServletContext;
 
-import org.bson.BSONObject;
-import org.bson.BasicBSONDecoder;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonValue;
+
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +21,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * Copyright (C) 2015 Jaewook Jack Byun
@@ -40,8 +53,8 @@ import org.springframework.web.context.ServletContextAware;
  */
 
 @Controller
-@RequestMapping("/BsonVocabularyCapture")
-public class BsonVocabularyCapture implements ServletContextAware {
+@RequestMapping("/BsonDocumentCapture")
+public class BsonDocumentCapture implements ServletContextAware {
 
 	@Autowired
 	ServletContext servletContext;
@@ -51,17 +64,36 @@ public class BsonVocabularyCapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
-	@SuppressWarnings("unused")
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public String post(@RequestBody byte[] inputByteArray) {
 		Configuration.logger.info(" EPCIS Bson Document Capture Started.... ");
 
-		BasicBSONDecoder bsonDecoder = new BasicBSONDecoder();
-		BSONObject bsonObject = bsonDecoder.readObject(inputByteArray);
-		
-		//TODO: 검증 필요없이, bsonObject를 저장하는 로직을 완성 
-		
+		try {
+			ByteArrayInputStream is = new ByteArrayInputStream(inputByteArray);
+			ObjectInput oi = new ObjectInputStream(is);
+			BsonDocument inputDocument = (BsonDocument) oi.readObject();
+			
+			MongoClient dbClient = new MongoClient();
+			MongoDatabase db = dbClient.getDatabase("epcis");
+			
+			for (String collectionKey : inputDocument.keySet()) {
+				MongoCollection<BsonDocument> collection = db.getCollection(collectionKey, BsonDocument.class);
+				BsonArray bsonCollection = inputDocument.getArray(collectionKey);
+				Iterator<BsonValue> docIterator = bsonCollection.iterator();
+				while(docIterator.hasNext()){
+					BsonDocument docElement = docIterator.next().asDocument();
+					docElement.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					collection.insertOne(docElement);
+				}
+			}
+			dbClient.close();
+		} catch (IOException e) {
+			Configuration.logger.error(e);
+		} catch (ClassNotFoundException e) {
+			Configuration.logger.error(e);
+		}
+
 		return "EPCIS Document : Captured ";
 
 	}
