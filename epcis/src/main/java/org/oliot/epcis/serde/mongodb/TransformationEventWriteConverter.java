@@ -158,7 +158,7 @@ public class TransformationEventWriteConverter {
 			ILMDType ilmd = transformationEventType.getIlmd();
 			if (ilmd.getExtension() != null) {
 				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				Map<String, String> map2Save = getILMDExtensionMap(ilmdExtension);
+				Map<String, Object> map2Save = getILMDExtensionMap(ilmdExtension);
 				if (map2Save != null)
 					dbo.put("ilmd", map2Save);
 				if (outputList != null) {
@@ -171,7 +171,7 @@ public class TransformationEventWriteConverter {
 		// Vendor Extension
 		if (transformationEventType.getAny() != null) {
 			List<Object> objList = transformationEventType.getAny();
-			Map<String, String> map2Save = getAnyMap(objList);
+			Map<String, Object> map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 

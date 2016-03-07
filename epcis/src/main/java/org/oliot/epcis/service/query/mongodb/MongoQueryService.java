@@ -28,6 +28,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Level;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
@@ -702,7 +703,7 @@ public class MongoQueryService {
 					eventObjects.add(element);
 				} else {
 					dbObject.removeField("_id");
-					objJSONArray.put(dbObject);
+					objJSONArray.put(dbObject);					
 				}
 			}
 			if (objJSONArray.length() > 0) {
@@ -899,6 +900,23 @@ public class MongoQueryService {
 			JAXB.marshal(epcisQueryDocumentType, sw);
 			return sw.toString();
 		} else {
+			
+			// BSONObject doc = (BSONObject) JSON.parse(retJSON.toString());	
+			// BasicBSONEncoder en = new BasicBSONEncoder();
+			// System.out.println(doc.toString().length());
+			// byte[] ret = en.encode(doc);
+			// try {
+			//	FileUtils.writeByteArrayToFile(new File("/home/jack/temp.bson"), ret);
+			// } catch (IOException e) {
+			//	e.printStackTrace();
+			// }
+			// System.out.println(ret.length);
+			// return new String(en.encode(doc));
+			
+			// BasicBSONDecoder de = new BasicBSONDecoder();
+			// BSONObject obj = de.readObject(ret);
+			// System.out.println(obj);
+			
 			return retJSON.toString(1);
 		}
 	}

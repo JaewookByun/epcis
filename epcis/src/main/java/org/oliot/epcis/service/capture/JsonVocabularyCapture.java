@@ -61,6 +61,8 @@ public class JsonVocabularyCapture implements ServletContextAware {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString) {
+		
+		
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
 
 		if (Configuration.isCaptureVerfificationOn == true) {

@@ -131,7 +131,7 @@ public class MongoQueryUtil {
 		BasicDBList subStringList = new BasicDBList();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
-			subStringList.add(val);
+			subStringList.add(converseType(val));
 		}
 		if (subStringList.isEmpty() == false) {
 			BasicDBList subList = new BasicDBList();
@@ -152,7 +152,7 @@ public class MongoQueryUtil {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$gt", value));
+				sub.put(fields[i], new BasicDBObject("$gt", converseType(value)));
 				subList.add(sub);
 			}
 			DBObject subBase = new BasicDBObject();
@@ -162,7 +162,7 @@ public class MongoQueryUtil {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$gte", value));
+				sub.put(fields[i], new BasicDBObject("$gte", converseType(value)));
 				subList.add(sub);
 			}
 			DBObject subBase = new BasicDBObject();
@@ -172,7 +172,7 @@ public class MongoQueryUtil {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$lt", value));
+				sub.put(fields[i], new BasicDBObject("$lt", converseType(value)));
 				subList.add(sub);
 			}
 			DBObject subBase = new BasicDBObject();
@@ -182,7 +182,7 @@ public class MongoQueryUtil {
 			BasicDBList subList = new BasicDBList();
 			for (int i = 0; i < fields.length; i++) {
 				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$lte", value));
+				sub.put(fields[i], new BasicDBObject("$lte", converseType(value)));
 				subList.add(sub);
 			}
 			DBObject subBase = new BasicDBObject();
@@ -264,5 +264,30 @@ public class MongoQueryUtil {
 	static String decodeMongoObjectKey(String key) {
 		key = key.replace("\uff0e", ".");
 		return key;
+	}
+	
+	static Object converseType(String value){
+		String[] valArr = value.split("\\^");
+		if (valArr.length != 2) {
+			return value;
+		}
+		try {
+			String type = valArr[1];
+			if (type.equals("int")) {
+				return Integer.parseInt(valArr[0]);
+			} else if (type.equals("long")) {
+				return Long.parseLong(valArr[0]);
+			} else if (type.equals("float")) {
+				return Float.parseFloat(valArr[0]);
+			} else if (type.equals("double")) {
+				return Double.parseDouble(valArr[0]);
+			} else if (type.equals("boolean")) {
+				return Boolean.parseBoolean(valArr[0]);
+			} else {
+				return value;
+			}
+		} catch (NumberFormatException e) {
+			return value;
+		}
 	}
 }
