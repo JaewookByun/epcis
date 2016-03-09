@@ -50,7 +50,7 @@ public class CaptureUtil {
 		base.put("recordTime", new BsonInt64(recordTime));
 		return base;
 	}
-	
+
 	public BsonDocument putParentID(BsonDocument base, String parentID) {
 		base.put("parentID", new BsonString(parentID));
 		return base;
@@ -64,13 +64,36 @@ public class CaptureUtil {
 		base.put("epcList", bsonEPCList);
 		return base;
 	}
-	
+
 	public BsonDocument putChildEPCs(BsonDocument base, List<String> childEPCs) {
 		BsonArray bsonEPCList = new BsonArray();
 		for (String epc : childEPCs) {
 			bsonEPCList.add(new BsonDocument("epc", new BsonString(epc)));
 		}
 		base.put("childEPCs", bsonEPCList);
+		return base;
+	}
+
+	public BsonDocument putInputEPCList(BsonDocument base, List<String> inputEPCList) {
+		BsonArray bsonEPCList = new BsonArray();
+		for (String epc : inputEPCList) {
+			bsonEPCList.add(new BsonDocument("epc", new BsonString(epc)));
+		}
+		base.put("inputEPCList", bsonEPCList);
+		return base;
+	}
+
+	public BsonDocument putOutputEPCList(BsonDocument base, List<String> outputEPCList) {
+		BsonArray bsonEPCList = new BsonArray();
+		for (String epc : outputEPCList) {
+			bsonEPCList.add(new BsonDocument("epc", new BsonString(epc)));
+		}
+		base.put("outputEPCList", bsonEPCList);
+		return base;
+	}
+
+	public BsonDocument putTransformationID(BsonDocument base, String transformationID) {
+		base.put("transformationID", new BsonString(transformationID));
 		return base;
 	}
 
@@ -169,7 +192,7 @@ public class CaptureUtil {
 		base.put("any", any);
 		return base;
 	}
-	
+
 	public BsonDocument putQuantityList(BsonDocument base, List<QuantityElement> quantityList) {
 		BsonArray quantityArray = new BsonArray();
 		for (QuantityElement quantityElement : quantityList) {
@@ -186,7 +209,7 @@ public class CaptureUtil {
 		base.put("quantityList", quantityArray);
 		return base;
 	}
-	
+
 	public BsonDocument putChildQuantityList(BsonDocument base, List<QuantityElement> childQuantityList) {
 		BsonArray quantityArray = new BsonArray();
 		for (QuantityElement quantityElement : childQuantityList) {
@@ -203,7 +226,41 @@ public class CaptureUtil {
 		base.put("childQuantityList", quantityArray);
 		return base;
 	}
-	
+
+	public BsonDocument putInputQuantityList(BsonDocument base, List<QuantityElement> inputQuantityList) {
+		BsonArray quantityArray = new BsonArray();
+		for (QuantityElement quantityElement : inputQuantityList) {
+			BsonDocument bsonQuantityElement = new BsonDocument("epcClass",
+					new BsonString(quantityElement.getEpcClass()));
+			if (quantityElement.getQuantity() != null) {
+				bsonQuantityElement.put("quantity", new BsonDouble(quantityElement.getQuantity()));
+			}
+			if (quantityElement.getUom() != null) {
+				bsonQuantityElement.put("uom", new BsonString(quantityElement.getUom()));
+			}
+			quantityArray.add(bsonQuantityElement);
+		}
+		base.put("inputQuantityList", quantityArray);
+		return base;
+	}
+
+	public BsonDocument putOutputQuantityList(BsonDocument base, List<QuantityElement> outputQuantityList) {
+		BsonArray quantityArray = new BsonArray();
+		for (QuantityElement quantityElement : outputQuantityList) {
+			BsonDocument bsonQuantityElement = new BsonDocument("epcClass",
+					new BsonString(quantityElement.getEpcClass()));
+			if (quantityElement.getQuantity() != null) {
+				bsonQuantityElement.put("quantity", new BsonDouble(quantityElement.getQuantity()));
+			}
+			if (quantityElement.getUom() != null) {
+				bsonQuantityElement.put("uom", new BsonString(quantityElement.getUom()));
+			}
+			quantityArray.add(bsonQuantityElement);
+		}
+		base.put("outputQuantityList", quantityArray);
+		return base;
+	}
+
 	public BsonDocument putSourceList(BsonDocument base, Map<String, List<String>> sourceList) {
 		BsonArray bsonSourceList = new BsonArray();
 		for (String key : sourceList.keySet()) {
@@ -216,7 +273,7 @@ public class CaptureUtil {
 		base.put("sourceList", bsonSourceList);
 		return base;
 	}
-	
+
 	public BsonDocument putDestinationList(BsonDocument base, Map<String, List<String>> destinationList) {
 		BsonArray bsonDestinationList = new BsonArray();
 		for (String key : destinationList.keySet()) {
@@ -230,4 +287,37 @@ public class CaptureUtil {
 		return base;
 	}
 
+	public BsonDocument putType(BsonDocument base, VocabularyType type) {
+		base.put("type", new BsonString(type.getVocabularyType()));
+		return base;
+	}
+
+	public BsonDocument putID(BsonDocument base, String id) {
+		base.put("id", new BsonString(id));
+		return base;
+	}
+
+	public BsonDocument putAttributes(BsonDocument base, Map<String, String> attributes) {
+		BsonDocument bsonAttributes = new BsonDocument();
+		for (String key : attributes.keySet()) {
+			String value = attributes.get(key);
+			bsonAttributes.put(encodeMongoObjectKey(key), new BsonString(value));
+		}
+		base.put("attributes", bsonAttributes);
+		return base;
+	}
+
+	public BsonDocument putChildren(BsonDocument base, List<String> children) {
+		BsonArray bsonChildren = new BsonArray();
+		for (String child : children) {
+			bsonChildren.add(new BsonString(child));
+		}
+		base.put("children", bsonChildren);
+		return base;
+	}
+
+	public String encodeMongoObjectKey(String key) {
+		key = key.replace(".", "\uff0e");
+		return key;
+	}
 }

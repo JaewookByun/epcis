@@ -28,50 +28,57 @@ import org.bson.BsonDocument;
  */
 public class TransactionEvent {
 
-	// EventTime, EventTimeZoneOffset,Action required
+	// EventTime, EventTimeZoneOffset,Action, bizTransactionList required
 	private long eventTime;
 	private long recordTime;
 	private String eventTimeZoneOffset;
 	private String action;
+	private Map<String, List<String>> bizTransactionList;
 
 	private String parentID;
-	private List<String> childEPCs;
-	private List<QuantityElement> childQuantityList;
+	private List<String> epcList;
+	private List<QuantityElement> quantityList;
 
 	private String bizStep;
 	private String disposition;
 	private String readPoint;
 	private String bizLocation;
-	private Map<String, List<String>> bizTransactionList;
+
 	private Map<String, List<String>> sourceList;
 	private Map<String, List<String>> destinationList;
 	private Map<String, String> namespaces;
 
 	private Map<String, Map<String, Object>> extensions;
 
-	public TransactionEvent() {
+	public TransactionEvent(Map<String, List<String>> bizTransactionList) {
+		// Required Fields
 		eventTime = System.currentTimeMillis();
 		SimpleDateFormat format = new SimpleDateFormat("XXX");
 		eventTimeZoneOffset = format.format(new Date());
-		recordTime = 0;
 		action = "OBSERVE";
-		childEPCs = new ArrayList<String>();
-		childQuantityList = new ArrayList<QuantityElement>();
-		bizTransactionList = new HashMap<String, List<String>>();
+		this.bizTransactionList = bizTransactionList;
+
+		recordTime = 0;
+		epcList = new ArrayList<String>();
+		quantityList = new ArrayList<QuantityElement>();
+
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
 		extensions = new HashMap<String, Map<String, Object>>();
 	}
 
-	public TransactionEvent(long eventTime, String eventTimeZoneOffset, String action) {
+	public TransactionEvent(long eventTime, String eventTimeZoneOffset, String action,
+			Map<String, List<String>> bizTransactionList) {
 		this.eventTime = eventTime;
 		this.eventTimeZoneOffset = eventTimeZoneOffset;
 		this.action = action;
+		this.bizTransactionList = bizTransactionList;
+
 		recordTime = 0;
-		childEPCs = new ArrayList<String>();
-		childQuantityList = new ArrayList<QuantityElement>();
-		bizTransactionList = new HashMap<String, List<String>>();
+		epcList = new ArrayList<String>();
+		quantityList = new ArrayList<QuantityElement>();
+
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
@@ -98,11 +105,6 @@ public class TransactionEvent {
 		return eventTimeZoneOffset;
 	}
 
-	public void setEventTimeZoneOffset() {
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
-	}
-
 	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
 		this.eventTimeZoneOffset = eventTimeZoneOffset;
 	}
@@ -113,6 +115,38 @@ public class TransactionEvent {
 
 	public void setAction(String action) {
 		this.action = action;
+	}
+
+	public Map<String, List<String>> getBizTransactionList() {
+		return bizTransactionList;
+	}
+
+	public void setBizTransactionList(Map<String, List<String>> bizTransactionList) {
+		this.bizTransactionList = bizTransactionList;
+	}
+
+	public String getParentID() {
+		return parentID;
+	}
+
+	public void setParentID(String parentID) {
+		this.parentID = parentID;
+	}
+
+	public List<String> getEpcList() {
+		return epcList;
+	}
+
+	public void setEpcList(List<String> epcList) {
+		this.epcList = epcList;
+	}
+
+	public List<QuantityElement> getQuantityList() {
+		return quantityList;
+	}
+
+	public void setQuantityList(List<QuantityElement> quantityList) {
+		this.quantityList = quantityList;
 	}
 
 	public String getBizStep() {
@@ -147,14 +181,6 @@ public class TransactionEvent {
 		this.bizLocation = bizLocation;
 	}
 
-	public Map<String, List<String>> getBizTransactionList() {
-		return bizTransactionList;
-	}
-
-	public void setBizTransactionList(Map<String, List<String>> bizTransactionList) {
-		this.bizTransactionList = bizTransactionList;
-	}
-
 	public Map<String, List<String>> getSourceList() {
 		return sourceList;
 	}
@@ -175,30 +201,6 @@ public class TransactionEvent {
 		return namespaces;
 	}
 
-	public String getParentID() {
-		return parentID;
-	}
-
-	public void setParentID(String parentID) {
-		this.parentID = parentID;
-	}
-
-	public List<String> getChildEPCs() {
-		return childEPCs;
-	}
-
-	public void setChildEPCs(List<String> childEPCs) {
-		this.childEPCs = childEPCs;
-	}
-
-	public List<QuantityElement> getChildQuantityList() {
-		return childQuantityList;
-	}
-
-	public void setChildQuantityList(List<QuantityElement> childQuantityList) {
-		this.childQuantityList = childQuantityList;
-	}
-
 	public void setNamespaces(Map<String, String> namespaces) {
 		this.namespaces = namespaces;
 	}
@@ -214,44 +216,43 @@ public class TransactionEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument aggregationEvent = new BsonDocument();
+		BsonDocument transactionEvent = new BsonDocument();
 		// Required Fields
-		aggregationEvent = util.putEventTime(aggregationEvent, eventTime);
-		aggregationEvent = util.putEventTimeZoneOffset(aggregationEvent, eventTimeZoneOffset);
-		aggregationEvent = util.putAction(aggregationEvent, action);
-
+		transactionEvent = util.putEventTime(transactionEvent, eventTime);
+		transactionEvent = util.putEventTimeZoneOffset(transactionEvent, eventTimeZoneOffset);
+		transactionEvent = util.putAction(transactionEvent, action);
+		transactionEvent = util.putBizTransactionList(transactionEvent, bizTransactionList);
+		
 		// Optional Fields
 		if (this.recordTime != 0) {
-			aggregationEvent = util.putRecordTime(aggregationEvent, recordTime);
+			transactionEvent = util.putRecordTime(transactionEvent, recordTime);
 		}
 		if (this.parentID != null) {
-			aggregationEvent = util.putParentID(aggregationEvent, parentID);
+			transactionEvent = util.putParentID(transactionEvent, parentID);
 		}
-		if (this.childEPCs != null && this.childEPCs.size() != 0) {
-			aggregationEvent = util.putChildEPCs(aggregationEvent, childEPCs);
+		if (this.epcList != null && this.epcList.size() != 0) {
+			transactionEvent = util.putEPCList(transactionEvent, epcList);
 		}
 		if (this.bizStep != null) {
-			aggregationEvent = util.putBizStep(aggregationEvent, bizStep);
+			transactionEvent = util.putBizStep(transactionEvent, bizStep);
 		}
 		if (this.disposition != null) {
-			aggregationEvent = util.putDisposition(aggregationEvent, disposition);
+			transactionEvent = util.putDisposition(transactionEvent, disposition);
 		}
 		if (this.readPoint != null) {
-			aggregationEvent = util.putReadPoint(aggregationEvent, readPoint);
+			transactionEvent = util.putReadPoint(transactionEvent, readPoint);
 		}
 		if (this.bizLocation != null) {
-			aggregationEvent = util.putBizLocation(aggregationEvent, bizLocation);
+			transactionEvent = util.putBizLocation(transactionEvent, bizLocation);
 		}
-		if (this.bizTransactionList != null && this.bizTransactionList.isEmpty() == false) {
-			aggregationEvent = util.putBizTransactionList(aggregationEvent, bizTransactionList);
-		}
+		
 		if (this.extensions != null && this.extensions.isEmpty() == false) {
-			aggregationEvent = util.putExtensions(aggregationEvent, namespaces, extensions);
+			transactionEvent = util.putExtensions(transactionEvent, namespaces, extensions);
 		}
 
 		BsonDocument extension = new BsonDocument();
-		if (this.childQuantityList != null && this.childQuantityList.isEmpty() == false) {
-			extension = util.putQuantityList(extension, childQuantityList);
+		if (this.quantityList != null && this.quantityList.isEmpty() == false) {
+			extension = util.putQuantityList(extension, quantityList);
 		}
 		if (this.sourceList != null && this.sourceList.isEmpty() == false) {
 			extension = util.putSourceList(extension, sourceList);
@@ -260,8 +261,8 @@ public class TransactionEvent {
 			extension = util.putDestinationList(extension, destinationList);
 		}
 		if (extension.isEmpty() == false)
-			aggregationEvent.put("extension", extension);
+			transactionEvent.put("extension", extension);
 
-		return aggregationEvent;
+		return transactionEvent;
 	}
 }
