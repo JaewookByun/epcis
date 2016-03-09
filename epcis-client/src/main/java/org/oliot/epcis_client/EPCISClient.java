@@ -61,24 +61,24 @@ public class EPCISClient {
 		this.epcisDocument.put("MasterData", new BsonArray());
 	}
 
-	public void addAggregationEvent(BsonDocument event) {
-		epcisDocument.getArray("AggregationEvent").add(event);
+	public void addAggregationEvent(AggregationEvent event) {
+		epcisDocument.getArray("AggregationEvent").add(event.asBsonDocument());
 	}
 
 	public void addObjectEvent(ObjectEvent event) {
 		epcisDocument.getArray("ObjectEvent").add(event.asBsonDocument());
 	}
 
-	public void addTransactionEvent(BsonDocument event) {
-		epcisDocument.getArray("TransactionEvent").add(event);
+	public void addTransactionEvent(TransactionEvent event) {
+		epcisDocument.getArray("TransactionEvent").add(event.asBsonDocument());
 	}
 
-	public void addTransformationEvent(BsonDocument event) {
-		epcisDocument.getArray("TransformationEvent").add(event);
+	public void addTransformationEvent(TransformationEvent event) {
+		epcisDocument.getArray("TransformationEvent").add(event.asBsonDocument());
 	}
 
-	public void addMasterData(BsonDocument event) {
-		epcisDocument.getArray("MasterData").add(event);
+	public void addMasterData(MasterData masterData) {
+		epcisDocument.getArray("MasterData").add(masterData.asBsonDocument());
 	}
 
 	public void sendDocument() {

@@ -26,15 +26,15 @@ import java.util.Map;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class ObjectEventTest{
+public class TransformationEventTest{
 	
 	@Test
-	public void baseObjectEventCapture() {
+	public void baseTransformationEventCapture() {
 		try {
 			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
+			TransformationEvent transformationEvent = new TransformationEvent();
 			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
+			client.addTransformationEvent(transformationEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -42,22 +42,28 @@ public class ObjectEventTest{
 	}
 	
 	@Test
-	public void basicObjectEventCapture() {
+	public void basicTransformationEventCapture() {
 		try {
 			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
+			TransformationEvent transformationEvent = new TransformationEvent(System.currentTimeMillis(), "+09:00");
 			
-			List<String> epcList = new ArrayList<String>();
-			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
-			objectEvent.setEpcList(epcList);
+			transformationEvent.setTransformationID("transformationID");
 			
-			objectEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
+			List<String> inputEPCList = new ArrayList<String>();
+			inputEPCList.add("urn:epc:id:sgtin:0614141.107346.2018");
+			transformationEvent.setInputEPCList(inputEPCList);
 			
-			objectEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
+			List<String> outputEPCList = new ArrayList<String>();
+			outputEPCList.add("urn:epc:id:sgtin:0614141.107346.2019");
+			transformationEvent.setOutputEPCList(outputEPCList);
 			
-			objectEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
+			transformationEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
 			
-			objectEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
+			transformationEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
+			
+			transformationEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
+			
+			transformationEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
 			
 			Map<String,List<String>> bizTransactionList = new HashMap<String,List<String>>();
 			List<String> bizTransaction1 = new ArrayList<String>();
@@ -66,11 +72,11 @@ public class ObjectEventTest{
 			List<String> bizTransaction2 = new ArrayList<String>();
 			bizTransaction2.add("urn:epcglobal:cbv:bt:0614141073467:1152");
 			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2 );
-			objectEvent.setBizTransactionList(bizTransactionList);
+			transformationEvent.setBizTransactionList(bizTransactionList);
 			
 			Map<String,String> namespaces = new HashMap<String,String>();
 			namespaces.put("example", "http://ns.example.com/epcis");
-			objectEvent.setNamespaces(namespaces);
+			transformationEvent.setNamespaces(namespaces);
 			
 			Map<String, Map<String,Object>> extensionMap = new HashMap<String, Map<String,Object>>();
 			Map<String, Object> extension = new HashMap<String, Object>();
@@ -78,10 +84,10 @@ public class ObjectEventTest{
 			extension.put("emg", new Double(22));
 			extension.put("ecg", new Long(11));
 			extensionMap.put("example", extension);
-			objectEvent.setExtensions(extensionMap);
+			transformationEvent.setExtensions(extensionMap);
 			
 			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
+			client.addTransformationEvent(transformationEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();

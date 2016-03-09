@@ -26,55 +26,69 @@ import org.bson.BsonDocument;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class AggregationEvent {
+public class TransformationEvent {
 
-	// EventTime, EventTimeZoneOffset,Action required
+	// EventTime, EventTimeZoneOffset required
 	private long eventTime;
-	private long recordTime;
 	private String eventTimeZoneOffset;
-	private String action;
 
-	private String parentID;
-	private List<String> childEPCs;
-	private List<QuantityElement> childQuantityList;
+	private long recordTime;
+
+	private List<String> inputEPCList;
+	private List<QuantityElement> inputQuantityList;
+	private List<String> outputEPCList;
+	private List<QuantityElement> outputQuantityList;
+
+	private String transformationID;
 
 	private String bizStep;
 	private String disposition;
 	private String readPoint;
 	private String bizLocation;
+
 	private Map<String, List<String>> bizTransactionList;
 	private Map<String, List<String>> sourceList;
 	private Map<String, List<String>> destinationList;
-	private Map<String, String> namespaces;
 
+	private Map<String, String> namespaces;
+	private Map<String, Map<String, Object>> ilmds;
 	private Map<String, Map<String, Object>> extensions;
 
-	public AggregationEvent() {
+	public TransformationEvent() {
 		eventTime = System.currentTimeMillis();
 		SimpleDateFormat format = new SimpleDateFormat("XXX");
 		eventTimeZoneOffset = format.format(new Date());
 		recordTime = 0;
-		action = "OBSERVE";
-		childEPCs = new ArrayList<String>();
-		childQuantityList = new ArrayList<QuantityElement>();
+
+		inputEPCList = new ArrayList<String>();
+		inputQuantityList = new ArrayList<QuantityElement>();
+		outputEPCList = new ArrayList<String>();
+		outputQuantityList = new ArrayList<QuantityElement>();
+
 		bizTransactionList = new HashMap<String, List<String>>();
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
+		ilmds = new HashMap<String, Map<String, Object>>();
 		extensions = new HashMap<String, Map<String, Object>>();
 	}
 
-	public AggregationEvent(long eventTime, String eventTimeZoneOffset, String action) {
+	public TransformationEvent(long eventTime, String eventTimeZoneOffset) {
 		this.eventTime = eventTime;
 		this.eventTimeZoneOffset = eventTimeZoneOffset;
-		this.action = action;
+
 		recordTime = 0;
-		childEPCs = new ArrayList<String>();
-		childQuantityList = new ArrayList<QuantityElement>();
+
+		inputEPCList = new ArrayList<String>();
+		inputQuantityList = new ArrayList<QuantityElement>();
+		outputEPCList = new ArrayList<String>();
+		outputQuantityList = new ArrayList<QuantityElement>();
+
 		bizTransactionList = new HashMap<String, List<String>>();
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
+		ilmds = new HashMap<String, Map<String, Object>>();
 		extensions = new HashMap<String, Map<String, Object>>();
 	}
 
@@ -86,6 +100,14 @@ public class AggregationEvent {
 		this.eventTime = eventTime;
 	}
 
+	public String getEventTimeZoneOffset() {
+		return eventTimeZoneOffset;
+	}
+
+	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
+		this.eventTimeZoneOffset = eventTimeZoneOffset;
+	}
+
 	public long getRecordTime() {
 		return recordTime;
 	}
@@ -94,25 +116,44 @@ public class AggregationEvent {
 		this.recordTime = recordTime;
 	}
 
-	public String getEventTimeZoneOffset() {
-		return eventTimeZoneOffset;
+	public List<String> getInputEPCList() {
+		return inputEPCList;
 	}
 
-	public void setEventTimeZoneOffset() {
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
+	public void setInputEPCList(List<String> inputEPCList) {
+		this.inputEPCList = inputEPCList;
 	}
 
-	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
+	public List<QuantityElement> getInputQuantityList() {
+		return inputQuantityList;
 	}
 
-	public String getAction() {
-		return action;
+	public void setInputQuantityList(List<QuantityElement> inputQuantityList) {
+		this.inputQuantityList = inputQuantityList;
 	}
 
-	public void setAction(String action) {
-		this.action = action;
+	public List<String> getOutputEPCList() {
+		return outputEPCList;
+	}
+
+	public void setOutputEPCList(List<String> outputEPCList) {
+		this.outputEPCList = outputEPCList;
+	}
+
+	public List<QuantityElement> getOutputQuantityList() {
+		return outputQuantityList;
+	}
+
+	public void setOutputQuantityList(List<QuantityElement> outputQuantityList) {
+		this.outputQuantityList = outputQuantityList;
+	}
+
+	public String getTransformationID() {
+		return transformationID;
+	}
+
+	public void setTransformationID(String transformationID) {
+		this.transformationID = transformationID;
 	}
 
 	public String getBizStep() {
@@ -175,32 +216,16 @@ public class AggregationEvent {
 		return namespaces;
 	}
 
-	public String getParentID() {
-		return parentID;
-	}
-
-	public void setParentID(String parentID) {
-		this.parentID = parentID;
-	}
-
-	public List<String> getChildEPCs() {
-		return childEPCs;
-	}
-
-	public void setChildEPCs(List<String> childEPCs) {
-		this.childEPCs = childEPCs;
-	}
-
-	public List<QuantityElement> getChildQuantityList() {
-		return childQuantityList;
-	}
-
-	public void setChildQuantityList(List<QuantityElement> childQuantityList) {
-		this.childQuantityList = childQuantityList;
-	}
-
 	public void setNamespaces(Map<String, String> namespaces) {
 		this.namespaces = namespaces;
+	}
+
+	public Map<String, Map<String, Object>> getIlmds() {
+		return ilmds;
+	}
+
+	public void setIlmds(Map<String, Map<String, Object>> ilmds) {
+		this.ilmds = ilmds;
 	}
 
 	public Map<String, Map<String, Object>> getExtensions() {
@@ -214,45 +239,55 @@ public class AggregationEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument aggregationEvent = new BsonDocument();
+		BsonDocument transformationEvent = new BsonDocument();
 		// Required Fields
-		aggregationEvent = util.putEventTime(aggregationEvent, eventTime);
-		aggregationEvent = util.putEventTimeZoneOffset(aggregationEvent, eventTimeZoneOffset);
-		aggregationEvent = util.putAction(aggregationEvent, action);
+		transformationEvent = util.putEventTime(transformationEvent, eventTime);
+		transformationEvent = util.putEventTimeZoneOffset(transformationEvent, eventTimeZoneOffset);
 
 		// Optional Fields
 		if (this.recordTime != 0) {
-			aggregationEvent = util.putRecordTime(aggregationEvent, recordTime);
+			transformationEvent = util.putRecordTime(transformationEvent, recordTime);
 		}
-		if (this.parentID != null) {
-			aggregationEvent = util.putParentID(aggregationEvent, parentID);
+		if (this.inputEPCList != null && this.inputEPCList.size() != 0) {
+			transformationEvent = util.putInputEPCList(transformationEvent, inputEPCList);
 		}
-		if (this.childEPCs != null && this.childEPCs.size() != 0) {
-			aggregationEvent = util.putChildEPCs(aggregationEvent, childEPCs);
+		if (this.inputQuantityList != null && this.inputQuantityList.isEmpty() == false) {
+			transformationEvent = util.putInputQuantityList(transformationEvent, inputQuantityList);
 		}
+		if (this.outputEPCList != null && this.outputEPCList.size() != 0) {
+			transformationEvent = util.putOutputEPCList(transformationEvent, outputEPCList);
+		}
+		if (this.outputQuantityList != null && this.outputQuantityList.isEmpty() == false) {
+			transformationEvent = util.putOutputQuantityList(transformationEvent, outputQuantityList);
+		}
+
+		if (this.transformationID != null) {
+			transformationEvent = util.putTransformationID(transformationEvent, transformationID);
+		}
+
 		if (this.bizStep != null) {
-			aggregationEvent = util.putBizStep(aggregationEvent, bizStep);
+			transformationEvent = util.putBizStep(transformationEvent, bizStep);
 		}
 		if (this.disposition != null) {
-			aggregationEvent = util.putDisposition(aggregationEvent, disposition);
+			transformationEvent = util.putDisposition(transformationEvent, disposition);
 		}
 		if (this.readPoint != null) {
-			aggregationEvent = util.putReadPoint(aggregationEvent, readPoint);
+			transformationEvent = util.putReadPoint(transformationEvent, readPoint);
 		}
 		if (this.bizLocation != null) {
-			aggregationEvent = util.putBizLocation(aggregationEvent, bizLocation);
+			transformationEvent = util.putBizLocation(transformationEvent, bizLocation);
 		}
 		if (this.bizTransactionList != null && this.bizTransactionList.isEmpty() == false) {
-			aggregationEvent = util.putBizTransactionList(aggregationEvent, bizTransactionList);
+			transformationEvent = util.putBizTransactionList(transformationEvent, bizTransactionList);
+		}
+		if (this.ilmds != null && this.ilmds.isEmpty() == false) {
+			transformationEvent = util.putILMD(transformationEvent, namespaces, ilmds);
 		}
 		if (this.extensions != null && this.extensions.isEmpty() == false) {
-			aggregationEvent = util.putExtensions(aggregationEvent, namespaces, extensions);
+			transformationEvent = util.putExtensions(transformationEvent, namespaces, extensions);
 		}
 
 		BsonDocument extension = new BsonDocument();
-		if (this.childQuantityList != null && this.childQuantityList.isEmpty() == false) {
-			extension = util.putChildQuantityList(extension, childQuantityList);
-		}
 		if (this.sourceList != null && this.sourceList.isEmpty() == false) {
 			extension = util.putSourceList(extension, sourceList);
 		}
@@ -260,8 +295,8 @@ public class AggregationEvent {
 			extension = util.putDestinationList(extension, destinationList);
 		}
 		if (extension.isEmpty() == false)
-			aggregationEvent.put("extension", extension);
+			transformationEvent.put("extension", extension);
 
-		return aggregationEvent;
+		return transformationEvent;
 	}
 }

@@ -26,39 +26,12 @@ import java.util.Map;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class ObjectEventTest{
+public class TransactionEventTest{
 	
 	@Test
-	public void baseObjectEventCapture() {
+	public void baseTransactionEventCapture() {
 		try {
 			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
-			client.sendDocument();
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	@Test
-	public void basicObjectEventCapture() {
-		try {
-			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
-			
-			List<String> epcList = new ArrayList<String>();
-			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
-			objectEvent.setEpcList(epcList);
-			
-			objectEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
-			
-			objectEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
-			
-			objectEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
-			
-			objectEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
-			
 			Map<String,List<String>> bizTransactionList = new HashMap<String,List<String>>();
 			List<String> bizTransaction1 = new ArrayList<String>();
 			bizTransaction1.add("http://transaction.acme.com/po/12345678");
@@ -66,11 +39,45 @@ public class ObjectEventTest{
 			List<String> bizTransaction2 = new ArrayList<String>();
 			bizTransaction2.add("urn:epcglobal:cbv:bt:0614141073467:1152");
 			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2 );
-			objectEvent.setBizTransactionList(bizTransactionList);
+			TransactionEvent transactionEvent = new TransactionEvent(bizTransactionList);
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			client.addTransactionEvent(transactionEvent);
+			client.sendDocument();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void basicTransactionEventCapture() {
+		try {
+			// Make basic Object Event
+			Map<String,List<String>> bizTransactionList = new HashMap<String,List<String>>();
+			List<String> bizTransaction1 = new ArrayList<String>();
+			bizTransaction1.add("http://transaction.acme.com/po/12345678");
+			bizTransactionList.put("urn:epcglobal:cbv:btt:po", bizTransaction1 );
+			List<String> bizTransaction2 = new ArrayList<String>();
+			bizTransaction2.add("urn:epcglobal:cbv:bt:0614141073467:1152");
+			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2 );
+			TransactionEvent transactionEvent = new TransactionEvent(System.currentTimeMillis(), "+09:00", "ADD", bizTransactionList );
 			
+			transactionEvent.setParentID("urn:epc:id:sgtin:0614141.107346.1");
+			
+			List<String> epcList = new ArrayList<String>();
+			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
+			transactionEvent.setEpcList(epcList);
+			
+			transactionEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
+			
+			transactionEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
+			
+			transactionEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
+			
+			transactionEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
+						
 			Map<String,String> namespaces = new HashMap<String,String>();
 			namespaces.put("example", "http://ns.example.com/epcis");
-			objectEvent.setNamespaces(namespaces);
+			transactionEvent.setNamespaces(namespaces);
 			
 			Map<String, Map<String,Object>> extensionMap = new HashMap<String, Map<String,Object>>();
 			Map<String, Object> extension = new HashMap<String, Object>();
@@ -78,10 +85,10 @@ public class ObjectEventTest{
 			extension.put("emg", new Double(22));
 			extension.put("ecg", new Long(11));
 			extensionMap.put("example", extension);
-			objectEvent.setExtensions(extensionMap);
+			transactionEvent.setExtensions(extensionMap);
 			
 			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
+			client.addTransactionEvent(transactionEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();

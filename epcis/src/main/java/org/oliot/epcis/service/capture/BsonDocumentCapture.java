@@ -11,6 +11,7 @@ import javax.servlet.ServletContext;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.bson.BsonValue;
 
 import org.oliot.epcis.configuration.Configuration;
@@ -24,6 +25,7 @@ import org.springframework.web.context.ServletContextAware;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 /**
@@ -73,18 +75,51 @@ public class BsonDocumentCapture implements ServletContextAware {
 			ByteArrayInputStream is = new ByteArrayInputStream(inputByteArray);
 			ObjectInput oi = new ObjectInputStream(is);
 			BsonDocument inputDocument = (BsonDocument) oi.readObject();
-			
+
 			MongoClient dbClient = new MongoClient();
 			MongoDatabase db = dbClient.getDatabase("epcis");
-			
+
 			for (String collectionKey : inputDocument.keySet()) {
 				MongoCollection<BsonDocument> collection = db.getCollection(collectionKey, BsonDocument.class);
 				BsonArray bsonCollection = inputDocument.getArray(collectionKey);
 				Iterator<BsonValue> docIterator = bsonCollection.iterator();
-				while(docIterator.hasNext()){
-					BsonDocument docElement = docIterator.next().asDocument();
-					docElement.put("recordTime", new BsonInt64(System.currentTimeMillis()));
-					collection.insertOne(docElement);
+				while (docIterator.hasNext()) {
+					if (!collectionKey.equals("MasterData")) {
+						BsonDocument docElement = docIterator.next().asDocument();
+						docElement.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+						collection.insertOne(docElement);
+					} else {
+						BsonDocument docElement = docIterator.next().asDocument();
+						BsonString vocID = docElement.get("id").asString();
+						// each id should have one document
+						MongoCursor<BsonDocument> bsonDocumentIterator = collection.find(new BsonDocument("id", vocID))
+								.iterator();
+						if (bsonDocumentIterator.hasNext()) {
+							BsonDocument existingDocument = bsonDocumentIterator.next();
+							BsonDocument existingAttributes = existingDocument.getDocument("attributes");
+							BsonDocument currentAttributes = docElement.getDocument("attributes");
+							for (String key : currentAttributes.keySet()) {
+								BsonString value = currentAttributes.getString(key);
+								existingAttributes.put(key, value);
+							}
+							existingAttributes.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+							existingDocument.put("attributes", existingAttributes);
+							if (!docElement.isNull("children") && docElement.getArray("children").isEmpty() == false) {
+								existingDocument.put("children", docElement.getArray("children"));
+							}
+							collection.findOneAndReplace(new BsonDocument("id", vocID), existingDocument);
+						} else {
+							if (docElement.isNull("attributes") || docElement.getDocument("attributes").isNull()) {
+								BsonDocument attributes = new BsonDocument("lastUpdated",
+										new BsonInt64(System.currentTimeMillis()));
+								docElement.put("attributes", attributes);
+							} else {
+								docElement.put("attributes", docElement.getDocument("attributes").append("lastUpdated",
+										new BsonInt64(System.currentTimeMillis())));
+							}
+							collection.insertOne(docElement);
+						}
+					}
 				}
 			}
 			dbClient.close();
