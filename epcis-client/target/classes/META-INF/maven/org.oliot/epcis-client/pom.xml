@@ -4,7 +4,7 @@
 
 	<groupId>org.oliot</groupId>
 	<artifactId>epcis-client</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>epcis-client</name>
