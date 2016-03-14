@@ -62,7 +62,7 @@ public class SubscriptionType {
 		if (doc.containsKey("reportIfEmpty"))
 			this.reportIfEmpty = doc.getBoolean("reportIfEmpty").getValue();
 		if (doc.containsKey("initialRecordTime"))
-			this.initialRecordTime = doc.getString(initialRecordTime).getValue();
+			this.initialRecordTime = doc.getString("initialRecordTime").getValue();
 		if (doc.containsKey("eventType"))
 			this.eventType = doc.getString("eventType").getValue();
 		if (doc.containsKey("GE_eventTime"))
