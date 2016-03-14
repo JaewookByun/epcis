@@ -48,7 +48,7 @@ public class MasterDataReadConverter {
 		if (attrObj != null) {
 			Iterator<String> attrIter = attrObj.keySet().iterator();
 
-			if (dbObject.isNull("id") != true)
+			if (dbObject.containsKey("id"))
 				vet.setId(dbObject.getString("id").getValue());
 
 			while (attrIter.hasNext()) {

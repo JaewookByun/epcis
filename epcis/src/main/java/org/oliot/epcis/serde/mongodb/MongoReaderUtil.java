@@ -13,6 +13,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.bson.BsonDocument;
+import org.bson.BsonType;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -56,9 +57,8 @@ public class MongoReaderUtil {
 			Map<String, String> nsMap = new HashMap<String, String>();
 			while (anyKeysIterN.hasNext()) {
 				String anyKeyN = anyKeysIterN.next();
-				String valueN = anyObject.getString(anyKeyN).getValue();
-				if (anyKeyN.startsWith("@")) {
-					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
+				if( anyObject.containsKey(anyKeyN) && anyObject.get(anyKeyN).getBsonType().equals(BsonType.STRING) && anyKeyN.startsWith("@")){
+					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), anyObject.getString(anyKeyN).getValue());					
 				}
 			}
 			Iterator<String> anyKeysIter = anyObject.keySet().iterator();
@@ -67,7 +67,20 @@ public class MongoReaderUtil {
 				String anyKey = anyKeysIter.next();
 				if (anyKey.startsWith("@"))
 					continue;
-				String value = anyObject.getString(anyKey).getValue();
+				BsonType type = anyObject.get(anyKey).getBsonType();
+				String value = null;
+				if( type == BsonType.STRING){
+					value = anyObject.getString(anyKey).getValue();
+				}else if( type == BsonType.INT32){
+					value = String.valueOf(anyObject.getInt32(anyKey).getValue());
+				}else if( type == BsonType.INT64){
+					value = String.valueOf(anyObject.getInt64(anyKey).getValue());
+				}else if( type == BsonType.DOUBLE){
+					value = String.valueOf(anyObject.getDouble(anyKey).getValue());
+				}else if( type == BsonType.BOOLEAN){
+					value = String.valueOf(anyObject.getBoolean(anyKey).getValue());
+				}
+				
 				// Get Namespace
 				String[] anyKeyCheck = anyKey.split(":");
 				String namespace = null;
