@@ -14,6 +14,9 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.query.mongodb.MongoSubscription;
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
  *
@@ -43,6 +46,9 @@ public class Configuration implements ServletContextListener {
 	public static String onsAddress;
 	public static boolean isQueryAccessControlOn;
 	public static String facebookAppID;
+	
+	public static MongoClient mongoClient;
+	public static MongoDatabase mongoDatabase;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -57,7 +63,7 @@ public class Configuration implements ServletContextListener {
 
 		// Set Basic Configuration with Configuration.json
 		setBasicConfiguration(servletContextEvent.getServletContext());
-
+		
 		// load existing subscription
 		loadExistingSubscription();
 	}
@@ -170,9 +176,30 @@ public class Configuration implements ServletContextListener {
 			}
 			facebookAppID = fai.trim();
 
+			if( backend.equals("MongoDB")){
+				setMongoDB(json);
+			}
+			
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
+	}
+
+	private void setMongoDB(JSONObject json) {
+		String backend_ip;
+		if(json.isNull("backend_ip")){
+			backend_ip = "localhost";
+		}else{
+			backend_ip = json.getString("backend_ip");
+		}
+		int backend_port;
+		if(json.isNull("backend_port")){
+			backend_port = 27017;
+		}else{
+			backend_port = json.getInt("backend_port");
+		}
+		mongoClient = new MongoClient(backend_ip, backend_port);
+		mongoDatabase = mongoClient.getDatabase("epcis");
 	}
 
 	private void loadExistingSubscription() {

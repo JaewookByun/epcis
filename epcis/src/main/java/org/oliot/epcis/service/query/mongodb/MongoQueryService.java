@@ -28,7 +28,11 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.apache.log4j.Level;
-
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
@@ -67,27 +71,19 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import static org.quartz.TriggerKey.*;
 import static org.quartz.JobKey.*;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
 /**
- * Copyright (C) 2014 Jaewook Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -464,52 +460,54 @@ public class MongoQueryService {
 	}
 
 	public void unsubscribe(String subscriptionID) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
 
 		// Its size should be 0 or 1
-		List<SubscriptionType> subscriptions = mongoOperation
-				.find(new Query(Criteria.where("subscriptionID").is(subscriptionID)), SubscriptionType.class);
+		BsonDocument s = collection
+				.findOneAndDelete(new BsonDocument("subscriptionID", new BsonString(subscriptionID)));
 
-		for (int i = 0; i < subscriptions.size(); i++) {
-			SubscriptionType subscription = subscriptions.get(i);
+		if (s != null) {
+			SubscriptionType subscription = new SubscriptionType(s);
 			// Remove from current Quartz
 			removeScheduleFromQuartz(subscription);
-			// Remove from DB list
-			removeScheduleFromDB(mongoOperation, subscription);
 		}
-		((AbstractApplicationContext) ctx).close();
 	}
 
 	public String getSubscriptionIDsREST(@PathVariable String queryName) {
 
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-
-		List<SubscriptionType> allSubscription = mongoOperation
-				.find(new Query(Criteria.where("queryName").is(queryName)), SubscriptionType.class);
-
 		JSONArray retArray = new JSONArray();
-		for (int i = 0; i < allSubscription.size(); i++) {
-			SubscriptionType subscription = allSubscription.get(i);
-			retArray.put(subscription.getSubscriptionID());
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		Iterator<BsonDocument> subIterator = collection
+				.find(new BsonDocument("queryName", new BsonString(queryName)), BsonDocument.class).iterator();
+
+		while (subIterator.hasNext()) {
+			BsonDocument subscription = subIterator.next();
+			retArray.put(subscription.getString("subscriptionID").asString());
 		}
-		((AbstractApplicationContext) ctx).close();
+
 		return retArray.toString(1);
 	}
 
 	public List<String> getSubscriptionIDs(String queryName) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> allSubscription = mongoOperation
-				.find(new Query(Criteria.where("queryName").is(queryName)), SubscriptionType.class);
 		List<String> retList = new ArrayList<String>();
-		for (int i = 0; i < allSubscription.size(); i++) {
-			SubscriptionType subscription = allSubscription.get(i);
-			retList.add(subscription.getSubscriptionID());
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		Iterator<BsonDocument> subIterator = collection
+				.find(new BsonDocument("queryName", new BsonString(queryName)), BsonDocument.class).iterator();
+
+		while (subIterator.hasNext()) {
+			BsonDocument subscription = subIterator.next();
+			retList.add(subscription.getString("subscriptionID").asString().getValue());
 		}
-		((AbstractApplicationContext) ctx).close();
+
 		return retList;
 	}
 
@@ -547,9 +545,6 @@ public class MongoQueryService {
 		} else {
 			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
 		}
-
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
 		// Prepare container which query results are included
 		// eventObjects : Container which all the query results (events) will be
@@ -607,9 +602,11 @@ public class MongoQueryService {
 
 		if (toGetAggregationEvent == true) {
 			// Aggregation Event Collection
-			DBCollection collection = mongoOperation.getCollection("AggregationEvent");
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
+					BsonDocument.class);
+
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("AggregationEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+			BsonArray queryList = makeQueryObjects("AggregationEvent", GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
@@ -617,10 +614,10 @@ public class MongoQueryService {
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
-			DBObject baseQuery = new BasicDBObject();
-			DBCursor cursor;
+			BsonDocument baseQuery = new BsonDocument();
+			FindIterable<BsonDocument> cursor;
 			if (queryList.isEmpty() == false) {
-				BasicDBList aggreQueryList = new BasicDBList();
+				BsonArray aggreQueryList = new BsonArray();
 				for (int i = 0; i < queryList.size(); i++) {
 					aggreQueryList.add(queryList.get(i));
 				}
@@ -635,8 +632,9 @@ public class MongoQueryService {
 
 			JSONArray aggrJSONArray = new JSONArray();
 
-			while (cursor.hasNext()) {
-				DBObject dbObject = cursor.next();
+			MongoCursor<BsonDocument> slCursor = cursor.iterator();
+			while (slCursor.hasNext()) {
+				BsonDocument dbObject = slCursor.next();
 
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
@@ -648,7 +646,7 @@ public class MongoQueryService {
 							con.convert(dbObject));
 					eventObjects.add(element);
 				} else {
-					dbObject.removeField("_id");
+					dbObject.remove("_id");
 					aggrJSONArray.put(dbObject);
 				}
 			}
@@ -660,10 +658,10 @@ public class MongoQueryService {
 		// For Each Event Type!
 		if (toGetObjectEvent == true) {
 
-			// Aggregation Event Collection
-			DBCollection collection = mongoOperation.getCollection("ObjectEvent");
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
+					BsonDocument.class);
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+			BsonArray queryList = makeQueryObjects("ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
@@ -671,10 +669,10 @@ public class MongoQueryService {
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
-			DBObject baseQuery = new BasicDBObject();
-			DBCursor cursor;
+			BsonDocument baseQuery = new BsonDocument();
+			FindIterable<BsonDocument> cursor;
 			if (queryList.isEmpty() == false) {
-				BasicDBList aggreQueryList = new BasicDBList();
+				BsonArray aggreQueryList = new BsonArray();
 				for (int i = 0; i < queryList.size(); i++) {
 					aggreQueryList.add(queryList.get(i));
 				}
@@ -689,8 +687,10 @@ public class MongoQueryService {
 
 			JSONArray objJSONArray = new JSONArray();
 
-			while (cursor.hasNext()) {
-				DBObject dbObject = cursor.next();
+			MongoCursor<BsonDocument> slCursor = cursor.iterator();
+
+			while (slCursor.hasNext()) {
+				BsonDocument dbObject = slCursor.next();
 
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
@@ -702,8 +702,8 @@ public class MongoQueryService {
 							con.convert(dbObject));
 					eventObjects.add(element);
 				} else {
-					dbObject.removeField("_id");
-					objJSONArray.put(dbObject);					
+					dbObject.remove("_id");
+					objJSONArray.put(dbObject);
 				}
 			}
 			if (objJSONArray.length() > 0) {
@@ -711,10 +711,11 @@ public class MongoQueryService {
 			}
 		}
 		if (toGetQuantityEvent == true) {
-			// Aggregation Event Collection
-			DBCollection collection = mongoOperation.getCollection("QuantityEvent");
+
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("QuantityEvent",
+					BsonDocument.class);
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("QuantityEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+			BsonArray queryList = makeQueryObjects("QuantityEvent", GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
@@ -722,10 +723,10 @@ public class MongoQueryService {
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
-			DBObject baseQuery = new BasicDBObject();
-			DBCursor cursor;
+			BsonDocument baseQuery = new BsonDocument();
+			FindIterable<BsonDocument> cursor;
 			if (queryList.isEmpty() == false) {
-				BasicDBList aggreQueryList = new BasicDBList();
+				BsonArray aggreQueryList = new BsonArray();
 				for (int i = 0; i < queryList.size(); i++) {
 					aggreQueryList.add(queryList.get(i));
 				}
@@ -740,8 +741,9 @@ public class MongoQueryService {
 
 			JSONArray qntJSONArray = new JSONArray();
 
-			while (cursor.hasNext()) {
-				DBObject dbObject = cursor.next();
+			MongoCursor<BsonDocument> slCursor = cursor.iterator();
+			while (slCursor.hasNext()) {
+				BsonDocument dbObject = slCursor.next();
 
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
@@ -753,7 +755,7 @@ public class MongoQueryService {
 							con.convert(dbObject));
 					eventObjects.add(element);
 				} else {
-					dbObject.removeField("_id");
+					dbObject.remove("_id");
 					qntJSONArray.put(dbObject);
 				}
 			}
@@ -762,10 +764,11 @@ public class MongoQueryService {
 			}
 		}
 		if (toGetTransactionEvent == true) {
-			// Aggregation Event Collection
-			DBCollection collection = mongoOperation.getCollection("TransactionEvent");
+
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
+					BsonDocument.class);
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("TransactionEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+			BsonArray queryList = makeQueryObjects("TransactionEvent", GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
@@ -773,10 +776,10 @@ public class MongoQueryService {
 					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
-			DBObject baseQuery = new BasicDBObject();
-			DBCursor cursor;
+			BsonDocument baseQuery = new BsonDocument();
+			FindIterable<BsonDocument> cursor;
 			if (queryList.isEmpty() == false) {
-				BasicDBList aggreQueryList = new BasicDBList();
+				BsonArray aggreQueryList = new BsonArray();
 				for (int i = 0; i < queryList.size(); i++) {
 					aggreQueryList.add(queryList.get(i));
 				}
@@ -791,8 +794,9 @@ public class MongoQueryService {
 
 			JSONArray transactionJSONArray = new JSONArray();
 
-			while (cursor.hasNext()) {
-				DBObject dbObject = cursor.next();
+			MongoCursor<BsonDocument> slCursor = cursor.iterator();
+			while (slCursor.hasNext()) {
+				BsonDocument dbObject = slCursor.next();
 
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
@@ -804,7 +808,7 @@ public class MongoQueryService {
 							con.convert(dbObject));
 					eventObjects.add(element);
 				} else {
-					dbObject.removeField("_id");
+					dbObject.remove("_id");
 					transactionJSONArray.put(dbObject);
 				}
 			}
@@ -813,21 +817,22 @@ public class MongoQueryService {
 			}
 		}
 		if (toGetTransformationEvent == true) {
-			// Aggregation Event Collection
-			DBCollection collection = mongoOperation.getCollection("TransformationEvent");
+
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
+					BsonDocument.class);
 			// Queries
-			List<DBObject> queryList = makeQueryObjects("TransformationEvent", GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy,
-					orderDirection, eventCountLimit, maxEventCount, paramMap);
+			BsonArray queryList = makeQueryObjects("TransformationEvent", GE_eventTime, LT_eventTime, GE_recordTime,
+					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
+					eventCountLimit, maxEventCount, paramMap);
 
 			// Merge All the queries with $and
-			DBObject baseQuery = new BasicDBObject();
-			DBCursor cursor;
+			BsonDocument baseQuery = new BsonDocument();
+			FindIterable<BsonDocument> cursor;
 			if (queryList.isEmpty() == false) {
-				BasicDBList aggreQueryList = new BasicDBList();
+				BsonArray aggreQueryList = new BsonArray();
 				for (int i = 0; i < queryList.size(); i++) {
 					aggreQueryList.add(queryList.get(i));
 				}
@@ -842,8 +847,9 @@ public class MongoQueryService {
 
 			JSONArray transformationJSONArray = new JSONArray();
 
-			while (cursor.hasNext()) {
-				DBObject dbObject = cursor.next();
+			MongoCursor<BsonDocument> slCursor = cursor.iterator();
+			while (slCursor.hasNext()) {
+				BsonDocument dbObject = slCursor.next();
 
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
@@ -855,7 +861,7 @@ public class MongoQueryService {
 							TransformationEventType.class, con.convert(dbObject));
 					eventObjects.add(element);
 				} else {
-					dbObject.removeField("_id");
+					dbObject.remove("_id");
 					transformationJSONArray.put(dbObject);
 				}
 			}
@@ -868,7 +874,7 @@ public class MongoQueryService {
 		if (maxEventCount != null) {
 			if (format == null || format.equals("XML")) {
 				if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
-					((AbstractApplicationContext) ctx).close();
+
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			} else {
@@ -889,34 +895,33 @@ public class MongoQueryService {
 					cnt += retJSON.getJSONArray("TransformationEvent").length();
 				}
 				if (cnt > Integer.parseInt(maxEventCount)) {
-					((AbstractApplicationContext) ctx).close();
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			}
 		}
-		((AbstractApplicationContext) ctx).close();
 		if (format == null || format.equals("XML")) {
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(epcisQueryDocumentType, sw);
 			return sw.toString();
 		} else {
-			
-			// BSONObject doc = (BSONObject) JSON.parse(retJSON.toString());	
+
+			// BSONObject doc = (BSONObject) JSON.parse(retJSON.toString());
 			// BasicBSONEncoder en = new BasicBSONEncoder();
 			// System.out.println(doc.toString().length());
 			// byte[] ret = en.encode(doc);
 			// try {
-			//	FileUtils.writeByteArrayToFile(new File("/home/jack/temp.bson"), ret);
+			// FileUtils.writeByteArrayToFile(new File("/home/jack/temp.bson"),
+			// ret);
 			// } catch (IOException e) {
-			//	e.printStackTrace();
+			// e.printStackTrace();
 			// }
 			// System.out.println(ret.length);
 			// return new String(en.encode(doc));
-			
+
 			// BasicBSONDecoder de = new BasicBSONDecoder();
 			// BSONObject obj = de.readObject(ret);
 			// System.out.println(obj);
-			
+
 			return retJSON.toString(1);
 		}
 	}
@@ -937,20 +942,18 @@ public class MongoQueryService {
 			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
 		}
 
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-
-		DBCollection collection = mongoOperation.getCollection("MasterData");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
 
 		// Make Query
-		List<DBObject> queryList = makeMasterQueryObjects(vocabularyName, includeAttributes, includeChildren,
-				attributeNames, eQ_name, wD_name, hASATTR, maxElementCount, paramMap);
+		BsonArray queryList = makeMasterQueryObjects(vocabularyName, includeAttributes, includeChildren, attributeNames,
+				eQ_name, wD_name, hASATTR, maxElementCount, paramMap);
 
 		// Merge All the queries with $and
-		DBObject baseQuery = new BasicDBObject();
-		DBCursor cursor;
+		BsonDocument baseQuery = new BsonDocument();
+		FindIterable<BsonDocument> cursor;
 		if (queryList.isEmpty() == false) {
-			BasicDBList aggreQueryList = new BasicDBList();
+			BsonArray aggreQueryList = new BsonArray();
 			for (int i = 0; i < queryList.size(); i++) {
 				aggreQueryList.add(queryList.get(i));
 			}
@@ -962,10 +965,11 @@ public class MongoQueryService {
 		}
 
 		// Cursor needed to ordered
-
 		List<VocabularyType> vList = new ArrayList<>();
-		while (cursor.hasNext()) {
-			DBObject dbObject = cursor.next();
+
+		MongoCursor<BsonDocument> slCursor = cursor.iterator();
+		while (slCursor.hasNext()) {
+			BsonDocument dbObject = slCursor.next();
 
 			if (format == null || format.equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
@@ -1021,20 +1025,19 @@ public class MongoQueryService {
 					vList.add(vt);
 			} else {
 				boolean isMatched = true;
-				dbObject.removeField("_id");
+				dbObject.remove("_id");
 				if (includeAttributes == false) {
-					dbObject.removeField("attributes");
+					dbObject.remove("attributes");
 				} else if (includeAttributes == true && attributeNames != null) {
 					String[] attrArr = attributeNames.split(",");
 					Set<String> attrSet = new HashSet<String>();
 					for (int j = 0; j < attrArr.length; j++) {
 						attrSet.add(attrArr[j].trim());
 					}
-					Object attrObject = dbObject.get("attributes");
+					BsonDocument attrObject = dbObject.get("attributes").asDocument();
 					isMatched = false;
 					if (attrObject != null) {
-						DBObject attrDBObject = (DBObject) attrObject;
-						Iterator<String> attrKeys = attrDBObject.keySet().iterator();
+						Iterator<String> attrKeys = attrObject.keySet().iterator();
 						while (attrKeys.hasNext()) {
 							String attrKey = attrKeys.next();
 							if (attrSet.contains(attrKey)) {
@@ -1045,7 +1048,7 @@ public class MongoQueryService {
 
 				}
 				if (includeChildren == false) {
-					dbObject.removeField("children");
+					dbObject.remove("children");
 				}
 
 				if (isMatched == true) {
@@ -1061,7 +1064,6 @@ public class MongoQueryService {
 			vlt.setVocabulary(vList);
 			qbt.setVocabularyList(vlt);
 		}
-		((AbstractApplicationContext) ctx).close();
 
 		// M47
 		if (maxElementCount != null) {
@@ -1285,8 +1287,8 @@ public class MongoQueryService {
 			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
 			String eventCountLimit, String maxEventCount,
 
-	String vocabularyName, boolean includeAttributes, boolean includeChildren, String attributeNames, String EQ_name,
-			String WD_name, String HASATTR, String maxElementCount, String format, String userID,
+			String vocabularyName, boolean includeAttributes, boolean includeChildren, String attributeNames,
+			String EQ_name, String WD_name, String HASATTR, String maxElementCount, String format, String userID,
 			List<String> friendList, Map<String, String> paramMap) {
 
 		// M24
@@ -1652,7 +1654,6 @@ public class MongoQueryService {
 		}
 	}
 
-	@SuppressWarnings("resource")
 	private boolean addScheduleToDB(String queryName, String subscriptionID, String dest, String cronExpression,
 			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
 			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
@@ -1671,18 +1672,18 @@ public class MongoQueryService {
 				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
 				GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection, eventCountLimit, maxEventCount, format,
 				paramMap);
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> existenceTest = mongoOperation
-				.find(new Query(Criteria.where("subscriptionID").is(subscriptionID)), SubscriptionType.class);
-		if (existenceTest.size() != 0)
-			return false;
-		if (existenceTest.size() == 0)
-			mongoOperation.save(st);
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		BsonDocument subscription = collection.find(new BsonDocument("subscriptionID", new BsonString(subscriptionID)))
+				.first();
+
+		if (subscription == null) {
+			collection.insertOne(SubscriptionType.asBsonDocument(st));
+		}
 
 		Configuration.logger.log(Level.INFO, "Subscription ID: " + subscriptionID + " is added to DB. ");
-		((AbstractApplicationContext) ctx).close();
 		return true;
 	}
 
@@ -1698,9 +1699,13 @@ public class MongoQueryService {
 		}
 	}
 
-	private void removeScheduleFromDB(MongoOperations mongoOperation, SubscriptionType subscription) {
-		mongoOperation.remove(new Query(Criteria.where("subscriptionID").is(subscription.getSubscriptionID())),
-				SubscriptionType.class);
+	@SuppressWarnings("unused")
+	private void removeScheduleFromDB(SubscriptionType subscription) {
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+		collection.deleteOne(new BsonDocument("subscriptionID", new BsonString(subscription.getSubscriptionID())));
+
 		Configuration.logger.log(Level.INFO,
 				"Subscription ID: " + subscription.getSubscriptionID() + " is removed from DB");
 	}
@@ -1765,8 +1770,8 @@ public class MongoQueryService {
 		return null;
 	}
 
-	private DBCursor makeSortedLimitedCursor(DBCursor cursor, String orderBy, String orderDirection,
-			String eventCountLimit) {
+	private FindIterable<BsonDocument> makeSortedLimitedCursor(FindIterable<BsonDocument> cursor, String orderBy,
+			String orderDirection, String eventCountLimit) {
 		/**
 		 * orderBy : If specified, names a single field that will be used to
 		 * order the results. The orderDirection field specifies whether the
@@ -1799,17 +1804,17 @@ public class MongoQueryService {
 			if (orderBy.trim().equals("eventTime")) {
 				if (orderDirection != null) {
 					if (orderDirection.trim().equals("ASC")) {
-						cursor = cursor.sort(new BasicDBObject("eventTime", 1));
+						cursor = cursor.sort(new BsonDocument("eventTime", new BsonInt32(1)));
 					} else if (orderDirection.trim().equals("DESC")) {
-						cursor = cursor.sort(new BasicDBObject("eventTime", -1));
+						cursor = cursor.sort(new BsonDocument("eventTime", new BsonInt32(-1)));
 					}
 				}
 			} else if (orderBy.trim().equals("recordTime")) {
 				if (orderDirection != null) {
 					if (orderDirection.trim().equals("ASC")) {
-						cursor = cursor.sort(new BasicDBObject("recordTime", 1));
+						cursor = cursor.sort(new BsonDocument("recordTime", new BsonInt32(1)));
 					} else if (orderDirection.trim().equals("DESC")) {
-						cursor = cursor.sort(new BasicDBObject("recordTime", -1));
+						cursor = cursor.sort(new BsonDocument("recordTime", new BsonInt32(-1)));
 					}
 				}
 			}
@@ -1842,15 +1847,16 @@ public class MongoQueryService {
 		return cursor;
 	}
 
-	private List<DBObject> makeQueryObjects(String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
-			String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity, String orderBy, String orderDirection,
-			String eventCountLimit, String maxEventCount, Map<String, String> paramMap) {
-		List<DBObject> queryList = new ArrayList<DBObject>();
+	private BsonArray makeQueryObjects(String eventType, String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
+			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC,
+			String MATCH_epcClass, String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass,
+			String EQ_quantity, String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit, String maxEventCount,
+			Map<String, String> paramMap) {
+
+		BsonArray queryList = new BsonArray();
 		/**
 		 * GE_eventTime: If specified, only events with eventTime greater than
 		 * or equal to the specified value will be included in the result. If
@@ -1865,8 +1871,8 @@ public class MongoQueryService {
 		 */
 		if (GE_eventTime != null) {
 			long geEventTimeMillis = getTimeMillis(GE_eventTime);
-			DBObject query = new BasicDBObject();
-			query.put("eventTime", new BasicDBObject("$gte", geEventTimeMillis));
+			BsonDocument query = new BsonDocument();
+			query.put("eventTime", new BsonDocument("$gte", new BsonInt64(geEventTimeMillis)));
 			queryList.add(query);
 		}
 		/**
@@ -1879,8 +1885,8 @@ public class MongoQueryService {
 		 */
 		if (LT_eventTime != null) {
 			long ltEventTimeMillis = getTimeMillis(LT_eventTime);
-			DBObject query = new BasicDBObject();
-			query.put("eventTime", new BasicDBObject("$lt", ltEventTimeMillis));
+			BsonDocument query = new BsonDocument();
+			query.put("eventTime", new BsonDocument("$lt", new BsonInt64(ltEventTimeMillis)));
 			queryList.add(query);
 		}
 		/**
@@ -1896,8 +1902,8 @@ public class MongoQueryService {
 		 */
 		if (GE_recordTime != null) {
 			long geRecordTimeMillis = getTimeMillis(GE_recordTime);
-			DBObject query = new BasicDBObject();
-			query.put("recordTime", new BasicDBObject("$gte", geRecordTimeMillis));
+			BsonDocument query = new BsonDocument();
+			query.put("recordTime", new BsonDocument("$gte", new BsonInt64(geRecordTimeMillis)));
 			queryList.add(query);
 		}
 		/**
@@ -1911,8 +1917,8 @@ public class MongoQueryService {
 		 */
 		if (LT_recordTime != null) {
 			long ltRecordTimeMillis = getTimeMillis(LT_recordTime);
-			DBObject query = new BasicDBObject();
-			query.put("recordTime", new BasicDBObject("$lt", ltRecordTimeMillis));
+			BsonDocument query = new BsonDocument();
+			query.put("recordTime", new BsonDocument("$lt", new BsonInt64(ltRecordTimeMillis)));
 			queryList.add(query);
 		}
 
@@ -1929,8 +1935,8 @@ public class MongoQueryService {
 		 */
 		if (EQ_action != null) {
 			// Constrained already checked
-			DBObject query = new BasicDBObject();
-			query.put("action", EQ_action);
+			BsonDocument query = new BsonDocument();
+			query.put("action", new BsonString(EQ_action));
 			queryList.add(query);
 		}
 		/**
@@ -1943,7 +1949,7 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (EQ_bizStep != null) {
-			DBObject query = getINQueryObject("bizStep", EQ_bizStep);
+			BsonDocument query = getINQueryObject("bizStep", EQ_bizStep);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -1954,7 +1960,7 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (EQ_disposition != null) {
-			DBObject query = getINQueryObject("disposition", EQ_disposition);
+			BsonDocument query = getINQueryObject("disposition", EQ_disposition);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2000,7 +2006,7 @@ public class MongoQueryService {
 		}
 
 		if (!readPointSet.isEmpty()) {
-			DBObject query = getINQueryObject("readPoint.id", readPointSet);
+			BsonDocument query = getINQueryObject("readPoint.id", readPointSet);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2033,7 +2039,7 @@ public class MongoQueryService {
 		}
 
 		if (!bizLocationSet.isEmpty()) {
-			DBObject query = getINQueryObject("bizLocation.id", bizLocationSet);
+			BsonDocument query = getINQueryObject("bizLocation.id", bizLocationSet);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2046,7 +2052,7 @@ public class MongoQueryService {
 		 * equal to one of the values specified in this parameter.
 		 */
 		if (EQ_transformationID != null) {
-			DBObject query = getINQueryObject("transformationID", EQ_transformationID);
+			BsonDocument query = getINQueryObject("transformationID", EQ_transformationID);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2066,7 +2072,7 @@ public class MongoQueryService {
 		 * Somewhat verified
 		 */
 		if (MATCH_epc != null) {
-			DBObject query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
+			BsonDocument query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2079,7 +2085,7 @@ public class MongoQueryService {
 		 * 8.2.7.1.1.
 		 */
 		if (MATCH_parentID != null) {
-			DBObject query = getINQueryObject("parentID", MATCH_parentID);
+			BsonDocument query = getINQueryObject("parentID", MATCH_parentID);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2096,7 +2102,7 @@ public class MongoQueryService {
 		 * field exists.
 		 */
 		if (MATCH_inputEPC != null) {
-			DBObject query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
+			BsonDocument query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2113,7 +2119,7 @@ public class MongoQueryService {
 		 * field exists.
 		 */
 		if (MATCH_outputEPC != null) {
-			DBObject query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
+			BsonDocument query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2132,7 +2138,7 @@ public class MongoQueryService {
 		 */
 
 		if (MATCH_anyEPC != null) {
-			DBObject query = getINQueryObject(
+			BsonDocument query = getINQueryObject(
 					new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc" },
 					MATCH_anyEPC);
 			if (query != null)
@@ -2152,7 +2158,7 @@ public class MongoQueryService {
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_epcClass != null) {
-			DBObject query = getINQueryObject(
+			BsonDocument query = getINQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
 					MATCH_epcClass);
 			if (query != null)
@@ -2169,7 +2175,7 @@ public class MongoQueryService {
 		 * specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_inputEPCClass != null) {
-			DBObject query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
+			BsonDocument query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2185,7 +2191,7 @@ public class MongoQueryService {
 		 */
 
 		if (MATCH_outputEPCClass != null) {
-			DBObject query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
+			BsonDocument query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2203,7 +2209,7 @@ public class MongoQueryService {
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_anyEPCClass != null) {
-			DBObject query = getINQueryObject(
+			BsonDocument query = getINQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
 							"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
 					MATCH_anyEPCClass);
@@ -2247,7 +2253,7 @@ public class MongoQueryService {
 			 */
 			if (paramName.contains("EQ_bizTransaction_")) {
 				String type = paramName.substring(18, paramName.length());
-				DBObject query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
+				BsonDocument query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2266,12 +2272,12 @@ public class MongoQueryService {
 				String type = paramName.substring(10, paramName.length());
 				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 						|| eventType.equals("TransactionEvent")) {
-					DBObject query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
+					BsonDocument query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 				if (eventType.equals("TransformationEvent")) {
-					DBObject query = getINFamilyQueryObject(type, "sourceList", paramValues);
+					BsonDocument query = getINFamilyQueryObject(type, "sourceList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -2290,12 +2296,12 @@ public class MongoQueryService {
 				String type = paramName.substring(15, paramName.length());
 				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 						|| eventType.equals("TransactionEvent")) {
-					DBObject query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
+					BsonDocument query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 				if (eventType.equals("TransformationEvent")) {
-					DBObject query = getINFamilyQueryObject(type, "destinationList", paramValues);
+					BsonDocument query = getINFamilyQueryObject(type, "destinationList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -2336,7 +2342,7 @@ public class MongoQueryService {
 					 * type }, paramValues); if (query != null)
 					 * queryList.add(query); }
 					 */
-					DBObject query = getINExtensionQueryObject(type,
+					BsonDocument query = getINExtensionQueryObject(type,
 							new String[] { "any." + type, "otherAttributes." + type }, paramValues);
 					if (query != null)
 						queryList.add(query);
@@ -2408,25 +2414,25 @@ public class MongoQueryService {
 					 * "LE"); if (query != null) queryList.add(query); } }
 					 */
 					if (paramName.startsWith("GT_")) {
-						DBObject query = getCompExtensionQueryObject(type,
+						BsonDocument query = getCompExtensionQueryObject(type,
 								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("GE_")) {
-						DBObject query = getCompExtensionQueryObject(type,
+						BsonDocument query = getCompExtensionQueryObject(type,
 								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("LT_")) {
-						DBObject query = getCompExtensionQueryObject(type,
+						BsonDocument query = getCompExtensionQueryObject(type,
 								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("LE_")) {
-						DBObject query = getCompExtensionQueryObject(type,
+						BsonDocument query = getCompExtensionQueryObject(type,
 								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
 						if (query != null)
 							queryList.add(query);
@@ -2437,11 +2443,11 @@ public class MongoQueryService {
 		return queryList;
 	}
 
-	private List<DBObject> makeMasterQueryObjects(String vocabularyName, boolean includeAttributes,
-			boolean includeChildren, String attributeNames, String eQ_name, String wD_name, String hASATTR,
-			String maxElementCount, Map<String, String> paramMap) {
+	private BsonArray makeMasterQueryObjects(String vocabularyName, boolean includeAttributes, boolean includeChildren,
+			String attributeNames, String eQ_name, String wD_name, String hASATTR, String maxElementCount,
+			Map<String, String> paramMap) {
 
-		List<DBObject> queryList = new ArrayList<DBObject>();
+		BsonArray queryList = new BsonArray();
 
 		/**
 		 * vocabularyName : If specified, only vocabulary elements drawn from
@@ -2452,7 +2458,7 @@ public class MongoQueryService {
 		 */
 
 		if (vocabularyName != null) {
-			DBObject query = getINQueryObject("type", vocabularyName);
+			BsonDocument query = getINQueryObject("type", vocabularyName);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2494,7 +2500,7 @@ public class MongoQueryService {
 		}
 
 		if (!idSet.isEmpty()) {
-			DBObject query = getINQueryObject("id", idSet);
+			BsonDocument query = getINQueryObject("id", idSet);
 			if (query != null)
 				queryList.add(query);
 		}
@@ -2509,7 +2515,7 @@ public class MongoQueryService {
 			String[] attrArr = hASATTR.split(",");
 			for (int i = 0; i < attrArr.length; i++) {
 				String attrString = attrArr[i].trim();
-				DBObject query = getExistsQueryObject("attributes", attrString);
+				BsonDocument query = getExistsQueryObject("attributes", attrString);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -2530,7 +2536,7 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQATTR_")) {
 					String type = paramName.substring(7, paramName.length());
-					DBObject query = getVocFamilyQueryObject(type, "attributes", paramValues);
+					BsonDocument query = getVocFamilyQueryObject(type, "attributes", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}

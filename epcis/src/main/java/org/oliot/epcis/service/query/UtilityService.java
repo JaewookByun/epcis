@@ -6,10 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.log4j.Level;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -57,22 +54,32 @@ public class UtilityService implements ServletContextAware {
 	public String resetDB() {
 
 		if (Configuration.backend.equals("MongoDB")) {
-			
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
-			
-			mongoOperation.dropCollection("AggregationEvent");
-			mongoOperation.dropCollection("ObjectEvent");
-			mongoOperation.dropCollection("TransactionEvent");
-			mongoOperation.dropCollection("TransformationEvent");
-			mongoOperation.dropCollection("QuantityEvent");
-			
+
+			if (Configuration.mongoDatabase.getCollection("AggregationEvent") != null) {
+				Configuration.mongoDatabase.getCollection("AggregationEvent").drop();
+			}
+
+			if (Configuration.mongoDatabase.getCollection("ObjectEvent") != null) {
+				Configuration.mongoDatabase.getCollection("ObjectEvent").drop();
+			}
+
+			if (Configuration.mongoDatabase.getCollection("TransactionEvent") != null) {
+				Configuration.mongoDatabase.getCollection("TransactionEvent").drop();
+			}
+
+			if (Configuration.mongoDatabase.getCollection("TransformationEvent") != null) {
+				Configuration.mongoDatabase.getCollection("TransformationEvent").drop();
+			}
+
+			if (Configuration.mongoDatabase.getCollection("QuantityEvent") != null) {
+				Configuration.mongoDatabase.getCollection("QuantityEvent").drop();
+			}
+			if (Configuration.mongoDatabase.getCollection("MasterData") != null) {
+				Configuration.mongoDatabase.getCollection("MasterData").drop();
+			}
+
 			Configuration.logger.log(Level.INFO, " Repository Initialized ");
-			
-			((AbstractApplicationContext) ctx).close();
-			
+
 			return "Repository Initialized";
 		} else if (Configuration.backend.equals("Cassandra")) {
 

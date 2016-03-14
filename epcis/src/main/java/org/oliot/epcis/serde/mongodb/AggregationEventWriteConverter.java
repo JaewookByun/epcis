@@ -1,11 +1,13 @@
 package org.oliot.epcis.serde.mongodb;
 
-import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.AggregationEventExtensionType;
@@ -20,13 +22,10 @@ import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
 import org.oliot.model.epcis.ReadPointType;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -43,64 +42,65 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-
 public class AggregationEventWriteConverter {
 
-	public DBObject convert(AggregationEventType aggregationEventType, Integer gcpLength) {
-		DBObject dbo = new BasicDBObject();
+	public BsonDocument convert(AggregationEventType aggregationEventType, Integer gcpLength) {
+		BsonDocument dbo = new BsonDocument();
 		// Base Extension
 		if (aggregationEventType.getBaseExtension() != null) {
 			EPCISEventExtensionType baseExtensionType = aggregationEventType.getBaseExtension();
-			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
+			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (aggregationEventType.getEventTime() != null)
-			dbo.put("eventTime", aggregationEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime",
+					new BsonInt64(aggregationEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time Zone
 		if (aggregationEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset", aggregationEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", new BsonString(aggregationEventType.getEventTimeZoneOffset()));
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", recordTimeMilis);
+		dbo.put("recordTime", new BsonInt64(recordTimeMilis));
 
 		// Parent ID
-		if (aggregationEventType.getParentID() != null) {			
-			dbo.put("parentID", MongoWriterUtil.getInstanceEPC(aggregationEventType.getParentID(),gcpLength));
+		if (aggregationEventType.getParentID() != null) {
+			dbo.put("parentID",
+					new BsonString(MongoWriterUtil.getInstanceEPC(aggregationEventType.getParentID(), gcpLength)));
 		}
 		// Child EPCs
 		if (aggregationEventType.getChildEPCs() != null) {
 			EPCListType epcs = aggregationEventType.getChildEPCs();
 			List<EPC> epcList = epcs.getEpc();
-			List<DBObject> epcDBList = new ArrayList<DBObject>();
+			BsonArray epcDBList = new BsonArray();
 
 			for (int i = 0; i < epcList.size(); i++) {
-				DBObject epcDB = new BasicDBObject();
-				epcDB.put("epc", MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(),gcpLength));
+				BsonDocument epcDB = new BsonDocument();
+				epcDB.put("epc", new BsonString(MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(), gcpLength)));
 				epcDBList.add(epcDB);
 			}
 			dbo.put("childEPCs", epcDBList);
 		}
 		// Action
 		if (aggregationEventType.getAction() != null)
-			dbo.put("action", aggregationEventType.getAction().name());
+			dbo.put("action", new BsonString(aggregationEventType.getAction().name()));
 		// Biz Step
 		if (aggregationEventType.getBizStep() != null)
-			dbo.put("bizStep", aggregationEventType.getBizStep());
+			dbo.put("bizStep", new BsonString(aggregationEventType.getBizStep()));
 		// Disposition
 		if (aggregationEventType.getDisposition() != null)
-			dbo.put("disposition", aggregationEventType.getDisposition());
+			dbo.put("disposition", new BsonString(aggregationEventType.getDisposition()));
 		// ReadPoint
 		if (aggregationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = aggregationEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
+			BsonDocument readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (aggregationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
+			BsonDocument bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 
@@ -108,14 +108,14 @@ public class AggregationEventWriteConverter {
 			BusinessTransactionListType bizListType = aggregationEventType.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
 
-			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
+			BsonArray bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
 
 		// Vendor Extension
 		if (aggregationEventType.getAny() != null) {
 			List<Object> objList = aggregationEventType.getAny();
-			Map<String, Object> map2Save = getAnyMap(objList);
+			BsonDocument map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
@@ -124,7 +124,7 @@ public class AggregationEventWriteConverter {
 		// Extension
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
-			DBObject extension = getAggregationEventExtensionObject(aee, gcpLength);
+			BsonDocument extension = getAggregationEventExtensionObject(aee, gcpLength);
 			dbo.put("extension", extension);
 
 		}
@@ -133,8 +133,7 @@ public class AggregationEventWriteConverter {
 			HashSet<String> candidateSet = getCandidateEPCSet(aggregationEventType);
 			DiscoveryServiceAgent dsa = new DiscoveryServiceAgent();
 			int updatedEPCCount = dsa.registerEPC(candidateSet);
-			Configuration.logger
-			.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
+			Configuration.logger.info(updatedEPCCount + " EPC(s) are registered to Discovery Service");
 		}
 		return dbo;
 	}

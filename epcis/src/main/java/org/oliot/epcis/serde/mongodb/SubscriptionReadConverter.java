@@ -4,13 +4,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.bson.BsonDocument;
 import org.oliot.model.epcis.SubscriptionType;
-
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.stereotype.Component;
-
-import com.mongodb.DBObject;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -30,57 +25,55 @@ import com.mongodb.DBObject;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@ReadingConverter
-public class SubscriptionReadConverter implements Converter<DBObject, SubscriptionType> {
+public class SubscriptionReadConverter {
 
-	public SubscriptionType convert(DBObject dbObject) {
+	public SubscriptionType convert(BsonDocument dbObject) {
 
-		String queryName = (String) dbObject.get("queryName");
-		String subscriptionID = (String) dbObject.get("subscriptionID");
-		String dest = (String) dbObject.get("dest");
-		String cronExpression = (String) dbObject.get("cronExpression");
-		boolean ignoreReceivedEvent = (boolean) dbObject.get("ignoreReceivedEvent");
-		boolean reportIfEmpty = (boolean) dbObject.get("reportIfEmpty");
-		String initialRecordTime = (String) dbObject.get("initialRecordTime");
-		String eventType = (String) dbObject.get("eventType");
-		String GE_eventTime = (String) dbObject.get("GE_eventTime");
-		String LT_eventTime = (String) dbObject.get("LT_eventTime");
-		String GE_recordTime = (String) dbObject.get("GE_recordTime");
-		String LT_recordTime = (String) dbObject.get("LT_recordTime");
-		String EQ_action = (String) dbObject.get("EQ_action");
-		String EQ_bizStep = (String) dbObject.get("EQ_bizStep");
-		String EQ_disposition = (String) dbObject.get("EQ_disposition");
-		String EQ_readPoint = (String) dbObject.get("EQ_readPoint");
-		String WD_readPoint = (String) dbObject.get("WD_readPoint");
-		String EQ_bizLocation = (String) dbObject.get("EQ_bizLocation");
-		String WD_bizLocation = (String) dbObject.get("WD_bizLocation");
-		String EQ_transformationID = (String) dbObject.get("EQ_transformationID");
-		String MATCH_epc = (String) dbObject.get("MATCH_epc");
-		String MATCH_parentID = (String) dbObject.get("MATCH_parentID");
-		String MATCH_inputEPC = (String) dbObject.get("MATCH_inputEPC");
-		String MATCH_outputEPC = (String) dbObject.get("MATCH_outputEPC");
-		String MATCH_anyEPC = (String) dbObject.get("MATCH_anyEPC");
-		String MATCH_epcClass = (String) dbObject.get("MATCH_epcClass");
-		String MATCH_inputEPCClass = (String) dbObject.get("MATCH_inputEPCClass");
-		String MATCH_outputEPCClass = (String) dbObject.get("MATCH_outputEPCClass");
-		String MATCH_anyEPCClass = (String) dbObject.get("MATCH_anyEPCClass");
-		String EQ_quantity = (String) dbObject.get("EQ_quantity");
-		String GT_quantity = (String) dbObject.get("GT_quantity");
-		String GE_quantity = (String) dbObject.get("GE_quantity");
-		String LT_quantity = (String) dbObject.get("LT_quantity");
-		String LE_quantity = (String) dbObject.get("LE_quantity");
-		String orderBy = (String) dbObject.get("orderBy");
-		String orderDirection = (String) dbObject.get("orderDirection");
-		String eventCountLimit = (String) dbObject.get(" eventCountLimit");
-		String maxEventCount = (String) dbObject.get("maxEventCount");
-		String format = (String) dbObject.get("format");
-		DBObject paramMapObject = (DBObject) dbObject.get("paramMap");
+		String queryName = dbObject.getString("queryName").getValue();
+		String subscriptionID = dbObject.getString("subscriptionID").getValue();
+		String dest = dbObject.getString("dest").getValue();
+		String cronExpression = dbObject.getString("cronExpression").getValue();
+		boolean ignoreReceivedEvent = dbObject.getBoolean("ignoreReceivedEvent").getValue();
+		boolean reportIfEmpty = dbObject.getBoolean("reportIfEmpty").getValue();
+		String initialRecordTime = dbObject.getString("initialRecordTime").getValue();
+		String eventType = dbObject.getString("eventType").getValue();
+		String GE_eventTime = dbObject.getString("GE_eventTime").getValue();
+		String LT_eventTime = dbObject.getString("LT_eventTime").getValue();
+		String GE_recordTime = dbObject.getString("GE_recordTime").getValue();
+		String LT_recordTime = dbObject.getString("LT_recordTime").getValue();
+		String EQ_action = dbObject.getString("EQ_action").getValue();
+		String EQ_bizStep = dbObject.getString("EQ_bizStep").getValue();
+		String EQ_disposition = dbObject.getString("EQ_disposition").getValue();
+		String EQ_readPoint = dbObject.getString("EQ_readPoint").getValue();
+		String WD_readPoint = dbObject.getString("WD_readPoint").getValue();
+		String EQ_bizLocation = dbObject.getString("EQ_bizLocation").getValue();
+		String WD_bizLocation = dbObject.getString("WD_bizLocation").getValue();
+		String EQ_transformationID = dbObject.getString("EQ_transformationID").getValue();
+		String MATCH_epc = dbObject.getString("MATCH_epc").getValue();
+		String MATCH_parentID = dbObject.getString("MATCH_parentID").getValue();
+		String MATCH_inputEPC = dbObject.getString("MATCH_inputEPC").getValue();
+		String MATCH_outputEPC = dbObject.getString("MATCH_outputEPC").getValue();
+		String MATCH_anyEPC = dbObject.getString("MATCH_anyEPC").getValue();
+		String MATCH_epcClass = dbObject.getString("MATCH_epcClass").getValue();
+		String MATCH_inputEPCClass = dbObject.getString("MATCH_inputEPCClass").getValue();
+		String MATCH_outputEPCClass = dbObject.getString("MATCH_outputEPCClass").getValue();
+		String MATCH_anyEPCClass = dbObject.getString("MATCH_anyEPCClass").getValue();
+		String EQ_quantity = dbObject.getString("EQ_quantity").getValue();
+		String GT_quantity = dbObject.getString("GT_quantity").getValue();
+		String GE_quantity = dbObject.getString("GE_quantity").getValue();
+		String LT_quantity = dbObject.getString("LT_quantity").getValue();
+		String LE_quantity = dbObject.getString("LE_quantity").getValue();
+		String orderBy = dbObject.getString("orderBy").getValue();
+		String orderDirection = dbObject.getString("orderDirection").getValue();
+		String eventCountLimit = dbObject.getString(" eventCountLimit").getValue();
+		String maxEventCount = dbObject.getString("maxEventCount").getValue();
+		String format = dbObject.getString("format").getValue();
+		BsonDocument paramMapObject = dbObject.getDocument("paramMap");
 		Map<String, String> paramMap = new HashMap<String, String>();
 		Iterator<String> paramIter = paramMapObject.keySet().iterator();
 		while (paramIter.hasNext()) {
 			String key = paramIter.next();
-			String value = (String) paramMapObject.get(key);
+			String value = (String) paramMapObject.getString(key).getValue();
 			paramMap.put(key, value);
 		}
 

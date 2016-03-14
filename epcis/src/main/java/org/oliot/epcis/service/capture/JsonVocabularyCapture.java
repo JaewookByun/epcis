@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -57,12 +56,10 @@ public class JsonVocabularyCapture implements ServletContextAware {
 		return result;
 	}
 
-	@SuppressWarnings({ "unused", "resource" })
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString) {
-		
-		
+
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
 
 		if (Configuration.isCaptureVerfificationOn == true) {
@@ -93,15 +90,15 @@ public class JsonVocabularyCapture implements ServletContextAware {
 					if (json4.getJSONObject(i).has("Vocabulary") == true) {
 
 						JSONArray json5 = json4.getJSONObject(i).getJSONArray("Vocabulary");
-						
-						for(int j = 0; j < json5.length(); j++){
-							
+
+						for (int j = 0; j < json5.length(); j++) {
+
 							if (Configuration.backend.equals("MongoDB")) {
 								MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
 								mdConverter.json_capture(json5.getJSONObject(j));
 								Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 							}
-							
+
 						}
 						/* startpoint of validation logic for Vocabulary */
 					}
@@ -112,37 +109,32 @@ public class JsonVocabularyCapture implements ServletContextAware {
 				Configuration.logger.log(Level.ERROR, e.toString());
 			}
 
-
 		} else {
 			JSONObject json = new JSONObject(inputString);
 			JSONObject json2 = json.getJSONObject("epcismd");
 			JSONObject json3 = json2.getJSONObject("EPCISBody");
 			JSONArray json4 = json3.getJSONArray("VocabularyList");
-			
-			ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-			
+
 			for (int i = 0; i < json4.length(); i++) {
 
 				if (json4.getJSONObject(i).has("Vocabulary") == true) {
 
 					JSONArray json5 = json4.getJSONObject(i).getJSONArray("Vocabulary");
-					
-					for(int j = 0; j < json5.length(); j++){
-						
+
+					for (int j = 0; j < json5.length(); j++) {
+
 						if (Configuration.backend.equals("MongoDB")) {
 							MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
 							mdConverter.json_capture(json5.getJSONObject(i));
 							Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 						}
-						
+
 					}
 					/* startpoint of validation logic for Vocabulary */
 				}
 			}
-			
+
 		}
 		return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);
 	}
 }
-

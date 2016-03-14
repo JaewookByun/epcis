@@ -3,8 +3,11 @@ package org.oliot.epcis.serde.mongodb;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.registry.DiscoveryServiceAgent;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -14,9 +17,6 @@ import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.QuantityEventExtensionType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.ReadPointType;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
@@ -40,52 +40,54 @@ import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 public class QuantityEventWriteConverter {
 
-	public DBObject convert(QuantityEventType quantityEventType, Integer gcpLength) {
+	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength) {
 
-		DBObject dbo = new BasicDBObject();
+		BsonDocument dbo = new BsonDocument();
 		// Base Extension
 		if (quantityEventType.getBaseExtension() != null) {
 			EPCISEventExtensionType baseExtensionType = quantityEventType.getBaseExtension();
-			DBObject baseExtension = getBaseExtensionObject(baseExtensionType);
+			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
 			dbo.put("baseExtension", baseExtension);
 		}
 		// Event Time
 		if (quantityEventType.getEventTime() != null)
-			dbo.put("eventTime", quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
+			dbo.put("eventTime",
+					new BsonInt64(quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time zone
 		if (quantityEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset", quantityEventType.getEventTimeZoneOffset());
+			dbo.put("eventTimeZoneOffset", new BsonString(quantityEventType.getEventTimeZoneOffset()));
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", recordTimeMilis);
+		dbo.put("recordTime", new BsonInt64(recordTimeMilis));
 		// EPC Class
 		if (quantityEventType.getEpcClass() != null)
-			dbo.put("epcClass", MongoWriterUtil.getClassEPC(quantityEventType.getEpcClass(),gcpLength));
-		dbo.put("quantity", quantityEventType.getQuantity());
+			dbo.put("epcClass",
+					new BsonString(MongoWriterUtil.getClassEPC(quantityEventType.getEpcClass(), gcpLength)));
+		dbo.put("quantity", new BsonInt64(quantityEventType.getQuantity()));
 		// Business Step
 		if (quantityEventType.getBizStep() != null)
-			dbo.put("bizStep", quantityEventType.getBizStep());
+			dbo.put("bizStep", new BsonString(quantityEventType.getBizStep()));
 		// Disposition
 		if (quantityEventType.getDisposition() != null)
-			dbo.put("disposition", quantityEventType.getDisposition());
+			dbo.put("disposition", new BsonString(quantityEventType.getDisposition()));
 		// Read Point
 		if (quantityEventType.getReadPoint() != null) {
 			ReadPointType readPointType = quantityEventType.getReadPoint();
-			DBObject readPoint = getReadPointObject(readPointType, gcpLength);
+			BsonDocument readPoint = getReadPointObject(readPointType, gcpLength);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (quantityEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
-			DBObject bizLocation = getBizLocationObject(bizLocationType, gcpLength);
+			BsonDocument bizLocation = getBizLocationObject(bizLocationType, gcpLength);
 			dbo.put("bizLocation", bizLocation);
 		}
 
 		// Vendor Extension
 		if (quantityEventType.getAny() != null) {
 			List<Object> objList = quantityEventType.getAny();
-			Map<String, Object> map2Save = getAnyMap(objList);
+			BsonDocument map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
@@ -95,13 +97,13 @@ public class QuantityEventWriteConverter {
 		if (quantityEventType.getBizTransactionList() != null) {
 			BusinessTransactionListType bizListType = quantityEventType.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
-			List<DBObject> bizTranList = getBizTransactionObjectList(bizList);
+			BsonArray bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
 		// Extension
 		if (quantityEventType.getExtension() != null) {
 			QuantityEventExtensionType oee = quantityEventType.getExtension();
-			DBObject extension = getQuantityEventExtensionObject(oee);
+			BsonDocument extension = getQuantityEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
 

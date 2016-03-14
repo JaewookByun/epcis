@@ -2,17 +2,19 @@ package org.oliot.epcis.service.query.mongodb;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.regex.Pattern;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
+import org.bson.BsonArray;
+import org.bson.BsonBoolean;
+import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
+import org.bson.BsonRegularExpression;
+import org.bson.BsonString;
+import org.bson.BsonValue;
+import org.oliot.epcis.configuration.Configuration;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -34,217 +36,212 @@ import com.mongodb.DBObject;
 
 public class MongoQueryUtil {
 
-	static DBObject getINQueryObject(String field, Set<String> set) {
+	static BsonDocument getINQueryObject(String field, Set<String> set) {
 
-		BasicDBList subStringList = new BasicDBList();
+		BsonArray subStringList = new BsonArray();
 		Iterator<String> setIter = set.iterator();
 		while (setIter.hasNext()) {
 			String str = setIter.next();
-			subStringList.add(str);
+			subStringList.add(new BsonString(str));
 		}
 		if (subStringList.isEmpty() == false) {
-			DBObject query = new BasicDBObject();
-			query.put(field, new BasicDBObject("$in", subStringList));
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subStringList));
 			return query;
 		}
 		return null;
 	}
 
-	static DBObject getExistsQueryObject(String field, String str) {
-		DBObject query = new BasicDBObject();
+	static BsonDocument getExistsQueryObject(String field, String str) {
+		BsonDocument query = new BsonDocument();
 		str = encodeMongoObjectKey(str);
-		query.put(field + "." + str, new BasicDBObject("$exists", true));
+		query.put(field + "." + str, new BsonDocument("$exists", new BsonBoolean(true)));
 		return query;
 	}
 
-	static DBObject getINQueryObject(String field, String csv) {
+	static BsonDocument getINQueryObject(String field, String csv) {
 		String[] eqArr = csv.split(",");
-		BasicDBList subStringList = new BasicDBList();
+		BsonArray subStringList = new BsonArray();
 		for (int i = 0; i < eqArr.length; i++) {
 			String eqString = eqArr[i].trim();
-			subStringList.add(eqString);
+			subStringList.add(new BsonString(eqString));
 		}
 		if (subStringList.isEmpty() == false) {
-			DBObject query = new BasicDBObject();
-			query.put(field, new BasicDBObject("$in", subStringList));
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subStringList));
 			return query;
 		}
 		return null;
 	}
 
-	static DBObject getVocFamilyQueryObject(String type, String field, String csv) {
+	static BsonDocument getVocFamilyQueryObject(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
-		BasicDBList subObjectList = new BasicDBList();
+		BsonArray subObjectList = new BsonArray();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
-			DBObject dbo = new BasicDBObject();
+			BsonDocument dbo = new BsonDocument();
 			type = encodeMongoObjectKey(type);
-			dbo.put(type, val);
+			dbo.put(type, new BsonString(val));
 			subObjectList.add(dbo);
 		}
 		if (subObjectList.isEmpty() == false) {
-			DBObject query = new BasicDBObject();
-			query.put(field, new BasicDBObject("$in", subObjectList));
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subObjectList));
 			return query;
 		}
 		return null;
 	}
 
 	@Deprecated
-	static DBObject getVocFamilyQueryObjectLegacy(String type, String field, String csv) {
+	static BsonDocument getVocFamilyQueryObjectLegacy(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
-		BasicDBList subObjectList = new BasicDBList();
+		BsonArray subObjectList = new BsonArray();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
-			DBObject dbo = new BasicDBObject();
-			dbo.put("id", type);
-			dbo.put("value", val);
+			BsonDocument dbo = new BsonDocument();
+			dbo.put("id", new BsonString(type));
+			dbo.put("value", new BsonString(val));
 			subObjectList.add(dbo);
 		}
 		if (subObjectList.isEmpty() == false) {
-			DBObject query = new BasicDBObject();
-			query.put(field, new BasicDBObject("$in", subObjectList));
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subObjectList));
 			return query;
 		}
 		return null;
 	}
 
-	static DBObject getINFamilyQueryObject(String type, String field, String csv) {
+	static BsonDocument getINFamilyQueryObject(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
-		BasicDBList subObjectList = new BasicDBList();
+		BsonArray subObjectList = new BsonArray();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
-			DBObject dbo = new BasicDBObject();
-			dbo.put(type, val);
+			BsonDocument dbo = new BsonDocument();
+			dbo.put(type, new BsonString(val));
 			subObjectList.add(dbo);
 		}
 		if (subObjectList.isEmpty() == false) {
-			DBObject query = new BasicDBObject();
-			query.put(field, new BasicDBObject("$in", subObjectList));
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subObjectList));
 			return query;
 		}
 		return null;
 	}
 
-	static DBObject getINExtensionQueryObject(String type, String[] fields, String csv) {
+	static BsonDocument getINExtensionQueryObject(String type, String[] fields, String csv) {
 		String[] paramValueArr = csv.split(",");
-		BasicDBList subStringList = new BasicDBList();
+		BsonArray subStringList = new BsonArray();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
 			subStringList.add(converseType(val));
 		}
 		if (subStringList.isEmpty() == false) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$in", subStringList));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$in", subStringList));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		}
 		return null;
 	}
 
-	static DBObject getCompExtensionQueryObject(String type, String[] fields, String value, String comp) {
+	static BsonDocument getCompExtensionQueryObject(String type, String[] fields, String value, String comp) {
 		if (comp.equals("GT")) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$gt", converseType(value)));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$gt", converseType(value)));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		} else if (comp.equals("GE")) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$gte", converseType(value)));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$gte", converseType(value)));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		} else if (comp.equals("LT")) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$lt", converseType(value)));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$lt", converseType(value)));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		} else if (comp.equals("LE")) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$lte", converseType(value)));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$lte", converseType(value)));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		}
 		return null;
 	}
 
-	static DBObject getINQueryObject(String[] fields, String csv) {
+	static BsonDocument getINQueryObject(String[] fields, String csv) {
 		String[] eqArr = csv.split(",");
-		BasicDBList subStringList = new BasicDBList();
+		BsonArray subStringList = new BsonArray();
 		for (int i = 0; i < eqArr.length; i++) {
 			String eqString = eqArr[i].trim();
-			subStringList.add(eqString);
+			subStringList.add(new BsonString(eqString));
 		}
 		if (subStringList.isEmpty() == false) {
-			BasicDBList subList = new BasicDBList();
+			BsonArray subList = new BsonArray();
 			for (int i = 0; i < fields.length; i++) {
-				DBObject sub = new BasicDBObject();
-				sub.put(fields[i], new BasicDBObject("$in", subStringList));
+				BsonDocument sub = new BsonDocument();
+				sub.put(fields[i], new BsonDocument("$in", subStringList));
 				subList.add(sub);
 			}
-			DBObject subBase = new BasicDBObject();
+			BsonDocument subBase = new BsonDocument();
 			subBase.put("$or", subList);
 			return subBase;
 		}
 		return null;
 	}
 
-	static DBObject getRegexQueryObject(String field, String csv) {
+	static BsonDocument getRegexQueryObject(String field, String csv) {
 		String[] wdArr = csv.split(",");
-		BasicDBList subPatternList = new BasicDBList();
+		BsonArray subPatternList = new BsonArray();
 		for (int i = 0; i < wdArr.length; i++) {
 			String wdString = wdArr[i].trim();
-			DBObject subRegex = new BasicDBObject();
-			subRegex.put("$regex", Pattern.compile("^" + wdString + ".*"));
-			subPatternList.add(new BasicDBObject(field, subRegex));
+			BsonDocument subRegex = new BsonDocument();
+			subRegex.put("$regex", new BsonRegularExpression("^" + wdString + ".*"));
+			subPatternList.add(new BsonDocument(field, subRegex));
 		}
-		DBObject subBase = new BasicDBObject();
+		BsonDocument subBase = new BsonDocument();
 		subBase.put("$or", subPatternList);
 		return subBase;
 	}
 
 	static Set<String> getWDList(Set<String> idSet, String id) {
 
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-
-		DBCollection collection = mongoOperation.getCollection("MasterData");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData", BsonDocument.class);
 		// Invoke vocabulary query with EQ_name and includeChildren
-		DBObject vocObject = collection.findOne(new BasicDBObject("id", id));
-		if (vocObject == null){
-			((AbstractApplicationContext) ctx).close();
+		BsonDocument vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
+		if (vocObject == null) {
 			return null;
-		}			
+		}
 		idSet.add(id);
-		Object childObject = vocObject.get("children");
+		BsonArray childObject = vocObject.get("children").asArray();
 		if (childObject != null) {
-			BasicDBList childList = (BasicDBList) childObject;
 			@SuppressWarnings("rawtypes")
-			Iterator childIter = childList.iterator();
+			Iterator childIter = childObject.iterator();
 			while (childIter.hasNext()) {
 				Object childObj = childIter.next();
 				if (childObj != null) {
@@ -252,7 +249,6 @@ public class MongoQueryUtil {
 				}
 			}
 		}
-		((AbstractApplicationContext) ctx).close();
 		return idSet;
 	}
 
@@ -265,29 +261,27 @@ public class MongoQueryUtil {
 		key = key.replace("\uff0e", ".");
 		return key;
 	}
-	
-	static Object converseType(String value){
+
+	static BsonValue converseType(String value) {
 		String[] valArr = value.split("\\^");
 		if (valArr.length != 2) {
-			return value;
+			return new BsonString(value);
 		}
 		try {
 			String type = valArr[1];
 			if (type.equals("int")) {
-				return Integer.parseInt(valArr[0]);
+				return new BsonInt32(Integer.parseInt(valArr[0]));
 			} else if (type.equals("long")) {
-				return Long.parseLong(valArr[0]);
-			} else if (type.equals("float")) {
-				return Float.parseFloat(valArr[0]);
+				return new BsonInt64(Long.parseLong(valArr[0]));
 			} else if (type.equals("double")) {
-				return Double.parseDouble(valArr[0]);
+				return new BsonDouble(Double.parseDouble(valArr[0]));
 			} else if (type.equals("boolean")) {
-				return Boolean.parseBoolean(valArr[0]);
+				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
 			} else {
-				return value;
+				return new BsonString(value);
 			}
 		} catch (NumberFormatException e) {
-			return value;
+			return new BsonString(value);
 		}
 	}
 }

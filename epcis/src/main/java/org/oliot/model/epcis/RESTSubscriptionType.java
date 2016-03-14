@@ -1,8 +1,5 @@
 package org.oliot.model.epcis;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "RESTSubscription")
 public class RESTSubscriptionType {
 	private String subscriptionID;
 	private String destURL;
@@ -10,8 +7,8 @@ public class RESTSubscriptionType {
 	private String target;
 	private String targetType;
 
-	public RESTSubscriptionType(String subscriptionID, String destURL,
-			String cronExpression, String target, String targetType) {
+	public RESTSubscriptionType(String subscriptionID, String destURL, String cronExpression, String target,
+			String targetType) {
 		this.subscriptionID = subscriptionID;
 		this.destURL = destURL;
 		this.cronExpression = cronExpression;

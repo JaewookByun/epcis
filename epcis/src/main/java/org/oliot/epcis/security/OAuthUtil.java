@@ -2,7 +2,8 @@ package org.oliot.epcis.security;
 
 import java.util.List;
 
-import com.mongodb.DBObject;
+import org.bson.BsonDocument;
+
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
 import com.restfb.Version;
@@ -39,10 +40,10 @@ public class OAuthUtil {
 	}
 
 	// For MongoDB Document
-	public static boolean isAccessible(String userID, List<String> friendList, DBObject doc) {
+	public static boolean isAccessible(String userID, List<String> friendList, BsonDocument doc) {
 
-		String am = (String) doc.get("accessModifier");
-		String providerID = (String) doc.get("userID");
+		String am = doc.get("accessModifier").asString().getValue();
+		String providerID = doc.get("userID").asString().getValue();
 
 		// Public Document
 		if (providerID == null || am == null) {

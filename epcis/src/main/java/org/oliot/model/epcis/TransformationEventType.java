@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -61,12 +60,9 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "TransformationEventType", propOrder = { "inputEPCList",
-		"inputQuantityList", "outputEPCList", "outputQuantityList",
-		"transformationID", "bizStep", "disposition", "readPoint",
-		"bizLocation", "bizTransactionList", "sourceList", "destinationList",
-		"ilmd", "extension", "any" })
-@Document(collection = "TransformationEvent")
+@XmlType(name = "TransformationEventType", propOrder = { "inputEPCList", "inputQuantityList", "outputEPCList",
+		"outputQuantityList", "transformationID", "bizStep", "disposition", "readPoint", "bizLocation",
+		"bizTransactionList", "sourceList", "destinationList", "ilmd", "extension", "any" })
 public class TransformationEventType extends EPCISEventType {
 
 	protected EPCListType inputEPCList;

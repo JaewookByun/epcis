@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -57,10 +56,8 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ObjectEventType", propOrder = { "epcList", "action",
-		"bizStep", "disposition", "readPoint", "bizLocation",
-		"bizTransactionList", "ilmd", "extension", "any" })
-@Document(collection = "ObjectEvent")
+@XmlType(name = "ObjectEventType", propOrder = { "epcList", "action", "bizStep", "disposition", "readPoint",
+		"bizLocation", "bizTransactionList", "ilmd", "extension", "any" })
 public class ObjectEventType extends EPCISEventType {
 
 	@XmlElement(required = true)
