@@ -2,13 +2,11 @@ package org.oliot.epcis.serde.mongodb;
 
 import java.util.Iterator;
 import java.util.Map;
-import org.oliot.model.epcis.SubscriptionType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.stereotype.Component;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+import org.bson.BsonBoolean;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.oliot.model.epcis.SubscriptionType;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -28,14 +26,11 @@ import com.mongodb.DBObject;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class SubscriptionWriteConverter implements
-		Converter<SubscriptionType, DBObject> {
+public class SubscriptionWriteConverter {
 
-	public DBObject convert(SubscriptionType subscription) {
+	public BsonDocument convert(SubscriptionType subscription) {
 		// Example Code , Not used
-		DBObject dbObject = new BasicDBObject();
+		BsonDocument dbObject = new BsonDocument();
 		String queryName = subscription.getQueryName();
 		String subscriptionID = subscription.getSubscriptionID();
 		String dest = subscription.getDest();
@@ -77,52 +72,52 @@ public class SubscriptionWriteConverter implements
 		String format = subscription.getFormat();
 		Map<String, String> paramMap = subscription.getParamMap();
 
-		dbObject.put("queryName", queryName);
-		dbObject.put("subscriptionID", subscriptionID);
-		dbObject.put("dest", dest);
-		dbObject.put("cronExpression", cronExpression);
-		dbObject.put("ignoreReceivedEvent", ignoreReceivedEvent);
-		dbObject.put("reportIfEmpty", reportIfEmpty);
-		dbObject.put("initialRecordTime", initialRecordTime);
-		dbObject.put("eventType", eventType);
-		dbObject.put("GE_eventTime", GE_eventTime);
-		dbObject.put("LT_eventTime", LT_eventTime);
-		dbObject.put("GE_recordTime", GE_recordTime);
-		dbObject.put("LT_recordTime", LT_recordTime);
-		dbObject.put("EQ_action", EQ_action);
-		dbObject.put("EQ_bizStep", EQ_bizStep);
-		dbObject.put("EQ_disposition", EQ_disposition);
-		dbObject.put("EQ_readPoint", EQ_readPoint);
-		dbObject.put("WD_readPoint", WD_readPoint);
-		dbObject.put("EQ_bizLocation", EQ_bizLocation);
-		dbObject.put("WD_bizLocation", WD_bizLocation);
-		dbObject.put("EQ_transformationID", EQ_transformationID);
-		dbObject.put("MATCH_epc", MATCH_epc);
-		dbObject.put("MATCH_parentID", MATCH_parentID);
-		dbObject.put("MATCH_inputEPC", MATCH_inputEPC);
-		dbObject.put("MATCH_outputEPC", MATCH_outputEPC);
-		dbObject.put("MATCH_anyEPC", MATCH_anyEPC);
-		dbObject.put("MATCH_epcClass", MATCH_epcClass);
-		dbObject.put("MATCH_inputEPCClass", MATCH_inputEPCClass);
-		dbObject.put("MATCH_outputEPCClass", MATCH_outputEPCClass);
-		dbObject.put("MATCH_anyEPCClass", MATCH_anyEPCClass);
-		dbObject.put("EQ_quantity", EQ_quantity);
-		dbObject.put("GT_quantity", GT_quantity);
-		dbObject.put("GE_quantity", GE_quantity);
-		dbObject.put("LT_quantity", LT_quantity);
-		dbObject.put("LE_quantity", LE_quantity);
-		dbObject.put("orderBy", orderBy);
-		dbObject.put("orderDirection", orderDirection);
-		dbObject.put("eventCountLimit", eventCountLimit);
-		dbObject.put("maxEventCount", maxEventCount);
-		dbObject.put("format", format );
-		
-		DBObject paramMapObject = new BasicDBObject();
+		dbObject.put("queryName", new BsonString(queryName));
+		dbObject.put("subscriptionID", new BsonString(subscriptionID));
+		dbObject.put("dest", new BsonString(dest));
+		dbObject.put("cronExpression", new BsonString(cronExpression));
+		dbObject.put("ignoreReceivedEvent", new BsonBoolean(ignoreReceivedEvent));
+		dbObject.put("reportIfEmpty", new BsonBoolean(reportIfEmpty));
+		dbObject.put("initialRecordTime", new BsonString(initialRecordTime));
+		dbObject.put("eventType", new BsonString(eventType));
+		dbObject.put("GE_eventTime", new BsonString(GE_eventTime));
+		dbObject.put("LT_eventTime", new BsonString(LT_eventTime));
+		dbObject.put("GE_recordTime", new BsonString(GE_recordTime));
+		dbObject.put("LT_recordTime", new BsonString(LT_recordTime));
+		dbObject.put("EQ_action", new BsonString(EQ_action));
+		dbObject.put("EQ_bizStep", new BsonString(EQ_bizStep));
+		dbObject.put("EQ_disposition", new BsonString(EQ_disposition));
+		dbObject.put("EQ_readPoint", new BsonString(EQ_readPoint));
+		dbObject.put("WD_readPoint", new BsonString(WD_readPoint));
+		dbObject.put("EQ_bizLocation", new BsonString(EQ_bizLocation));
+		dbObject.put("WD_bizLocation", new BsonString(WD_bizLocation));
+		dbObject.put("EQ_transformationID", new BsonString(EQ_transformationID));
+		dbObject.put("MATCH_epc", new BsonString(MATCH_epc));
+		dbObject.put("MATCH_parentID", new BsonString(MATCH_parentID));
+		dbObject.put("MATCH_inputEPC", new BsonString(MATCH_inputEPC));
+		dbObject.put("MATCH_outputEPC", new BsonString(MATCH_outputEPC));
+		dbObject.put("MATCH_anyEPC", new BsonString(MATCH_anyEPC));
+		dbObject.put("MATCH_epcClass", new BsonString(MATCH_epcClass));
+		dbObject.put("MATCH_inputEPCClass", new BsonString(MATCH_inputEPCClass));
+		dbObject.put("MATCH_outputEPCClass", new BsonString(MATCH_outputEPCClass));
+		dbObject.put("MATCH_anyEPCClass", new BsonString(MATCH_anyEPCClass));
+		dbObject.put("EQ_quantity", new BsonString(EQ_quantity));
+		dbObject.put("GT_quantity", new BsonString(GT_quantity));
+		dbObject.put("GE_quantity", new BsonString(GE_quantity));
+		dbObject.put("LT_quantity", new BsonString(LT_quantity));
+		dbObject.put("LE_quantity", new BsonString(LE_quantity));
+		dbObject.put("orderBy", new BsonString(orderBy));
+		dbObject.put("orderDirection", new BsonString(orderDirection));
+		dbObject.put("eventCountLimit", new BsonString(eventCountLimit));
+		dbObject.put("maxEventCount", new BsonString(maxEventCount));
+		dbObject.put("format", new BsonString(format));
+
+		BsonDocument paramMapObject = new BsonDocument();
 		Iterator<String> paramMapIter = paramMap.keySet().iterator();
-		while(paramMapIter.hasNext()){
+		while (paramMapIter.hasNext()) {
 			String paramKey = paramMapIter.next();
 			String value = paramMap.get(paramKey);
-			paramMapObject.put(paramKey, value);
+			paramMapObject.put(paramKey, new BsonString(value));
 		}
 		dbObject.put("paramMap", paramMapObject);
 		return dbObject;

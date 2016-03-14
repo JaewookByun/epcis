@@ -14,6 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXB;
 
 import org.apache.log4j.Level;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.ale.ECReport;
 import org.oliot.model.ale.ECReportGroup;
@@ -23,18 +27,12 @@ import org.oliot.model.ale.ECReportMemberField;
 import org.oliot.model.ale.ECReports;
 import org.oliot.model.ale.ECReportGroupListMemberExtension.FieldList;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.ServletContextAware;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -94,7 +92,7 @@ public class ALECapture implements ServletContextAware {
 			}
 
 			capture(ecReports, request);
-			
+
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
@@ -174,56 +172,56 @@ public class ALECapture implements ServletContextAware {
 						} catch (NumberFormatException e) {
 							extMap.put(key, valArr[0]);
 						}
-					}				
-					DBObject dbo = new BasicDBObject();
+					}
+					BsonDocument dbo = new BsonDocument();
 					// EPC
-					BasicDBList epcList = new BasicDBList();
-					DBObject epc = new BasicDBObject();
-					epc.put("epc", epcString);
+					BsonArray epcList = new BsonArray();
+					BsonDocument epc = new BsonDocument();
+					epc.put("epc", new BsonString(epcString));
 					epcList.add(epc);
 					dbo.put("epcList", epcList);
-					dbo.put("eventTime", eventTime);
-					if(eventTimeZoneOffset == null ){
-						dbo.put("eventTimeZoneOffset", "+09:00");
-					}else{
-						dbo.put("eventTimeZoneOffset", eventTimeZoneOffset);						
+					dbo.put("eventTime", new BsonInt64(eventTime));
+					if (eventTimeZoneOffset == null) {
+						dbo.put("eventTimeZoneOffset", new BsonString("+09:00"));
+					} else {
+						dbo.put("eventTimeZoneOffset", new BsonString(eventTimeZoneOffset));
 					}
-					dbo.put("recordTime", recordTimeMillis);
-					if(action == null){
-						dbo.put("action", "OBSERVE");
-					}else{
-						dbo.put("action", action);
+					dbo.put("recordTime", new BsonInt64(recordTimeMillis));
+					if (action == null) {
+						dbo.put("action", new BsonString("OBSERVE"));
+					} else {
+						dbo.put("action", new BsonString(action));
 					}
-					if(bizStep != null){
-						dbo.put("bizStep", bizStep);
+					if (bizStep != null) {
+						dbo.put("bizStep", new BsonString(bizStep));
 					}
-					if(disposition != null){
-						dbo.put("dispsition", disposition);
+					if (disposition != null) {
+						dbo.put("dispsition", new BsonString(disposition));
 					}
-					if(readPoint != null){
-						dbo.put("readPoint", new BasicDBObject("id", readPoint));
+					if (readPoint != null) {
+						dbo.put("readPoint", new BsonDocument("id", new BsonString(readPoint)));
 					}
-					if(bizLocation != null){
-						dbo.put("bizLocation", new BasicDBObject("id", bizLocation));
-					}					
+					if (bizLocation != null) {
+						dbo.put("bizLocation", new BsonDocument("id", new BsonString(bizLocation)));
+					}
 					// Extension Field
-					if( extMap.isEmpty() == false ){
+					if (extMap.isEmpty() == false) {
 						Iterator<String> keyIterator = extMap.keySet().iterator();
-						DBObject any = new BasicDBObject();
-						any.put("@ale", "http://"+request.getLocalAddr()+":"+request.getLocalPort()+request.getContextPath()+"/schema/aleCapture.xsd");
-						while(keyIterator.hasNext()){
+						BsonDocument any = new BsonDocument();
+						any.put("@ale", new BsonString("http://" + request.getLocalAddr() + ":" + request.getLocalPort()
+								+ request.getContextPath() + "/schema/aleCapture.xsd"));
+						while (keyIterator.hasNext()) {
 							String key = keyIterator.next();
 							Object value = extMap.get(key);
-							
-							any.put("ale:"+key, value);
+
+							any.put("ale:" + key, new BsonString(value.toString()));
 						}
 						dbo.put("any", any);
 					}
-					ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-					MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-					DBCollection collection = mongoOperation.getCollection("ObjectEvent");
-					collection.save(dbo);
-					((AbstractApplicationContext) ctx).close();
+
+					MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
+							BsonDocument.class);
+					collection.insertOne(dbo);
 				}
 			}
 		}

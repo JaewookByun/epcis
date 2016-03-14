@@ -4,20 +4,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.IDListType;
 import org.oliot.model.epcis.VocabularyElementListType;
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.stereotype.Component;
-
-import com.mongodb.BasicDBList;
-import com.mongodb.DBObject;
 
 /**
- * Copyright (C) 2014 Jaewook Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -34,33 +31,29 @@ import com.mongodb.DBObject;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@ReadingConverter
-public class MasterDataReadConverter implements Converter<DBObject, VocabularyType> {
+public class MasterDataReadConverter {
 
-	public VocabularyType convert(DBObject dbObject) {
+	public VocabularyType convert(BsonDocument dbObject) {
 		VocabularyType vt = new VocabularyType();
 
 		if (dbObject.get("type") != null)
-			vt.setType((String) dbObject.get("type"));
+			vt.setType((String) dbObject.getString("type").getValue());
 
 		VocabularyElementListType velt = new VocabularyElementListType();
 		List<VocabularyElementType> vetList = new ArrayList<VocabularyElementType>();
 
 		VocabularyElementType vet = new VocabularyElementType();
-		Object attrObj = dbObject.get("attributes");
+		BsonDocument attrObj = dbObject.getDocument("attributes");
 		List<AttributeType> attrListType = new ArrayList<AttributeType>();
 		if (attrObj != null) {
-			DBObject attrDBObject = (DBObject) attrObj;
+			Iterator<String> attrIter = attrObj.keySet().iterator();
 
-			Iterator<String> attrIter = attrDBObject.keySet().iterator();
-
-			if (dbObject.get("id") != null)
-				vet.setId(dbObject.get("id").toString());
+			if (dbObject.isNull("id") != true)
+				vet.setId(dbObject.getString("id").getValue());
 
 			while (attrIter.hasNext()) {
 				String key = attrIter.next();
-				String value = attrDBObject.get(key).toString();
+				String value = attrObj.getString(key).getValue();
 				key = decodeMongoObjectKey(key);
 
 				AttributeType attrType = new AttributeType();
@@ -73,14 +66,11 @@ public class MasterDataReadConverter implements Converter<DBObject, VocabularyTy
 
 		IDListType idListType = new IDListType();
 		List<String> idList = new ArrayList<String>();
-		Object childrenObj = dbObject.get("children");
-		if (childrenObj != null) {
-			BasicDBList childList = (BasicDBList) childrenObj;
-			Iterator<Object> childIter = childList.iterator();
+		BsonArray childList = dbObject.getArray("children");
+		if (childList != null && childList.isEmpty() == false) {
+			Iterator<BsonValue> childIter = childList.iterator();
 			while (childIter.hasNext()) {
-				Object childObj = childIter.next();
-				String childID = childObj.toString();
-				idList.add(childID);
+				idList.add(childIter.next().asString().getValue());
 			}
 			idListType.setId(idList);
 		}

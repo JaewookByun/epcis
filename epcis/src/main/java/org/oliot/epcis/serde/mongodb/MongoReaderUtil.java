@@ -12,6 +12,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
+import org.bson.BsonDocument;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -27,8 +28,6 @@ import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import com.mongodb.BasicDBObject;
 
 /**
  * Copyright (C) 2015 Jaewook Byun
@@ -50,14 +49,14 @@ import com.mongodb.BasicDBObject;
 
 public class MongoReaderUtil {
 
-	static List<Object> putAny(BasicDBObject anyObject) {
+	static List<Object> putAny(BsonDocument anyObject) {
 		try {
 			// Get Namespaces
 			Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 			Map<String, String> nsMap = new HashMap<String, String>();
 			while (anyKeysIterN.hasNext()) {
 				String anyKeyN = anyKeysIterN.next();
-				String valueN = anyObject.get(anyKeyN).toString();
+				String valueN = anyObject.getString(anyKeyN).getValue();
 				if (anyKeyN.startsWith("@")) {
 					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 				}
@@ -68,7 +67,7 @@ public class MongoReaderUtil {
 				String anyKey = anyKeysIter.next();
 				if (anyKey.startsWith("@"))
 					continue;
-				String value = anyObject.get(anyKey).toString();
+				String value = anyObject.getString(anyKey).getValue();
 				// Get Namespace
 				String[] anyKeyCheck = anyKey.split(":");
 				String namespace = null;
@@ -101,7 +100,7 @@ public class MongoReaderUtil {
 		return null;
 	}
 	
-	static ILMDType putILMD(ILMDType ilmd, BasicDBObject anyObject) {
+	static ILMDType putILMD(ILMDType ilmd, BsonDocument anyObject) {
 		try {
 			ILMDExtensionType ilmdExtension = new ILMDExtensionType();
 			// Get Namespaces
@@ -109,7 +108,7 @@ public class MongoReaderUtil {
 			Map<String, String> nsMap = new HashMap<String, String>();
 			while (anyKeysIterN.hasNext()) {
 				String anyKeyN = anyKeysIterN.next();
-				String valueN = anyObject.get(anyKeyN).toString();
+				String valueN = anyObject.getString(anyKeyN).getValue();
 				if (anyKeyN.startsWith("@")) {
 					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 				}
@@ -120,7 +119,7 @@ public class MongoReaderUtil {
 				String anyKey = anyKeysIter.next();
 				if (anyKey.startsWith("@"))
 					continue;
-				String value = anyObject.get(anyKey).toString();
+				String value = anyObject.getString(anyKey).getValue();
 				// Get Namespace
 				String[] anyKeyCheck = anyKey.split(":");
 				String namespace = null;
@@ -154,16 +153,16 @@ public class MongoReaderUtil {
 	}
 
 	static BusinessLocationExtensionType putBusinessLocationExtension(
-			BusinessLocationExtensionType object, BasicDBObject extension) {
+			BusinessLocationExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
 				while (anyKeysIterN.hasNext()) {
 					String anyKeyN = anyKeysIterN.next();
-					String valueN = anyObject.get(anyKeyN).toString();
+					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
 						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
 								valueN);
@@ -176,7 +175,7 @@ public class MongoReaderUtil {
 					String anyKey = anyKeysIter.next();
 					if (anyKey.startsWith("@"))
 						continue;
-					String value = anyObject.get(anyKey).toString();
+					String value = anyObject.getString(anyKey).getValue();
 					// Get Namespace
 					String[] anyKeyCheck = anyKey.split(":");
 					String namespace = null;
@@ -206,8 +205,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
@@ -224,16 +222,16 @@ public class MongoReaderUtil {
 	}
 
 	static ReadPointExtensionType putReadPointExtension(
-			ReadPointExtensionType object, BasicDBObject extension) {
+			ReadPointExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
 				while (anyKeysIterN.hasNext()) {
 					String anyKeyN = anyKeysIterN.next();
-					String valueN = anyObject.get(anyKeyN).toString();
+					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
 						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
 								valueN);
@@ -246,7 +244,7 @@ public class MongoReaderUtil {
 					String anyKey = anyKeysIter.next();
 					if (anyKey.startsWith("@"))
 						continue;
-					String value = anyObject.get(anyKey).toString();
+					String value = anyObject.getString(anyKey).getValue();
 					// Get Namespace
 					String[] anyKeyCheck = anyKey.split(":");
 					String namespace = null;
@@ -276,13 +274,12 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
-					String value = otherAttributeObject.get(anyKey).toString();
+					String value = otherAttributeObject.getString(anyKey).getValue();
 					otherAttributes.put(new QName("", anyKey), value);
 				}
 				object.setOtherAttributes(otherAttributes);
@@ -294,16 +291,16 @@ public class MongoReaderUtil {
 	}
 
 	static AggregationEventExtension2Type putAggregationExtension(
-			AggregationEventExtension2Type object, BasicDBObject extension) {
+			AggregationEventExtension2Type object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
 				while (anyKeysIterN.hasNext()) {
 					String anyKeyN = anyKeysIterN.next();
-					String valueN = anyObject.get(anyKeyN).toString();
+					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
 						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
 								valueN);
@@ -316,7 +313,7 @@ public class MongoReaderUtil {
 					String anyKey = anyKeysIter.next();
 					if (anyKey.startsWith("@"))
 						continue;
-					String value = anyObject.get(anyKey).toString();
+					String value = anyObject.getString(anyKey).getValue();
 					// Get Namespace
 					String[] anyKeyCheck = anyKey.split(":");
 					String namespace = null;
@@ -346,13 +343,12 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
-					String value = otherAttributeObject.get(anyKey).toString();
+					String value = otherAttributeObject.getString(anyKey).getValue();
 					otherAttributes.put(new QName("", anyKey), value);
 				}
 				object.setOtherAttributes(otherAttributes);
@@ -364,16 +360,16 @@ public class MongoReaderUtil {
 	}
 
 	static EPCISEventExtensionType putEPCISExtension(
-			EPCISEventExtensionType object, BasicDBObject extension) {
+			EPCISEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
 				while (anyKeysIterN.hasNext()) {
 					String anyKeyN = anyKeysIterN.next();
-					String valueN = anyObject.get(anyKeyN).toString();
+					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
 						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
 								valueN);
@@ -416,13 +412,12 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
-					String value = otherAttributeObject.get(anyKey).toString();
+					String value = otherAttributeObject.getString(anyKey).getValue();
 					otherAttributes.put(new QName("", anyKey), value);
 				}
 				object.setOtherAttributes(otherAttributes);
@@ -434,10 +429,10 @@ public class MongoReaderUtil {
 	}
 
 	static ObjectEventExtension2Type putObjectExtension(
-			ObjectEventExtension2Type oee2t, BasicDBObject extension) {
+			ObjectEventExtension2Type oee2t, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
@@ -486,8 +481,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
@@ -504,10 +498,10 @@ public class MongoReaderUtil {
 	}
 
 	static QuantityEventExtensionType putQuantityExtension(
-			QuantityEventExtensionType object, BasicDBObject extension) {
+			QuantityEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
@@ -556,8 +550,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
@@ -574,10 +567,10 @@ public class MongoReaderUtil {
 	}
 
 	static SensorEventExtensionType putSensorExtension(
-			SensorEventExtensionType object, BasicDBObject extension) {
+			SensorEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
@@ -626,8 +619,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
@@ -644,10 +636,10 @@ public class MongoReaderUtil {
 	}
 
 	static TransactionEventExtension2Type putTransactionExtension(
-			TransactionEventExtension2Type object, BasicDBObject extension) {
+			TransactionEventExtension2Type object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
@@ -696,8 +688,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {
@@ -714,10 +705,10 @@ public class MongoReaderUtil {
 	}
 
 	static TransformationEventExtensionType putTransformationExtension(
-			TransformationEventExtensionType object, BasicDBObject extension) {
+			TransformationEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) extension.get("any");
+				BsonDocument anyObject = extension.getDocument("any");
 				// Get Namespaces
 				Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 				Map<String, String> nsMap = new HashMap<String, String>();
@@ -766,8 +757,7 @@ public class MongoReaderUtil {
 			}
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
-				BasicDBObject otherAttributeObject = (BasicDBObject) extension
-						.get("otherAttributes");
+				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
 				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
 						.iterator();
 				while (otherKeysIter.hasNext()) {

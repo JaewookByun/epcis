@@ -10,6 +10,8 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Level;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -28,13 +30,6 @@ import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
 import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.oliot.model.epcis.TransformationEventType;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.ReadingConverter;
-import org.springframework.stereotype.Component;
-
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
 import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
@@ -56,97 +51,84 @@ import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@ReadingConverter
-public class TransformationEventReadConverter implements
-		Converter<DBObject, TransformationEventType> {
+public class TransformationEventReadConverter {
 
-	public TransformationEventType convert(DBObject dbObject) {
+	public TransformationEventType convert(BsonDocument dbObject) {
 		try {
 			TransformationEventType transformationEventType = new TransformationEventType();
 			int zone = 0;
 			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = (String) dbObject
-						.get("eventTimeZoneOffset");
-				transformationEventType
-						.setEventTimeZoneOffset(eventTimeZoneOffset);
+				String eventTimeZoneOffset = dbObject.get("eventTimeZoneOffset").asString().getValue();
+				transformationEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
 				if (eventTimeZoneOffset.split(":").length == 2) {
 					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 				}
 			}
 			if (dbObject.get("eventTime") != null) {
-				long eventTime = (long) dbObject.get("eventTime");
+				long eventTime = dbObject.get("eventTime").asInt64().getValue();
 				GregorianCalendar eventCalendar = new GregorianCalendar();
 				eventCalendar.setTimeInMillis(eventTime);
-				XMLGregorianCalendar xmlEventTime = DatatypeFactory
-						.newInstance().newXMLGregorianCalendar(eventCalendar);
+				XMLGregorianCalendar xmlEventTime = DatatypeFactory.newInstance()
+						.newXMLGregorianCalendar(eventCalendar);
 				xmlEventTime.setTimezone(zone * 60);
 				transformationEventType.setEventTime(xmlEventTime);
 			}
 			if (dbObject.get("recordTime") != null) {
-				long eventTime = (long) dbObject.get("recordTime");
+				long eventTime = dbObject.get("recordTime").asInt64().getValue();
 				GregorianCalendar recordCalendar = new GregorianCalendar();
 				recordCalendar.setTimeInMillis(eventTime);
-				XMLGregorianCalendar xmlRecordTime = DatatypeFactory
-						.newInstance().newXMLGregorianCalendar(recordCalendar);
+				XMLGregorianCalendar xmlRecordTime = DatatypeFactory.newInstance()
+						.newXMLGregorianCalendar(recordCalendar);
 				xmlRecordTime.setTimezone(zone * 60);
 				transformationEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("inputEPCList") != null) {
-				BasicDBList epcListM = (BasicDBList) dbObject
-						.get("inputEPCList");
+				BsonArray epcListM = dbObject.get("inputEPCList").asArray();
 				EPCListType epcListType = new EPCListType();
 				List<EPC> epcs = new ArrayList<EPC>();
 				for (int i = 0; i < epcListM.size(); i++) {
 					EPC epc = new EPC();
-					BasicDBObject epcObject = (BasicDBObject) epcListM.get(i);
-					epc.setValue(epcObject.getString("epc"));
+					BsonDocument epcObject = epcListM.get(i).asDocument();
+					epc.setValue(epcObject.getString("epc").getValue());
 					epcs.add(epc);
 				}
 				epcListType.setEpc(epcs);
 				transformationEventType.setInputEPCList(epcListType);
 			}
 			if (dbObject.get("outputEPCList") != null) {
-				BasicDBList epcListM = (BasicDBList) dbObject
-						.get("outputEPCList");
+				BsonArray epcListM = dbObject.get("outputEPCList").asArray();
 				EPCListType epcListType = new EPCListType();
 				List<EPC> epcs = new ArrayList<EPC>();
 				for (int i = 0; i < epcListM.size(); i++) {
 					EPC epc = new EPC();
-					BasicDBObject epcObject = (BasicDBObject) epcListM.get(i);
-					epc.setValue(epcObject.getString("epc"));
+					BsonDocument epcObject = epcListM.get(i).asDocument();
+					epc.setValue(epcObject.getString("epc").getValue());
 					epcs.add(epc);
 				}
 				epcListType.setEpc(epcs);
 				transformationEventType.setOutputEPCList(epcListType);
 			}
 			if (dbObject.get("transformationID") != null)
-				transformationEventType.setTransformationID(dbObject.get(
-						"transformationID").toString());
+				transformationEventType.setTransformationID(dbObject.get("transformationID").asString().getValue());
 			if (dbObject.get("bizStep") != null)
-				transformationEventType.setBizStep(dbObject.get("bizStep")
-						.toString());
+				transformationEventType.setBizStep(dbObject.get("bizStep").asString().getValue());
 			if (dbObject.get("disposition") != null)
-				transformationEventType.setDisposition(dbObject.get(
-						"disposition").toString());
+				transformationEventType.setDisposition(dbObject.get("disposition").asString().getValue());
 			if (dbObject.get("baseExtension") != null) {
 				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
-				BasicDBObject baseExtension = (BasicDBObject) dbObject
-						.get("baseExtension");
+				BsonDocument baseExtension = dbObject.get("baseExtension").asDocument();
 				eeet = putEPCISExtension(eeet, baseExtension);
 				transformationEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("readPoint") != null) {
-				BasicDBObject readPointObject = (BasicDBObject) dbObject
-						.get("readPoint");
+				BsonDocument readPointObject = dbObject.get("readPoint").asDocument();
 				ReadPointType readPointType = new ReadPointType();
 				if (readPointObject.get("id") != null) {
 					readPointType.setId(readPointObject.get("id").toString());
 				}
 				if (readPointObject.get("extension") != null) {
 					ReadPointExtensionType rpet = new ReadPointExtensionType();
-					BasicDBObject extension = (BasicDBObject) readPointObject
-							.get("extension");
+					BsonDocument extension = readPointObject.get("extension").asDocument();
 					rpet = putReadPointExtension(rpet, extension);
 					readPointType.setExtension(rpet);
 				}
@@ -154,36 +136,32 @@ public class TransformationEventReadConverter implements
 			}
 			// BusinessLocation
 			if (dbObject.get("bizLocation") != null) {
-				BasicDBObject bizLocationObject = (BasicDBObject) dbObject
-						.get("bizLocation");
+				BsonDocument bizLocationObject = dbObject.get("bizLocation").asDocument();
 				BusinessLocationType bizLocationType = new BusinessLocationType();
 				if (bizLocationObject.get("id") != null) {
-					bizLocationType.setId(bizLocationObject.get("id")
-							.toString());
+					bizLocationType.setId(bizLocationObject.get("id").toString());
 				}
 				if (bizLocationObject.get("extension") != null) {
 					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
-					BasicDBObject extension = (BasicDBObject) bizLocationObject
-							.get("extension");
+					BsonDocument extension = bizLocationObject.get("extension").asDocument();
 					blet = putBusinessLocationExtension(blet, extension);
 					bizLocationType.setExtension(blet);
 				}
 				transformationEventType.setBizLocation(bizLocationType);
 			}
 			if (dbObject.get("bizTransactionList") != null) {
-				BasicDBList bizTranList = (BasicDBList) dbObject
-						.get("bizTransactionList");
+				BsonArray bizTranList = dbObject.get("bizTransactionList").asArray();
 				BusinessTransactionListType btlt = new BusinessTransactionListType();
 				List<BusinessTransactionType> bizTranArrayList = new ArrayList<BusinessTransactionType>();
 				for (int i = 0; i < bizTranList.size(); i++) {
 					// DBObject, key and value
-					BasicDBObject bizTran = (BasicDBObject) bizTranList.get(i);
+					BsonDocument bizTran = bizTranList.get(i).asDocument();
 					BusinessTransactionType btt = new BusinessTransactionType();
 					Iterator<String> keyIter = bizTran.keySet().iterator();
 					// at most one bizTran
 					if (keyIter.hasNext()) {
 						String key = keyIter.next();
-						String value = bizTran.getString(key);
+						String value = bizTran.getString(key).getValue();
 						if (key != null && value != null) {
 							btt.setType(key);
 							btt.setValue(value);
@@ -200,12 +178,10 @@ public class TransformationEventReadConverter implements
 			if (dbObject.get("inputQuantityList") != null) {
 				QuantityListType qlt = new QuantityListType();
 				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BasicDBList quantityDBList = (BasicDBList) dbObject
-						.get("inputQuantityList");
+				BsonArray quantityDBList = dbObject.get("inputQuantityList").asArray();
 				for (int i = 0; i < quantityDBList.size(); i++) {
 					QuantityElementType qet = new QuantityElementType();
-					BasicDBObject quantityDBObject = (BasicDBObject) quantityDBList
-							.get(i);
+					BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
 					Object epcClassObject = quantityDBObject.get("epcClass");
 					Object quantity = quantityDBObject.get("quantity");
 					Object uom = quantityDBObject.get("uom");
@@ -226,12 +202,10 @@ public class TransformationEventReadConverter implements
 			if (dbObject.get("outputQuantityList") != null) {
 				QuantityListType qlt = new QuantityListType();
 				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BasicDBList quantityDBList = (BasicDBList) dbObject
-						.get("outputQuantityList");
+				BsonArray quantityDBList = dbObject.get("outputQuantityList").asArray();
 				for (int i = 0; i < quantityDBList.size(); i++) {
 					QuantityElementType qet = new QuantityElementType();
-					BasicDBObject quantityDBObject = (BasicDBObject) quantityDBList
-							.get(i);
+					BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
 					Object epcClassObject = quantityDBObject.get("epcClass");
 					Object quantity = quantityDBObject.get("quantity");
 					Object uom = quantityDBObject.get("uom");
@@ -254,18 +228,16 @@ public class TransformationEventReadConverter implements
 				// Source Dest Type : Key / Value
 				SourceListType slt = new SourceListType();
 				List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
-				BasicDBList sourceDBList = (BasicDBList) dbObject
-						.get("sourceList");
+				BsonArray sourceDBList = dbObject.get("sourceList").asArray();
 				for (int i = 0; i < sourceDBList.size(); i++) {
-					BasicDBObject sdObject = (BasicDBObject) sourceDBList
-							.get(i);
+					BsonDocument sdObject = sourceDBList.get(i).asDocument();
 					// DBObject, key and value
 					SourceDestType sdt = new SourceDestType();
 					Iterator<String> keyIter = sdObject.keySet().iterator();
 					// at most one bizTran
 					if (keyIter.hasNext()) {
 						String key = keyIter.next();
-						String value = sdObject.getString(key);
+						String value = sdObject.getString(key).getValue();
 						if (key != null && value != null) {
 							sdt.setType(key);
 							sdt.setValue(value);
@@ -282,18 +254,16 @@ public class TransformationEventReadConverter implements
 				// Source Dest Type : Key / Value
 				DestinationListType dlt = new DestinationListType();
 				List<SourceDestType> sdtList = new ArrayList<SourceDestType>();
-				BasicDBList destinationDBList = (BasicDBList) dbObject
-						.get("destinationList");
+				BsonArray destinationDBList = dbObject.get("destinationList").asArray();
 				for (int i = 0; i < destinationDBList.size(); i++) {
-					BasicDBObject sdObject = (BasicDBObject) destinationDBList
-							.get(i);
+					BsonDocument sdObject = destinationDBList.get(i).asDocument();
 					// DBObject, key and value
 					SourceDestType sdt = new SourceDestType();
 					Iterator<String> keyIter = sdObject.keySet().iterator();
 					// at most one bizTran
 					if (keyIter.hasNext()) {
 						String key = keyIter.next();
-						String value = sdObject.getString(key);
+						String value = sdObject.getString(key).getValue();
 						if (key != null && value != null) {
 							sdt.setType(key);
 							sdt.setValue(value);
@@ -307,14 +277,14 @@ public class TransformationEventReadConverter implements
 			}
 			if (dbObject.get("ilmd") != null) {
 				ILMDType ilmd = new ILMDType();
-				BasicDBObject anyObject = (BasicDBObject) dbObject.get("ilmd");
+				BsonDocument anyObject = dbObject.get("ilmd").asDocument();
 				ilmd = putILMD(ilmd, anyObject);
 				transformationEventType.setIlmd(ilmd);
 			}
 
 			// Vendor Extension
 			if (dbObject.get("any") != null) {
-				BasicDBObject anyObject = (BasicDBObject) dbObject.get("any");
+				BsonDocument anyObject = dbObject.get("any").asDocument();
 				List<Object> any = putAny(anyObject);
 				transformationEventType.setAny(any);
 			}
@@ -322,8 +292,7 @@ public class TransformationEventReadConverter implements
 			// extension
 			if (dbObject.get("extension") != null) {
 				TransformationEventExtensionType tfeet = new TransformationEventExtensionType();
-				BasicDBObject extension = (BasicDBObject) dbObject
-						.get("extension");
+				BsonDocument extension = dbObject.get("extension").asDocument();
 				tfeet = putTransformationExtension(tfeet, extension);
 				transformationEventType.setExtension(tfeet);
 			}

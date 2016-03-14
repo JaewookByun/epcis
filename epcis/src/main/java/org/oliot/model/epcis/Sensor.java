@@ -1,8 +1,5 @@
 package org.oliot.model.epcis;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document(collection = "Sensor")
 public class Sensor {
 
 	private String epc;
@@ -12,7 +9,7 @@ public class Sensor {
 	private long startTime;
 	private long finishTime;
 	private String eventTimeZoneOffset;
-	
+
 	public String getEpc() {
 		return epc;
 	}

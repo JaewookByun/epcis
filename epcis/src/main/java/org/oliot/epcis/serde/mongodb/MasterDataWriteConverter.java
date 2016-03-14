@@ -3,37 +3,30 @@ package org.oliot.epcis.serde.mongodb;
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.getAnyMap;
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.getOtherAttributesMap;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPC;
-import org.oliot.model.epcis.IDListType;
 import org.oliot.model.epcis.VocabularyElementListType;
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyExtensionType;
 import org.oliot.model.epcis.VocabularyType;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.core.convert.converter.Converter;
-import org.springframework.data.convert.WritingConverter;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.stereotype.Component;
 
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -50,76 +43,74 @@ import com.mongodb.DBObject;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@Component
-@WritingConverter
-public class MasterDataWriteConverter implements Converter<VocabularyType, DBObject> {
+public class MasterDataWriteConverter {
 
-	public DBObject convert(VocabularyType vocabulary) {
+	public BsonDocument convert(VocabularyType vocabulary) {
 
-		DBObject dbo = new BasicDBObject();
+		BsonDocument dbo = new BsonDocument();
 
 		if (vocabulary.getAny() != null && vocabulary.getAny().isEmpty() == false) {
 			List<Object> objList = vocabulary.getAny();
-			Map<String, Object> map2Save = getAnyMap(objList);
+			BsonDocument map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 		}
 
 		if (vocabulary.getOtherAttributes() != null && vocabulary.getOtherAttributes().isEmpty() == false) {
 			Map<QName, String> map = vocabulary.getOtherAttributes();
-			Map<String, String> map2Save = getOtherAttributesMap(map);
+			BsonDocument map2Save = getOtherAttributesMap(map);
 			if (map2Save.isEmpty() == false)
 				dbo.put("otherAttributes", map2Save);
 		}
 
 		// Extension
-		DBObject extension = new BasicDBObject();
+		BsonDocument extension = new BsonDocument();
 		if (vocabulary.getExtension() != null) {
 			VocabularyExtensionType vet = vocabulary.getExtension();
 			if (vet.getAny() != null) {
 				List<Object> objList = vet.getAny();
-				Map<String, Object> map2Save = getAnyMap(objList);
+				BsonDocument map2Save = getAnyMap(objList);
 				if (map2Save.isEmpty() == false)
 					extension.put("any", map2Save);
 			}
 
 			if (vet.getOtherAttributes() != null) {
 				Map<QName, String> map = vet.getOtherAttributes();
-				Map<String, String> map2Save = getOtherAttributesMap(map);
+				BsonDocument map2Save = getOtherAttributesMap(map);
 				if (map2Save.isEmpty() == false)
 					extension.put("otherAttributes", map2Save);
 			}
 		}
-		if (extension != null && extension.toMap().isEmpty() == false)
+		if (extension != null && extension.isEmpty() == false)
 			dbo.put("extension", extension);
 
 		if (vocabulary.getType() != null)
-			dbo.put("type", vocabulary.getType());
+			dbo.put("type", new BsonString(vocabulary.getType()));
 
 		if (vocabulary.getVocabularyElementList() != null) {
 			VocabularyElementListType velt = vocabulary.getVocabularyElementList();
 			List<VocabularyElementType> vetList = velt.getVocabularyElement();
-			BasicDBList vocDBList = new BasicDBList();
+			BsonArray vocDBList = new BsonArray();
 			for (int i = 0; i < vetList.size(); i++) {
 				VocabularyElementType vocabularyElement = vetList.get(i);
 
-				DBObject elementObject = new BasicDBObject();
+				BsonDocument elementObject = new BsonDocument();
 
 				if (vocabularyElement.getId() != null)
-					elementObject.put("id", vocabularyElement.getId());
+					elementObject.put("id", new BsonString(vocabularyElement.getId()));
 
 				// According to XML rule
 				// Specification is not possible
 				// Select Simple Content as one of two option
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
-					BasicDBList attrList = new BasicDBList();
+					BsonArray attrList = new BsonArray();
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
-						DBObject attrObject = new BasicDBObject();
+						BsonDocument attrObject = new BsonDocument();
 						String key = attribute.getId();
 						String value = attribute.getValue();
-						attrObject.put("id", key);
+						attrObject.put("id", new BsonString(key));
 						attrObject.put("value", MongoWriterUtil.converseType(value));
 						attrList.add(attrObject);
 					}
@@ -127,20 +118,24 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 				}
 
 				if (vocabularyElement.getChildren() != null) {
-					IDListType idlist = vocabularyElement.getChildren();
-					elementObject.put("children", idlist.getId());
+					List<String> idlist = vocabularyElement.getChildren().getId();
+					BsonArray bsonChildList = new BsonArray();
+					for (String child : idlist) {
+						bsonChildList.add(new BsonString(child));
+					}
+					elementObject.put("children", bsonChildList);
 				}
 
 				if (vocabularyElement.getAny() != null) {
 					List<Object> objList = vocabularyElement.getAny();
-					Map<String, Object> map2Save = getAnyMap(objList);
+					BsonDocument map2Save = getAnyMap(objList);
 					if (map2Save.isEmpty() == false)
 						elementObject.put("any", map2Save);
 				}
 
 				if (vocabularyElement.getOtherAttributes() != null) {
 					Map<QName, String> map = vocabularyElement.getOtherAttributes();
-					Map<String, String> map2Save = getOtherAttributesMap(map);
+					BsonDocument map2Save = getOtherAttributesMap(map);
 					if (map2Save.isEmpty() == false)
 						elementObject.put("otherAttributes", map2Save);
 				}
@@ -153,12 +148,8 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 
 	public int capture(VocabularyType vocabulary, Integer gcpLength) {
 
-		DBObject dbo = new BasicDBObject();
-
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
-
-		DBCollection collection = mongoOperation.getCollection("MasterData");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
 
 		// Mongo Initialization
 		if (vocabulary.getVocabularyElementList() != null) {
@@ -177,27 +168,26 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 
 				// Barcode Transform
 				vocID = MongoWriterUtil.getVocabularyEPC(vocabulary.getType(), vocID, gcpLength);
-				
+
 				// each id should have one document
-				DBObject voc = collection.findOne(new BasicDBObject("id", vocID));
+				BsonDocument voc = collection.find(new BsonDocument("id", new BsonString(vocID))).first();
 
 				if (voc == null) {
-					voc = new BasicDBObject();
+					voc = new BsonDocument();
 
 				}
 
 				if (vocabulary.getType() != null)
-					dbo.put("type", vocabulary.getType());
+					voc.put("type", new BsonString(vocabulary.getType()));
 				if (vocabularyElement.getId() != null)
-					dbo.put("id", vocID);
+					voc.put("id", new BsonString(vocID));
 
 				// Prepare vocabularyList JSONObject
-				Object tempAttrObj = dbo.get("attributes");
-				DBObject attrObj = null;
-				if (tempAttrObj == null) {
-					attrObj = new BasicDBObject();
+				BsonDocument attrObj = null;
+				if (voc.isNull("attributes")) {
+					attrObj = new BsonDocument();
 				} else {
-					attrObj = (DBObject) tempAttrObj;
+					attrObj = voc.getDocument("attributes");
 				}
 
 				// According to XML rule
@@ -212,129 +202,120 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 						String value = attribute.getValue();
 						attrObj.put(key, MongoWriterUtil.converseType(value));
 					}
-					attrObj.put("lastUpdated", System.currentTimeMillis());
-					dbo.put("attributes", attrObj);
+					attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+					voc.put("attributes", attrObj);
 				}
 
 				// If children found, overwrite previous one(s)
 				if (vocabularyElement.getChildren() != null) {
-					IDListType idlist = vocabularyElement.getChildren();
-					dbo.put("children", idlist.getId());
+					List<String> idlist = vocabularyElement.getChildren().getId();
+					BsonArray bsonIDList = new BsonArray();
+					for (String id : idlist) {
+						bsonIDList.add(new BsonString(id));
+					}
+					voc.put("children", bsonIDList);
 				}
-				collection.update(new BasicDBObject("id", vocID), dbo, true, false);
+				collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
 			}
 		}
-		((AbstractApplicationContext) ctx).close();
 		return 0;
 	}
-	
-	@SuppressWarnings("unchecked")
+
 	public int json_capture(JSONObject event) {
 
-		DBObject dbo = new BasicDBObject();
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
 
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+		// ID is mandatory
+		if (event.has("id") == false) {
+			System.out.println("no id!!");
+		}
 
-		DBCollection collection = mongoOperation.getCollection("MasterData");
+		// Existence Check
+		String vocID = event.getString("id");
 
-				// ID is mandatory
-				if (event.has("id") == false) {
-					System.out.println("no id!!");
-				}
+		// each id should have one document
+		BsonDocument voc = collection.find(new BsonDocument("id", new BsonString(vocID))).first();
 
-				// Existence Check
-				String vocID = event.getString("id");
+		if (voc == null) {
+			voc = new BsonDocument();
 
-				// each id should have one document
-				DBObject voc = collection.findOne(new BasicDBObject("id", vocID));
+		}
 
-				if (voc == null) {
-					voc = new BasicDBObject();
+		if (event.has("type") != false)
+			voc.put("type", new BsonString(event.getString("type")));
+		if (event.has("id") != false)
+			voc.put("id", new BsonString(event.getString("id")));
 
-				}
+		// Prepare vocabularyList JSONObject
+		BsonDocument attrObj = null;
+		if (voc.isNull("attributes")) {
+			attrObj = new BsonDocument();
+		} else {
+			attrObj = voc.getDocument("attributes");
+		}
 
-				if (event.has("type") != false)
-					dbo.put("type", event.getString("type"));
-				if (event.has("id") != false)
-					dbo.put("id", event.getString("id"));
+		// According to XML rule
+		// Specification is not possible
+		// Select Simple Content as one of two option
+		if (event.getJSONObject("attributes") != null) {
+			JSONObject json_attr = event.getJSONObject("attributes");
+			Iterator<String> json_iter = json_attr.keys();
+			while (json_iter.hasNext()) {
+				String temp = json_iter.next();
+				attrObj.put(temp, new BsonString(json_attr.getString(temp)));
+			}
+			attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+			voc.put("attributes", attrObj);
+		}
 
-				// Prepare vocabularyList JSONObject
-				Object tempAttrObj = dbo.get("attributes");
-				DBObject attrObj = null;
-				if (tempAttrObj == null) {
-					attrObj = new BasicDBObject();
-				} else {
-					attrObj = (DBObject) tempAttrObj;
-				}
+		// If children found, overwrite previous one(s)
+		if (event.has("children") == true) {
+			BsonArray bsonChildArray = new BsonArray();
+			JSONArray jsonChildArray = event.getJSONArray("children");
 
-				// According to XML rule
-				// Specification is not possible
-				// Select Simple Content as one of two option
-				if (event.getJSONObject("attributes") != null) {
-					JSONObject json_attr = event.getJSONObject("attributes");
-					Iterator<String> json_iter = json_attr.keys();
-					while(json_iter.hasNext()){
-						String temp = json_iter.next();
-						attrObj.put(temp, json_attr.get(temp));					
-					}
-					attrObj.put("lastUpdated", System.currentTimeMillis());
-					dbo.put("attributes", attrObj);
-				}
-				
-				// If children found, overwrite previous one(s)
-				if (event.has("children") == true){
-					List<String> abc = new ArrayList<String>();
-					JSONArray abc_json = event.getJSONArray("children");
-					
-					for(int i = 0 ; i <abc_json.length() ; i++){
-						abc.add(abc_json.get(i).toString());
-					}
-					dbo.put("children", abc);
-				}
-				
-				collection.update(new BasicDBObject("id", vocID), dbo, true, false);
-		
-		((AbstractApplicationContext) ctx).close();
+			Iterator<Object> jsonChildIterator = jsonChildArray.iterator();
+			while (jsonChildIterator.hasNext()) {
+				String childStr = jsonChildIterator.next().toString();
+				bsonChildArray.add(new BsonString(childStr));
+			}
+			voc.put("children", bsonChildArray);
+		}
+
+		collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
 		return 0;
 	}
-	
 
-	public int capture(List<EPC> epcList, Map<String, Object> map2Save) {
+	public int capture(List<EPC> epcList, BsonDocument map2Save) {
 		if (map2Save == null) {
 			return 0;
 		}
 		if (map2Save.size() == 0) {
 			return 0;
 		}
-		DBObject dbo = new BasicDBObject();
 
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
 
-		DBCollection collection = mongoOperation.getCollection("MasterData");
-
-		for (int i = 0; i < epcList.size(); i++) {
-			EPC epc = epcList.get(i);
+		for (EPC epc : epcList) {
 			String id = epc.getValue();
 
 			// each id should have one document
-			DBObject voc = collection.findOne(new BasicDBObject("id", id));
+			BsonDocument voc = collection.find(new BsonDocument("id", new BsonString(id))).first();
 
 			if (voc == null) {
-				voc = new BasicDBObject();
+				voc = new BsonDocument();
 			}
 
-			dbo.put("type", "urn:epcglobal:epcis:vtype:EPCInstance");
-			dbo.put("id", id);
+			voc.put("type", new BsonString("urn:epcglobal:epcis:vtype:EPCInstance"));
+			voc.put("id", new BsonString(id));
 
 			// Prepare vocabularyList JSONObject
-			Object tempAttrObj = dbo.get("attributes");
-			DBObject attrObj = null;
-			if (tempAttrObj == null) {
-				attrObj = new BasicDBObject();
+			BsonDocument attrObj = null;
+			if (voc.isNull("attributes")) {
+				attrObj = new BsonDocument();
 			} else {
-				attrObj = (DBObject) tempAttrObj;
+				attrObj = voc.getDocument("attributes");
 			}
 
 			Iterator<String> mapIter = map2Save.keySet().iterator();
@@ -342,16 +323,15 @@ public class MasterDataWriteConverter implements Converter<VocabularyType, DBObj
 				String key = mapIter.next();
 				key = encodeMongoObjectKey(key);
 				Object value = map2Save.get(key);
-				attrObj.put(key, value);
+				attrObj.put(key, new BsonString(value.toString()));
 			}
 
-			attrObj.put("lastUpdated", System.currentTimeMillis());
-			dbo.put("attributes", attrObj);
+			attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+			voc.put("attributes", attrObj);
 
-			collection.update(new BasicDBObject("id", id), dbo, true, false);
+			collection.findOneAndReplace(new BsonDocument("id", new BsonString(id)), voc);
 		}
 
-		((AbstractApplicationContext) ctx).close();
 		return 0;
 	}
 

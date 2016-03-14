@@ -1,8 +1,11 @@
 package org.oliot.epcis.service.capture.mongodb;
 
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.AggregationEventWriteConverter;
+import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
 import org.oliot.epcis.serde.mongodb.ObjectEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.QuantityEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.TransactionEventWriteConverter;
@@ -13,13 +16,8 @@ import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyType;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
 
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 
 /**
@@ -43,147 +41,151 @@ import com.mongodb.util.JSON;
 public class MongoCaptureUtil {
 
 	public void capture(AggregationEventType event, String userID, String accessModifier, Integer gcpLength) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
+				BsonDocument.class);
 
 		// Utilize Aggregation Event Write Converter itself
 		AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
-		DBObject object2Save = wc.convert(event, gcpLength);
+		BsonDocument object2Save = wc.convert(event, gcpLength);
 		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
-		mongoOperation.save(object2Save, "AggregationEvent");
+		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-		((AbstractApplicationContext) ctx).close();
-
 	}
 
 	public void capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
+				BsonDocument.class);
 
 		// Utilize Object Event Write Converter itself
 		ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
-		DBObject object2Save = wc.convert(event, gcpLength);
+		BsonDocument object2Save = wc.convert(event, gcpLength);
 		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
-		mongoOperation.save(object2Save, "ObjectEvent");
+		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-		((AbstractApplicationContext) ctx).close();
-
 	}
 
 	public void capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("QuantityEvent",
+				BsonDocument.class);
 
 		// Utilize Quantity Event Write Converter itself
 		QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
-		DBObject object2Save = wc.convert(event, gcpLength);
+		BsonDocument object2Save = wc.convert(event, gcpLength);
 		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
-		mongoOperation.save(object2Save, "QuantityEvent");
+		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-		((AbstractApplicationContext) ctx).close();
-
 	}
 
 	public void capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
+				BsonDocument.class);
 
 		// Utilize Transaction Event Write Converter itself
 		TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
-		DBObject object2Save = wc.convert(event, gcpLength);
+		BsonDocument object2Save = wc.convert(event, gcpLength);
 		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
-		mongoOperation.save(object2Save, "TransactionEvent");
+		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-		((AbstractApplicationContext) ctx).close();
-
 	}
 
 	public void capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
+				BsonDocument.class);
 
 		// Utilize Transaction Event Write Converter itself
 		TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
-		DBObject object2Save = wc.convert(event, gcpLength);
+		BsonDocument object2Save = wc.convert(event, gcpLength);
 		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", userID);
-			object2Save.put("accessModifier", accessModifier);
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
-		mongoOperation.save(object2Save, "TransformationEvent");
+		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-		((AbstractApplicationContext) ctx).close();
-
 	}
 
 	public void capture(VocabularyType vocabulary) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		mongoOperation.save(vocabulary);
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
+
+		MasterDataWriteConverter converter = new MasterDataWriteConverter();
+		BsonDocument voc = converter.convert(vocabulary);
+
+		collection.insertOne(voc);
 		Configuration.logger.info(" Vocabulary Saved ");
-		((AbstractApplicationContext) ctx).close();
 	}
 
 	// JsonObject event capture series..
 
-	public void objectevent_capture(JSONObject event, MongoOperations mongoOperation) {
+	public void objectevent_capture(JSONObject event) {
 
-		DBCollection collection = mongoOperation.getCollection("ObjectEvent");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
+				BsonDocument.class);
 
-		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
 
-		collection.save(dbObject);
+		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
 
-	public void aggregationevent_capture(JSONObject event, MongoOperations mongoOperation) {
+	public void aggregationevent_capture(JSONObject event) {
 
-		DBCollection collection = mongoOperation.getCollection("AggregationEvent");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
+				BsonDocument.class);
 
-		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
 
-		collection.save(dbObject);
+		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
 
-	public void transformationevent_capture(JSONObject event, MongoOperations mongoOperation) {
-		DBCollection collection = mongoOperation.getCollection("TransformationEvent");
+	public void transformationevent_capture(JSONObject event) {
 
-		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
+				BsonDocument.class);
 
-		collection.save(dbObject);
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
+
+		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
 
-	public void masterdata_capture(JSONObject event, MongoOperations mongoOperation) {
+	public void masterdata_capture(JSONObject event) {
 
-		DBCollection collection = mongoOperation.getCollection("MasterData");
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
 
-		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
 
-		collection.save(dbObject);
+		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
-	
-	public void transactionevent_capture(JSONObject event, MongoOperations mongoOperation) {
 
-		DBCollection collection = mongoOperation.getCollection("TransactionEvent");
+	public void transactionevent_capture(JSONObject event) {
 
-		DBObject dbObject = (DBObject) JSON.parse(event.toString());
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
+				BsonDocument.class);
 
-		collection.save(dbObject);
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
+
+		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
 }

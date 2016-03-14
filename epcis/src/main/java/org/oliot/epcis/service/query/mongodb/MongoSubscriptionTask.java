@@ -16,25 +16,21 @@ import java.util.Map;
 import javax.xml.bind.JAXB;
 
 import org.apache.log4j.Level;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryTooLargeException;
-import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.SchedulerException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
+
+import com.mongodb.client.MongoCollection;
 
 /**
  * Copyright (C) 2014 Jaewook Byun
@@ -197,19 +193,18 @@ public class MongoSubscriptionTask implements Job {
 	}
 
 	private void updateInitialRecordTime(String subscriptionID, String initialRecordTime) {
-		ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-		MongoOperations mongoOperation = (MongoOperations) ctx.getBean("mongoTemplate");
 
-		List<SubscriptionType> subscriptions = mongoOperation
-				.find(new Query(Criteria.where("subscriptionID").is(subscriptionID)), SubscriptionType.class);
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
 
-		Query query = new Query(Criteria.where("subscriptionID").is(subscriptionID));
+		BsonDocument subscription = collection.find(new BsonDocument("subscriptionID", new BsonString(subscriptionID)))
+				.first();
 
-		if (subscriptions.size() != 0) {
-			mongoOperation.upsert(query, Update.update("initialRecordTime", initialRecordTime), SubscriptionType.class);
+		if (subscription != null) {
+			collection.findOneAndReplace(new BsonDocument("subscriptionID", new BsonString(subscriptionID)),
+					subscription);
 		}
 		Configuration.logger.log(Level.INFO,
 				"InitialRecordTime of Subscription ID: " + subscriptionID + " is updated to DB. ");
-		((AbstractApplicationContext) ctx).close();
 	}
 }

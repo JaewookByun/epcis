@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -52,9 +51,8 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "VocabularyType", namespace = "masterdata.epcis.oliot.org", propOrder = {
-		"vocabularyElementList", "extension", "any" })
-@Document(collection="MasterData")
+@XmlType(name = "VocabularyType", namespace = "masterdata.epcis.oliot.org", propOrder = { "vocabularyElementList",
+		"extension", "any" })
 public class VocabularyType {
 
 	@XmlElement(name = "VocabularyElementList")

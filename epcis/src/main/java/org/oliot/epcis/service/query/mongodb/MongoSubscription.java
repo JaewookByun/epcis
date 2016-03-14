@@ -1,17 +1,16 @@
 package org.oliot.epcis.service.query.mongodb;
 
-import java.util.List;
+import java.util.Iterator;
 
 import org.apache.log4j.Level;
+import org.bson.BsonDocument;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
-import org.springframework.data.mongodb.core.MongoOperations;
+
+import com.mongodb.client.MongoCollection;
 
 /**
  * Copyright (C) 2014 Jaewook Jack Byun
@@ -44,21 +43,17 @@ public class MongoSubscription {
 			if (sched.isStarted() == false)
 				sched.start();
 
-			ApplicationContext ctx = new GenericXmlApplicationContext(
-					"classpath:MongoConfig.xml");
-			MongoOperations mongoOperation = (MongoOperations) ctx
-					.getBean("mongoTemplate");
+			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+					BsonDocument.class);
 
-			List<SubscriptionType> allSubscription = mongoOperation
-					.findAll(SubscriptionType.class);
+			Iterator<BsonDocument> subIterator = collection.find(BsonDocument.class).iterator();
 			MongoQueryService queryService = new MongoQueryService();
-			Configuration.logger.log(Level.INFO,
-					"Loading pre-existing subscription");
-			for (int i = 0; i < allSubscription.size(); i++) {
-				SubscriptionType subscription = allSubscription.get(i);
+			while (subIterator.hasNext()) {
+				BsonDocument sub = subIterator.next();
+				SubscriptionType subscription = new SubscriptionType(sub);
 				queryService.addScheduleToQuartz(subscription);
 			}
-			((AbstractApplicationContext) ctx).close();
+
 		} catch (SchedulerException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
