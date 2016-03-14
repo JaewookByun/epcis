@@ -87,7 +87,7 @@ public class QuantityEventReadConverter {
 				quantityEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("quantity") != null) {
-				int quantity = dbObject.getInt32("quantity").getValue();
+				int quantity = (int)dbObject.getInt64("quantity").getValue();
 				quantityEventType.setQuantity(quantity);
 			}
 			if (dbObject.get("readPoint") != null) {

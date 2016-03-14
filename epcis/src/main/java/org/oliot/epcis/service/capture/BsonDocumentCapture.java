@@ -104,12 +104,12 @@ public class BsonDocumentCapture implements ServletContextAware {
 							}
 							existingAttributes.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
 							existingDocument.put("attributes", existingAttributes);
-							if (!docElement.isNull("children") && docElement.getArray("children").isEmpty() == false) {
+							if (docElement.containsKey("children") && docElement.getArray("children").isEmpty() == false) {
 								existingDocument.put("children", docElement.getArray("children"));
 							}
 							collection.findOneAndReplace(new BsonDocument("id", vocID), existingDocument);
 						} else {
-							if (docElement.isNull("attributes") || docElement.getDocument("attributes").isNull()) {
+							if (!docElement.containsKey("attributes") || docElement.getDocument("attributes").isEmpty()) {
 								BsonDocument attributes = new BsonDocument("lastUpdated",
 										new BsonInt64(System.currentTimeMillis()));
 								docElement.put("attributes", attributes);

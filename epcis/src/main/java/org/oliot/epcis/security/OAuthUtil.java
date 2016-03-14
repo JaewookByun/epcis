@@ -42,13 +42,10 @@ public class OAuthUtil {
 	// For MongoDB Document
 	public static boolean isAccessible(String userID, List<String> friendList, BsonDocument doc) {
 
+		if(!doc.containsKey("accessModifier") || !doc.containsKey("userID"))
+			return true;
 		String am = doc.get("accessModifier").asString().getValue();
 		String providerID = doc.get("userID").asString().getValue();
-
-		// Public Document
-		if (providerID == null || am == null) {
-			return true;
-		}
 
 		// Non-public document && No authorization
 		if (userID == null) {

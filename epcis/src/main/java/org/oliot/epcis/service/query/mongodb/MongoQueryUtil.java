@@ -234,10 +234,10 @@ public class MongoQueryUtil {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData", BsonDocument.class);
 		// Invoke vocabulary query with EQ_name and includeChildren
 		BsonDocument vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
-		if (vocObject == null) {
-			return null;
-		}
 		idSet.add(id);
+		if (vocObject == null) {
+			return idSet;
+		}
 		BsonArray childObject = vocObject.get("children").asArray();
 		if (childObject != null) {
 			@SuppressWarnings("rawtypes")

@@ -95,7 +95,7 @@ public class AggregationEventReadConverter {
 				while (bsonEPCIterator.hasNext()) {
 					BsonValue bson = bsonEPCIterator.next();
 					EPC epc = new EPC();
-					epc.setValue(bson.asString().getValue());
+					epc.setValue(bson.asDocument().getString("epc").getValue());
 					epcs.add(epc);
 				}
 				epcListType.setEpc(epcs);

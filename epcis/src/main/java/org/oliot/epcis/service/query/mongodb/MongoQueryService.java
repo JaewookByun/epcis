@@ -2139,7 +2139,7 @@ public class MongoQueryService {
 
 		if (MATCH_anyEPC != null) {
 			BsonDocument query = getINQueryObject(
-					new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc" },
+					new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc", "outputEPCList.epc", "parentID" },
 					MATCH_anyEPC);
 			if (query != null)
 				queryList.add(query);

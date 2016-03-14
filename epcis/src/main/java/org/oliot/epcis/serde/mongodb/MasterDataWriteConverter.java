@@ -172,11 +172,13 @@ public class MasterDataWriteConverter {
 				// each id should have one document
 				BsonDocument voc = collection.find(new BsonDocument("id", new BsonString(vocID))).first();
 
-				if (voc == null) {
+				boolean isExist = false;
+				if( voc != null){
+					isExist = true;
+				}else{
 					voc = new BsonDocument();
-
 				}
-
+				
 				if (vocabulary.getType() != null)
 					voc.put("type", new BsonString(vocabulary.getType()));
 				if (vocabularyElement.getId() != null)
@@ -184,7 +186,7 @@ public class MasterDataWriteConverter {
 
 				// Prepare vocabularyList JSONObject
 				BsonDocument attrObj = null;
-				if (voc.isNull("attributes")) {
+				if (!voc.containsKey("attributes")) {
 					attrObj = new BsonDocument();
 				} else {
 					attrObj = voc.getDocument("attributes");
@@ -215,7 +217,12 @@ public class MasterDataWriteConverter {
 					}
 					voc.put("children", bsonIDList);
 				}
-				collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
+
+				if (isExist == false) {
+					collection.insertOne(voc);
+				} else {
+					collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
+				}
 			}
 		}
 		return 0;
@@ -249,7 +256,7 @@ public class MasterDataWriteConverter {
 
 		// Prepare vocabularyList JSONObject
 		BsonDocument attrObj = null;
-		if (voc.isNull("attributes")) {
+		if (!voc.containsKey("attributes")) {
 			attrObj = new BsonDocument();
 		} else {
 			attrObj = voc.getDocument("attributes");
@@ -312,7 +319,7 @@ public class MasterDataWriteConverter {
 
 			// Prepare vocabularyList JSONObject
 			BsonDocument attrObj = null;
-			if (voc.isNull("attributes")) {
+			if (!voc.containsKey("attributes")) {
 				attrObj = new BsonDocument();
 			} else {
 				attrObj = voc.getDocument("attributes");

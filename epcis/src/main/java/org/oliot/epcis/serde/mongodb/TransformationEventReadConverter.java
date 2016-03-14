@@ -12,6 +12,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -188,7 +189,7 @@ public class TransformationEventReadConverter {
 					if (epcClassObject != null) {
 						qet.setEpcClass(epcClassObject.toString());
 						if (quantity != null) {
-							double quantityDouble = (double) quantity;
+							double quantityDouble = ((BsonDouble) quantity).doubleValue();
 							qet.setQuantity((float) quantityDouble);
 						}
 						if (uom != null)
@@ -212,7 +213,7 @@ public class TransformationEventReadConverter {
 					if (epcClassObject != null) {
 						qet.setEpcClass(epcClassObject.toString());
 						if (quantity != null) {
-							double quantityDouble = (double) quantity;
+							double quantityDouble = ((BsonDouble) quantity).doubleValue();
 							qet.setQuantity((float) quantityDouble);
 						}
 						if (uom != null)
