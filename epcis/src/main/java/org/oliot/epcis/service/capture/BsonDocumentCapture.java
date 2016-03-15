@@ -15,6 +15,7 @@ import org.bson.BsonString;
 import org.bson.BsonValue;
 
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,7 +30,7 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 /**
- * Copyright (C) 2015 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -37,7 +38,7 @@ import com.mongodb.client.MongoDatabase;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -87,6 +88,9 @@ public class BsonDocumentCapture implements ServletContextAware {
 					if (!collectionKey.equals("MasterData")) {
 						BsonDocument docElement = docIterator.next().asDocument();
 						docElement.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+						if( Configuration.isTriggerSupported == true ){
+							TriggerEngine.examineAndFire(collectionKey, docElement);
+						}
 						collection.insertOne(docElement);
 					} else {
 						BsonDocument docElement = docIterator.next().asDocument();
@@ -104,12 +108,14 @@ public class BsonDocumentCapture implements ServletContextAware {
 							}
 							existingAttributes.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
 							existingDocument.put("attributes", existingAttributes);
-							if (docElement.containsKey("children") && docElement.getArray("children").isEmpty() == false) {
+							if (docElement.containsKey("children")
+									&& docElement.getArray("children").isEmpty() == false) {
 								existingDocument.put("children", docElement.getArray("children"));
 							}
 							collection.findOneAndReplace(new BsonDocument("id", vocID), existingDocument);
 						} else {
-							if (!docElement.containsKey("attributes") || docElement.getDocument("attributes").isEmpty()) {
+							if (!docElement.containsKey("attributes")
+									|| docElement.getDocument("attributes").isEmpty()) {
 								BsonDocument attributes = new BsonDocument("lastUpdated",
 										new BsonInt64(System.currentTimeMillis()));
 								docElement.put("attributes", attributes);

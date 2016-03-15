@@ -1,10 +1,11 @@
-package org.oliot.epcis.service.query.mongodb;
+package org.oliot.epcis.service.subscription;
 
 import java.util.Iterator;
 
 import org.apache.log4j.Level;
 import org.bson.BsonDocument;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.SubscriptionType;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
@@ -51,7 +52,11 @@ public class MongoSubscription {
 			while (subIterator.hasNext()) {
 				BsonDocument sub = subIterator.next();
 				SubscriptionType subscription = new SubscriptionType(sub);
-				queryService.addScheduleToQuartz(subscription);
+				if (subscription.isScheduledSubscription() == true){
+					queryService.addScheduleToQuartz(subscription);
+				}else{
+					TriggerEngine.addTriggerSubscription(sub.getString("subscriptionID").getValue(), subscription);
+				}
 			}
 
 		} catch (SchedulerException e) {

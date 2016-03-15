@@ -12,6 +12,7 @@ public class SubscriptionType {
 	private String subscriptionID;
 	private String dest;
 	private String cronExpression;
+	private boolean isScheduledSubscription;
 	private boolean ignoreReceivedEvent;
 	private boolean reportIfEmpty;
 	private String initialRecordTime;
@@ -57,6 +58,8 @@ public class SubscriptionType {
 		this.subscriptionID = doc.getString("subscriptionID").getValue();
 		this.dest = doc.getString("dest").getValue();
 		this.cronExpression = doc.getString("cronExpression").getValue();
+		if (doc.containsKey("isScheduledSubscription"))
+			this.isScheduledSubscription = doc.getBoolean("isScheduledSubscription").getValue();
 		if (doc.containsKey("ignoreReceivedEvent"))
 			this.ignoreReceivedEvent = doc.getBoolean("ignoreReceivedEvent").getValue();
 		if (doc.containsKey("reportIfEmpty"))
@@ -129,19 +132,20 @@ public class SubscriptionType {
 	}
 
 	public SubscriptionType(String queryName, String subscriptionID, String dest, String cronExpression,
-			boolean ignoreReceivedEvent, boolean reportIfEmpty, String initialRecordTime, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action,
-			String EQ_bizStep, String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
-			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, String EQ_quantity,
-			String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity, String orderBy,
-			String orderDirection, String eventCountLimit, String maxEventCount, String format,
+			boolean isScheduledSubscription, boolean ignoreReceivedEvent, boolean reportIfEmpty,
+			String initialRecordTime, String eventType, String GE_eventTime, String LT_eventTime, String GE_recordTime,
+			String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition, String EQ_readPoint,
+			String WD_readPoint, String EQ_bizLocation, String WD_bizLocation, String EQ_transformationID,
+			String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC,
+			String MATCH_epcClass, String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass,
+			String EQ_quantity, String GT_quantity, String GE_quantity, String LT_quantity, String LE_quantity,
+			String orderBy, String orderDirection, String eventCountLimit, String maxEventCount, String format,
 			Map<String, String> paramMap) {
 		this.queryName = queryName;
 		this.subscriptionID = subscriptionID;
 		this.dest = dest;
 		this.cronExpression = cronExpression;
+		this.isScheduledSubscription = isScheduledSubscription;
 		this.ignoreReceivedEvent = ignoreReceivedEvent;
 		this.reportIfEmpty = reportIfEmpty;
 		this.initialRecordTime = initialRecordTime;
@@ -189,6 +193,7 @@ public class SubscriptionType {
 		if (subscription.getCronExpression() != null) {
 			bson.put("cronExpression", new BsonString(subscription.getCronExpression()));
 		}
+		bson.put("isScheduledSubscription", new BsonBoolean(subscription.isScheduledSubscription));
 		bson.put("ignoreReceivedEvent", new BsonBoolean(subscription.isIgnoreReceivedEvent()));
 		bson.put("reportIfEmpty", new BsonBoolean(subscription.isReportIfEmpty()));
 
@@ -617,6 +622,14 @@ public class SubscriptionType {
 
 	public void setMaxEventCount(String maxEventCount) {
 		this.maxEventCount = maxEventCount;
+	}
+
+	public boolean isScheduledSubscription() {
+		return isScheduledSubscription;
+	}
+
+	public void setScheduledSubscription(boolean isScheduledSubscription) {
+		this.isScheduledSubscription = isScheduledSubscription;
 	}
 
 }

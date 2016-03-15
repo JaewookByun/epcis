@@ -21,5 +21,8 @@
 	"service_registry_report" : "on",
 	
 	"_ONS_Address" : "Some IP and Port",
-	"ons_address" : "143.248.1.177"
+	"ons_address" : "143.248.1.177",
+	
+	"_trigger_support" : "(on|off)",
+	"trigger_support" : "on"
 }

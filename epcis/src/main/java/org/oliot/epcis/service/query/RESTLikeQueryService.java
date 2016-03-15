@@ -94,8 +94,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> subscribe(@PathVariable String queryName, @PathVariable String subscriptionID,
 			@RequestParam String dest, @RequestParam String cronExpression,
-			@RequestParam(required = false) boolean reportIfEmpty,
-			@RequestParam(required = false) boolean ignoreReceivedEvent,
+			@RequestParam(required = false, defaultValue="true") boolean isScheduledSubscription,
+			@RequestParam(required = false, defaultValue="true") boolean reportIfEmpty,
+			@RequestParam(required = false, defaultValue="true") boolean ignoreReceivedEvent,
 			@RequestParam(required = false) String initialRecordTime, @RequestParam(required = false) String eventType,
 			@RequestParam(required = false) String GE_eventTime, @RequestParam(required = false) String LT_eventTime,
 			@RequestParam(required = false) String GE_recordTime, @RequestParam(required = false) String LT_recordTime,
@@ -140,7 +141,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.subscribe(queryName, subscriptionID, dest, cronExpression,
+			String result = mongoQueryService.subscribe(queryName, subscriptionID, dest, cronExpression, isScheduledSubscription,
 					ignoreReceivedEvent, reportIfEmpty, initialRecordTime, eventType, GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
@@ -226,21 +227,22 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String eventCountLimit,
 			@RequestParam(required = false) String maxEventCount,
 
-	@RequestParam(required = false) String vocabularyName, @RequestParam(required = false) boolean includeAttributes,
+			@RequestParam(required = false) String vocabularyName,
+			@RequestParam(required = false) boolean includeAttributes,
 			@RequestParam(required = false) boolean includeChildren,
 			@RequestParam(required = false) String attributeNames, @RequestParam(required = false) String EQ_name,
 			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) String maxElementCount,
 
-	@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
+			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken,
 
-	@RequestParam Map<String, String> params) {
-		
+			@RequestParam Map<String, String> params) {
+
 		HttpHeaders responseHeaders = new HttpHeaders();
 		if (format != null && format.equals("JSON")) {
 			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
-		}else{
+		} else {
 			responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
 		}
 		// Access Control is not mandatory

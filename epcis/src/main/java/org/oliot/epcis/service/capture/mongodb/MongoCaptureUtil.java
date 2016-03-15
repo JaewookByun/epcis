@@ -10,6 +10,7 @@ import org.oliot.epcis.serde.mongodb.ObjectEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.QuantityEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.TransactionEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.TransformationEventWriteConverter;
+import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
@@ -52,6 +53,9 @@ public class MongoCaptureUtil {
 			object2Save.put("userID", new BsonString(userID));
 			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("AggregationEvent", object2Save);
+		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -67,6 +71,9 @@ public class MongoCaptureUtil {
 		if (userID != null && accessModifier != null) {
 			object2Save.put("userID", new BsonString(userID));
 			object2Save.put("accessModifier", new BsonString(accessModifier));
+		}
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("ObjectEvent", object2Save);
 		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
@@ -84,6 +91,9 @@ public class MongoCaptureUtil {
 			object2Save.put("userID", new BsonString(userID));
 			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("QuantityEvent", object2Save);
+		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -100,6 +110,9 @@ public class MongoCaptureUtil {
 			object2Save.put("userID", new BsonString(userID));
 			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("TransactionEvent", object2Save);
+		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -115,6 +128,9 @@ public class MongoCaptureUtil {
 		if (userID != null && accessModifier != null) {
 			object2Save.put("userID", new BsonString(userID));
 			object2Save.put("accessModifier", new BsonString(accessModifier));
+		}
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("TransformationEvent", object2Save);
 		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
@@ -139,7 +155,9 @@ public class MongoCaptureUtil {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
 				BsonDocument.class);
 		BsonDocument dbObject = BsonDocument.parse(event.toString());
-
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("ObjectEvent", dbObject);
+		}
 		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -150,7 +168,9 @@ public class MongoCaptureUtil {
 				BsonDocument.class);
 
 		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("AggregationEvent", dbObject);
+		}
 		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -161,7 +181,9 @@ public class MongoCaptureUtil {
 				BsonDocument.class);
 
 		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("TransformationEvent", dbObject);
+		}
 		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
@@ -172,7 +194,9 @@ public class MongoCaptureUtil {
 				BsonDocument.class);
 
 		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("TransactionEvent", dbObject);
+		}
 		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}

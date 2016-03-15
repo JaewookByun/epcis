@@ -19,6 +19,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.ale.ECReport;
 import org.oliot.model.ale.ECReportGroup;
 import org.oliot.model.ale.ECReportGroupList;
@@ -221,6 +222,9 @@ public class ALECapture implements ServletContextAware {
 
 					MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
 							BsonDocument.class);
+					if (Configuration.isTriggerSupported == true) {
+						TriggerEngine.examineAndFire("ObjectEvent", dbo);
+					}
 					collection.insertOne(dbo);
 				}
 			}

@@ -105,7 +105,7 @@
 			<artifactId>json-schema-validator</artifactId>
 			<version>2.2.6</version>
 		</dependency>
-		
+
 		<!-- CXF Web Service -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
@@ -130,6 +130,12 @@
 			<groupId>com.restfb</groupId>
 			<artifactId>restfb</artifactId>
 			<version>1.14.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.4</version>
 		</dependency>
 	</dependencies>
 	<build>
