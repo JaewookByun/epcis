@@ -134,18 +134,17 @@ public class MongoCaptureUtil {
 
 	// JsonObject event capture series..
 
-	public void objectevent_capture(JSONObject event) {
+	public void captureObjectEvent(JSONObject event) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
 				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
+		BsonDocument dbObject = BsonDocument.parse(event.toString());
 
 		collection.insertOne(dbObject);
 		Configuration.logger.info(" Event Saved ");
 	}
 
-	public void aggregationevent_capture(JSONObject event) {
+	public void captureAggregationEvent(JSONObject event) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
 				BsonDocument.class);
@@ -156,9 +155,20 @@ public class MongoCaptureUtil {
 		Configuration.logger.info(" Event Saved ");
 	}
 
-	public void transformationevent_capture(JSONObject event) {
+	public void captureTransformationEvent(JSONObject event) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
+				BsonDocument.class);
+
+		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
+
+		collection.insertOne(dbObject);
+		Configuration.logger.info(" Event Saved ");
+	}
+
+	public void captureTransactionEvent(JSONObject event) {
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
 				BsonDocument.class);
 
 		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
@@ -170,17 +180,6 @@ public class MongoCaptureUtil {
 	public void masterdata_capture(JSONObject event) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void transactionevent_capture(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
 				BsonDocument.class);
 
 		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
