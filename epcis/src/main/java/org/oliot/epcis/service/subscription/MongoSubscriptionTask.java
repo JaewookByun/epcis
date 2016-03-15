@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb;
+package org.oliot.epcis.service.subscription;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import org.apache.log4j.Level;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
 import org.oliot.model.epcis.QueryResults;
@@ -33,7 +34,7 @@ import org.quartz.SchedulerException;
 import com.mongodb.client.MongoCollection;
 
 /**
- * Copyright (C) 2014 Jaewook Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in

@@ -31,14 +31,11 @@ public class ObjectEventTest {
 	@Test
 	public void baseObjectEventCapture() {
 		try {
-			for (int i = 0; i < 10000; i++) {
-				// Make basic Object Event
-				ObjectEvent objectEvent = new ObjectEvent();
-				EPCISClient client = new EPCISClient(
-						new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-				client.addObjectEvent(objectEvent);
-				client.sendDocument();
-			}
+			// Make basic Object Event
+			ObjectEvent objectEvent = new ObjectEvent();
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			client.addObjectEvent(objectEvent);
+			client.sendDocument();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -51,7 +48,7 @@ public class ObjectEventTest {
 			ObjectEvent objectEvent = new ObjectEvent();
 
 			List<String> epcList = new ArrayList<String>();
-			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
+			epcList.add("urn:epc:id:sgtin:0614141.107346.20182");
 			objectEvent.setEpcList(epcList);
 
 			objectEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");

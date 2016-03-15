@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query.mongodb;
+package org.oliot.epcis.service.subscription;
 
 import java.io.IOException;
 import java.io.InputStream;

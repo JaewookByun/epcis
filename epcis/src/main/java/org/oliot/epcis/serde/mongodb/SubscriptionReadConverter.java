@@ -33,6 +33,7 @@ public class SubscriptionReadConverter {
 		String subscriptionID = dbObject.getString("subscriptionID").getValue();
 		String dest = dbObject.getString("dest").getValue();
 		String cronExpression = dbObject.getString("cronExpression").getValue();
+		boolean isScheduledSubscription = dbObject.getBoolean("isScheduledSubscription").getValue();
 		boolean ignoreReceivedEvent = dbObject.getBoolean("ignoreReceivedEvent").getValue();
 		boolean reportIfEmpty = dbObject.getBoolean("reportIfEmpty").getValue();
 		String initialRecordTime = dbObject.getString("initialRecordTime").getValue();
@@ -77,7 +78,7 @@ public class SubscriptionReadConverter {
 			paramMap.put(key, value);
 		}
 
-		SubscriptionType st = new SubscriptionType(queryName, subscriptionID, dest, cronExpression, ignoreReceivedEvent,
+		SubscriptionType st = new SubscriptionType(queryName, subscriptionID, dest, cronExpression, isScheduledSubscription, ignoreReceivedEvent,
 				reportIfEmpty, initialRecordTime, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
 				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,

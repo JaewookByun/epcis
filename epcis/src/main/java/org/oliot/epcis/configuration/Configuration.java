@@ -12,7 +12,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
-import org.oliot.epcis.service.query.mongodb.MongoSubscription;
+import org.oliot.epcis.service.subscription.MongoSubscription;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -46,6 +46,7 @@ public class Configuration implements ServletContextListener {
 	public static String onsAddress;
 	public static boolean isQueryAccessControlOn;
 	public static String facebookAppID;
+	public static boolean isTriggerSupported;
 	
 	public static MongoClient mongoClient;
 	public static MongoDatabase mongoDatabase;
@@ -178,6 +179,14 @@ public class Configuration implements ServletContextListener {
 
 			if( backend.equals("MongoDB")){
 				setMongoDB(json);
+			}
+			
+			// Trigger Support
+			String triggerSupport = json.getString("trigger_support");
+			if (triggerSupport == null || triggerSupport.trim().equals("on")){
+				isTriggerSupported = true;
+			}else{
+				isTriggerSupported = false;
 			}
 			
 		} catch (Exception ex) {
