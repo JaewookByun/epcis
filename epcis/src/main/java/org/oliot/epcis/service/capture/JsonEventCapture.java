@@ -70,48 +70,43 @@ public class JsonEventCapture implements ServletContextAware {
 		if (Configuration.isCaptureVerfificationOn == true) {
 
 			// JSONParser parser = new JSONParser();
-			JsonSchemaLoader schemaloader = new JsonSchemaLoader();
+			JsonSchemaLoader schemaLoader = new JsonSchemaLoader();
 
 			try {
 
-				JSONObject json = new JSONObject(inputString);
-				JSONObject schema_json = schemaloader.getGeneralschema();
+				JSONObject jsonEvent = new JSONObject(inputString);
+				JSONObject jsonEventSchema = schemaLoader.getEventSchema();
 
-				if (!CaptureUtil.validate(json, schema_json)) {
+				if (!CaptureUtil.validate(jsonEvent, jsonEventSchema)) {
 					Configuration.logger.info("Json Document is invalid" + " about general_validcheck");
 					return "Error: Json Document is not valid" + "general_validcheck";
 				}
-				JSONObject json2 = json.getJSONObject("epcis");
-				JSONObject json3 = json2.getJSONObject("EPCISBody");
-				JSONArray json4 = json3.getJSONArray("EventList");
+				JSONArray jsonEventList = jsonEvent.getJSONObject("epcis").getJSONObject("EPCISBody")
+						.getJSONArray("EventList");
 
-				for (int i = 0; i < json4.length(); i++) {
+				for (int i = 0; i < jsonEventList.length(); i++) {
+					JSONObject jsonEventElement = jsonEventList.getJSONObject(i);
 
-					if (json4.getJSONObject(i).has("ObjectEvent") == true) {
+					if (jsonEventElement.has("ObjectEvent") == true) {
 
 						/* startpoint of validation logic for ObjectEvent */
+						JSONObject objectEventSchema = schemaLoader.getObjectEventSchema();
+						JSONObject jsonObjectEvent = jsonEventElement.getJSONObject("ObjectEvent");
 
-						JSONObject objecteventschema_json = schemaloader.getObjectEventschema();
-
-						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("ObjectEvent"),
-								objecteventschema_json)) {
-
+						if (!CaptureUtil.validate(jsonObjectEvent, objectEventSchema)) {
 							Configuration.logger
 									.info("Json Document is not valid" + " detail validation check for objectevent");
 							return "Error: Json Document is not valid" + " for detail validation check for objectevent";
 						}
+
 						/* finish validation logic for ObjectEvent */
-
-						if (!json4.getJSONObject(i).getJSONObject("ObjectEvent").has("recordTime")) {
-							json4.getJSONObject(i).getJSONObject("ObjectEvent").put("recordTime",
-									System.currentTimeMillis());
-
+						if (!jsonObjectEvent.has("recordTime")) {
+							jsonObjectEvent.put("recordTime", System.currentTimeMillis());
 						}
 
-						if (json4.getJSONObject(i).getJSONObject("ObjectEvent").has("any")) {
+						if (jsonObjectEvent.has("any")) {
 							/* start finding namespace in the any field. */
-							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("ObjectEvent")
-									.getJSONObject("any");
+							JSONObject anyobject = jsonObjectEvent.getJSONObject("any");
 							String namespace = "";
 							boolean namespace_flag = false;
 
@@ -156,17 +151,17 @@ public class JsonEventCapture implements ServletContextAware {
 
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"));
+							m.captureObjectEvent(jsonObjectEvent);
 						}
-					} else if (json4.getJSONObject(i).has("AggregationEvent") == true) {
+					} else if (jsonEventElement.has("AggregationEvent") == true) {
 
 						/*
 						 * startpoint of validation logic for AggregationEvent
 						 */
-						JSONObject aggregationeventschema_json = schemaloader.getAggregationEventschema();
+						JSONObject aggregationEventSchema = schemaLoader.getAggregationEventSchema();
+						JSONObject jsonAggregationEvent = jsonEventElement.getJSONObject("AggregationEvent");
 
-						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("AggregationEvent"),
-								aggregationeventschema_json)) {
+						if (!CaptureUtil.validate(jsonAggregationEvent, aggregationEventSchema)) {
 
 							Configuration.logger.info(
 									"Json Document is not valid" + " detail validation check for aggregationevent");
@@ -175,16 +170,13 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for AggregationEvent */
 
-						if (!json4.getJSONObject(i).getJSONObject("AggregationEvent").has("recordTime")) {
-							json4.getJSONObject(i).getJSONObject("AggregationEvent").put("recordTime",
-									System.currentTimeMillis());
-
+						if (!jsonAggregationEvent.has("recordTime")) {
+							jsonAggregationEvent.put("recordTime", System.currentTimeMillis());
 						}
 
-						if (json4.getJSONObject(i).getJSONObject("AggregationEvent").has("any")) {
+						if (jsonAggregationEvent.has("any")) {
 							/* start finding namespace in the any field. */
-							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("AggregationEvent")
-									.getJSONObject("any");
+							JSONObject anyobject = jsonAggregationEvent.getJSONObject("any");
 							String namespace = "";
 							boolean namespace_flag = false;
 
@@ -225,18 +217,18 @@ public class JsonEventCapture implements ServletContextAware {
 
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.aggregationevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"));
+							m.captureAggregationEvent(jsonEventList.getJSONObject(i).getJSONObject("AggregationEvent"));
 						}
-					} else if (json4.getJSONObject(i).has("TransformationEvent") == true) {
+					} else if (jsonEventElement.has("TransformationEvent") == true) {
 
 						/*
 						 * startpoint of validation logic for
 						 * TransFormationEvent
 						 */
-						JSONObject tranformationeventschema_json = schemaloader.getTransformationEventschema();
+						JSONObject transformationEventSchema = schemaLoader.getTransformationEventSchema();
+						JSONObject jsonTransformationEvent = jsonEventElement.getJSONObject("TransformationEvent");
 
-						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("TransformationEvent"),
-								tranformationeventschema_json)) {
+						if (!CaptureUtil.validate(jsonTransformationEvent, transformationEventSchema)) {
 
 							Configuration.logger.info(
 									"Json Document is not valid" + " detail validation check for TransFormationEvent");
@@ -245,15 +237,13 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for TransFormationEvent */
 
-						if (!json4.getJSONObject(i).getJSONObject("TransformationEvent").has("recordTime")) {
-							json4.getJSONObject(i).getJSONObject("TransformationEvent").put("recordTime",
-									System.currentTimeMillis());
+						if (!jsonTransformationEvent.has("recordTime")) {
+							jsonTransformationEvent.put("recordTime", System.currentTimeMillis());
 						}
 
-						if (json4.getJSONObject(i).getJSONObject("TransformationEvent").has("any")) {
+						if (jsonTransformationEvent.has("any")) {
 							/* start finding namespace in the any field. */
-							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("TransformationEvent")
-									.getJSONObject("any");
+							JSONObject anyobject = jsonTransformationEvent.getJSONObject("any");
 							String namespace = "";
 							boolean namespace_flag = false;
 
@@ -293,18 +283,19 @@ public class JsonEventCapture implements ServletContextAware {
 
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
+							m.captureTransformationEvent(
+									jsonEventList.getJSONObject(i).getJSONObject("TransformationEvent"));
 						}
-					} else if (json4.getJSONObject(i).has("TransactionEvent") == true) {
+					} else if (jsonEventElement.has("TransactionEvent") == true) {
 
 						/*
 						 * startpoint of validation logic for
 						 * TransFormationEvent
 						 */
-						JSONObject transactioneventschema_json = schemaloader.getTransactionEventschema();
+						JSONObject transactionEventSchema = schemaLoader.getTransactionEventSchema();
+						JSONObject jsonTransactionEvent = jsonEventElement.getJSONObject("TransactionEvent");
 
-						if (!CaptureUtil.validate(json4.getJSONObject(i).getJSONObject("TransactionEvent"),
-								transactioneventschema_json)) {
+						if (!CaptureUtil.validate(jsonTransactionEvent, transactionEventSchema)) {
 
 							Configuration.logger.info(
 									"Json Document is not valid." + " detail validation check for TransactionEvent");
@@ -313,15 +304,13 @@ public class JsonEventCapture implements ServletContextAware {
 						}
 						/* finish validation logic for TransFormationEvent */
 
-						if (!json4.getJSONObject(i).getJSONObject("TransactionEvent").has("recordTime")) {
-							json4.getJSONObject(i).getJSONObject("TransactionEvent").put("recordTime",
-									System.currentTimeMillis());
+						if (!jsonTransactionEvent.has("recordTime")) {
+							jsonTransactionEvent.put("recordTime", System.currentTimeMillis());
 						}
 
-						if (json4.getJSONObject(i).getJSONObject("TransactionEvent").has("any")) {
+						if (jsonTransactionEvent.has("any")) {
 							/* start finding namespace in the any field. */
-							JSONObject anyobject = json4.getJSONObject(i).getJSONObject("TransactionEvent")
-									.getJSONObject("any");
+							JSONObject anyobject = jsonTransactionEvent.getJSONObject("any");
 							String namespace = "";
 							boolean namespace_flag = false;
 
@@ -362,7 +351,7 @@ public class JsonEventCapture implements ServletContextAware {
 
 						if (Configuration.backend.equals("MongoDB")) {
 							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.transactionevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"));
+							m.captureTransactionEvent(jsonEventList.getJSONObject(i).getJSONObject("TransactionEvent"));
 						}
 					} else {
 						Configuration.logger
@@ -371,7 +360,7 @@ public class JsonEventCapture implements ServletContextAware {
 					}
 
 				}
-				if (json4.length() != 0)
+				if (jsonEventList.length() != 0)
 					Configuration.logger.info(" EPCIS Document : Captured ");
 
 			} catch (JSONException e) {
@@ -382,32 +371,33 @@ public class JsonEventCapture implements ServletContextAware {
 			return "EPCIS Document : Captured ";
 
 		} else {
-			JSONObject json = new JSONObject(inputString);
-			JSONObject json2 = json.getJSONObject("epcis");
-			JSONObject json3 = json2.getJSONObject("EPCISBody");
-			JSONArray json4 = json3.getJSONArray("EventList");
+			JSONObject jsonEvent = new JSONObject(inputString);
+			JSONArray jsonEventList = jsonEvent.getJSONObject("epcis").getJSONObject("EPCISBody")
+					.getJSONArray("EventList");
 
-			for (int i = 0; i < json4.length(); i++) {
-				if (json4.getJSONObject(i).has("ObjectEvent") == true) {
+			for (int i = 0; i < jsonEventList.length(); i++) {
 
+				JSONObject jsonEventElement = jsonEventList.getJSONObject(i);
+
+				if (jsonEventElement.has("ObjectEvent") == true) {
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.objectevent_capture(json4.getJSONObject(i).getJSONObject("ObjectEvent"));
+						m.captureObjectEvent(jsonEventElement.getJSONObject("ObjectEvent"));
 					}
-				} else if (json4.getJSONObject(i).has("AggregationEvent") == true) {
+				} else if (jsonEventElement.has("AggregationEvent") == true) {
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.aggregationevent_capture(json4.getJSONObject(i).getJSONObject("AggregationEvent"));
+						m.captureAggregationEvent(jsonEventElement.getJSONObject("AggregationEvent"));
 					}
-				} else if (json4.getJSONObject(i).has("TransformationEvent") == true) {
+				} else if (jsonEventElement.has("TransformationEvent") == true) {
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.transformationevent_capture(json4.getJSONObject(i).getJSONObject("TransformationEvent"));
+						m.captureTransformationEvent(jsonEventElement.getJSONObject("TransformationEvent"));
 					}
-				} else if (json4.getJSONObject(i).has("TransactionEvent") == true) {
+				} else if (jsonEventElement.has("TransactionEvent") == true) {
 					if (Configuration.backend.equals("MongoDB")) {
 						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.transactionevent_capture(json4.getJSONObject(i).getJSONObject("TransactionEvent"));
+						m.captureTransactionEvent(jsonEventElement.getJSONObject("TransactionEvent"));
 					}
 				}
 			}

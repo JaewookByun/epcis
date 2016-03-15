@@ -10,9 +10,6 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
 import org.oliot.model.jsonschema.JsonSchemaLoader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.GenericXmlApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -65,42 +62,29 @@ public class JsonVocabularyCapture implements ServletContextAware {
 		if (Configuration.isCaptureVerfificationOn == true) {
 
 			// JSONParser parser = new JSONParser();
-			JsonSchemaLoader schemaloader = new JsonSchemaLoader();
-
-			ApplicationContext ctx = new GenericXmlApplicationContext("classpath:MongoConfig.xml");
-
+			JsonSchemaLoader schemaLoader = new JsonSchemaLoader();
 			try {
 
-				JSONObject json = new JSONObject(inputString);
-				JSONObject schema_json = schemaloader.getGeneralschema_md();
+				JSONObject jsonVocabulary = new JSONObject(inputString);
+				JSONObject jsonVocabularySchema = schemaLoader.getMasterDataSchema();
 
-				if (!CaptureUtil.validate(json, schema_json)) {
+				if (!CaptureUtil.validate(jsonVocabulary, jsonVocabularySchema)) {
 					Configuration.logger.info("Json Document is invalid" + " about master_data_validcheck");
-					((AbstractApplicationContext) ctx).close();
 
 					return new ResponseEntity<>(new String("Error: EPCIS Masterdata Document is not validated"),
 							HttpStatus.BAD_REQUEST);
 				}
-				JSONObject json2 = json.getJSONObject("epcismd");
-				JSONObject json3 = json2.getJSONObject("EPCISBody");
-				JSONArray json4 = json3.getJSONArray("VocabularyList");
-
-				for (int i = 0; i < json4.length(); i++) {
-
-					if (json4.getJSONObject(i).has("Vocabulary") == true) {
-
-						JSONArray json5 = json4.getJSONObject(i).getJSONArray("Vocabulary");
-
-						for (int j = 0; j < json5.length(); j++) {
-
-							if (Configuration.backend.equals("MongoDB")) {
-								MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-								mdConverter.json_capture(json5.getJSONObject(j));
-								Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
-							}
-
+				JSONArray jsonVocabularyList = jsonVocabulary.getJSONObject("epcismd").getJSONObject("EPCISBody")
+						.getJSONArray("VocabularyList");
+				for (int i = 0; i < jsonVocabularyList.length(); i++) {
+					JSONArray jsonVocabularyElementList = jsonVocabularyList.getJSONObject(i)
+							.getJSONArray("Vocabulary");
+					for (int j = 0; j < jsonVocabularyElementList.length(); j++) {
+						if (Configuration.backend.equals("MongoDB")) {
+							MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+							mdConverter.capture(jsonVocabularyElementList.getJSONObject(j));
+							Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 						}
-						/* startpoint of validation logic for Vocabulary */
 					}
 				}
 			} catch (JSONException e) {
@@ -108,30 +92,23 @@ public class JsonVocabularyCapture implements ServletContextAware {
 			} catch (Exception e) {
 				Configuration.logger.log(Level.ERROR, e.toString());
 			}
-
 		} else {
-			JSONObject json = new JSONObject(inputString);
-			JSONObject json2 = json.getJSONObject("epcismd");
-			JSONObject json3 = json2.getJSONObject("EPCISBody");
-			JSONArray json4 = json3.getJSONArray("VocabularyList");
+			JSONObject jsonVocabulary = new JSONObject(inputString);
+			JSONArray jsonVocabularyList = jsonVocabulary.getJSONObject("epcismd").getJSONObject("EPCISBody")
+					.getJSONArray("VocabularyList");
+			for (int i = 0; i < jsonVocabularyList.length(); i++) {
+				JSONArray jsonVocabularyElementList = jsonVocabularyList.getJSONObject(i)
+						.getJSONArray("Vocabulary");
+				for (int j = 0; j < jsonVocabularyElementList.length(); j++) {
 
-			for (int i = 0; i < json4.length(); i++) {
-
-				if (json4.getJSONObject(i).has("Vocabulary") == true) {
-
-					JSONArray json5 = json4.getJSONObject(i).getJSONArray("Vocabulary");
-
-					for (int j = 0; j < json5.length(); j++) {
-
-						if (Configuration.backend.equals("MongoDB")) {
-							MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-							mdConverter.json_capture(json5.getJSONObject(i));
-							Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
-						}
-
+					if (Configuration.backend.equals("MongoDB")) {
+						MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+						mdConverter.capture(jsonVocabularyElementList.getJSONObject(i));
+						Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 					}
-					/* startpoint of validation logic for Vocabulary */
+
 				}
+				/* startpoint of validation logic for Vocabulary */
 			}
 
 		}

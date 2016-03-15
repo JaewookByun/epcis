@@ -228,7 +228,7 @@ public class MasterDataWriteConverter {
 		return 0;
 	}
 
-	public int json_capture(JSONObject event) {
+	public int capture(JSONObject event) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
 				BsonDocument.class);

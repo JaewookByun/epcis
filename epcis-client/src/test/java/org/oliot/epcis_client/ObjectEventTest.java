@@ -26,60 +26,63 @@ import java.util.Map;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class ObjectEventTest{
-	
+public class ObjectEventTest {
+
 	@Test
 	public void baseObjectEventCapture() {
 		try {
-			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
-			client.sendDocument();
+			for (int i = 0; i < 10000; i++) {
+				// Make basic Object Event
+				ObjectEvent objectEvent = new ObjectEvent();
+				EPCISClient client = new EPCISClient(
+						new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+				client.addObjectEvent(objectEvent);
+				client.sendDocument();
+			}
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
 	public void basicObjectEventCapture() {
 		try {
 			// Make basic Object Event
 			ObjectEvent objectEvent = new ObjectEvent();
-			
+
 			List<String> epcList = new ArrayList<String>();
 			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
 			objectEvent.setEpcList(epcList);
-			
+
 			objectEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
-			
+
 			objectEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
-			
+
 			objectEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
-			
+
 			objectEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
-			
-			Map<String,List<String>> bizTransactionList = new HashMap<String,List<String>>();
+
+			Map<String, List<String>> bizTransactionList = new HashMap<String, List<String>>();
 			List<String> bizTransaction1 = new ArrayList<String>();
 			bizTransaction1.add("http://transaction.acme.com/po/12345678");
-			bizTransactionList.put("urn:epcglobal:cbv:btt:po", bizTransaction1 );
+			bizTransactionList.put("urn:epcglobal:cbv:btt:po", bizTransaction1);
 			List<String> bizTransaction2 = new ArrayList<String>();
 			bizTransaction2.add("urn:epcglobal:cbv:bt:0614141073467:1152");
-			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2 );
+			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2);
 			objectEvent.setBizTransactionList(bizTransactionList);
-			
-			Map<String,String> namespaces = new HashMap<String,String>();
+
+			Map<String, String> namespaces = new HashMap<String, String>();
 			namespaces.put("example", "http://ns.example.com/epcis");
 			objectEvent.setNamespaces(namespaces);
-			
-			Map<String, Map<String,Object>> extensionMap = new HashMap<String, Map<String,Object>>();
+
+			Map<String, Map<String, Object>> extensionMap = new HashMap<String, Map<String, Object>>();
 			Map<String, Object> extension = new HashMap<String, Object>();
 			extension.put("temperature", new Integer(36));
 			extension.put("emg", new Double(22));
 			extension.put("ecg", new Long(11));
 			extensionMap.put("example", extension);
 			objectEvent.setExtensions(extensionMap);
-			
+
 			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
 			client.addObjectEvent(objectEvent);
 			client.sendDocument();

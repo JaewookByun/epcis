@@ -1,18 +1,16 @@
 package org.oliot.model.jsonschema;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
+import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 
 /**
- * Copyright (C) 2015 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -27,7 +25,7 @@ import org.json.simple.parser.ParseException;
  *         Real-time Embedded System Laboratory(RESL)
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
- *         
+ * 
  * @author Sungpil Woo, Master student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
@@ -38,88 +36,85 @@ import org.json.simple.parser.ParseException;
  */
 
 public class JsonSchemaLoader {
-	
-	JSONObject schema_json;
-	JSONObject schema_json_md;
-	JSONObject objecteventschema_json;
-	JSONObject aggregationeventschema_json;
-	JSONObject tranformationeventschema_json;
-	JSONObject transactioneventschema_json;
-	
-	public JsonSchemaLoader(){
-		JSONParser parser = new JSONParser();
-		Object g_schemaobj,g_schemaobj_md,objecteventobj,aggregationeventobj,tranformationeventobj,transactioneventobj;
-		
-		URL g_url = getClass().getResource("general_schema.json");
-		URL g_url_md = getClass().getResource("general_schema_md.json");
-		URL objecteventurl = getClass().getResource("obejctevent_schema.json");
-		URL aggregationeventurl = getClass().getResource("aggregationevent_schema.json");
-		URL tranformationeventurl = getClass().getResource("transformationevent_schema.json");
-		URL transactioneventurl = getClass().getResource("transactionevent_schema.json");
-		
-		File g_schema_file = new File(g_url.getPath());
-		File g_schema_md_file = new File(g_url_md.getPath());
-		File objecteventfile = new File(objecteventurl.getPath());
-		File aggregationeventfile = new File(aggregationeventurl.getPath());
-		File tranformationeventfile = new File(tranformationeventurl.getPath());
-		File transactioneventfile = new File(transactioneventurl.getPath());
-		
-		
+
+	JSONObject eventSchema;
+	JSONObject masterDataSchema;
+	JSONObject objectEventSchema;
+	JSONObject aggregationEventSchema;
+	JSONObject transformationEventSchema;
+	JSONObject transactionEventSchema;
+
+	public JsonSchemaLoader() {
 		try {
-			g_schemaobj = parser.parse(new FileReader(g_schema_file));
-			g_schemaobj_md = parser.parse(new FileReader(g_schema_md_file));
-			objecteventobj = parser.parse(new FileReader(objecteventfile));
-			aggregationeventobj = parser.parse(new FileReader(aggregationeventfile));
-			tranformationeventobj = parser.parse(new FileReader(tranformationeventfile));
-			transactioneventobj = parser.parse(new FileReader(transactioneventfile));
-			
-			schema_json = new JSONObject(g_schemaobj.toString());
-			schema_json_md = new JSONObject(g_schemaobj_md.toString());
-			objecteventschema_json = new JSONObject(objecteventobj.toString());
-			aggregationeventschema_json = new JSONObject(aggregationeventobj.toString());
-			tranformationeventschema_json = new JSONObject(tranformationeventobj.toString());
-			transactioneventschema_json = new JSONObject(transactioneventobj.toString());
+			eventSchema = new JSONObject(new String(
+					Files.readAllBytes(Paths.get(getClass().getResource("GeneralEventSchema.json").toURI()))));
+			masterDataSchema = new JSONObject(
+					new String(Files.readAllBytes(Paths.get(getClass().getResource("GeneralMDSchema.json").toURI()))));
+			objectEventSchema = new JSONObject(new String(
+					Files.readAllBytes(Paths.get(getClass().getResource("ObjectEventSchema.json").toURI()))));
+			aggregationEventSchema = new JSONObject(new String(
+					Files.readAllBytes(Paths.get(getClass().getResource("AggregationEventSchema.json").toURI()))));
+			transformationEventSchema = new JSONObject(new String(
+					Files.readAllBytes(Paths.get(getClass().getResource("TransformationEventSchema.json").toURI()))));
+			transactionEventSchema = new JSONObject(new String(
+					Files.readAllBytes(Paths.get(getClass().getResource("TransactionEventSchema.json").toURI()))));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ParseException e) {
+		} catch (JSONException e) {
+			e.printStackTrace();
+		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
 	}
-	
-	public JSONObject getGeneralschema(){
-		
-		return this.schema_json;
+
+	public JSONObject getEventSchema() {
+		return eventSchema;
 	}
-	
-	public JSONObject getGeneralschema_md(){
-		
-		return this.schema_json_md;
+
+	public void setEventSchema(JSONObject eventSchema) {
+		this.eventSchema = eventSchema;
 	}
-	
-	
-	public JSONObject getObjectEventschema(){
-		
-		return this.objecteventschema_json;
+
+	public JSONObject getMasterDataSchema() {
+		return masterDataSchema;
 	}
-	
-	public JSONObject getAggregationEventschema(){
-		
-		return this.aggregationeventschema_json;
+
+	public void setMasterDataSchema(JSONObject masterDataSchema) {
+		this.masterDataSchema = masterDataSchema;
 	}
-	
-	public JSONObject getTransformationEventschema(){
-		
-		return this.transactioneventschema_json;
+
+	public JSONObject getObjectEventSchema() {
+		return objectEventSchema;
 	}
-	
-	public JSONObject getTransactionEventschema(){
-		
-		return this.transactioneventschema_json;
+
+	public void setObjectEventSchema(JSONObject objectEventSchema) {
+		this.objectEventSchema = objectEventSchema;
 	}
-	
-	
+
+	public JSONObject getAggregationEventSchema() {
+		return aggregationEventSchema;
+	}
+
+	public void setAggregationEventSchema(JSONObject aggregationEventSchema) {
+		this.aggregationEventSchema = aggregationEventSchema;
+	}
+
+	public JSONObject getTransformationEventSchema() {
+		return transformationEventSchema;
+	}
+
+	public void setTransformationEventSchema(JSONObject transformationEventSchema) {
+		this.transformationEventSchema = transformationEventSchema;
+	}
+
+	public JSONObject getTransactionEventSchema() {
+		return transactionEventSchema;
+	}
+
+	public void setTransactionEventSchema(JSONObject transactionEventSchema) {
+		this.transactionEventSchema = transactionEventSchema;
+	}
 
 }
