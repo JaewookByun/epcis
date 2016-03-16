@@ -53,13 +53,21 @@ public class MasterDataReadConverter {
 
 			while (attrIter.hasNext()) {
 				String key = attrIter.next();
-				String value = attrObj.getString(key).getValue();
-				key = decodeMongoObjectKey(key);
-
-				AttributeType attrType = new AttributeType();
-				attrType.setId(key);
-				attrType.setValue(value);
-				attrListType.add(attrType);
+				if (!key.equals("lastUpdated")) {
+					String value = attrObj.getString(key).getValue();
+					key = decodeMongoObjectKey(key);
+					AttributeType attrType = new AttributeType();
+					attrType.setId(key);
+					attrType.setValue(value);
+					attrListType.add(attrType);
+				}else{
+					String value = String.valueOf(attrObj.getInt64(key).getValue());
+					AttributeType attrType = new AttributeType();
+					attrType.setId(key);
+					attrType.setValue(value);
+					attrListType.add(attrType);
+				}
+				
 			}
 		}
 		vet.setAttribute(attrListType);

@@ -76,17 +76,13 @@ public class MongoQueryUtil {
 
 	static BsonDocument getVocFamilyQueryObject(String type, String field, String csv) {
 		String[] paramValueArr = csv.split(",");
-		BsonArray subObjectList = new BsonArray();
+		BsonDocument query = new BsonDocument();
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
-			BsonDocument dbo = new BsonDocument();
 			type = encodeMongoObjectKey(type);
-			dbo.put(type, new BsonString(val));
-			subObjectList.add(dbo);
+			query.put(field+"."+type, new BsonString(val));
 		}
-		if (subObjectList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subObjectList));
+		if (query.isEmpty() == false) {
 			return query;
 		}
 		return null;
