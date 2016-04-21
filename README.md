@@ -1,6 +1,6 @@
 ### Oliot EPCIS Repository ###
 Copyright (C) 2014-2016 Jaewook Byun
-> Note: This Repo could be folked from [URL](https://github.com/JaewookByun)
+> Note: This Repo could be forked from [URL](https://github.com/JaewookByun)
 
 > This project is part of Oliot ([Oliot Homepage](http://oliot.org)), pursuing the implementation of
 > Electronic Product Code Information Service(EPCIS) v1.1 specification in
