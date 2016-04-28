@@ -1,0 +1,160 @@
+{
+  "$schema": "http://oliot.org/transactionevent/schema#",
+  "id": "http://oliot.org/transactionevent",
+  "type": "object",
+  "properties": {
+    "eventTime": {
+      "id": "http://oliot.org/transactionevent/eventTime",
+      "type": "integer"
+    },
+    "eventTimeZoneOffset": {
+      "id": "http://oliot.org/transactionevent/eventTimeZoneOffset",
+      "type": "string"
+    },
+    "recordTime": {
+      "id": "http://oliot.org/transactionevent/recordTime",
+      "type": "integer"
+    },
+    "parentID": {
+      "id": "http://oliot.org/transactionevent/parentID",
+      "type": "string"
+    },
+    "epcList": {
+      "id": "http://oliot.org/transactionevent/epcList",
+      "type": "array",
+      "additionalProperties": false,
+      "items": 
+        {
+          "id": "http://oliot.org/transactionevent/epcList/0",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "epc": {
+              "id": "http://oliot.org/transactionevent/epcList/0/epc",
+              "type": "string"
+            }
+          }
+        }
+    },
+    "action": {
+      "id": "http://oliot.org/transactionevent/action",
+      "type": "string",
+      "enum" : ["ADD", "DELETE", "OBSERVE"]
+    },
+    "bizStep": {
+      "id": "http://oliot.org/transactionevent/bizStep",
+      "type": "string"
+    },
+    "disposition": {
+      "id": "http://oliot.org/transactionevent/disposition",
+      "type": "string"
+    },
+    "readPoint": {
+      "id": "http://oliot.org/transactionevent/readPoint",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/transactionevent/readPoint/id",
+          "type": "string"
+        }
+      }
+    },
+    "bizLocation": {
+      "id": "http://oliot.org/transactionevent/bizLocation",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "id": "http://oliot.org/transactionevent/bizLocation/id",
+          "type": "string"
+        },
+        "extension": {
+          "id": "http://oliot.org/transactionevent/bizLocation/extension",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "id": "http://oliot.org/transactionevent/bizLocation/extension/any",
+              "type": "object",
+              "properties": {}
+            },
+            "otherAttributes": {
+              "id": "http://oliot.org/transactionevent/bizLocation/extension/otherAttributes",
+              "type": "object",
+              "properties": {}
+            }
+          }
+        }
+      }
+    },
+    "bizTransactionList": {
+      "id": "http://oliot.org/transactionevent/bizTransactionList",
+      "type": "array",
+      "items": {
+        "id": "http://oliot.org/transactionevent/bizTransactionList/0",
+        "type": "object",
+        "properties": {
+          "sdf": {
+            "id": "http://oliot.org/transactionevent/bizTransactionList/0/sdf",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "any": {
+      "id": "http://oliot.org/transactionevent/any",
+      "type": "object",
+      "properties": {}
+    },
+    "extension": {
+      "id": "http://oliot.org/transactionevent/extension",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "quantityList": {
+          "id": "http://oliot.org/transactionevent/extension/quantityList",
+          "type": "array",
+          "additionalProperties": false,
+          "items": {
+            "id": "http://oliot.org/transactionevent/extension/quantityList/0",
+            "type": "object",
+            "properties": {
+              "epcClass": {
+                "id": "http://oliot.org/transactionevent/extension/quantityList/0/epcClass",
+                "type": "string"
+              },
+              "quantity": {
+                "id": "http://oliot.org/transactionevent/extension/quantityList/0/quantity",
+                "type": "integer"
+              },
+              "uom": {
+                "id": "http://oliot.org/transactionevent/extension/quantityList/0/uom",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "sourceList": {
+          "id": "http://oliot.org/transactionevent/extension/sourceList",
+          "type": "array"
+        },
+        "destinationList": {
+          "id": "http://oliot.org/transactionevent/extension/destinationList",
+          "type": "array"
+        },
+        "extension": {
+          "id": "http://oliot.org/transactionevent/extension/extension",
+          "type": "object",
+          "properties": {}
+        }
+      }
+    }
+  },
+  "required": [
+    "eventTime",
+    "eventTimeZoneOffset",
+    "action"
+  ],
+"additionalProperties": false
+}

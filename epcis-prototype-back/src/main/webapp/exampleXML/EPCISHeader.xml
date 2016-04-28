@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:example="http://ns.example.com/epcis"
+	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creationDate="2005-07-11T11:30:47.0Z"
+	schemaVersion="1.1">
+	<EPCISHeader>
+		<p:StandardBusinessDocumentHeader>
+			<p:HeaderVersion>1.1</p:HeaderVersion>
+			<p:Sender>
+				<p:Identifier Authority="">p:Identifier</p:Identifier>
+				<p:ContactInformation>
+					<p:Contact>p:Contact</p:Contact>
+					<p:EmailAddress>p:EmailAddress</p:EmailAddress>
+					<p:FaxNumber>p:FaxNumber</p:FaxNumber>
+					<p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
+					<p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
+				</p:ContactInformation>
+			</p:Sender>
+			<p:Receiver>
+				<p:Identifier Authority="">p:Identifier</p:Identifier>
+				<p:ContactInformation>
+					<p:Contact>p:Contact</p:Contact>
+					<p:EmailAddress>p:EmailAddress</p:EmailAddress>
+					<p:FaxNumber>p:FaxNumber</p:FaxNumber>
+					<p:TelephoneNumber>p:TelephoneNumber</p:TelephoneNumber>
+					<p:ContactTypeIdentifier>p:ContactTypeIdentifier</p:ContactTypeIdentifier>
+				</p:ContactInformation>
+			</p:Receiver>
+			<p:DocumentIdentification>
+				<p:Standard>EPCglobal</p:Standard>
+				<p:TypeVersion>1.1</p:TypeVersion>
+				<p:InstanceIdentifier>p:InstanceIdentifier</p:InstanceIdentifier>
+				<p:Type>Events</p:Type>
+				<p:MultipleType>true</p:MultipleType>
+				<p:CreationDateAndTime>2001-12-31T12:00:00</p:CreationDateAndTime>
+			</p:DocumentIdentification>
+			<p:Manifest>
+				<p:NumberOfItems>0</p:NumberOfItems>
+				<p:ManifestItem>
+					<p:MimeTypeQualifierCode>p:MimeTypeQualifierCode</p:MimeTypeQualifierCode>
+					<p:UniformResourceIdentifier>http://tempuri.org</p:UniformResourceIdentifier>
+					<p:Description>p:Description</p:Description>
+					<p:LanguageCode>p:LanguageCode</p:LanguageCode>
+				</p:ManifestItem>
+			</p:Manifest>
+		</p:StandardBusinessDocumentHeader>
+		<extension>
+			<ANY-ELEMENT />
+		</extension>
+	</EPCISHeader>
+
+	<EPCISBody>
+		<EventList>
+			<!-- Simple Object Event -->
+			<ObjectEvent>
+				<eventTime>2014-04-03T20:33:31.116-06:00</eventTime>
+				<eventTimeZoneOffset>-06:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:shipping</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_transit</disposition>
+				<readPoint>
+					<id>urn:epc:id:sgln:0614141.07346.1234</id>
+				</readPoint>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678
+					</bizTransaction>
+				</bizTransactionList>
+			</ObjectEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
