@@ -33,7 +33,7 @@ public class ObjectEventTest {
 		try {
 			// Make basic Object Event
 			ObjectEvent objectEvent = new ObjectEvent();
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addObjectEvent(objectEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
@@ -80,7 +80,7 @@ public class ObjectEventTest {
 			extensionMap.put("example", extension);
 			objectEvent.setExtensions(extensionMap);
 
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addObjectEvent(objectEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
