@@ -13,6 +13,7 @@ import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ObjectEventExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.ReadPointType;
@@ -125,6 +126,13 @@ public class ObjectEventWriteConverter {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
 			BsonDocument extension = getObjectEventExtensionObject(oee, gcpLength, epcList);
 			dbo.put("extension", extension);
+		}
+
+		// Error Declaration
+		if (objectEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType eeet = objectEventType.getBaseExtension();
+			ErrorDeclarationType edt = eeet.getErrorDeclaration();
+			long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
 		}
 		return dbo;
 	}

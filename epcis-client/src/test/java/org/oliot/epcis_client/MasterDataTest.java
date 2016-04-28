@@ -44,7 +44,7 @@ public class MasterDataTest{
 			children.add("urn:epc:id:sgln:0037000.00729.8203");
 			masterData.setChildren(children);
 			
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addMasterData(masterData);
 			client.sendDocument();
 		} catch (MalformedURLException e) {

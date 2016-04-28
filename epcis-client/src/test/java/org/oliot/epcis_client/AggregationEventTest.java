@@ -33,7 +33,7 @@ public class AggregationEventTest{
 		try {
 			// Make basic Object Event
 			AggregationEvent aggregationEvent = new AggregationEvent();
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addAggregationEvent(aggregationEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
@@ -82,7 +82,7 @@ public class AggregationEventTest{
 			extensionMap.put("example", extension);
 			aggregationEvent.setExtensions(extensionMap);
 			
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addAggregationEvent(aggregationEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {

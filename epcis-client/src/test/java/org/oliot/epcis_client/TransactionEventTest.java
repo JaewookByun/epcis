@@ -40,7 +40,7 @@ public class TransactionEventTest{
 			bizTransaction2.add("urn:epcglobal:cbv:bt:0614141073467:1152");
 			bizTransactionList.put("urn:epcglobal:cbv:btt:desadv", bizTransaction2 );
 			TransactionEvent transactionEvent = new TransactionEvent(bizTransactionList);
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addTransactionEvent(transactionEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
@@ -87,7 +87,7 @@ public class TransactionEventTest{
 			extensionMap.put("example", extension);
 			transactionEvent.setExtensions(extensionMap);
 			
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addTransactionEvent(transactionEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
