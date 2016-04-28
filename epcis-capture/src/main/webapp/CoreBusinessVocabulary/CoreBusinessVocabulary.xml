@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE EPCISDocument>
+<epcismd:EPCISMasterDataDocument
+	creationDate="2015-04-09T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org"
+	xmlns:epcis="epcis.oliot.org" xmlns:epcismd="masterdata.epcis.oliot.org"
+	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="masterdata.axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-masterdata-1_1.xsd ">
+	<EPCISBody>
+		<VocabularyList>
+			<!-- Business Step ID -->
+			<Vocabulary type="urn:epcglobal:epcis:vtype:BusinessStep">
+				<VocabularyElementList>
+					<VocabularyElement id="urn:epcglobal:cbv:bizstep:accepting">
+						<attribute id="urn:epcglobal:cbv:sv:definition">Denotes a specific activity within a business process where an object changes possession and/or ownership.</attribute>
+						<attribute id="urn:epcglobal:cbv:sv:example">Retailer X unloads a pallet on to the receiving dock. The numbers of cases on the pallet are counted. The pallets are disaggregated from the shipping conveyance. Thequantity is verified against the delivery document (Freight Bill or Bill of Lading), notating any over, short or damaged product at the time of delivery. Typically this process releases freight payment and completes the contractual agreement with the carrier of delivering the product/assets to a specified location.</attribute>
+					</VocabularyElement>
+				</VocabularyElementList>
+				<VocabularyElementList>
+					<VocabularyElement id="urn:epcglobal:cbv:bizstep:arriving">
+						<attribute id="urn:epcglobal:cbv:sv:definition">Denotes a specific activity within a business process where an object arrives at a location.</attribute>
+						<attribute id="urn:epcglobal:cbv:sv:example">Truckload of a shipment arrives into a yard. Shipment has not yet been received or accepted.</attribute>
+					</VocabularyElement>
+				</VocabularyElementList>
+			</Vocabulary>
+		</VocabularyList>
+		<extension>
+			<ANY-ELEMENT />
+		</extension>
+	</EPCISBody>
+	<extension>
+		<ANY-ELEMENT />
+	</extension>
+</epcismd:EPCISMasterDataDocument>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE ECReports>
+<ns2:ECReports terminationCondition="WhenDataAvailable"
+	totalMilliseconds="4972" ALEID="ETHZ-ALE2028272805" date="2014-08-11T19:57:59.717+09:00"
+	specName="test" xmlns:ns2="urn:epcglobal:ale:xsd:1" schemaVersion="1.1"
+	creationDate="2001-12-31T12:00:00">
+	<reports>
+		<report reportName="report1">
+			<group>
+				<groupList>
+					<member>
+						<epc>urn:epc:id:sgtin:1234567.000000.68719476746</epc>
+						<tag>urn:epc:tag:sgtin-96:3.1234567.000000.68719476746</tag>
+						<rawHex>urn:epc:raw:96.x30744B5A1C0000100000000A</rawHex>
+						<rawDecimal>urn:epc:raw:96.14995871706210654842087538698
+						</rawDecimal>
+						<extension>
+							<fieldList>
+								<field>
+									<name>GSR</name>
+									<value>[44.448,6017652.5,0.508]</value>
+								</field>
+								<field>
+									<name>time</name>
+									<value>20140811195737</value>
+								</field>
+								<field>
+									<name>ECG</name>
+									<value>1.608</value>
+								</field>
+								<field>
+									<name>did</name>
+									<value>30744B5A1C0000100000000A</value>
+								</field>
+								<field>
+									<name>Temp</name>
+									<value>31.093</value>
+								</field>
+								<field>
+									<name>EMG</name>
+									<value>329</value>
+								</field>
+							</fieldList>
+						</extension>
+					</member>
+				</groupList>
+			</group>
+		</report>
+	</reports>
+</ns2:ECReports>

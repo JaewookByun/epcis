@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.1">
+	<EPCISBody>
+		<EventList>
+			<AggregationEvent>
+				<eventTime>2013-06-08T14:58:56.591Z</eventTime>
+				<eventTimeZoneOffset>+02:00</eventTimeZoneOffset>
+				<parentID>urn:epc:id:sscc:0614141.1234567890</parentID>
+				<childEPCs>
+					<epc>(01)80614141123458(21)6789</epc>
+					<epc>(01)80614141123458(21)6790</epc>
+				</childEPCs>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:receiving</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_progress</disposition>
+				<readPoint>
+					<id>(414)0614141123452(254)333</id>
+				</readPoint>
+				<bizLocation>
+					<id>(414)0614141123452(254)335</id>
+				</bizLocation>
+				<extension>
+					<childQuantityList>
+						<quantityElement>
+							<epcClass>(01)80614141123458</epcClass>
+							<quantity>10</quantity>
+							<!-- Meaning: 10 units of GTIN '04012345987652' -->
+						</quantityElement>
+						<quantityElement>
+							<epcClass>(01)80614141123458(10)4222</epcClass>
+							<quantity>200.5</quantity>
+							<uom>KGM</uom>
+							<!-- Meaning: 200.5 kg of GTIN '04012345123456' belonging to lot '998877' -->
+						</quantityElement>
+					</childQuantityList>
+				</extension>
+			</AggregationEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>

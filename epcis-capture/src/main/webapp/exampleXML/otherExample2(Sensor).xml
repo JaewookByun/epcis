@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.1">
+	<EPCISBody>
+		<EventList>
+			<SensorEvent>
+				<eventTime>2013-06-08T14:58:56.591Z</eventTime>
+				<recordTime>2013-06-08T14:58:58.591Z</recordTime>
+				<eventTimeZoneOffset>+02:00</eventTimeZoneOffset>
+				<finishTime>2013-06-08T14:58:57.591Z</finishTime>
+				<action>ADD</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:receiving</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_progress</disposition>
+				<readPoint>
+					<id>urn:epc:id:sgln:0614141.00777.0</id>
+				</readPoint>
+				<bizLocation>
+					<id>urn:epc:id:sgln:0614141.00888.0</id>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
+				</bizTransactionList>
+				<targetObject>urn:epc:id:sgtin:0614141.107346.2017</targetObject>
+				<targetArea>urn:epc:id:sgln:0614141.00777.0</targetArea>
+				<sensingList>
+					<sensingElement>
+						<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+						<type>ecg</type>
+						<value>1,2,1,2,1,2,1,2,1,2,2,3,2,1,2,3,2,1,2,3,1,2,3,1,1,1,2,3,2,2</value>
+						<uom>volt</uom>
+					</sensingElement>
+				</sensingList>
+			</SensorEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
