@@ -15,10 +15,8 @@ Copyright (C) 2014-2016 Jaewook Byun
 > complying with EPCIS Document XML schema into EPCIS Repository. 
 > Then, these events can be globally shared with given queries 
 
-### Temporary Server ###
-> [Main Page](http://143.248.56.100:8080/epcis)
-
-> [Tutorial Page](http://143.248.56.100:8080/epcis/tutorialPage.jsp)
+### Temporary Server for prototyping ###
+> [Main Page](http://143.248.56.100:8080/epcis-capture)
 
 ### Specification ###
 > Java, Web Service
