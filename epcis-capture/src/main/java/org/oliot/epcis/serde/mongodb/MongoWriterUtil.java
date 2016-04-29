@@ -286,7 +286,7 @@ public class MongoWriterUtil {
 			BusinessTransactionType bizTranType = bizList.get(i);
 			if (bizTranType.getType() != null && bizTranType.getValue() != null) {
 				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(bizTranType.getType(), new BsonString(bizTranType.getValue()));
+				dbObj.put(bizTranType.getType(), new BsonString(bizTranType.getValue().replace("\n", "").replace("\t", "")));
 				bizTranList.add(dbObj);
 			}
 		}
