@@ -2,7 +2,7 @@
 // 이 파일은 JAXB(JavaTM Architecture for XML Binding) 참조 구현 2.2.8-b130911.1802 버전을 통해 생성되었습니다. 
 // <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a>를 참조하십시오. 
 // 이 파일을 수정하면 소스 스키마를 재컴파일할 때 수정 사항이 손실됩니다. 
-// 생성 날짜: 2016.04.28 시간 02:25:53 PM KST 
+// 생성 날짜: 2016.04.29 시간 09:20:38 AM KST 
 //
 
 package org.oliot.model.epcis;
@@ -60,11 +60,6 @@ public class QuantityEventType extends EPCISEventType {
 	@XmlElement(required = true)
 	@XmlSchemaType(name = "anyURI")
 	protected String epcClass;
-
-	public void setAny(List<Object> any) {
-		this.any = any;
-	}
-
 	protected int quantity;
 	@XmlSchemaType(name = "anyURI")
 	protected String bizStep;
@@ -76,6 +71,10 @@ public class QuantityEventType extends EPCISEventType {
 	protected QuantityEventExtensionType extension;
 	@XmlAnyElement(lax = true)
 	protected List<Object> any;
+
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
 
 	/**
 	 * epcClass 속성의 값을 가져옵니다.
@@ -258,8 +257,8 @@ public class QuantityEventType extends EPCISEventType {
 	 * 
 	 * 
 	 * <p>
-	 * Objects of the following type(s) are allowed in the list {@link Element }
-	 * {@link Object }
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
 	 * 
 	 * 
 	 */

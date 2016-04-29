@@ -5,7 +5,6 @@ import org.bson.BsonString;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.AggregationEventWriteConverter;
-import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
 import org.oliot.epcis.serde.mongodb.ObjectEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.QuantityEventWriteConverter;
 import org.oliot.epcis.serde.mongodb.TransactionEventWriteConverter;
@@ -15,7 +14,6 @@ import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
-import org.oliot.model.epcis.VocabularyType;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
@@ -118,18 +116,6 @@ public class MongoCaptureUtil {
 		}
 		collection.insertOne(object2Save);
 		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void capture(VocabularyType vocabulary) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
-
-		MasterDataWriteConverter converter = new MasterDataWriteConverter();
-		BsonDocument voc = converter.convert(vocabulary);
-
-		collection.insertOne(voc);
-		Configuration.logger.info(" Vocabulary Saved ");
 	}
 
 	// JsonObject event capture series..
