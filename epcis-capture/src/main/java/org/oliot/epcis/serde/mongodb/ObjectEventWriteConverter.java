@@ -42,12 +42,7 @@ public class ObjectEventWriteConverter {
 
 	public BsonDocument convert(ObjectEventType objectEventType, Integer gcpLength) {
 		BsonDocument dbo = new BsonDocument();
-		// Base Extension
-		if (objectEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = objectEventType.getBaseExtension();
-			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
-			dbo.put("baseExtension", baseExtension);
-		}
+
 		// Event Time
 		if (objectEventType.getEventTime() != null)
 			dbo.put("eventTime", new BsonInt64(objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
@@ -128,11 +123,23 @@ public class ObjectEventWriteConverter {
 			dbo.put("extension", extension);
 		}
 
+		// Event ID
+		if (objectEventType.getBaseExtension() != null) {
+			if (objectEventType.getBaseExtension().getEventID() != null) {
+				dbo.put("eventID", new BsonString(objectEventType.getBaseExtension().getEventID()));
+			}
+		}
+
 		// Error Declaration
+		// If declared, it notes that the event is erroneous
 		if (objectEventType.getBaseExtension() != null) {
 			EPCISEventExtensionType eeet = objectEventType.getBaseExtension();
 			ErrorDeclarationType edt = eeet.getErrorDeclaration();
-			long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
+			if (edt != null) {
+				if (edt.getDeclarationTime() != null) {
+					dbo.put("errorDeclaration", MongoWriterUtil.getErrorDeclaration(edt));
+				}
+			}
 		}
 		return dbo;
 	}

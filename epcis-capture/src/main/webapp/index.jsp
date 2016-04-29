@@ -36,18 +36,14 @@
 					Then, these events can be globally shared with given queries <br>
 				</a>
 			</div>
-			
-			<div class="list-group">
-				<a href="#" class="list-group-item list-group-item-success"> Quick Start - Tutorial </a> <a href="./tutorialPage.jsp" class="list-group-item">Click</a>
-			</div>
-			
+						
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">EPCIS v1.1 compliance<br>Dynamic Web Service over Tomcat 8<br>Java 8, Servlet 3.1<br>Maven<br>Spring Framework<br>MongoDB 3</a>
+					href="#" class="list-group-item">EPCIS v1.2 is now being prototyped<br>Dynamic Web Service over Tomcat 8<br>Java 8, Servlet 3.1<br>Maven<br>Spring Framework<br>MongoDB 3</a>
 			</div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Contact </a> <a href="#"
-					class="list-group-item">Jaewook Jack Byun, Ph.D student<br>
+					class="list-group-item">Jaewook Byun, Ph.D student<br>
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
 					Real-time and Embedded Systems Laboratory(RESL)<br>
 					bjw0829@kaist.ac.kr<br>

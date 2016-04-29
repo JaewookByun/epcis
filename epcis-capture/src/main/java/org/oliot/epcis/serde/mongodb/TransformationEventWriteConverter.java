@@ -14,6 +14,7 @@ import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.QuantityElementType;
@@ -49,12 +50,7 @@ public class TransformationEventWriteConverter {
 	public BsonDocument convert(TransformationEventType transformationEventType, Integer gcpLength) {
 
 		BsonDocument dbo = new BsonDocument();
-		// Base Extension
-		if (transformationEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = transformationEventType.getBaseExtension();
-			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
-			dbo.put("baseExtension", baseExtension);
-		}
+
 		// Event Time
 		if (transformationEventType.getEventTime() != null)
 			dbo.put("eventTime",
@@ -180,6 +176,25 @@ public class TransformationEventWriteConverter {
 			TransformationEventExtensionType oee = transformationEventType.getExtension();
 			BsonDocument extension = getTransformationEventExtensionObject(oee);
 			dbo.put("extension", extension);
+		}
+
+		// Event ID
+		if (transformationEventType.getBaseExtension() != null) {
+			if (transformationEventType.getBaseExtension().getEventID() != null) {
+				dbo.put("eventID", new BsonString(transformationEventType.getBaseExtension().getEventID()));
+			}
+		}
+
+		// Error Declaration
+		// If declared, it notes that the event is erroneous
+		if (transformationEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType eeet = transformationEventType.getBaseExtension();
+			ErrorDeclarationType edt = eeet.getErrorDeclaration();
+			if (edt != null) {
+				if (edt.getDeclarationTime() != null) {
+					dbo.put("errorDeclaration", MongoWriterUtil.getErrorDeclaration(edt));
+				}
+			}
 		}
 
 		return dbo;
