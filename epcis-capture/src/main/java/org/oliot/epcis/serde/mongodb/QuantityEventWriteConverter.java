@@ -11,6 +11,7 @@ import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.EPCISEventExtensionType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.QuantityEventExtensionType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.ReadPointType;
@@ -40,12 +41,7 @@ public class QuantityEventWriteConverter {
 	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength) {
 
 		BsonDocument dbo = new BsonDocument();
-		// Base Extension
-		if (quantityEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = quantityEventType.getBaseExtension();
-			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
-			dbo.put("baseExtension", baseExtension);
-		}
+
 		// Event Time
 		if (quantityEventType.getEventTime() != null)
 			dbo.put("eventTime",
@@ -102,6 +98,25 @@ public class QuantityEventWriteConverter {
 			QuantityEventExtensionType oee = quantityEventType.getExtension();
 			BsonDocument extension = getQuantityEventExtensionObject(oee);
 			dbo.put("extension", extension);
+		}
+
+		// Event ID
+		if (quantityEventType.getBaseExtension() != null) {
+			if (quantityEventType.getBaseExtension().getEventID() != null) {
+				dbo.put("eventID", new BsonString(quantityEventType.getBaseExtension().getEventID()));
+			}
+		}
+
+		// Error Declaration
+		// If declared, it notes that the event is erroneous
+		if (quantityEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType eeet = quantityEventType.getBaseExtension();
+			ErrorDeclarationType edt = eeet.getErrorDeclaration();
+			if (edt != null) {
+				if (edt.getDeclarationTime() != null) {
+					dbo.put("errorDeclaration", MongoWriterUtil.getErrorDeclaration(edt));
+				}
+			}
 		}
 
 		return dbo;

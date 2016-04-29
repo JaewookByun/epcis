@@ -22,9 +22,11 @@ import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionType;
+import org.oliot.model.epcis.CorrectiveEventIDsType;
 import org.oliot.model.epcis.DestinationListType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
@@ -629,5 +631,28 @@ public class MongoWriterUtil {
 		} catch (NumberFormatException e) {
 			return new BsonString(value);
 		}
+	}
+	
+	static BsonDocument getErrorDeclaration(ErrorDeclarationType edt){
+		BsonDocument errorBson = new BsonDocument();
+		long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
+		errorBson.put("declarationTime", new BsonInt64(declarationTime));
+		// (Optional) reason
+		if (edt.getReason() != null) {
+			errorBson.put("reason", new BsonString(edt.getReason()));
+		}
+		// (Optional) correctiveEventIDs
+		if (edt.getCorrectiveEventIDs() != null) {
+			CorrectiveEventIDsType cIDs = edt.getCorrectiveEventIDs();
+			List<String> cIDStringList = cIDs.getCorrectiveEventID();
+			BsonArray correctiveIDBsonArray = new BsonArray();
+			for (String cIDString : cIDStringList) {
+				correctiveIDBsonArray.add(new BsonString(cIDString));
+			}
+			if (correctiveIDBsonArray.size() != 0) {
+				errorBson.put("correctiveEventIDs", correctiveIDBsonArray);
+			}
+		}
+		return errorBson;
 	}
 }

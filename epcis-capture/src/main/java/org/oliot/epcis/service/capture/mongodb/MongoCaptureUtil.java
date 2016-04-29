@@ -1,7 +1,10 @@
 package org.oliot.epcis.service.capture.mongodb;
 
 import org.bson.BsonDocument;
+import org.bson.BsonInt64;
+import org.bson.BsonObjectId;
 import org.bson.BsonString;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.serde.mongodb.AggregationEventWriteConverter;
@@ -16,6 +19,7 @@ import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.util.JSON;
 
 /**
@@ -46,12 +50,49 @@ public class MongoCaptureUtil {
 		// Utilize Aggregation Event Write Converter itself
 		AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
 		BsonDocument object2Save = wc.convert(event, gcpLength);
-		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", new BsonString(userID));
-			object2Save.put("accessModifier", new BsonString(accessModifier));
+		if (!object2Save.containsKey("errorDeclaration")) {
+			if (userID != null && accessModifier != null) {
+				object2Save.put("userID", new BsonString(userID));
+				object2Save.put("accessModifier", new BsonString(accessModifier));
+			}
+			collection.insertOne(object2Save);
+			Configuration.logger.info(" Event Saved ");
+		} else {
+			BsonDocument error = object2Save.getDocument("errorDeclaration");
+			if (!object2Save.containsKey("eventID")) {
+				// If no eventID found, error
+				Configuration.logger.info(" Error Declaration failed");
+			} else {
+				BsonString eventID = object2Save.getString("eventID");
+				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
+				if (cursor.hasNext()) {
+					BsonDocument foundDoc = cursor.next();
+					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("errorDeclaration", error);
+					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
+				} else {
+					// There is no matched event ID
+					// Try to find with ObjectID
+					try {
+						MongoCursor<BsonDocument> cursor2 = collection
+								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
+								.iterator();
+						if (cursor2.hasNext()) {
+							BsonDocument foundDoc2 = cursor2.next();
+							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+							foundDoc2.put("errorDeclaration", error);
+							collection.findOneAndReplace(
+									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
+									foundDoc2);
+						} else {
+							Configuration.logger.info(" Error Declaration failed");
+						}
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.info(" Error Declaration failed");
+					}
+				}
+			}
 		}
-		collection.insertOne(object2Save);
-		Configuration.logger.info(" Event Saved ");
 	}
 
 	public void capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -62,12 +103,50 @@ public class MongoCaptureUtil {
 		// Utilize Object Event Write Converter itself
 		ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
 		BsonDocument object2Save = wc.convert(event, gcpLength);
-		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", new BsonString(userID));
-			object2Save.put("accessModifier", new BsonString(accessModifier));
+
+		if (!object2Save.containsKey("errorDeclaration")) {
+			if (userID != null && accessModifier != null) {
+				object2Save.put("userID", new BsonString(userID));
+				object2Save.put("accessModifier", new BsonString(accessModifier));
+			}
+			collection.insertOne(object2Save);
+			Configuration.logger.info(" Event Saved ");
+		} else {
+			BsonDocument error = object2Save.getDocument("errorDeclaration");
+			if (!object2Save.containsKey("eventID")) {
+				// If no eventID found, error
+				Configuration.logger.info(" Error Declaration failed");
+			} else {
+				BsonString eventID = object2Save.getString("eventID");
+				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
+				if (cursor.hasNext()) {
+					BsonDocument foundDoc = cursor.next();
+					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("errorDeclaration", error);
+					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
+				} else {
+					// There is no matched event ID
+					// Try to find with ObjectID
+					try {
+						MongoCursor<BsonDocument> cursor2 = collection
+								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
+								.iterator();
+						if (cursor2.hasNext()) {
+							BsonDocument foundDoc2 = cursor2.next();
+							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+							foundDoc2.put("errorDeclaration", error);
+							collection.findOneAndReplace(
+									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
+									foundDoc2);
+						} else {
+							Configuration.logger.info(" Error Declaration failed");
+						}
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.info(" Error Declaration failed");
+					}
+				}
+			}
 		}
-		collection.insertOne(object2Save);
-		Configuration.logger.info(" Event Saved ");
 	}
 
 	public void capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -78,12 +157,49 @@ public class MongoCaptureUtil {
 		// Utilize Quantity Event Write Converter itself
 		QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
 		BsonDocument object2Save = wc.convert(event, gcpLength);
-		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", new BsonString(userID));
-			object2Save.put("accessModifier", new BsonString(accessModifier));
+		if (!object2Save.containsKey("errorDeclaration")) {
+			if (userID != null && accessModifier != null) {
+				object2Save.put("userID", new BsonString(userID));
+				object2Save.put("accessModifier", new BsonString(accessModifier));
+			}
+			collection.insertOne(object2Save);
+			Configuration.logger.info(" Event Saved ");
+		} else {
+			BsonDocument error = object2Save.getDocument("errorDeclaration");
+			if (!object2Save.containsKey("eventID")) {
+				// If no eventID found, error
+				Configuration.logger.info(" Error Declaration failed");
+			} else {
+				BsonString eventID = object2Save.getString("eventID");
+				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
+				if (cursor.hasNext()) {
+					BsonDocument foundDoc = cursor.next();
+					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("errorDeclaration", error);
+					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
+				} else {
+					// There is no matched event ID
+					// Try to find with ObjectID
+					try {
+						MongoCursor<BsonDocument> cursor2 = collection
+								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
+								.iterator();
+						if (cursor2.hasNext()) {
+							BsonDocument foundDoc2 = cursor2.next();
+							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+							foundDoc2.put("errorDeclaration", error);
+							collection.findOneAndReplace(
+									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
+									foundDoc2);
+						} else {
+							Configuration.logger.info(" Error Declaration failed");
+						}
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.info(" Error Declaration failed");
+					}
+				}
+			}
 		}
-		collection.insertOne(object2Save);
-		Configuration.logger.info(" Event Saved ");
 	}
 
 	public void capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -94,12 +210,49 @@ public class MongoCaptureUtil {
 		// Utilize Transaction Event Write Converter itself
 		TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
 		BsonDocument object2Save = wc.convert(event, gcpLength);
-		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", new BsonString(userID));
-			object2Save.put("accessModifier", new BsonString(accessModifier));
+		if (!object2Save.containsKey("errorDeclaration")) {
+			if (userID != null && accessModifier != null) {
+				object2Save.put("userID", new BsonString(userID));
+				object2Save.put("accessModifier", new BsonString(accessModifier));
+			}
+			collection.insertOne(object2Save);
+			Configuration.logger.info(" Event Saved ");
+		} else {
+			BsonDocument error = object2Save.getDocument("errorDeclaration");
+			if (!object2Save.containsKey("eventID")) {
+				// If no eventID found, error
+				Configuration.logger.info(" Error Declaration failed");
+			} else {
+				BsonString eventID = object2Save.getString("eventID");
+				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
+				if (cursor.hasNext()) {
+					BsonDocument foundDoc = cursor.next();
+					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("errorDeclaration", error);
+					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
+				} else {
+					// There is no matched event ID
+					// Try to find with ObjectID
+					try {
+						MongoCursor<BsonDocument> cursor2 = collection
+								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
+								.iterator();
+						if (cursor2.hasNext()) {
+							BsonDocument foundDoc2 = cursor2.next();
+							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+							foundDoc2.put("errorDeclaration", error);
+							collection.findOneAndReplace(
+									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
+									foundDoc2);
+						} else {
+							Configuration.logger.info(" Error Declaration failed");
+						}
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.info(" Error Declaration failed");
+					}
+				}
+			}
 		}
-		collection.insertOne(object2Save);
-		Configuration.logger.info(" Event Saved ");
 	}
 
 	public void capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -110,12 +263,49 @@ public class MongoCaptureUtil {
 		// Utilize Transaction Event Write Converter itself
 		TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
 		BsonDocument object2Save = wc.convert(event, gcpLength);
-		if (userID != null && accessModifier != null) {
-			object2Save.put("userID", new BsonString(userID));
-			object2Save.put("accessModifier", new BsonString(accessModifier));
+		if (!object2Save.containsKey("errorDeclaration")) {
+			if (userID != null && accessModifier != null) {
+				object2Save.put("userID", new BsonString(userID));
+				object2Save.put("accessModifier", new BsonString(accessModifier));
+			}
+			collection.insertOne(object2Save);
+			Configuration.logger.info(" Event Saved ");
+		} else {
+			BsonDocument error = object2Save.getDocument("errorDeclaration");
+			if (!object2Save.containsKey("eventID")) {
+				// If no eventID found, error
+				Configuration.logger.info(" Error Declaration failed");
+			} else {
+				BsonString eventID = object2Save.getString("eventID");
+				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
+				if (cursor.hasNext()) {
+					BsonDocument foundDoc = cursor.next();
+					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("errorDeclaration", error);
+					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
+				} else {
+					// There is no matched event ID
+					// Try to find with ObjectID
+					try {
+						MongoCursor<BsonDocument> cursor2 = collection
+								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
+								.iterator();
+						if (cursor2.hasNext()) {
+							BsonDocument foundDoc2 = cursor2.next();
+							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+							foundDoc2.put("errorDeclaration", error);
+							collection.findOneAndReplace(
+									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
+									foundDoc2);
+						} else {
+							Configuration.logger.info(" Error Declaration failed");
+						}
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.info(" Error Declaration failed");
+					}
+				}
+			}
 		}
-		collection.insertOne(object2Save);
-		Configuration.logger.info(" Event Saved ");
 	}
 
 	// JsonObject event capture series..

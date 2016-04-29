@@ -15,6 +15,7 @@ import org.oliot.model.epcis.BusinessTransactionType;
 import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ReadPointType;
 
 import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
@@ -41,12 +42,7 @@ public class AggregationEventWriteConverter {
 
 	public BsonDocument convert(AggregationEventType aggregationEventType, Integer gcpLength) {
 		BsonDocument dbo = new BsonDocument();
-		// Base Extension
-		if (aggregationEventType.getBaseExtension() != null) {
-			EPCISEventExtensionType baseExtensionType = aggregationEventType.getBaseExtension();
-			BsonDocument baseExtension = getBaseExtensionObject(baseExtensionType);
-			dbo.put("baseExtension", baseExtension);
-		}
+
 		// Event Time
 		if (aggregationEventType.getEventTime() != null)
 			dbo.put("eventTime",
@@ -122,6 +118,25 @@ public class AggregationEventWriteConverter {
 			BsonDocument extension = getAggregationEventExtensionObject(aee, gcpLength);
 			dbo.put("extension", extension);
 
+		}
+
+		// Event ID
+		if (aggregationEventType.getBaseExtension() != null) {
+			if (aggregationEventType.getBaseExtension().getEventID() != null) {
+				dbo.put("eventID", new BsonString(aggregationEventType.getBaseExtension().getEventID()));
+			}
+		}
+
+		// Error Declaration
+		// If declared, it notes that the event is erroneous
+		if (aggregationEventType.getBaseExtension() != null) {
+			EPCISEventExtensionType eeet = aggregationEventType.getBaseExtension();
+			ErrorDeclarationType edt = eeet.getErrorDeclaration();
+			if (edt != null) {
+				if (edt.getDeclarationTime() != null) {
+					dbo.put("errorDeclaration", MongoWriterUtil.getErrorDeclaration(edt));
+				}
+			}
 		}
 
 		return dbo;
