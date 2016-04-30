@@ -31,10 +31,12 @@ import org.oliot.model.epcis.SubscriptionControls;
 @WebService
 public interface CoreQueryService {
 
+	// Do nothing
 	@WebMethod
 	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
 			String subscriptionID);
 
+	// Do nothing
 	@WebMethod
 	public void unsubscribe(String subscriptionID);
 
@@ -44,6 +46,7 @@ public interface CoreQueryService {
 	@WebMethod
 	public List<String> getQueryNames();
 
+	// Do nothing
 	@WebMethod
 	public List<String> getSubscriptionIDs(String queryName);
 
