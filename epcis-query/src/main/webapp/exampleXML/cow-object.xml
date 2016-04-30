@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creationDate="2015-01-03T11:30:47.0Z"
+	schemaVersion="1.1">
+	<EPCISBody>
+		<EventList>
+			<ObjectEvent>
+				<!-- Event Time: When the beef pack is ready to be sold -->
+				<eventTime>2015-01-03T20:33:31.116-10:00</eventTime>
+				<eventTimeZoneOffset>-10:00</eventTimeZoneOffset>
+				<epcList>
+					<!-- EPC of the beef pack -->
+					<epc>urn:epc:id:sgtin:4012345.077889.27</epc>
+				</epcList>
+				<action>ADD</action>
+				<!-- The beef pack is ready to be sold on the shelf -->
+				<bizStep>urn:epcglobal:cbv:bizstep:retail_selling</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:sellable_accessible</disposition>
+				<bizLocation>
+					<!-- bizLocation indicates the location of the retail shop -->
+					<id>urn:epc:id:sgln:0614141.07346.1235</id>
+					<extension>
+						<geo>19.708886,-155.893430</geo>
+					</extension>
+				</bizLocation>
+				<!-- ILMD can indicate Instance Level Master Data (ILMD) -->
+				<ilmd>
+					<extension>
+						<quantity>0.6</quantity>
+						<uom>KGM</uom>
+					</extension>
+				</ilmd>
+			</ObjectEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>

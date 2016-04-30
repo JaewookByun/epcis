@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument creationDate="2001-12-31T12:00:00"
+	schemaVersion="0.0" xmlns:epcglobal="epcglobal.axis.epcis.oliot.org"
+	xmlns:p="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+	xmlns:epcis="axis.epcis.oliot.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="axis.epcis.oliot.org ../wsdl/EPCglobal-epcis-1_2_jack.xsd ">
+	<EPCISBody>
+		<EventList>
+			<AggregationEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>+02:00</eventTimeZoneOffset>
+				<parentID>urn:epc:id:sscc:0614141.1234567890</parentID>
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+					<epc>urn:epc:id:sgtin:0614141.107346.2018</epc>
+				</childEPCs>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:receiving</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_progress</disposition>
+				<readPoint>
+					<id>urn:epc:id:sgln:0614141.00777.0</id>
+					<extension>
+						<longitude>35</longitude>
+						<latitude>124</latitude>
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>urn:epc:id:sgln:0614141.00888.0</id>
+					<extension>
+						<longitude>35</longitude>
+						<latitude>124</latitude>
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="badz">zcxvzcvcv</bizTransaction>
+				</bizTransactionList>
+				<extension>
+					<childQuantityList>
+						<quantityElement>
+							<epcClass>urn:epc:idpat:sgtin:4012345.098765.*</epcClass>
+							<quantity>10</quantity>
+							<!-- Meaning: 10 units of GTIN '04012345987652' -->
+						</quantityElement>
+						<quantityElement>
+							<epcClass>urn:epc:class:lgtin:4012345.012345.998877</epcClass>
+							<quantity>200.5</quantity>
+							<uom>KGM</uom>
+							<!-- Meaning: 200.5 kg of GTIN '04012345123456' belonging to lot '998877' -->
+						</quantityElement>
+					</childQuantityList>
+					<sourceList>
+						<source type="bzz">azcvzcv</source>
+					</sourceList>
+					<destinationList>
+						<destination type="bdz">zcxvzcvzcxv</destination>
+					</destinationList>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</extension>
+			</AggregationEvent>
+			<ObjectEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>http://epc</epc>
+					<epc>http://epc2</epc>
+				</epcList>
+				<action>ADD</action>
+				<bizStep>zcxvzcvzcv</bizStep>
+				<disposition>zcxvzcxvczxv</disposition>
+				<readPoint>
+					<id>http://tempuri.org</id>
+					<extension>
+						<longitude>36.1</longitude>
+						<latitude>125.2</latitude>
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>zxcvzcvzcv</id>
+					<extension>
+						<longitude>36.1</longitude>
+						<latitude>125.2</latitude>
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="bbhg">zcvzcvzcvzcxv</bizTransaction>
+				</bizTransactionList>
+				<ilmd>
+					<extension>
+						<a>isPosslbe</a>
+						<b>real</b>
+					</extension>
+				</ilmd>
+				<extension>
+					<quantityList>
+						<quantityElement>
+							<epcClass>zxcvzcvzcv</epcClass>
+							<quantity>0.0</quantity>
+							<uom>zcxvzcvzcvzcxvadd</uom>
+						</quantityElement>
+					</quantityList>
+					<sourceList>
+						<source type="dbz">zxcvzcv</source>
+					</sourceList>
+					<destinationList>
+						<destination type="ddaas">zxcvzcvzcv</destination>
+					</destinationList>
+					<ilmd>
+						<extension>
+							<manufacturer>RESL</manufacturer>
+							<expire>2001-12-31T12:00:00</expire>
+						</extension>
+					</ilmd>
+				</extension>
+			</ObjectEvent>
+			<TransactionEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>-06:00</eventTimeZoneOffset>
+				<bizTransactionList>
+					<bizTransaction type="sdf">qerqwerqewr</bizTransaction>
+				</bizTransactionList>
+				<parentID>urn:epc:id:sscc:0614141.1234567890</parentID>
+				<epcList>
+					<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>
+					<epc>urn:epc:id:sgtin:0614141.107346.2018</epc>
+				</epcList>
+				<action>ADD</action>
+				<bizStep>qewrwer</bizStep>
+				<disposition>asdfasdfadsf</disposition>
+				<readPoint>
+					<id>zfbfbfbf</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>fghfghfghgfh</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</bizLocation>
+				<extension>
+					<quantityList>
+						<quantityElement>
+							<epcClass>fghfghfghgfh</epcClass>
+							<quantity>0.0</quantity>
+							<uom>fghfhrtyrtyrty</uom>
+						</quantityElement>
+					</quantityList>
+					<sourceList>
+						<source type="gdz">fghfghfgh</source>
+					</sourceList>
+					<destinationList>
+						<destination type="bdz">fghfghfghfgh</destination>
+					</destinationList>	
+				</extension>
+			</TransactionEvent>
+			<TransformationEvent>
+				<eventTime>2001-12-31T12:00:00</eventTime>
+				<recordTime>2001-12-31T12:00:00</recordTime>
+				<eventTimeZoneOffset>-06:00</eventTimeZoneOffset>	
+				<inputEPCList>
+					<epc>urn:epc:id:sgtin:4012345.011122.25</epc>
+					<epc>urn:epc:id:sgtin:4000001.065432.99886655</epc>
+				</inputEPCList>
+				<inputQuantityList>
+					<quantityElement>
+						<epcClass>qweqwe</epcClass>
+						<quantity>0.0</quantity>
+						<uom>qweqwe</uom>
+					</quantityElement>
+				</inputQuantityList>
+				<outputEPCList>
+					<epc>epc</epc>
+				</outputEPCList>
+				<outputQuantityList>
+					<quantityElement>
+						<epcClass>qweqwe</epcClass>
+						<quantity>0.0</quantity>
+						<uom>qweqwe</uom>
+					</quantityElement>
+				</outputQuantityList>
+				<transformationID>zcvzcv</transformationID>
+				<bizStep>zcxvzcxv</bizStep>
+				<disposition>xcvbxcvbxcvb</disposition>
+				<readPoint>
+					<id>xvcbxcvbvxcb</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</readPoint>
+				<bizLocation>
+					<id>xcvbxcvbxcvb</id>
+					<extension>
+						<ANY-ELEMENT />
+					</extension>
+				</bizLocation>
+				<bizTransactionList>
+					<bizTransaction type="hghf">gjkgkjgjk
+					</bizTransaction>
+				</bizTransactionList>
+				<sourceList>
+					<source type="fgh">gjkgjkg</source>
+				</sourceList>
+				<destinationList>
+					<destination type="fghhhg">yuiyuirg</destination>
+				</destinationList>
+				<ilmd>
+					<extension>
+						<a>isPosslbe</a>
+						<b>real</b>
+					</extension>
+				</ilmd>
+				<extension>
+					<ANY-ELEMENT />
+				</extension>
+			</TransformationEvent>
+		</EventList>
+		<extension>
+			<ANY-ELEMENT />
+		</extension>
+	</EPCISBody>
+	<extension>
+		<ANY-ELEMENT />
+	</extension>
+</epcis:EPCISDocument>

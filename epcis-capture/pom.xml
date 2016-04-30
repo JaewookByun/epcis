@@ -90,21 +90,6 @@
 			<artifactId>cglib</artifactId>
 			<version>3.2.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz</artifactId>
-			<version>2.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.quartz-scheduler</groupId>
-			<artifactId>quartz-jobs</artifactId>
-			<version>2.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.fge</groupId>
-			<artifactId>json-schema-validator</artifactId>
-			<version>2.2.6</version>
-		</dependency>
 
 		<!-- CXF Web Service -->
 		<dependency>
@@ -116,13 +101,6 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-transports-http</artifactId>
 			<version>2.7.11</version>
-		</dependency>
-
-		<!-- Koloboke for Big collection -->
-		<dependency>
-			<groupId>net.openhft</groupId>
-			<artifactId>koloboke-impl-jdk6-7</artifactId>
-			<version>0.6.7</version>
 		</dependency>
 
 		<!-- REST FB -->

@@ -23,7 +23,10 @@ import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EPCISEventListExtensionType;
+import org.oliot.model.epcis.EPCISHeaderExtensionType;
+import org.oliot.model.epcis.EPCISHeaderType;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
+import org.oliot.model.epcis.EPCISMasterDataType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
@@ -223,6 +226,38 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.info(" There is no EventList ");
 			return;
 		}
+		
+		// Master Data in the document
+		EPCISHeaderType header = epcisDocument.getEPCISHeader();
+		EPCISHeaderExtensionType headerExtension = header.getExtension();
+		EPCISMasterDataType masterData = headerExtension.getEPCISMasterData();
+		VocabularyListType vocabularyListType = masterData.getVocabularyList();
+	
+		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
+
+		for (int i = 0; i < vocabularyTypeList.size(); i++) {
+			VocabularyType vocabulary = vocabularyTypeList.get(i);
+			if (vocabulary.getVocabularyElementList() != null) {
+				if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
+					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
+					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
+					for (int j = 0; j < vetList.size(); j++) {
+						VocabularyElementType vet = vetList.get(j);
+						VocabularyElementType vetTemp = new VocabularyElementType();
+						vetTemp = vet;
+						vetTempList.add(vetTemp);
+					}
+					for (int j = 0; j < vetTempList.size(); j++) {
+						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
+						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
+						capture(vocabulary, gcpLength);
+					}
+				}
+			}
+
+		}
+		
+		
 		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
 		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
 

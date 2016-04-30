@@ -14,16 +14,8 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Level;
-import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonschema.core.exceptions.ProcessingException;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import com.github.fge.jsonschema.main.JsonSchema;
-import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
 public class CaptureUtil {
 	public static boolean validate(InputStream is, String xsdPath) {
@@ -39,29 +31,6 @@ public class CaptureUtil {
 			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return false;
-		}
-	}
-
-	public static boolean validate(JSONObject Json, JSONObject schema_obj) {
-		try {
-
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode input_node = mapper.readTree(Json.toString());
-			JsonNode schema_node = mapper.readTree(schema_obj.toString());
-
-			final JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-			final JsonSchema schema = factory.getJsonSchema(schema_node);
-			ProcessingReport report;
-			report = schema.validate(input_node);
-			Configuration.logger.info("validation process report : " + report);
-			return report.isSuccess();
-
-		} catch (IOException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-			return false;
-		} catch (ProcessingException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 			return false;
 		}

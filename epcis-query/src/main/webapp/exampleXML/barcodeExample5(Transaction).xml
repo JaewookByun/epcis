@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.1">
+	<EPCISBody>
+		<EventList>
+			<TransactionEvent>
+				<eventTime>2005-04-03T20:33:31.116-06:00</eventTime>
+				<eventTimeZoneOffset>-06:00</eventTimeZoneOffset>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678	</bizTransaction>
+				</bizTransactionList>
+				<parentID>urn:epc:id:sscc:0614141.1234567890</parentID>
+				<epcList>
+					<epc>(01)80614141123458(21)6789</epc>
+					<epc>(01)80614141123458(21)6790</epc>
+				</epcList>
+				<action>ADD</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:shipping</bizStep>
+				<disposition>urn:epcglobal:cbv:disp:in_transit</disposition>
+				<readPoint>
+					<id>(414)0614141123452(254)343</id>
+				</readPoint>
+				<extension>
+					<quantityList>
+						<quantityElement>
+							<epcClass>(01)80614141123458(10)4225</epcClass>
+							<quantity>10</quantity>
+							<uom>KGM</uom>
+						</quantityElement>
+					</quantityList>
+				</extension>
+			</TransactionEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
