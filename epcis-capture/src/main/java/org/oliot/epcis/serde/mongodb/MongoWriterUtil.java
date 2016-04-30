@@ -288,7 +288,8 @@ public class MongoWriterUtil {
 			BusinessTransactionType bizTranType = bizList.get(i);
 			if (bizTranType.getType() != null && bizTranType.getValue() != null) {
 				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(bizTranType.getType(), new BsonString(bizTranType.getValue().replace("\n", "").replace("\t", "")));
+				dbObj.put(bizTranType.getType(),
+						new BsonString(bizTranType.getValue().replace("\n", "").replace("\t", "")));
 				bizTranList.add(dbObj);
 			}
 		}
@@ -632,8 +633,8 @@ public class MongoWriterUtil {
 			return new BsonString(value);
 		}
 	}
-	
-	static BsonDocument getErrorDeclaration(ErrorDeclarationType edt){
+
+	static BsonDocument getErrorDeclaration(ErrorDeclarationType edt) {
 		BsonDocument errorBson = new BsonDocument();
 		long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
 		errorBson.put("declarationTime", new BsonInt64(declarationTime));

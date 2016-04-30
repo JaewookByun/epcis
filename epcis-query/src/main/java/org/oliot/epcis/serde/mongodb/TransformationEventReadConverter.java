@@ -1,6 +1,5 @@
 package org.oliot.epcis.serde.mongodb;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -13,7 +12,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
-import org.bson.BsonDouble;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -179,49 +177,15 @@ public class TransformationEventReadConverter {
 			// Quantity
 			if (dbObject.get("inputQuantityList") != null) {
 				QuantityListType qlt = new QuantityListType();
-				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BsonArray quantityDBList = dbObject.get("inputQuantityList").asArray();
-				for (int i = 0; i < quantityDBList.size(); i++) {
-					QuantityElementType qet = new QuantityElementType();
-					BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
-					Object epcClassObject = quantityDBObject.get("epcClass");
-					Object quantity = quantityDBObject.get("quantity");
-					Object uom = quantityDBObject.get("uom");
-					if (epcClassObject != null) {
-						qet.setEpcClass(epcClassObject.toString());
-						if (quantity != null) {
-							double quantityDouble = ((BsonDouble) quantity).doubleValue();
-							qet.setQuantity(BigDecimal.valueOf(quantityDouble));
-						}
-						if (uom != null)
-							qet.setUom(uom.toString());
-						qetList.add(qet);
-					}
-				}
+				BsonArray quantityDBList = dbObject.getArray("inputQuantityList");
+				List<QuantityElementType> qetList = putQuantityElementTypeList(quantityDBList);
 				qlt.setQuantityElement(qetList);
 				transformationEventType.setInputQuantityList(qlt);
 			}
 			if (dbObject.get("outputQuantityList") != null) {
 				QuantityListType qlt = new QuantityListType();
-				List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-				BsonArray quantityDBList = dbObject.get("outputQuantityList").asArray();
-				for (int i = 0; i < quantityDBList.size(); i++) {
-					QuantityElementType qet = new QuantityElementType();
-					BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
-					Object epcClassObject = quantityDBObject.get("epcClass");
-					Object quantity = quantityDBObject.get("quantity");
-					Object uom = quantityDBObject.get("uom");
-					if (epcClassObject != null) {
-						qet.setEpcClass(epcClassObject.toString());
-						if (quantity != null) {
-							double quantityDouble = ((BsonDouble) quantity).doubleValue();
-							qet.setQuantity(BigDecimal.valueOf(quantityDouble));
-						}
-						if (uom != null)
-							qet.setUom(uom.toString());
-						qetList.add(qet);
-					}
-				}
+				BsonArray quantityDBList = dbObject.getArray("outputQuantityList");
+				List<QuantityElementType> qetList = putQuantityElementTypeList(quantityDBList);
 				qlt.setQuantityElement(qetList);
 				transformationEventType.setOutputQuantityList(qlt);
 			}

@@ -33,6 +33,7 @@ import org.oliot.model.epcis.VocabularyType;
 
 public class MasterDataReadConverter {
 
+	@SuppressWarnings("unused")
 	public VocabularyType convert(BsonDocument dbObject) {
 		VocabularyType vt = new VocabularyType();
 

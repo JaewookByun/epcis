@@ -188,19 +188,27 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String MATCH_inputEPCClass,
 			@RequestParam(required = false) String MATCH_outputEPCClass,
 			@RequestParam(required = false) String MATCH_anyEPCClass,
-			@RequestParam(required = false) String EQ_quantity, @RequestParam(required = false) String GT_quantity,
-			@RequestParam(required = false) String GE_quantity, @RequestParam(required = false) String LT_quantity,
-			@RequestParam(required = false) String LE_quantity, @RequestParam(required = false) String orderBy,
-			@RequestParam(required = false) String orderDirection,
-			@RequestParam(required = false) String eventCountLimit,
-			@RequestParam(required = false) String maxEventCount,
+			@RequestParam(required = false) Integer EQ_quantity, @RequestParam(required = false) Integer GT_quantity,
+			@RequestParam(required = false) Integer GE_quantity, @RequestParam(required = false) Integer LT_quantity,
+			@RequestParam(required = false) Integer LE_quantity,
+
+			@RequestParam(required = false) String EQ_eventID,
+			@RequestParam(required = false, defaultValue = "false") Boolean EXISTS_errorDeclaration,
+			@RequestParam(required = false) String GE_errorDeclarationTime,
+			@RequestParam(required = false) String LT_errorDeclarationTime,
+			@RequestParam(required = false) String EQ_errorReason,
+			@RequestParam(required = false) String EQ_correctiveEventID,
+
+			@RequestParam(required = false) String orderBy, @RequestParam(required = false) String orderDirection,
+			@RequestParam(required = false) Integer eventCountLimit,
+			@RequestParam(required = false) Integer maxEventCount,
 
 			@RequestParam(required = false) String vocabularyName,
-			@RequestParam(required = false) boolean includeAttributes,
-			@RequestParam(required = false) boolean includeChildren,
+			@RequestParam(required = false) Boolean includeAttributes,
+			@RequestParam(required = false) Boolean includeChildren,
 			@RequestParam(required = false) String attributeNames, @RequestParam(required = false) String EQ_name,
 			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
-			@RequestParam(required = false) String maxElementCount,
+			@RequestParam(required = false) Integer maxElementCount,
 
 			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken,
@@ -239,9 +247,11 @@ public class RESTLikeQueryService implements ServletContextAware {
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount, format, userID, friendList, params);
+					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
+					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
+					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, vocabularyName,
+					includeAttributes, includeChildren, attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
+					format, userID, friendList, params);
 			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
