@@ -1,5 +1,6 @@
 package org.oliot.epcis.serde.mongodb;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,8 +13,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
+import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonType;
+import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -21,6 +24,7 @@ import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
+import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityEventExtensionType;
 import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.TransactionEventExtension2Type;
@@ -49,6 +53,30 @@ import org.w3c.dom.Node;
 
 public class MongoReaderUtil {
 
+	static List<QuantityElementType> putQuantityElementTypeList(BsonArray quantityDBList){
+		List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
+		
+		for (int i = 0; i < quantityDBList.size(); i++) {
+			QuantityElementType qet = new QuantityElementType();
+			BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
+			BsonValue epcClassObject = quantityDBObject.get("epcClass");
+			BsonValue quantity = quantityDBObject.get("quantity");
+			BsonValue uom = quantityDBObject.get("uom");
+			if (epcClassObject != null) {
+				qet.setEpcClass(epcClassObject.asString().getValue());
+				if (quantity != null) {
+					double quantityDouble = quantity.asDouble().getValue();
+					qet.setQuantity(BigDecimal.valueOf(quantityDouble));
+				}
+				if (uom != null)
+					qet.setUom(uom.asString().getValue());
+				qetList.add(qet);
+			}
+		}
+		return qetList;		
+	}
+	
+	
 	static List<Object> putAny(BsonDocument anyObject) {
 		try {
 			// Get Namespaces

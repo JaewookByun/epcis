@@ -1,6 +1,5 @@
 package org.oliot.epcis.serde.mongodb;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -185,25 +184,8 @@ public class AggregationEventReadConverter {
 				// Quantity
 				if (extObject.get("childQuantityList") != null) {
 					QuantityListType qlt = new QuantityListType();
-					List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
 					BsonArray quantityDBList = extObject.getArray("childQuantityList");
-					for (int i = 0; i < quantityDBList.size(); i++) {
-						QuantityElementType qet = new QuantityElementType();
-						BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
-						BsonValue epcClassObject = quantityDBObject.get("epcClass");
-						BsonValue quantity = quantityDBObject.get("quantity");
-						BsonValue uom = quantityDBObject.get("uom");
-						if (epcClassObject != null) {
-							qet.setEpcClass(epcClassObject.asString().getValue());
-							if (quantity != null) {
-								double quantityDouble = quantity.asDouble().getValue();
-								qet.setQuantity(BigDecimal.valueOf(quantityDouble));
-							}
-							if (uom != null)
-								qet.setUom(uom.asString().getValue());
-							qetList.add(qet);
-						}
-					}
+					List<QuantityElementType> qetList = putQuantityElementTypeList(quantityDBList);
 					qlt.setQuantityElement(qetList);
 					aeet.setChildQuantityList(qlt);
 				}

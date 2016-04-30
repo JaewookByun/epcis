@@ -1,6 +1,5 @@
 package org.oliot.epcis.serde.mongodb;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
@@ -13,7 +12,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
-import org.bson.BsonDouble;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -189,25 +187,8 @@ public class ObjectEventReadConverter {
 				// Quantity
 				if (extObject.get("quantityList") != null) {
 					QuantityListType qlt = new QuantityListType();
-					List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
 					BsonArray quantityDBList = extObject.getArray("quantityList");
-					for (int i = 0; i < quantityDBList.size(); i++) {
-						QuantityElementType qet = new QuantityElementType();
-						BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
-						Object epcClassObject = quantityDBObject.get("epcClass");
-						Object quantity = quantityDBObject.get("quantity");
-						Object uom = quantityDBObject.get("uom");
-						if (epcClassObject != null) {
-							qet.setEpcClass(epcClassObject.toString());
-							if (quantity != null) {
-								double quantityDouble = ((BsonDouble) quantity).getValue();
-								qet.setQuantity(BigDecimal.valueOf(quantityDouble));
-							}
-							if (uom != null)
-								qet.setUom(uom.toString());
-							qetList.add(qet);
-						}
-					}
+					List<QuantityElementType> qetList = putQuantityElementTypeList(quantityDBList);
 					qlt.setQuantityElement(qetList);
 					oeet.setQuantityList(qlt);
 				}
