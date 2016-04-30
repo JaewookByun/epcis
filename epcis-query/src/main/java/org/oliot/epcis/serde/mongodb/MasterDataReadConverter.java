@@ -58,13 +58,13 @@ public class MasterDataReadConverter {
 					key = decodeMongoObjectKey(key);
 					AttributeType attrType = new AttributeType();
 					attrType.setId(key);
-					attrType.setValue(value);
+					//attrType.setValue(value);
 					attrListType.add(attrType);
 				} else {
 					String value = String.valueOf(attrObj.getInt64(key).getValue());
 					AttributeType attrType = new AttributeType();
 					attrType.setId(key);
-					attrType.setValue(value);
+					//attrType.setValue(value);
 					attrListType.add(attrType);
 				}
 

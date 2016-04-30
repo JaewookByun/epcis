@@ -12,13 +12,12 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
-import org.oliot.epcis.service.subscription.MongoSubscription;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -41,13 +40,9 @@ public class Configuration implements ServletContextListener {
 	public static Logger logger;
 	public static String webInfoPath;
 	public static String wsdlPath;
-	public static boolean isCaptureVerfificationOn;
-	public static boolean isServiceRegistryReportOn;
-	public static String onsAddress;
 	public static boolean isQueryAccessControlOn;
 	public static String facebookAppID;
-	public static boolean isTriggerSupported;
-	
+
 	public static MongoClient mongoClient;
 	public static MongoDatabase mongoDatabase;
 
@@ -64,9 +59,7 @@ public class Configuration implements ServletContextListener {
 
 		// Set Basic Configuration with Configuration.json
 		setBasicConfiguration(servletContextEvent.getServletContext());
-		
-		// load existing subscription
-		loadExistingSubscription();
+
 	}
 
 	private void setLogger() {
@@ -102,93 +95,39 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.info("Backend - " + Configuration.backend);
 			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
-			Configuration.wsdlPath = context.getRealPath("/wsdl");			
-			
-			// Set up capture_verification
-			String captureVerification = json.getString("capture_verification");
-			if (captureVerification == null) {
-				Configuration.logger.error(
-						"capture_verification is null, please make sure Configuration.json is correct, and restart.");
-			}
-			captureVerification = captureVerification.trim();
-			if (captureVerification.equals("on")) {
-				Configuration.isCaptureVerfificationOn = true;
-				Configuration.logger.info("Capture_Verification - ON ");
-			} else if (captureVerification.equals("off")) {
-				Configuration.isCaptureVerfificationOn = false;
-				Configuration.logger.info("Capture_Verification - OFF ");
-			} else {
-				Configuration.logger.error(
-						"capture_verification should be (on|off), please make sure Configuration.json is correct, and restart.");
-			}
-
-			// Set up service_registry_report
-			String serviceRegistryReport = json.getString("service_registry_report");
-			if (serviceRegistryReport == null) {
-				Configuration.logger.error(
-						"service_registry_report is null, please make sure Configuration.json is correct, and restart.");
-			}
-			serviceRegistryReport = serviceRegistryReport.trim();
-			if (serviceRegistryReport.equals("on")) {
-				Configuration.isServiceRegistryReportOn = true;
-				Configuration.logger.info("Service_Registry_Report - ON");
-
-			} else if (serviceRegistryReport.equals("off")) {
-				Configuration.isServiceRegistryReportOn = false;
-				Configuration.logger.info("Service_Registry_Report - OFF");
-			} else {
-				Configuration.logger.error(
-						"service_registry_report should be (on|off), please make sure Configuration.json is correct, and restart.");
-			}
-
-			// Set up ons_address
-			String ons_address = json.getString("ons_address");
-			if (ons_address == null) {
-				Configuration.logger
-						.error("ons_address is null, please make sure Configuration.json is correct, and restart.");
-			} else {
-				Configuration.onsAddress = ons_address;
-			}
+			Configuration.wsdlPath = context.getRealPath("/wsdl");
 
 			// Query Access Control
 			// Set up capture_verification
 			String queryAC = json.getString("query_access_control");
 			if (queryAC == null) {
-				Configuration.logger.error(
-						"query_access_control, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger
+						.error("query_access_control, please make sure Configuration.json is correct, and restart.");
 			}
 			queryAC = queryAC.trim();
 			if (queryAC.equals("on")) {
 				Configuration.isQueryAccessControlOn = true;
 				Configuration.logger.info("Query_AccessControl - ON ");
-			} else if (captureVerification.equals("off")) {
+			} else if (queryAC.equals("off")) {
 				Configuration.isQueryAccessControlOn = false;
 				Configuration.logger.info("Query_AccessControl - OFF ");
 			} else {
 				Configuration.logger.error(
 						"query_access_control should be (on|off), please make sure Configuration.json is correct, and restart.");
 			}
-			
+
 			// Facebook Application ID
 			String fai = json.getString("facebook_app_id");
 			if (fai == null) {
-				Configuration.logger.error(
-						"facebook_app_id, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger
+						.error("facebook_app_id, please make sure Configuration.json is correct, and restart.");
 			}
 			facebookAppID = fai.trim();
 
-			if( backend.equals("MongoDB")){
+			if (backend.equals("MongoDB")) {
 				setMongoDB(json);
 			}
-			
-			// Trigger Support
-			String triggerSupport = json.getString("trigger_support");
-			if (triggerSupport == null || triggerSupport.trim().equals("on")){
-				isTriggerSupported = true;
-			}else{
-				isTriggerSupported = false;
-			}
-			
+
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
@@ -196,29 +135,18 @@ public class Configuration implements ServletContextListener {
 
 	private void setMongoDB(JSONObject json) {
 		String backend_ip;
-		if(json.isNull("backend_ip")){
+		if (json.isNull("backend_ip")) {
 			backend_ip = "localhost";
-		}else{
+		} else {
 			backend_ip = json.getString("backend_ip");
 		}
 		int backend_port;
-		if(json.isNull("backend_port")){
+		if (json.isNull("backend_port")) {
 			backend_port = 27017;
-		}else{
+		} else {
 			backend_port = json.getInt("backend_port");
 		}
 		mongoClient = new MongoClient(backend_ip, backend_port);
 		mongoDatabase = mongoClient.getDatabase("epcis");
-	}
-
-	private void loadExistingSubscription() {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoSubscription ms = new MongoSubscription();
-			ms.init();
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
 	}
 }
