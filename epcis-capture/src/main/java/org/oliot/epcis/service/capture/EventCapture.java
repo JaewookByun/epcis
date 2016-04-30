@@ -95,9 +95,9 @@ public class EventCapture implements ServletContextAware {
 				if (epcisDocument.getEPCISHeader().getStandardBusinessDocumentHeader() != null) {
 					StandardBusinessDocumentHeader header = epcisDocument.getEPCISHeader()
 							.getStandardBusinessDocumentHeader();
-					if (header.getHeaderVersion() == null || !header.getHeaderVersion().equals("1.1")) {
-						Configuration.logger.error(" HeaderVersion should 1.1 if use SBDH ");
-						return new ResponseEntity<>(new String("Error: HeaderVersion should 1.1 if use SBDH"),
+					if (header.getHeaderVersion() == null || !header.getHeaderVersion().equals("1.2")) {
+						Configuration.logger.error(" HeaderVersion should 1.2 if use SBDH ");
+						return new ResponseEntity<>(new String("Error: HeaderVersion should 1.2 if use SBDH"),
 								HttpStatus.BAD_REQUEST);
 					}
 					if (header.getDocumentIdentification() == null) {
@@ -123,10 +123,10 @@ public class EventCapture implements ServletContextAware {
 											"Error: DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH"),
 									HttpStatus.BAD_REQUEST);
 						}
-						if (docID.getTypeVersion() == null | !docID.getTypeVersion().equals("1.1")) {
-							Configuration.logger.error(" DocumentIdentification/TypeVersion should 1.1 if use SBDH ");
+						if (docID.getTypeVersion() == null | !docID.getTypeVersion().equals("1.2")) {
+							Configuration.logger.error(" DocumentIdentification/TypeVersion should 1.2 if use SBDH ");
 							return new ResponseEntity<>(
-									new String("Error: DocumentIdentification/TypeVersion should 1.1 if use SBDH"),
+									new String("Error: DocumentIdentification/TypeVersion should 1.2 if use SBDH"),
 									HttpStatus.BAD_REQUEST);
 						}
 

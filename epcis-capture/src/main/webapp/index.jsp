@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Oliot EPCIS v1.1 Main Page</title>
+<title>Oliot EPCIS v1.2 Main Page</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -60,14 +60,14 @@
 		<div class="panel-body">
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> SOAP Web Service </a> <a
-					href="./webservice" class="list-group-item">EPCIS v1.1
+					href="./webservice" class="list-group-item">EPCIS v1.2
 					SOAP/HTTP Web Service</a>
 			</div>
 
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> REST-Like Web
 					Service </a> <a href="./rest-like_service.html" class="list-group-item">EPCIS
-					v1.1 Compliant REST-Like Web Service</a>
+					v1.2 Compliant REST-Like Web Service</a>
 			</div>
 		</div>
 	</div>
