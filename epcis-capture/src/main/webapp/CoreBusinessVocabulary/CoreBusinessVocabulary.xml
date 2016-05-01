@@ -1,5 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE EPCISDocument>
+
+<!-- Copyright (C) 2014-2016 Jaewook Byun This project is part of Oliot (oliot.org), 
+	namely Oliot EPCIS. Oliot EPCIS deals with the standard Event/Masterdata 
+	document and provides the standard service interfaces, based on GS1 Electronic 
+	Product Code Information Service (EPCIS) v1.2. [http://www.gs1.org/epcis] 
+	@author Jaewook Jack Byun, Ph.D student Korea Advanced Institute of Science 
+	and Technology (KAIST) Real-time Embedded System Laboratory(RESL) bjw0829@kaist.ac.kr, 
+	bjw0829@gmail.com -->
+
+
 <epcismd:EPCISMasterDataDocument
 	creationDate="2015-04-09T12:00:00" schemaVersion="0.0" xmlns:epcglobal="epcglobal.oliot.org"
 	xmlns:epcis="epcis.oliot.org" xmlns:epcismd="masterdata.epcis.oliot.org"
@@ -12,23 +22,57 @@
 			<Vocabulary type="urn:epcglobal:epcis:vtype:BusinessStep">
 				<VocabularyElementList>
 					<VocabularyElement id="urn:epcglobal:cbv:bizstep:accepting">
-						<attribute id="urn:epcglobal:cbv:sv:definition">Denotes a specific activity within a business process where an object changes possession and/or ownership.</attribute>
-						<attribute id="urn:epcglobal:cbv:sv:example">Retailer X unloads a pallet on to the receiving dock. The numbers of cases on the pallet are counted. The pallets are disaggregated from the shipping conveyance. Thequantity is verified against the delivery document (Freight Bill or Bill of Lading), notating any over, short or damaged product at the time of delivery. Typically this process releases freight payment and completes the contractual agreement with the carrier of delivering the product/assets to a specified location.</attribute>
+						<attribute id="urn:epcglobal:cbv:definition">Denotes a specific activity within a
+							business process where an object changes possession and/or
+							ownership.</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Retailer X unloads a pallet on to the
+							receiving dock. The numbers of cases on the pallet are counted.
+							The pallets are disaggregated from the shipping conveyance. The
+							quantity is verified against the delivery document (Freight Bill
+							or Bill of Lading), notating any over, short or damaged product
+							at the time of delivery. Typically this process releases freight
+							payment and completes the contractual agreement with the carrier
+							of delivering the product/assets to a specified location.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">A parcel carrier drops off five boxes at
+							Distributor Y's DC. A person on the Receiving Dock signs that
+							they accept the five boxes from the parcel carrier.</attribute>
+						<attribute id="urn:epcglobal:cbv:example">A wholesaler is assigned a lot of fish at
+							a fish auction, verifies the quantity and acknowledges receipt.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">A manufacturer’s fork lift driver scans
+							the IDs of components which have been removed from a consignment
+							warehouse. In doing so, the components are added to the
+							manufacturer’s inventory.
+						</attribute>
 					</VocabularyElement>
-				</VocabularyElementList>
-				<VocabularyElementList>
 					<VocabularyElement id="urn:epcglobal:cbv:bizstep:arriving">
-						<attribute id="urn:epcglobal:cbv:sv:definition">Denotes a specific activity within a business process where an object arrives at a location.</attribute>
-						<attribute id="urn:epcglobal:cbv:sv:example">Truckload of a shipment arrives into a yard. Shipment has not yet been received or accepted.</attribute>
+						<attribute id="urn:epcglobal:cbv:definition">Denotes a specific activity within a
+							business process where an object arrives at a location.</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Truckload of a shipment arrives into a
+							yard. Shipment has not yet been received or accepted.
+						</attribute>
+					</VocabularyElement>
+					<VocabularyElement id="urn:epcglobal:cbv:bizstep:assembling">
+						<attribute id="urn:epcglobal:cbv:definition">Denotes an activity within a business
+							process whereby one or more objects are combined to create a new
+							finished product. In contrast to transformation, in the output of
+							assembling the original objects are still recognizable
+							and/or the
+							process is reversible; hence, assembling would be used in an
+							Aggregation Event, not a Transformation Event.</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Computer parts (hard drive, battery, RAM)
+							assembled into a consumer ready computer.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Healthcare kitting: a surgical kit
+							including drug, syringe, and gauze are combined to create a new
+							‘product’: a kit
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">http://143.248.56.100:8080/epcis-capture/CoreBusinessVocabulary/img/assembling.png
+						</attribute>
 					</VocabularyElement>
 				</VocabularyElementList>
 			</Vocabulary>
 		</VocabularyList>
-		<extension>
-			<ANY-ELEMENT />
-		</extension>
 	</EPCISBody>
-	<extension>
-		<ANY-ELEMENT />
-	</extension>
 </epcismd:EPCISMasterDataDocument>

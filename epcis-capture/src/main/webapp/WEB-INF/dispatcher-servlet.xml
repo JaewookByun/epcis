@@ -9,7 +9,6 @@
 	<!-- <bean id="aleCapture" class="org.oliot.epcis.service.capture.ALECapture"></bean> -->
 	<bean id="eventCapture" class="org.oliot.epcis.service.capture.EventCapture"></bean>
 	<bean id="vocabularyCapture" class="org.oliot.epcis.service.capture.VocabularyCapture"></bean>
-	<bean id="codeParser" class="org.oliot.epcis.service.codeparser.CodeParserService"></bean>
 	<bean id="bsonDocumentCapture" class="org.oliot.epcis.service.capture.BsonDocumentCapture"></bean>
 
 	<!-- SOAP/HTTP Test Class, describing how to consume SOAP services -->

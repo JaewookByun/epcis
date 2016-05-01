@@ -1,4 +1,6 @@
-package org.oliot.epcis.serde.mongodb;
+package org.oliot.epcis.converter.mongodb;
+
+import static org.oliot.epcis.converter.mongodb.MongoWriterUtil.*;
 
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -15,8 +17,6 @@ import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.QuantityEventExtensionType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.ReadPointType;
-
-import static org.oliot.epcis.serde.mongodb.MongoWriterUtil.*;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
