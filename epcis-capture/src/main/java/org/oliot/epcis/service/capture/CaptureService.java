@@ -17,8 +17,9 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.epcis.serde.mongodb.MasterDataWriteConverter;
+import org.oliot.epcis.converter.mongodb.MasterDataWriteConverter;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
+import org.oliot.gcp.core.SimplePureIdentityFilter;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -32,7 +33,6 @@ import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
-import org.oliot.tdt.SimplePureIdentityFilter;
 
 /**
  * Copyright (C) 2014 Jaewook Byun
