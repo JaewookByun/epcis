@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Oliot EPCIS v1.2 Main Page</title>
+<title>Oliot EPCIS v1.2 Capture Server</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	(function(i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function() {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', '//www.google-analytics.com/analytics.js',
+			'ga');
 
-  ga('create', 'UA-64257932-1', 'auto');
-  ga('send', 'pageview');
-
+	ga('create', 'UA-64257932-1', 'auto');
+	ga('send', 'pageview');
 </script>
 </head>
 <body>
@@ -36,18 +42,21 @@
 					Then, these events can be globally shared with given queries <br>
 				</a>
 			</div>
-						
+
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">EPCIS v1.2 is now being prototyped<br>Dynamic Web Service over Tomcat 8<br>Java 8, Servlet 3.1<br>Maven<br>Spring Framework<br>MongoDB 3</a>
+					href="#" class="list-group-item">EPCIS v1.2 compliance<br>Dynamic
+					Web Service over Tomcat v8<br>Java v8, Servlet v3.1<br>Maven<br>Spring
+					Framework<br>MongoDB v3
+				</a>
 			</div>
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Contact </a> <a href="#"
 					class="list-group-item">Jaewook Byun, Ph.D student<br>
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
 					Real-time and Embedded Systems Laboratory(RESL)<br>
-					bjw0829@kaist.ac.kr<br>
-					GitHub: https://github.com/JaewookByun/epcis
+					bjw0829@kaist.ac.kr<br> GitHub:
+					https://github.com/JaewookByun/epcis
 				</a>
 			</div>
 		</div>
