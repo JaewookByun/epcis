@@ -94,6 +94,7 @@ public class MasterDataWriteConverter {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
+						// e.g. defnition
 						String key = attribute.getId();
 						key = encodeMongoObjectKey(key);
 						List<Object> valueList = attribute.getContent();
@@ -101,10 +102,16 @@ public class MasterDataWriteConverter {
 						if (valueList.size() == 1 && valueList.get(0) instanceof String) {
 							// SimpleType xsd:string
 							String value = valueList.get(0).toString();
-							attrObj.put(key, MongoWriterUtil.converseType(value));
+							BsonArray eArr = null;
+							if( !attrObj.containsKey(key) ){
+								eArr = new BsonArray();
+							}else{
+								eArr = attrObj.getArray(key);
+							}
+							eArr.add(MongoWriterUtil.converseType(value));
+							attrObj.put(key, eArr);
 						} else {
 							// ComplexType
-
 							for (Object value : valueList) {
 								if (value instanceof Element) {
 									BsonDocument complexAttr = new BsonDocument();
