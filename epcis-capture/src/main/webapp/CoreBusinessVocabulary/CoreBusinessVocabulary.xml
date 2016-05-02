@@ -71,6 +71,48 @@
 						<attribute id="urn:epcglobal:cbv:example">http://143.248.56.100:8080/epcis-capture/CoreBusinessVocabulary/img/assembling.png
 						</attribute>
 					</VocabularyElement>
+					<VocabularyElement id="urn:epcglobal:cbv:bizstep:collecting">
+						<attribute id="urn:epcglobal:cbv:definition">Denotes a specific activity within a
+							business process where an object is picked up and collected for
+							future disposal, recycling or re-used.</attribute>
+						<attribute id="urn:epcglobal:cbv:example">An organisation picks up disposed consumer
+							electronics in an end of life state from various different
+							organisations. After the goods are picked up, they typically are
+							brought back and received into a Collection Centre
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Rented or leased pallets are picked up and
+							brought to a collection
+							centre.
+						</attribute>
+					</VocabularyElement>
+					<VocabularyElement id="urn:epcglobal:cbv:bizstep:commissioning">
+						<attribute id="urn:epcglobal:cbv:definition">Process of associating an instance-level
+							identifier (such as an EPC) with a specific object, or the
+							process of associating a class-level identifier, not previously
+							used, with one or more objects. A tag may have been encoded and
+							applied in this step, or may have been previously encoded.
+							In the
+							case of a class-level identifier, commissioning differs from
+							creating_class_instance in that commissioning always indicates
+							that this is the first use of the class-level identifier, whereas
+							creating_class_instance does not specify whether the class-level
+							identifier has been used before.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">On a packaging line, an encoded EPC is
+							applied to a case and associated to the product.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">An individual virtual document (e.g.
+							digital coupon, digital voucher, etc.) is assigned an EPC
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">One hundred bottles of a particular batch
+							of pharmaceutical product are produced, those being the first
+							bottles of that batch to be produced.
+						</attribute>
+						<attribute id="urn:epcglobal:cbv:example">Sides of beef are transformed into
+							individual packaged steaks. This may be an EPCIS 1.2
+							TransformationEvent if the input sides of beef are also tracked.
+						</attribute>
+					</VocabularyElement>
 				</VocabularyElementList>
 			</Vocabulary>
 		</VocabularyList>
