@@ -26,13 +26,13 @@ import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.converter.mongodb.AggregationEventReadConverter;
+import org.oliot.epcis.converter.mongodb.MasterDataReadConverter;
+import org.oliot.epcis.converter.mongodb.ObjectEventReadConverter;
+import org.oliot.epcis.converter.mongodb.QuantityEventReadConverter;
+import org.oliot.epcis.converter.mongodb.TransactionEventReadConverter;
+import org.oliot.epcis.converter.mongodb.TransformationEventReadConverter;
 import org.oliot.epcis.security.OAuthUtil;
-import org.oliot.epcis.serde.mongodb.AggregationEventReadConverter;
-import org.oliot.epcis.serde.mongodb.MasterDataReadConverter;
-import org.oliot.epcis.serde.mongodb.ObjectEventReadConverter;
-import org.oliot.epcis.serde.mongodb.QuantityEventReadConverter;
-import org.oliot.epcis.serde.mongodb.TransactionEventReadConverter;
-import org.oliot.epcis.serde.mongodb.TransformationEventReadConverter;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
@@ -179,7 +179,7 @@ public class MongoQueryService {
 					BsonDocument.class);
 
 			// Queries
-			BsonArray queryList = makeQueryObjects("AggregationEvent", eventType, GE_eventTime, LT_eventTime,
+			BsonArray queryList = makeQueryObjects(queryName, "AggregationEvent", GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
@@ -236,7 +236,7 @@ public class MongoQueryService {
 			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
 					BsonDocument.class);
 			// Queries
-			BsonArray queryList = makeQueryObjects("ObjectEvent", eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+			BsonArray queryList = makeQueryObjects(queryName, "ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
 					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
 					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
@@ -292,7 +292,7 @@ public class MongoQueryService {
 			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("QuantityEvent",
 					BsonDocument.class);
 			// Queries
-			BsonArray queryList = makeQueryObjects("QuantityEvent", eventType, GE_eventTime, LT_eventTime,
+			BsonArray queryList = makeQueryObjects(queryName, "QuantityEvent", GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
@@ -347,7 +347,7 @@ public class MongoQueryService {
 			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
 					BsonDocument.class);
 			// Queries
-			BsonArray queryList = makeQueryObjects("TransactionEvent", eventType, GE_eventTime, LT_eventTime,
+			BsonArray queryList = makeQueryObjects(queryName, "TransactionEvent", GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
@@ -402,7 +402,7 @@ public class MongoQueryService {
 			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
 					BsonDocument.class);
 			// Queries
-			BsonArray queryList = makeQueryObjects("TransformationEvent", eventType, GE_eventTime, LT_eventTime,
+			BsonArray queryList = makeQueryObjects(queryName, "TransformationEvent", GE_eventTime, LT_eventTime,
 					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
 					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
 					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,

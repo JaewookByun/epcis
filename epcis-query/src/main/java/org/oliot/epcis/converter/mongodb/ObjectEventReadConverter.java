@@ -1,4 +1,6 @@
-package org.oliot.epcis.serde.mongodb;
+package org.oliot.epcis.converter.mongodb;
+
+import static org.oliot.epcis.converter.mongodb.MongoReaderUtil.*;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -32,8 +34,6 @@ import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
-
-import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun

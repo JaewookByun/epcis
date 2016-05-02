@@ -1,4 +1,4 @@
-package org.oliot.epcis.serde.mongodb;
+package org.oliot.epcis.converter.mongodb;
 
 import java.util.ArrayList;
 import java.util.Iterator;

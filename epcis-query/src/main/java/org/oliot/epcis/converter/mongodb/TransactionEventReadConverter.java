@@ -1,4 +1,6 @@
-package org.oliot.epcis.serde.mongodb;
+package org.oliot.epcis.converter.mongodb;
+
+import static org.oliot.epcis.converter.mongodb.MongoReaderUtil.*;
 
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -12,12 +14,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
-import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.ActionType;
-import org.oliot.model.epcis.AggregationEventExtension2Type;
-import org.oliot.model.epcis.AggregationEventExtensionType;
-import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -32,8 +30,9 @@ import org.oliot.model.epcis.ReadPointExtensionType;
 import org.oliot.model.epcis.ReadPointType;
 import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
-
-import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
+import org.oliot.model.epcis.TransactionEventExtension2Type;
+import org.oliot.model.epcis.TransactionEventExtensionType;
+import org.oliot.model.epcis.TransactionEventType;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -44,7 +43,7 @@ import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -53,16 +52,15 @@ import static org.oliot.epcis.serde.mongodb.MongoReaderUtil.*;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-public class AggregationEventReadConverter {
+public class TransactionEventReadConverter {
 
-	public AggregationEventType convert(BsonDocument dbObject) {
-
+	public TransactionEventType convert(BsonDocument dbObject) {
 		try {
-			AggregationEventType aggregationEventType = new AggregationEventType();
+			TransactionEventType transactionEventType = new TransactionEventType();
 			int zone = 0;
 			if (dbObject.get("eventTimeZoneOffset") != null) {
 				String eventTimeZoneOffset = dbObject.getString("eventTimeZoneOffset").getValue();
-				aggregationEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
+				transactionEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
 				if (eventTimeZoneOffset.split(":").length == 2) {
 					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 				}
@@ -74,7 +72,7 @@ public class AggregationEventReadConverter {
 				XMLGregorianCalendar xmlEventTime = DatatypeFactory.newInstance()
 						.newXMLGregorianCalendar(eventCalendar);
 				xmlEventTime.setTimezone(zone * 60);
-				aggregationEventType.setEventTime(xmlEventTime);
+				transactionEventType.setEventTime(xmlEventTime);
 			}
 			if (dbObject.get("recordTime") != null) {
 				long eventTime = dbObject.getInt64("recordTime").getValue();
@@ -83,44 +81,43 @@ public class AggregationEventReadConverter {
 				XMLGregorianCalendar xmlRecordTime = DatatypeFactory.newInstance()
 						.newXMLGregorianCalendar(recordCalendar);
 				xmlRecordTime.setTimezone(zone * 60);
-				aggregationEventType.setRecordTime(xmlRecordTime);
+				transactionEventType.setRecordTime(xmlRecordTime);
 			}
 			if (dbObject.get("parentID") != null)
-				aggregationEventType.setParentID(dbObject.getString("parentID").getValue());
-			if (dbObject.get("childEPCs") != null) {
-				BsonArray epcListM = dbObject.getArray("childEPCs");
+				transactionEventType.setParentID(dbObject.getString("parentID").getValue());
+			if (dbObject.get("epcList") != null) {
+				BsonArray epcListM = dbObject.getArray("epcList");
 				EPCListType epcListType = new EPCListType();
 				List<EPC> epcs = new ArrayList<EPC>();
-				Iterator<BsonValue> bsonEPCIterator = epcListM.iterator();
-				while (bsonEPCIterator.hasNext()) {
-					BsonValue bson = bsonEPCIterator.next();
+				for (int i = 0; i < epcListM.size(); i++) {
 					EPC epc = new EPC();
-					epc.setValue(bson.asDocument().getString("epc").getValue());
+					BsonDocument epcObject = epcListM.get(i).asDocument();
+					epc.setValue(epcObject.getString("epc").getValue());
 					epcs.add(epc);
 				}
 				epcListType.setEpc(epcs);
-				aggregationEventType.setChildEPCs(epcListType);
+				transactionEventType.setEpcList(epcListType);
 			}
 			if (dbObject.get("action") != null) {
-				aggregationEventType.setAction(ActionType.fromValue(dbObject.getString("action").getValue()));
+				transactionEventType.setAction(ActionType.fromValue(dbObject.getString("action").getValue()));
 			}
 			if (dbObject.get("bizStep") != null) {
-				aggregationEventType.setBizStep(dbObject.getString("bizStep").getValue());
+				transactionEventType.setBizStep(dbObject.getString("bizStep").getValue());
 			}
 			if (dbObject.get("disposition") != null) {
-				aggregationEventType.setDisposition(dbObject.getString("disposition").getValue());
+				transactionEventType.setDisposition(dbObject.getString("disposition").getValue());
 			}
 			if (dbObject.get("baseExtension") != null) {
 				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
-				BsonDocument baseExtension = (BsonDocument) dbObject.getDocument("baseExtension");
+				BsonDocument baseExtension = dbObject.getDocument("baseExtension");
 				eeet = putEPCISExtension(eeet, baseExtension);
-				aggregationEventType.setBaseExtension(eeet);
+				transactionEventType.setBaseExtension(eeet);
 			}
 			if (dbObject.get("readPoint") != null) {
 				BsonDocument readPointObject = dbObject.getDocument("readPoint");
 				ReadPointType readPointType = new ReadPointType();
 				if (readPointObject.get("id") != null) {
-					readPointType.setId(readPointObject.getString("id").getValue());
+					readPointType.setId(readPointObject.get("id").toString());
 				}
 				if (readPointObject.get("extension") != null) {
 					ReadPointExtensionType rpet = new ReadPointExtensionType();
@@ -128,14 +125,14 @@ public class AggregationEventReadConverter {
 					rpet = putReadPointExtension(rpet, extension);
 					readPointType.setExtension(rpet);
 				}
-				aggregationEventType.setReadPoint(readPointType);
+				transactionEventType.setReadPoint(readPointType);
 			}
 			// BusinessLocation
 			if (dbObject.get("bizLocation") != null) {
 				BsonDocument bizLocationObject = dbObject.getDocument("bizLocation");
 				BusinessLocationType bizLocationType = new BusinessLocationType();
 				if (bizLocationObject.get("id") != null) {
-					bizLocationType.setId(bizLocationObject.getString("id").getValue());
+					bizLocationType.setId(bizLocationObject.get("id").toString());
 				}
 				if (bizLocationObject.get("extension") != null) {
 					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
@@ -143,7 +140,7 @@ public class AggregationEventReadConverter {
 					blet = putBusinessLocationExtension(blet, extension);
 					bizLocationType.setExtension(blet);
 				}
-				aggregationEventType.setBizLocation(bizLocationType);
+				transactionEventType.setBizLocation(bizLocationType);
 			}
 			if (dbObject.get("bizTransactionList") != null) {
 				BsonArray bizTranList = dbObject.getArray("bizTransactionList");
@@ -167,27 +164,27 @@ public class AggregationEventReadConverter {
 						bizTranArrayList.add(btt);
 				}
 				btlt.setBizTransaction(bizTranArrayList);
-				aggregationEventType.setBizTransactionList(btlt);
+				transactionEventType.setBizTransactionList(btlt);
 			}
 
 			// Vendor Extension
 			if (dbObject.get("any") != null) {
 				BsonDocument anyObject = dbObject.getDocument("any");
 				List<Object> any = putAny(anyObject);
-				aggregationEventType.setAny(any);
+				transactionEventType.setAny(any);
 			}
 
 			// Extension Field
 			if (dbObject.get("extension") != null) {
-				AggregationEventExtensionType aeet = new AggregationEventExtensionType();
+				TransactionEventExtensionType teet = new TransactionEventExtensionType();
 				BsonDocument extObject = dbObject.getDocument("extension");
 				// Quantity
-				if (extObject.get("childQuantityList") != null) {
+				if (extObject.get("quantityList") != null) {
 					QuantityListType qlt = new QuantityListType();
-					BsonArray quantityDBList = extObject.getArray("childQuantityList");
+					BsonArray quantityDBList = extObject.getArray("quantityList");
 					List<QuantityElementType> qetList = putQuantityElementTypeList(quantityDBList);
 					qlt.setQuantityElement(qetList);
-					aeet.setChildQuantityList(qlt);
+					teet.setQuantityList(qlt);
 				}
 				// SourceList
 				if (extObject.get("sourceList") != null) {
@@ -213,7 +210,7 @@ public class AggregationEventReadConverter {
 							sdtList.add(sdt);
 					}
 					slt.setSource(sdtList);
-					aeet.setSourceList(slt);
+					teet.setSourceList(slt);
 				}
 				// DestinationList
 				if (extObject.get("destinationList") != null) {
@@ -239,22 +236,21 @@ public class AggregationEventReadConverter {
 							sdtList.add(sdt);
 					}
 					dlt.setDestination(sdtList);
-					aeet.setDestinationList(dlt);
+					teet.setDestinationList(dlt);
 				}
 				// extension2
 				if (extObject.get("extension") != null) {
-					AggregationEventExtension2Type aee2t = new AggregationEventExtension2Type();
+					TransactionEventExtension2Type tee2t = new TransactionEventExtension2Type();
 					BsonDocument extension = extObject.getDocument("extension");
-					aee2t = putAggregationExtension(aee2t, extension);
-					aeet.setExtension(aee2t);
+					tee2t = putTransactionExtension(tee2t, extension);
+					teet.setExtension(tee2t);
 				}
-				aggregationEventType.setExtension(aeet);
+				transactionEventType.setExtension(teet);
 			}
-			return aggregationEventType;
+			return transactionEventType;
 		} catch (DatatypeConfigurationException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
-
 		return null;
 	}
 }
