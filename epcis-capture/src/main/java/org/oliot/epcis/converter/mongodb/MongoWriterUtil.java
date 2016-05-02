@@ -43,6 +43,8 @@ import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -584,19 +586,67 @@ public class MongoWriterUtil {
 		for (int i = 0; i < objList.size(); i++) {
 			Object obj = objList.get(i);
 			if (obj instanceof Element) {
+				// example0:a, example0:b, example0:c
 				Element element = (Element) obj;
-				if (element.getFirstChild() != null) {
-					String name = element.getNodeName();
-					// Process Namespace
-					String[] checkArr = name.split(":");
-					if (checkArr.length == 2) {
-						map2Save.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
+				String name = element.getNodeName();
+				// Process Namespace
+				String[] checkArr = name.split(":");
+				if (checkArr.length == 2) {
+					map2Save.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
+				}
+				// A, example1:b, example1:d, example1:b, example1:e
+				Node firstChildNode = element.getFirstChild();
+				if (firstChildNode != null) {
+					if (firstChildNode instanceof Text) {
+						// A
+						String value = firstChildNode.getTextContent();
+						map2Save.put(name, converseType(value));
+					} else if (firstChildNode instanceof Element) {
+						// example1:b, example1:d, example1:b, example1:e
+						Element childNode = null;
+						BsonDocument sub2Save = new BsonDocument();
+						do {
+							if (firstChildNode instanceof Element) {
+								childNode = (Element) firstChildNode;
+								
+								String childName = childNode.getNodeName();
+								String[] checkArr2 = childName.split(":");
+								if (checkArr2.length == 2) {
+									sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
+								}
+								map2Save.put(name, getAnyMap(childNode, sub2Save));
+							}
+						} while ((firstChildNode = firstChildNode.getNextSibling()) != null);
 					}
-					String value = element.getFirstChild().getTextContent();
-					map2Save.put(name, converseType(value));
 				}
 			}
 		}
+		return map2Save;
+	}
+
+	static BsonDocument getAnyMap(Element element, BsonDocument map2Save) {
+			Node firstChildNode = element.getFirstChild();
+			if (firstChildNode instanceof Text) {
+				// A
+				String value = firstChildNode.getTextContent();
+				map2Save.put(element.getNodeName(), converseType(value));
+			} else if (firstChildNode instanceof Element) {
+				// example1:b, example1:d, example1:b, example1:e
+				Element childNode = null;
+				BsonDocument sub2Save = new BsonDocument();
+				do {
+					if (firstChildNode instanceof Element) {
+						childNode = (Element) firstChildNode;
+						String childName = childNode.getNodeName();
+						String[] checkArr2 = childName.split(":");
+						if (checkArr2.length == 2) {
+							sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
+						}
+						map2Save.put(element.getNodeName(), getAnyMap(childNode, sub2Save));
+					}
+				} while ( firstChildNode.getNextSibling() != null && firstChildNode.getNextSibling() instanceof Element && (firstChildNode = (Element)firstChildNode.getNextSibling()) != null);
+			}
+		
 		return map2Save;
 	}
 
