@@ -1022,6 +1022,8 @@ public class MongoQueryService {
 			return false;
 		if (paramName.contains("transformationID"))
 			return false;
+		if (paramName.contains("ILMD"))
+			return false;
 		return true;
 	}
 
@@ -1342,6 +1344,25 @@ public class MongoQueryService {
 			query.put("recordTime", new BsonDocument("$lt", new BsonInt64(ltRecordTimeMillis)));
 			queryList.add(query);
 		}
+
+		// TODO: GE_errorDeclarationTime, Time
+		/**
+		 * If this parameter is specified, the result will only include events
+		 * that (a) contain an ErrorDeclaration ; and where (b) the value of the
+		 * errorDeclarationTime field is greater than or equal to the specified
+		 * value. If this parameter is omitted, events are returned regardless
+		 * of whether they contain an ErrorDeclaration or what the value of the
+		 * errorDeclarationTime field is.
+		 */
+
+		// TODO: LT_errorDeclarationTime, Time
+		/**
+		 * contain an ErrorDeclaration ; and where (b) the value of the
+		 * errorDeclarationTime field is less than to the specified value. If
+		 * this parameter is omitted, events are returned regardless of whether
+		 * they contain an ErrorDeclaration or what the value of the
+		 * errorDeclarationTime field is.
+		 */
 
 		/**
 		 * EQ_action: If specified, the result will only include events that (a)
@@ -1670,18 +1691,35 @@ public class MongoQueryService {
 		 * LT_quantity; LE_quantity
 		 **/
 
+		// TODO: EQ_eventID
 		/**
-		 * EQ_fieldname: This is not a single parameter, but a family of
-		 * parameters. If a parameter of this form is specified, the result will
-		 * only include events that (a) have a field named fieldname whose type
-		 * is either String or a vocabulary type; and where (b) the value of
-		 * that field matches one of the values specified in this parameter.
-		 * Fieldname is the fully qualified name of an extension field. The name
-		 * of an extension field is an XML qname; that is, a pair consisting of
-		 * an XML namespace URI and a name. The name of the corresponding query
-		 * parameter is constructed by concatenating the following: the string
-		 * EQ_, the namespace URI for the extension field, a pound sign (#), and
-		 * the name of the extension field.
+		 * If this parameter is specified, the result will only include events
+		 * that (a) have a non-null eventID field; and where (b) the eventID
+		 * field is equal to one of the values specified in this parameter. If
+		 * this parameter is omitted, events are returned regardless of the
+		 * value of the eventID field or whether the eventID field exists at
+		 * all.
+		 */
+
+		// TODO: EQ_errorReason
+		/**
+		 * If this parameter is specified, the result will only include events
+		 * that (a) contain an ErrorDeclaration ; and where (b) the error
+		 * declaration contains a non-null reason field; and where (c) the
+		 * reason field is equal to one of the values specified in this
+		 * parameter. If this parameter is omitted, events are returned
+		 * regardless of the they contain an ErrorDeclaration or what the value
+		 * of the reason field is.
+		 */
+
+		// TODO: EQ_correctiveEventID
+		/**
+		 * If this parameter is specified, the result will only include events
+		 * that (a) contain an ErrorDeclaration ; and where (b) one of the
+		 * elements of the correctiveEventIDs list is equal to one of the values
+		 * specified in this parameter. If this parameter is omitted, events are
+		 * returned regardless of the they contain an ErrorDeclaration or the
+		 * contents of the correctiveEventIDs list.
 		 */
 
 		Iterator<String> paramIter = paramMap.keySet().iterator();
@@ -1754,6 +1792,156 @@ public class MongoQueryService {
 						queryList.add(query);
 				}
 			}
+
+			// TODO: EQ_ILMD_fieldname
+			/**
+			 * Analogous to EQ_fieldname , but matches events whose ILMD area
+			 * (Section 7.3.6) contains a top-level field having the specified
+			 * fieldname whose value matches one of the specified values. “Top
+			 * level” means that the matching ILMD element must be an immediate
+			 * child of the <ilmd> element, not an element nested within such an
+			 * element. See EQ_INNER_ILMD_fieldname for querying inner extension
+			 * elements.
+			 */
+
+			// TODO: EQ|GT|GE|LT|LE_ILMD_fieldname
+			/**
+			 * Analogous to EQ_fieldname , GT_fieldname , GE_fieldname ,
+			 * GE_fieldname , LT_fieldname , and LE_fieldname , respectively,
+			 * but matches events whose ILMD area (Section 7.3.6) contains a
+			 * field having the specified fieldname whose integer, float, or
+			 * time value matches the specified value according to the specified
+			 * relational operator.
+			 */
+
+			// TODO: EQ_INNER_ILMD_fieldname
+			/**
+			 * Analogous to EQ_ILMD_fieldname , but matches inner ILMD elements;
+			 * that is, any XML element nested within a top-level ILMD element.
+			 * Note that a matching inner element may exist within in more than
+			 * one top-level element or may occur more than once within a single
+			 * top-level element; this parameter matches if at least one
+			 * matching occurrence is found anywhere in the ILMD section (except
+			 * at top-level).
+			 */
+
+			// TODO: EQ|GT|GE|LT|LE_INNER_ILMD_fieldname
+
+			/**
+			 * Like EQ_INNER _ ILMD_ fieldname as described above, but may be
+			 * applied to a field of type Int, Float, or Time.
+			 */
+
+			// TODO: EXISTS_fieldname
+
+			/**
+			 * Like EQ_fieldname as described above, but may be applied to a
+			 * field of any type (including complex types). The result will
+			 * include events that have a non-empty field named fieldname .
+			 * Fieldname is constructed as for EQ_fieldname . EXISTS_
+			 * ILMD_fieldname HASATTR_fieldname Void Note that the value for
+			 * this query parameter is ignored.
+			 */
+
+			// TODO: EXISTS_ILMD_fieldname
+
+			/**
+			 * Like EXISTS_fieldname as described above, but events that have a
+			 * non-empty field named fieldname in the ILMD area (Section 7.3.6).
+			 * Fieldname is constructed as for EQ_ILMD_fieldname . Note that the
+			 * value for this query parameter is ignored.
+			 */
+
+			// TODO: HASATTR_fieldname
+
+			/**
+			 * This is not a single parameter, but a family of parameters. If a
+			 * parameter of this form is specified, the result will only include
+			 * events that (a) have a field named fieldname whose type is a
+			 * vocabulary type; and (b) where the value of that field is a
+			 * vocabulary element for which master data is available; and (c)
+			 * the master data has a non-null attribute whose name matches one
+			 * of the values specified in this parameter. Fieldname is the fully
+			 * qualified name of a field. For a standard field, this is simply
+			 * the field name; e.g., bizLocation . For an extension
+			 * EQATTR_fieldname _attrname List of String field, the name of an
+			 * extension field is an XML qname; that is, a pair consisting of an
+			 * XML namespace URI and a name. The name of the corresponding query
+			 * parameter is constructed by concatenating the following: the
+			 * string HASATTR_ , the namespace URI for the extension field, a
+			 * pound sign (#), and the name of the extension field.
+			 */
+
+			// TODO: EQATTR_fieldname_attrname
+
+			/**
+			 * This is not a single parameter, but a family of parameters. If a
+			 * parameter of this form is specified, the result will only include
+			 * events that (a) have a field named fieldname whose type is a
+			 * vocabulary type; and (b) where the value of that field is a
+			 * vocabulary element for which master data is available; and (c)
+			 * the master data has a non-null attribute named attrname ; and (d)
+			 * where the value of that attribute matches one of the values
+			 * specified in this parameter. Fieldname is constructed as for
+			 * HASATTR_fieldname . The implementation MAY raise a
+			 * QueryParameterException if fieldname or attrname includes an
+			 * underscore character. EQ_eventID List of String EXISTS_
+			 * errorDeclaration Void GE_errorDeclaration Time Time Explanation
+			 * (non-normative): because the presence of an underscore in
+			 * fieldname or attrname presents an ambiguity as to where the
+			 * division between fieldname and attrname lies, an implementation
+			 * is free to reject the query parameter if it cannot disambiguate.
+			 */
+
+			// TODO: EXISTS_errorDeclaration, Void
+
+			/**
+			 * If this parameter is specified, the result will only include
+			 * events that contain an ErrorDeclaration . If this parameter is
+			 * omitted, events are returned regardless of whether they contain
+			 * an ErrorDeclaration .
+			 */
+
+			// TODO: EQ_ERROR_DECLARATION_fieldname, Void
+
+			/**
+			 * Analogous to EQ_fieldname , but matches events containing an
+			 * ErrorDeclaration and where the ErrorDeclaration contains a field
+			 * having the specified fieldname whose value matches one of the
+			 * specified values.
+			 */
+
+			// TODO: EQ|GT|GE|LT|GE_ERROR_DECLARATION_fieldname, Int, Float,
+			// Time
+
+			/**
+			 * Analogous to EQ_fieldname , GT_fieldname , GE_fieldname ,
+			 * GE_fieldname , LT_fieldname , and LE_fieldname , respectively,
+			 * but matches events containing an ErrorDeclaration and where the
+			 * ErrorDeclaration contains a field having the specified fieldname
+			 * whose integer, float, or time value matches the specified value
+			 * according to the specified relational operator.
+			 */
+
+			// TODO: EQ_INNER_ERROR_DECLARATION_fieldname
+
+			/**
+			 * Analogous to EQ_ERROR_DECLARATION_fieldname , but matches inner
+			 * extension elements; that is, any XML element nested within a
+			 * top-level extension element. Note that a matching inner element
+			 * may exist within in more than one top-level element or may occur
+			 * more than once within a single top-level element; this parameter
+			 * matches if at least one matching occurrence is found anywhere in
+			 * the event (except at top-level)..
+			 */
+
+			// TODO: EQ|GT|GE|LT|GE_INNER_ERROR_DECLARATION_fieldname
+
+			/**
+			 * Like EQ_INNER_ERROR_DECLARATION _ fieldname as described above,
+			 * but may be applied to a field of type Int, Float, or Time.
+			 */
+
 			boolean isExtraParam = isExtraParameter(paramName);
 
 			if (isExtraParam == true) {
@@ -1823,6 +2011,25 @@ public class MongoQueryService {
 							queryList.add(query);
 					}
 				}
+
+				// TODO: EQ_INNER_fieldname
+				/**
+				 * Analogous to EQ_fieldname , but matches inner extension
+				 * elements; that is, any XML element nested within a top-level
+				 * extension element. Note that a matching inner element may
+				 * exist within in more than one top-level element or may occur
+				 * more than once within a single top-level element; this
+				 * parameter matches if at least one matching occurrence is
+				 * found anywhere in the event (except at top-level).
+				 */
+
+				// TODO: EQ|GT|GE|LT|LE_INNER_fieldname
+
+				/**
+				 * Like EQ_INNER _ fieldname as described above, but may be
+				 * applied to a field of type Int, Float, or Time.
+				 */
+
 			}
 		}
 		return queryList;
