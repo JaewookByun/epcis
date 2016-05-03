@@ -247,7 +247,7 @@ public class ObjectEventReadConverter {
 
 				if (extObject.get("ilmd") != null) {
 					ILMDType ilmd = new ILMDType();
-					BsonDocument anyObject = dbObject.getDocument("ilmd");
+					BsonDocument anyObject = extObject.getDocument("ilmd");
 					ilmd = putILMD(ilmd, anyObject);
 					oeet.setIlmd(ilmd);
 				}

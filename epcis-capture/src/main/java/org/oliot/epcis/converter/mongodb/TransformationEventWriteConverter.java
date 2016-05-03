@@ -17,7 +17,6 @@ import org.oliot.model.epcis.EPC;
 import org.oliot.model.epcis.EPCISEventExtensionType;
 import org.oliot.model.epcis.EPCListType;
 import org.oliot.model.epcis.ErrorDeclarationType;
-import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.QuantityElementType;
 import org.oliot.model.epcis.QuantityListType;
@@ -150,11 +149,12 @@ public class TransformationEventWriteConverter {
 		// ILMD
 		if (transformationEventType.getIlmd() != null) {
 			ILMDType ilmd = transformationEventType.getIlmd();
-			if (ilmd.getExtension() != null) {
-				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				BsonDocument map2Save = getILMDExtensionMap(ilmdExtension);
-				if (map2Save != null)
+
+			if (ilmd.getAny() != null) {
+				BsonDocument map2Save = getAnyMap(ilmd.getAny());
+				if (map2Save != null && map2Save.isEmpty() == false) {
 					dbo.put("ilmd", map2Save);
+				}
 				if (outputList != null) {
 					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
 					mdConverter.capture(outputList, map2Save);

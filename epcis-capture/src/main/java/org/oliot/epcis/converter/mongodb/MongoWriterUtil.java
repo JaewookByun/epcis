@@ -290,8 +290,8 @@ public class MongoWriterUtil {
 			BusinessTransactionType bizTranType = bizList.get(i);
 			if (bizTranType.getType() != null && bizTranType.getValue() != null) {
 				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(bizTranType.getType(),
-						new BsonString(bizTranType.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", "")));
+				dbObj.put(bizTranType.getType(), new BsonString(
+						bizTranType.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", "")));
 				bizTranList.add(dbObj);
 			}
 		}
@@ -419,16 +419,27 @@ public class MongoWriterUtil {
 		// new in v1.2
 		if (oee.getIlmd() != null) {
 			ILMDType ilmd = oee.getIlmd();
-			if (ilmd.getExtension() != null) {
-				ILMDExtensionType ilmdExtension = ilmd.getExtension();
-				BsonDocument map2Save = getILMDExtensionMap(ilmdExtension);
-				if (map2Save != null)
+
+			if (ilmd.getAny() != null) {
+				BsonDocument map2Save = getAnyMap(ilmd.getAny());
+				if (map2Save != null && map2Save.isEmpty() == false) {
 					extension.put("ilmd", map2Save);
+				}
 				if (epcList != null) {
 					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
 					mdConverter.capture(epcList, map2Save);
 				}
 			}
+
+			/*
+			 * Deprecated if (ilmd.getExtension() != null) { ILMDExtensionType
+			 * ilmdExtension = ilmd.getExtension(); BsonDocument map2Save =
+			 * getILMDExtensionMap(ilmdExtension); if (map2Save != null)
+			 * extension.put("ilmd", map2Save); if (epcList != null) {
+			 * MasterDataWriteConverter mdConverter = new
+			 * MasterDataWriteConverter(); mdConverter.capture(epcList,
+			 * map2Save); } }
+			 */
 		}
 
 		if (oee.getExtension() != null) {
@@ -608,7 +619,7 @@ public class MongoWriterUtil {
 						do {
 							if (firstChildNode instanceof Element) {
 								childNode = (Element) firstChildNode;
-								
+
 								String childName = childNode.getNodeName();
 								String[] checkArr2 = childName.split(":");
 								if (checkArr2.length == 2) {
@@ -625,28 +636,29 @@ public class MongoWriterUtil {
 	}
 
 	static BsonDocument getAnyMap(Element element, BsonDocument map2Save) {
-			Node firstChildNode = element.getFirstChild();
-			if (firstChildNode instanceof Text) {
-				// A
-				String value = firstChildNode.getTextContent();
-				map2Save.put(element.getNodeName(), converseType(value));
-			} else if (firstChildNode instanceof Element) {
-				// example1:b, example1:d, example1:b, example1:e
-				Element childNode = null;
-				BsonDocument sub2Save = new BsonDocument();
-				do {
-					if (firstChildNode instanceof Element) {
-						childNode = (Element) firstChildNode;
-						String childName = childNode.getNodeName();
-						String[] checkArr2 = childName.split(":");
-						if (checkArr2.length == 2) {
-							sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
-						}
-						map2Save.put(element.getNodeName(), getAnyMap(childNode, sub2Save));
+		Node firstChildNode = element.getFirstChild();
+		if (firstChildNode instanceof Text) {
+			// A
+			String value = firstChildNode.getTextContent();
+			map2Save.put(element.getNodeName(), converseType(value));
+		} else if (firstChildNode instanceof Element) {
+			// example1:b, example1:d, example1:b, example1:e
+			Element childNode = null;
+			BsonDocument sub2Save = new BsonDocument();
+			do {
+				if (firstChildNode instanceof Element) {
+					childNode = (Element) firstChildNode;
+					String childName = childNode.getNodeName();
+					String[] checkArr2 = childName.split(":");
+					if (checkArr2.length == 2) {
+						sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
 					}
-				} while ( firstChildNode.getNextSibling() != null && firstChildNode.getNextSibling() instanceof Element && (firstChildNode = (Element)firstChildNode.getNextSibling()) != null);
-			}
-		
+					map2Save.put(element.getNodeName(), getAnyMap(childNode, sub2Save));
+				}
+			} while (firstChildNode.getNextSibling() != null && firstChildNode.getNextSibling() instanceof Element
+					&& (firstChildNode = (Element) firstChildNode.getNextSibling()) != null);
+		}
+
 		return map2Save;
 	}
 
