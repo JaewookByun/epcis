@@ -672,20 +672,6 @@ public class MongoQueryService {
 		}
 	}
 
-	public String generateCSV(List<String> valueList) {
-		String returnValue = null;
-		if (valueList.size() != 0)
-			returnValue = "";
-		for (int i = 0; i < valueList.size(); i++) {
-			if (i == valueList.size() - 1) {
-				returnValue += valueList.get(i).trim();
-			} else {
-				returnValue += valueList.get(i).trim() + ",";
-			}
-		}
-		return returnValue;
-	}
-
 	// Soap Service Adaptor
 	@SuppressWarnings("unchecked")
 	public String poll(String queryName, QueryParams queryParams) {
@@ -1012,6 +998,33 @@ public class MongoQueryService {
 		return "";
 	}
 
+	boolean isExtraParameter(String paramName) {
+
+		if (paramName.contains("eventTime"))
+			return false;
+		if (paramName.contains("recordTime"))
+			return false;
+		if (paramName.contains("action"))
+			return false;
+		if (paramName.contains("bizStep"))
+			return false;
+		if (paramName.contains("disposition"))
+			return false;
+		if (paramName.contains("readPoint"))
+			return false;
+		if (paramName.contains("bizLocation"))
+			return false;
+		if (paramName.contains("bizTransaction"))
+			return false;
+		if (paramName.contains("source"))
+			return false;
+		if (paramName.contains("destination"))
+			return false;
+		if (paramName.contains("transformationID"))
+			return false;
+		return true;
+	}
+
 	private String checkConstraintSimpleEventQuery(String queryName, String eventType, String GE_eventTime,
 			String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep,
 			String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
@@ -1114,33 +1127,6 @@ public class MongoQueryService {
 		List<Object> eventObjects = new ArrayList<Object>();
 		eventListType.setObjectEventOrAggregationEventOrQuantityEvent(eventObjects);
 		return epcisQueryDocumentType;
-	}
-
-	boolean isExtraParameter(String paramName) {
-
-		if (paramName.contains("eventTime"))
-			return false;
-		if (paramName.contains("recordTime"))
-			return false;
-		if (paramName.contains("action"))
-			return false;
-		if (paramName.contains("bizStep"))
-			return false;
-		if (paramName.contains("disposition"))
-			return false;
-		if (paramName.contains("readPoint"))
-			return false;
-		if (paramName.contains("bizLocation"))
-			return false;
-		if (paramName.contains("bizTransaction"))
-			return false;
-		if (paramName.contains("source"))
-			return false;
-		if (paramName.contains("destination"))
-			return false;
-		if (paramName.contains("transformationID"))
-			return false;
-		return true;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1373,8 +1359,8 @@ public class MongoQueryService {
 		if (EQ_action != null) {
 			// Constrained already checked
 			BsonArray paramArray = getParamBsonArray(EQ_action);
-			BsonDocument queryObject = getQueryObject(new String[]{"action"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "action" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1389,10 +1375,10 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (EQ_bizStep != null) {	
+		if (EQ_bizStep != null) {
 			BsonArray paramArray = getParamBsonArray(EQ_bizStep);
-			BsonDocument queryObject = getQueryObject(new String[]{"bizStep"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "bizStep" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1405,8 +1391,8 @@ public class MongoQueryService {
 		 */
 		if (EQ_disposition != null) {
 			BsonArray paramArray = getParamBsonArray(EQ_disposition);
-			BsonDocument queryObject = getQueryObject(new String[]{"disposition"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "disposition" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1423,8 +1409,8 @@ public class MongoQueryService {
 		 */
 		if (EQ_readPoint != null) {
 			BsonArray paramArray = getParamBsonArray(EQ_readPoint);
-			BsonDocument queryObject = getQueryObject(new String[]{"readPoint.id"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "readPoint.id" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1446,8 +1432,8 @@ public class MongoQueryService {
 
 		if (WD_readPoint != null) {
 			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
-			BsonDocument queryObject = getQueryObject(new String[]{"readPoint.id"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "readPoint.id" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1461,8 +1447,8 @@ public class MongoQueryService {
 		 */
 		if (EQ_bizLocation != null) {
 			BsonArray paramArray = getParamBsonArray(EQ_bizLocation);
-			BsonDocument queryObject = getQueryObject(new String[]{"bizLocation.id"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "bizLocation.id" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1477,8 +1463,8 @@ public class MongoQueryService {
 
 		if (WD_bizLocation != null) {
 			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
-			BsonDocument queryObject = getQueryObject(new String[]{"bizLocation.id"}, paramArray);
-			if( queryObject != null ){
+			BsonDocument queryObject = getQueryObject(new String[] { "bizLocation.id" }, paramArray);
+			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
 		}
@@ -1494,13 +1480,10 @@ public class MongoQueryService {
 		 * 
 		 */
 		if (EQ_transformationID != null) {
-			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("transformationID", EQ_transformationID);
-			if (query != null) {
-				queryList.add(query);
-			} else {
-				query = getINQueryObject("transformationID", EQ_transformationID);
-				if (query != null)
-					queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(EQ_transformationID);
+			BsonDocument queryObject = getQueryObject(new String[] { "transformationID" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
 			}
 		}
 
@@ -1516,12 +1499,14 @@ public class MongoQueryService {
 		 * regardless of their epcList or childEPCs field or whether the epcList
 		 * or childEPCs field exists.
 		 * 
-		 * Somewhat verified
+		 * 
 		 */
 		if (MATCH_epc != null) {
-			BsonDocument query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, MATCH_epc);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_epc);
+			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1532,9 +1517,11 @@ public class MongoQueryService {
 		 * 8.2.7.1.1.
 		 */
 		if (MATCH_parentID != null) {
-			BsonDocument query = getINQueryObject("parentID", MATCH_parentID);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_parentID);
+			BsonDocument queryObject = getQueryObject(new String[] { "parentID" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1549,9 +1536,11 @@ public class MongoQueryService {
 		 * field exists.
 		 */
 		if (MATCH_inputEPC != null) {
-			BsonDocument query = getINQueryObject("inputEPCList.epc", MATCH_inputEPC);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_inputEPC);
+			BsonDocument queryObject = getQueryObject(new String[] { "inputEPCList.epc" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1566,9 +1555,11 @@ public class MongoQueryService {
 		 * field exists.
 		 */
 		if (MATCH_outputEPC != null) {
-			BsonDocument query = getINQueryObject("outputEPCList.epc", MATCH_outputEPC);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_outputEPC);
+			BsonDocument queryObject = getQueryObject(new String[] { "outputEPCList.epc" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1585,10 +1576,12 @@ public class MongoQueryService {
 		 */
 
 		if (MATCH_anyEPC != null) {
-			BsonDocument query = getINQueryObject(new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc",
-					"outputEPCList.epc", "parentID" }, MATCH_anyEPC);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_anyEPC);
+			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc",
+					"outputEPCList.epc", "parentID" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1604,11 +1597,14 @@ public class MongoQueryService {
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_epcClass != null) {
-			BsonDocument query = getINQueryObject(
+
+			BsonArray paramArray = getParamBsonArray(MATCH_epcClass);
+			BsonDocument queryObject = getQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
-					MATCH_epcClass);
-			if (query != null)
-				queryList.add(query);
+					paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1621,9 +1617,11 @@ public class MongoQueryService {
 		 * specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_inputEPCClass != null) {
-			BsonDocument query = getINQueryObject("inputQuantityList.epcClass", MATCH_inputEPCClass);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_inputEPCClass);
+			BsonDocument queryObject = getQueryObject(new String[] { "inputQuantityList.epcClass" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1637,9 +1635,11 @@ public class MongoQueryService {
 		 */
 
 		if (MATCH_outputEPCClass != null) {
-			BsonDocument query = getINQueryObject("outputQuantityList.epcClass", MATCH_outputEPCClass);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(MATCH_outputEPCClass);
+			BsonDocument queryObject = getQueryObject(new String[] { "outputQuantityList.epcClass" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1655,12 +1655,14 @@ public class MongoQueryService {
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
 		if (MATCH_anyEPCClass != null) {
-			BsonDocument query = getINQueryObject(
+			BsonArray paramArray = getParamBsonArray(MATCH_anyEPCClass);
+			BsonDocument queryObject = getQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
 							"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
-					MATCH_anyEPCClass);
-			if (query != null)
-				queryList.add(query);
+					paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
 		}
 
 		/**
@@ -1699,7 +1701,7 @@ public class MongoQueryService {
 			 */
 			if (paramName.contains("EQ_bizTransaction_")) {
 				String type = paramName.substring(18, paramName.length());
-				BsonDocument query = getINFamilyQueryObject(type, "bizTransactionList", paramValues);
+				BsonDocument query = getFamilyQueryObject(type, "bizTransactionList", paramValues);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -1718,12 +1720,12 @@ public class MongoQueryService {
 				String type = paramName.substring(10, paramName.length());
 				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 						|| eventType.equals("TransactionEvent")) {
-					BsonDocument query = getINFamilyQueryObject(type, "extension.sourceList", paramValues);
+					BsonDocument query = getFamilyQueryObject(type, "extension.sourceList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 				if (eventType.equals("TransformationEvent")) {
-					BsonDocument query = getINFamilyQueryObject(type, "sourceList", paramValues);
+					BsonDocument query = getFamilyQueryObject(type, "sourceList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -1742,12 +1744,12 @@ public class MongoQueryService {
 				String type = paramName.substring(15, paramName.length());
 				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
 						|| eventType.equals("TransactionEvent")) {
-					BsonDocument query = getINFamilyQueryObject(type, "extension.destinationList", paramValues);
+					BsonDocument query = getFamilyQueryObject(type, "extension.destinationList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
 				if (eventType.equals("TransformationEvent")) {
-					BsonDocument query = getINFamilyQueryObject(type, "destinationList", paramValues);
+					BsonDocument query = getFamilyQueryObject(type, "destinationList", paramValues);
 					if (query != null)
 						queryList.add(query);
 				}
@@ -1773,25 +1775,13 @@ public class MongoQueryService {
 				 */
 				if (paramName.startsWith("EQ_")) {
 					String type = paramName.substring(3, paramName.length());
-					/*
-					 * if (eventType.equals("AggregationEvent") ||
-					 * eventType.equals("ObjectEvent") ||
-					 * eventType.equals("TransactionEvent")) { DBObject query =
-					 * getINExtensionQueryObject(type, new String[] {
-					 * "extension.extension.any." + type,
-					 * "extension.extension.otherAttributes." + type },
-					 * paramValues); if (query != null) queryList.add(query); }
-					 * if (eventType.equals("QuantityEvent") ||
-					 * eventType.equals("TransformationEvent")) { DBObject query
-					 * = getINExtensionQueryObject( type, new String[] {
-					 * "extension.any." + type, "extension.otherAttributes." +
-					 * type }, paramValues); if (query != null)
-					 * queryList.add(query); }
-					 */
-					BsonDocument query = getINExtensionQueryObject(type,
-							new String[] { "any." + type, "otherAttributes." + type }, paramValues);
-					if (query != null)
-						queryList.add(query);
+
+					BsonArray paramArray = getParamBsonArray(paramValues);
+					BsonDocument queryObject = getQueryObject(new String[] { "any." + type, "otherAttributes." + type },
+							paramArray);
+					if (queryObject != null) {
+						queryList.add(queryObject);
+					}
 				}
 
 				/**
@@ -1808,57 +1798,6 @@ public class MongoQueryService {
 						|| paramName.startsWith("LE_")) {
 					String type = paramName.substring(3, paramName.length());
 
-					/*
-					 * if (eventType.equals("AggregationEvent") ||
-					 * eventType.equals("ObjectEvent") ||
-					 * eventType.equals("TransactionEvent")) { if
-					 * (paramName.startsWith("GT_")) { DBObject query =
-					 * getCompExtensionQueryObject( type, new String[] {
-					 * "extension.extension.any." + type,
-					 * "extension.extension.otherAttributes." + type },
-					 * paramValues, "GT"); if (query != null)
-					 * queryList.add(query); } if (paramName.startsWith("GE_"))
-					 * { DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.extension.any." + type,
-					 * "extension.extension.otherAttributes." + type },
-					 * paramValues, "GE"); if (query != null)
-					 * queryList.add(query); } if (paramName.startsWith("LT_"))
-					 * { DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.extension.any." + type,
-					 * "extension.extension.otherAttributes." + type },
-					 * paramValues, "LT"); if (query != null)
-					 * queryList.add(query); } if (paramName.startsWith("LE_"))
-					 * { DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.extension.any." + type,
-					 * "extension.extension.otherAttributes." + type },
-					 * paramValues, "LE"); if (query != null)
-					 * queryList.add(query); } } if
-					 * (eventType.equals("QuantityEvent") ||
-					 * eventType.equals("TransformationEvent")) { if
-					 * (paramName.startsWith("GT_")) {
-					 * 
-					 * DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.any." + type,
-					 * "extension.otherAttributes." + type }, paramValues,
-					 * "GT"); if (query != null) queryList.add(query); } if
-					 * (paramName.startsWith("GE_")) {
-					 * 
-					 * DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.any." + type,
-					 * "extension.otherAttributes." + type }, paramValues,
-					 * "GE"); if (query != null) queryList.add(query); } if
-					 * (paramName.startsWith("LT_")) { DBObject query =
-					 * getCompExtensionQueryObject( type, new String[] {
-					 * "extension.any." + type, "extension.otherAttributes." +
-					 * type }, paramValues, "LT"); if (query != null)
-					 * queryList.add(query); } if (paramName.startsWith("LE_"))
-					 * {
-					 * 
-					 * DBObject query = getCompExtensionQueryObject( type, new
-					 * String[] { "extension.any." + type,
-					 * "extension.otherAttributes." + type }, paramValues,
-					 * "LE"); if (query != null) queryList.add(query); } }
-					 */
 					if (paramName.startsWith("GT_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
 								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
@@ -1904,9 +1843,13 @@ public class MongoQueryService {
 		 */
 
 		if (vocabularyName != null) {
-			BsonDocument query = getINQueryObject("type", vocabularyName);
-			if (query != null)
-				queryList.add(query);
+
+			BsonArray paramArray = getParamBsonArray(vocabularyName);
+			BsonDocument queryObject = getQueryObject(new String[] { "type" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
+
 		}
 
 		/**
@@ -1915,12 +1858,11 @@ public class MongoQueryService {
 		 * this parameter and WD_name are both omitted, vocabulary elements are
 		 * included regardless of their names.
 		 */
-		Set<String> idSet = new HashSet<String>();
 		if (eQ_name != null) {
-			String[] eqArr = eQ_name.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				String eqString = eqArr[i].trim();
-				idSet.add(eqString);
+			BsonArray paramArray = getParamBsonArray(eQ_name);
+			BsonDocument queryObject = getQueryObject(new String[] { "id" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
 			}
 		}
 
@@ -1933,22 +1875,14 @@ public class MongoQueryService {
 		 * descendants.”) If this parameter and EQ_name are both omitted,
 		 * vocabulary elements are included regardless of their names.
 		 */
-
 		if (wD_name != null) {
-			String[] eqArr = wD_name.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				eqArr[i] = eqArr[i].trim();
-			}
-			for (int i = 0; i < eqArr.length; i++) {
-				// Invoke vocabulary query with EQ_name and includeChildren
-				idSet = getWDList(idSet, eqArr[i]);
-			}
-		}
 
-		if (!idSet.isEmpty()) {
-			BsonDocument query = getINQueryObject("id", idSet);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getWDParamBsonArray(wD_name);
+			BsonDocument queryObject = getQueryObject(new String[] { "id" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
+
 		}
 
 		/**
@@ -1982,13 +1916,31 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQATTR_")) {
 					String type = paramName.substring(7, paramName.length());
-					BsonDocument query = getVocFamilyQueryObject(type, "attributes", paramValues);
-					if (query != null)
-						queryList.add(query);
+
+					BsonArray paramArray = getParamBsonArray(paramValues);
+					BsonDocument queryObject = getQueryObject(
+							new String[] { "attributes." + encodeMongoObjectKey(type) }, paramArray);
+					if (queryObject != null) {
+						queryList.add(queryObject);
+					}
 				}
 			}
 		}
 		return queryList;
+	}
+
+	private String generateCSV(List<String> valueList) {
+		String returnValue = null;
+		if (valueList.size() != 0)
+			returnValue = "";
+		for (int i = 0; i < valueList.size(); i++) {
+			if (i == valueList.size() - 1) {
+				returnValue += valueList.get(i).trim();
+			} else {
+				returnValue += valueList.get(i).trim() + ",";
+			}
+		}
+		return returnValue;
 	}
 
 	private long getTimeMillis(String standardDateString) {

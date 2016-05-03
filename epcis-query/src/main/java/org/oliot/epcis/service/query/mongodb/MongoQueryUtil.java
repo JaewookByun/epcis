@@ -18,7 +18,7 @@ import org.oliot.epcis.configuration.Configuration;
 import com.mongodb.client.MongoCollection;
 
 /**
- * Copyright (C) 2014 Jaewook Jack Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -26,7 +26,7 @@ import com.mongodb.client.MongoCollection;
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -36,6 +36,23 @@ import com.mongodb.client.MongoCollection;
  */
 
 public class MongoQueryUtil {
+
+	static BsonDocument getFamilyQueryObject(String type, String field, String csv) {
+		String[] paramValueArr = csv.split(",");
+		BsonArray subObjectList = new BsonArray();
+		for (int i = 0; i < paramValueArr.length; i++) {
+			String val = paramValueArr[i].trim();
+			BsonDocument dbo = new BsonDocument();
+			dbo.put(type, new BsonString(val));
+			subObjectList.add(dbo);
+		}
+		if (subObjectList.isEmpty() == false) {
+			BsonDocument query = new BsonDocument();
+			query.put(field, new BsonDocument("$in", subObjectList));
+			return query;
+		}
+		return null;
+	}
 
 	static BsonArray getWDParamBsonArray(String csv) {
 		BsonArray paramArray = new BsonArray();
@@ -53,53 +70,70 @@ public class MongoQueryUtil {
 		}
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
 				BsonDocument.class);
-		
+
 		Iterator<BsonValue> paramIterator = paramArray.iterator();
 		Set<BsonValue> childParamSet = new HashSet<BsonValue>();
-		while(paramIterator.hasNext()){
+		while (paramIterator.hasNext()) {
 			BsonValue param = paramIterator.next();
 			BsonDocument vocObject = null;
-			if( param instanceof BsonRegularExpression ){
+			if (param instanceof BsonRegularExpression) {
 				BsonRegularExpression regexParam = param.asRegularExpression();
 				vocObject = collection.find(new BsonDocument("id", regexParam)).first();
-				
-			}else {
+
+			} else {
 				BsonString stringParam = param.asString();
 				vocObject = collection.find(new BsonDocument("id", stringParam)).first();
 			}
-			if( vocObject != null ){
+			if (vocObject != null) {
 				BsonArray childObject = vocObject.get("children").asArray();
 				Iterator<BsonValue> childIterator = childObject.iterator();
-				while(childIterator.hasNext()){
+				while (childIterator.hasNext()) {
 					BsonString child = childIterator.next().asString();
 					childParamSet.add(child);
 				}
-			}			
+			}
 		}
 		Iterator<BsonValue> childParamIterator = childParamSet.iterator();
-		while(childParamIterator.hasNext()){
+		while (childParamIterator.hasNext()) {
 			paramArray.add(childParamIterator.next().asString());
 		}
-		
+
 		return paramArray;
 	}
-	
-	
+
 	static BsonArray getParamBsonArray(String csv) {
 		BsonArray paramArray = new BsonArray();
 		String[] paramValueArr = csv.split(",");
 		for (String paramValue : paramValueArr) {
 			String param = paramValue.trim();
-			if (param.split(",").length == 1 && param.split("\\^").length == 2
-					&& param.split("\\^")[1].trim().equals("regex")) {
-				String regex = param.split("\\^")[0].trim();
-				BsonRegularExpression regexValue = new BsonRegularExpression("^" + regex + "$");
-				paramArray.add(regexValue);
-			} else {
-				paramArray.add(new BsonString(param));
-			}
+			paramArray.add(converseType(param));
 		}
 		return paramArray;
+	}
+
+	static BsonValue converseType(String value) {
+		String[] valArr = value.split("\\^");
+		if (valArr.length != 2) {
+			return new BsonString(value);
+		}
+		try {
+			String type = valArr[1].trim();
+			if (type.equals("int")) {
+				return new BsonInt32(Integer.parseInt(valArr[0]));
+			} else if (type.equals("long")) {
+				return new BsonInt64(Long.parseLong(valArr[0]));
+			} else if (type.equals("double")) {
+				return new BsonDouble(Double.parseDouble(valArr[0]));
+			} else if (type.equals("boolean")) {
+				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
+			} else if (type.equals("regex")) {
+				return new BsonRegularExpression("^" + valArr[0] + "$");
+			} else {
+				return new BsonString(value);
+			}
+		} catch (NumberFormatException e) {
+			return new BsonString(value);
+		}
 	}
 
 	static BsonDocument getQueryObject(String[] fieldArr, BsonArray paramArray) {
@@ -129,114 +163,6 @@ public class MongoQueryUtil {
 		} else {
 			return null;
 		}
-	}
-
-	static BsonDocument getINQueryObject(String field, Set<String> set) {
-		BsonArray subStringList = new BsonArray();
-		Iterator<String> setIter = set.iterator();
-		while (setIter.hasNext()) {
-			String str = setIter.next();
-			subStringList.add(new BsonString(str));
-		}
-		if (subStringList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subStringList));
-			return query;
-		}
-		return null;
-	}
-
-	static BsonDocument getExistsQueryObject(String field, String str) {
-		BsonDocument query = new BsonDocument();
-		str = encodeMongoObjectKey(str);
-		query.put(field + "." + str, new BsonDocument("$exists", new BsonBoolean(true)));
-		return query;
-	}
-
-	static BsonDocument getINQueryObject(String field, String csv) {
-		String[] eqArr = csv.split(",");
-		BsonArray subStringList = new BsonArray();
-		for (int i = 0; i < eqArr.length; i++) {
-			String eqString = eqArr[i].trim();
-			subStringList.add(new BsonString(eqString));
-		}
-		if (subStringList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subStringList));
-			return query;
-		}
-		return null;
-	}
-
-	static BsonDocument getVocFamilyQueryObject(String type, String field, String csv) {
-		String[] paramValueArr = csv.split(",");
-		BsonDocument query = new BsonDocument();
-		for (int i = 0; i < paramValueArr.length; i++) {
-			String val = paramValueArr[i].trim();
-			type = encodeMongoObjectKey(type);
-			query.put(field + "." + type, new BsonString(val));
-		}
-		if (query.isEmpty() == false) {
-			return query;
-		}
-		return null;
-	}
-
-	@Deprecated
-	static BsonDocument getVocFamilyQueryObjectLegacy(String type, String field, String csv) {
-		String[] paramValueArr = csv.split(",");
-		BsonArray subObjectList = new BsonArray();
-		for (int i = 0; i < paramValueArr.length; i++) {
-			String val = paramValueArr[i].trim();
-			BsonDocument dbo = new BsonDocument();
-			dbo.put("id", new BsonString(type));
-			dbo.put("value", new BsonString(val));
-			subObjectList.add(dbo);
-		}
-		if (subObjectList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subObjectList));
-			return query;
-		}
-		return null;
-	}
-
-	static BsonDocument getINFamilyQueryObject(String type, String field, String csv) {
-		String[] paramValueArr = csv.split(",");
-		BsonArray subObjectList = new BsonArray();
-		for (int i = 0; i < paramValueArr.length; i++) {
-			String val = paramValueArr[i].trim();
-			BsonDocument dbo = new BsonDocument();
-			dbo.put(type, new BsonString(val));
-			subObjectList.add(dbo);
-		}
-		if (subObjectList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subObjectList));
-			return query;
-		}
-		return null;
-	}
-
-	static BsonDocument getINExtensionQueryObject(String type, String[] fields, String csv) {
-		String[] paramValueArr = csv.split(",");
-		BsonArray subStringList = new BsonArray();
-		for (int i = 0; i < paramValueArr.length; i++) {
-			String val = paramValueArr[i].trim();
-			subStringList.add(converseType(val));
-		}
-		if (subStringList.isEmpty() == false) {
-			BsonArray subList = new BsonArray();
-			for (int i = 0; i < fields.length; i++) {
-				BsonDocument sub = new BsonDocument();
-				sub.put(fields[i], new BsonDocument("$in", subStringList));
-				subList.add(sub);
-			}
-			BsonDocument subBase = new BsonDocument();
-			subBase.put("$or", subList);
-			return subBase;
-		}
-		return null;
 	}
 
 	static BsonDocument getCompExtensionQueryObject(String type, String[] fields, String value, String comp) {
@@ -284,84 +210,11 @@ public class MongoQueryUtil {
 		return null;
 	}
 
-	static BsonDocument getINQueryObject(String[] fields, String csv) {
-		String[] eqArr = csv.split(",");
-		BsonArray subStringList = new BsonArray();
-		for (int i = 0; i < eqArr.length; i++) {
-			String eqString = eqArr[i].trim();
-			subStringList.add(new BsonString(eqString));
-		}
-		if (subStringList.isEmpty() == false) {
-			BsonArray subList = new BsonArray();
-			for (int i = 0; i < fields.length; i++) {
-				BsonDocument sub = new BsonDocument();
-				sub.put(fields[i], new BsonDocument("$in", subStringList));
-				subList.add(sub);
-			}
-			BsonDocument subBase = new BsonDocument();
-			subBase.put("$or", subList);
-			return subBase;
-		}
-		return null;
-	}
-
-	static BsonDocument getSingleRegexQueryObject(String field, String csv) {
-		if (csv.split(",").length == 1) {
-			if (csv.split("\\^").length == 2) {
-				if (csv.split("\\^")[1].trim().equals("regex")) {
-					String regex = csv.split("\\^")[0].trim();
-					BsonDocument query = new BsonDocument();
-					query.put(field, new BsonDocument("$regex", new BsonRegularExpression("^" + regex + "$")));
-					return query;
-				}
-			}
-		}
-		return null;
-	}
-
-	static BsonDocument getRegexQueryObject(String field, String csv) {
-		String[] wdArr = csv.split(",");
-		BsonArray subPatternList = new BsonArray();
-		for (int i = 0; i < wdArr.length; i++) {
-			String wdString = wdArr[i].trim();
-			BsonDocument subRegex = new BsonDocument();
-			subRegex.put("$regex", new BsonRegularExpression("^" + wdString + ".*"));
-			subPatternList.add(new BsonDocument(field, subRegex));
-		}
-		BsonDocument subBase = new BsonDocument();
-		subBase.put("$or", subPatternList);
-		return subBase;
-	}
-
-	static Set<String> getWDList(Set<String> idSet, String id) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
-
-		BsonDocument vocObject = null;
-		if (id.split("\\^").length == 2 && id.split("\\^")[1].trim().equals("regex")) {
-			String regex = id.split("\\^")[0].trim();
-			vocObject = collection.find(new BsonDocument("id", new BsonRegularExpression("^" + regex + "$"))).first();
-		} else {
-			vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
-			idSet.add(id);
-		}
-
-		if (vocObject == null) {
-			return idSet;
-		}
-		BsonArray childObject = vocObject.get("children").asArray();
-		if (childObject != null) {
-			@SuppressWarnings("rawtypes")
-			Iterator childIter = childObject.iterator();
-			while (childIter.hasNext()) {
-				BsonValue childObj = (BsonValue) childIter.next();
-				if (childObj != null) {
-					idSet.add(childObj.asString().getValue());
-				}
-			}
-		}
-		return idSet;
+	static BsonDocument getExistsQueryObject(String field, String str) {
+		BsonDocument query = new BsonDocument();
+		str = encodeMongoObjectKey(str);
+		query.put(field + "." + str, new BsonDocument("$exists", new BsonBoolean(true)));
+		return query;
 	}
 
 	static String encodeMongoObjectKey(String key) {
@@ -374,26 +227,4 @@ public class MongoQueryUtil {
 		return key;
 	}
 
-	static BsonValue converseType(String value) {
-		String[] valArr = value.split("\\^");
-		if (valArr.length != 2) {
-			return new BsonString(value);
-		}
-		try {
-			String type = valArr[1];
-			if (type.equals("int")) {
-				return new BsonInt32(Integer.parseInt(valArr[0]));
-			} else if (type.equals("long")) {
-				return new BsonInt64(Long.parseLong(valArr[0]));
-			} else if (type.equals("double")) {
-				return new BsonDouble(Double.parseDouble(valArr[0]));
-			} else if (type.equals("boolean")) {
-				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
-			} else {
-				return new BsonString(value);
-			}
-		} catch (NumberFormatException e) {
-			return new BsonString(value);
-		}
-	}
 }
