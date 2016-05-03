@@ -1372,9 +1372,11 @@ public class MongoQueryService {
 		 */
 		if (EQ_action != null) {
 			// Constrained already checked
-			BsonDocument query = getINQueryObject("action", EQ_action);
-			if (query != null)
-				queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(EQ_action);
+			BsonDocument queryObject = getQueryObject(new String[]{"action"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
+			}
 		}
 		/**
 		 * EQ_bizStep: If specified, the result will only include events that
@@ -1387,14 +1389,11 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (EQ_bizStep != null) {
-			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("bizStep", EQ_bizStep);
-			if (query != null) {
-				queryList.add(query);
-			} else {
-				query = getINQueryObject("bizStep", EQ_bizStep);
-				if (query != null)
-					queryList.add(query);
+		if (EQ_bizStep != null) {	
+			BsonArray paramArray = getParamBsonArray(EQ_bizStep);
+			BsonDocument queryObject = getQueryObject(new String[]{"bizStep"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
 		}
 		/**
@@ -1405,13 +1404,10 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (EQ_disposition != null) {
-			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("disposition", EQ_disposition);
-			if (query != null) {
-				queryList.add(query);
-			} else {
-				query = getINQueryObject("disposition", EQ_disposition);
-				if (query != null)
-					queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(EQ_disposition);
+			BsonDocument queryObject = getQueryObject(new String[]{"disposition"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
 		}
 		/**
@@ -1426,13 +1422,10 @@ public class MongoQueryService {
 		 * 
 		 */
 		if (EQ_readPoint != null) {
-			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("readPoint.id", EQ_readPoint);
-			if (query != null) {
-				queryList.add(query);
-			} else {
-				query = getINQueryObject("readPoint.id", EQ_readPoint);
-				if (query != null)
-					queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(EQ_readPoint);
+			BsonDocument queryObject = getQueryObject(new String[]{"readPoint.id"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
 		}
 
@@ -1452,27 +1445,11 @@ public class MongoQueryService {
 		 */
 
 		if (WD_readPoint != null) {
-
-			String[] eqArr = WD_readPoint.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				eqArr[i] = eqArr[i].trim();
+			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
+			BsonDocument queryObject = getQueryObject(new String[]{"readPoint.id"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
-			BsonArray orQuery = new BsonArray();
-			Set<String> readPointSet = new HashSet<String>();
-			for (int i = 0; i < eqArr.length; i++) {
-				// Invoke vocabulary query with EQ_name and includeChildren
-				readPointSet = getWDList(readPointSet, eqArr[i]);
-				BsonDocument regexQuery = MongoQueryUtil.getSingleRegexQueryObject("readPoint.id", eqArr[i]);
-				if (regexQuery != null)
-					orQuery.add(regexQuery);
-			}
-			if (!readPointSet.isEmpty()) {
-				BsonDocument inQuery = getINQueryObject("readPoint.id", readPointSet);
-				if (inQuery != null)
-					orQuery.add(inQuery);
-			}
-			if (orQuery.size() != 0)
-				queryList.add(new BsonDocument("$or", orQuery));
 		}
 
 		/**
@@ -1483,13 +1460,10 @@ public class MongoQueryService {
 		 * 
 		 */
 		if (EQ_bizLocation != null) {
-			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("bizLocation.id", EQ_bizLocation);
-			if (query != null) {
-				queryList.add(query);
-			} else {
-				query = getINQueryObject("bizLocation.id", EQ_bizLocation);
-				if (query != null)
-					queryList.add(query);
+			BsonArray paramArray = getParamBsonArray(EQ_bizLocation);
+			BsonDocument queryObject = getQueryObject(new String[]{"bizLocation.id"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
 		}
 
@@ -1502,27 +1476,11 @@ public class MongoQueryService {
 		 */
 
 		if (WD_bizLocation != null) {
-
-			String[] eqArr = WD_bizLocation.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				eqArr[i] = eqArr[i].trim();
+			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
+			BsonDocument queryObject = getQueryObject(new String[]{"bizLocation.id"}, paramArray);
+			if( queryObject != null ){
+				queryList.add(queryObject);
 			}
-			BsonArray orQuery = new BsonArray();
-			Set<String> bizLocationSet = new HashSet<String>();
-			for (int i = 0; i < eqArr.length; i++) {
-				// Invoke vocabulary query with EQ_name and includeChildren
-				bizLocationSet = getWDList(bizLocationSet, eqArr[i]);
-				BsonDocument regexQuery = MongoQueryUtil.getSingleRegexQueryObject("bizLocation.id", eqArr[i]);
-				if (regexQuery != null)
-					orQuery.add(regexQuery);
-			}
-			if (!bizLocationSet.isEmpty()) {
-				BsonDocument inQuery = getINQueryObject("bizLocation.id", bizLocationSet);
-				if (inQuery != null)
-					orQuery.add(inQuery);
-			}
-			if (orQuery.size() != 0)
-				queryList.add(new BsonDocument("$or", orQuery));
 		}
 
 		/**
