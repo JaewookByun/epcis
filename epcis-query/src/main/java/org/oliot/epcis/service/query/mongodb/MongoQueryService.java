@@ -22,7 +22,6 @@ import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonInt64;
-import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
@@ -1079,8 +1078,15 @@ public class MongoQueryService {
 
 		// M39
 		if (EQ_action != null) {
-			if (!EQ_action.equals("ADD") && !EQ_action.equals("OBSERVE") && !EQ_action.equals("DELETE")) {
-				return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE", QueryParameterException.class);
+
+			String[] actionArr = EQ_action.split(",");
+			for (String action : actionArr) {
+				action = action.trim();
+				if (action.equals(""))
+					continue;
+				if (!action.equals("ADD") && !action.equals("OBSERVE") && !action.equals("DELETE")) {
+					return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE", QueryParameterException.class);
+				}
 			}
 		}
 
@@ -1290,7 +1296,7 @@ public class MongoQueryService {
 		 * GE_eventTime: If specified, only events with eventTime greater than
 		 * or equal to the specified value will be included in the result. If
 		 * omitted, events are included regardless of their eventTime (unless
-		 * constrained by the LT_eventTime parameter). Example:
+		 * constrained by the LT_ eventTime parameter). Example:
 		 * 2014-08-11T19:57:59.717+09:00 SimpleDateFormat sdf = new
 		 * SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 		 * eventTime.setTime(sdf.parse(timeString)); e.g.
@@ -1308,7 +1314,7 @@ public class MongoQueryService {
 		 * LT_eventTime: If specified, only events with eventTime less than the
 		 * specified value will be included in the result. If omitted, events
 		 * are included regardless of their eventTime (unless constrained by the
-		 * GE_eventTime parameter).
+		 * GE_ eventTime parameter).
 		 * 
 		 * Verified
 		 */
@@ -1323,7 +1329,7 @@ public class MongoQueryService {
 		 * or equal to the specified value will be returned. The automatic
 		 * limitation based on event record time (Section 8.2.5.2) may
 		 * implicitly provide a constraint similar to this parameter. If
-		 * omitted, events are included regardless of their recordTime, other
+		 * omitted, events are included regardless of their recordTime , other
 		 * than automatic limitation based on event record time (Section
 		 * 8.2.5.2).
 		 * 
@@ -1338,8 +1344,8 @@ public class MongoQueryService {
 		/**
 		 * LE_recordTime: If provided, only events with recordTime less than the
 		 * specified value will be returned. If omitted, events are included
-		 * regardless of their recordTime (unless constrained by the
-		 * GE_recordTime parameter or the automatic limitation based on event
+		 * regardless of their recordTime (unless constrained by the GE_
+		 * recordTime parameter or the automatic limitation based on event
 		 * record time).
 		 * 
 		 * Verified
@@ -1355,18 +1361,20 @@ public class MongoQueryService {
 		 * EQ_action: If specified, the result will only include events that (a)
 		 * have an action field; and where (b) the value of the action field
 		 * matches one of the specified values. The elements of the value of
-		 * this parameter each must be one of the strings ADD, OBSERVE, or
-		 * DELETE; if not, the implementation SHALL raise a
-		 * QueryParameterException. If omitted, events are included regardless
+		 * this parameter each must be one of the strings ADD , OBSERVE , or
+		 * DELETE ; if not, the implementation SHALL raise a
+		 * QueryParameterException . If omitted, events are included regardless
 		 * of their action field.
+		 * 
+		 * OR semantic
 		 * 
 		 * Verified
 		 */
 		if (EQ_action != null) {
 			// Constrained already checked
-			BsonDocument query = new BsonDocument();
-			query.put("action", new BsonString(EQ_action));
-			queryList.add(query);
+			BsonDocument query = getINQueryObject("action", EQ_action);
+			if (query != null)
+				queryList.add(query);
 		}
 		/**
 		 * EQ_bizStep: If specified, the result will only include events that
@@ -1375,38 +1383,56 @@ public class MongoQueryService {
 		 * is omitted, events are returned regardless of the value of the
 		 * bizStep field or whether the bizStep field exists at all.
 		 * 
+		 * OR semantic Regex supported
+		 * 
 		 * Verified
 		 */
 		if (EQ_bizStep != null) {
-			BsonDocument query = getINQueryObject("bizStep", EQ_bizStep);
-			if (query != null)
+			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("bizStep", EQ_bizStep);
+			if (query != null) {
 				queryList.add(query);
+			} else {
+				query = getINQueryObject("bizStep", EQ_bizStep);
+				if (query != null)
+					queryList.add(query);
+			}
 		}
 		/**
-		 * EQ_disposition: Like the EQ_bizStep parameter, but for the
-		 * disposition field.
+		 * Like the EQ_ bizStep parameter, but for the disposition field.
+		 * 
+		 * OR semantic Regex Supported
 		 * 
 		 * Verified
 		 */
 		if (EQ_disposition != null) {
-			BsonDocument query = getINQueryObject("disposition", EQ_disposition);
-			if (query != null)
+			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("disposition", EQ_disposition);
+			if (query != null) {
 				queryList.add(query);
+			} else {
+				query = getINQueryObject("disposition", EQ_disposition);
+				if (query != null)
+					queryList.add(query);
+			}
 		}
 		/**
 		 * EQ_readPoint: If specified, the result will only include events that
 		 * (a) have a non-null readPoint field; and where (b) the value of the
 		 * readPoint field matches one of the specified values. If this
-		 * parameter and WD_readPoint are both omitted, events are returned
+		 * parameter and WD_ readPoint are both omitted, events are returned
 		 * regardless of the value of the readPoint field or whether the
 		 * readPoint field exists at all.
+		 * 
+		 * OR semantic Regex supported
+		 * 
 		 */
-		Set<String> readPointSet = new HashSet<String>();
 		if (EQ_readPoint != null) {
-			String[] eqArr = EQ_readPoint.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				String eqString = eqArr[i].trim();
-				readPointSet.add(eqString);
+			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("readPoint.id", EQ_readPoint);
+			if (query != null) {
+				queryList.add(query);
+			} else {
+				query = getINQueryObject("readPoint.id", EQ_readPoint);
+				if (query != null)
+					queryList.add(query);
 			}
 		}
 
@@ -1420,6 +1446,9 @@ public class MongoQueryService {
 		 * descendants.”) If this parameter and EQ_readPoint are both omitted,
 		 * events are returned regardless of the value of the readPoint field or
 		 * whether the readPoint field exists at all.
+		 * 
+		 * OR semantic Regex Supported
+		 * 
 		 */
 
 		if (WD_readPoint != null) {
@@ -1428,49 +1457,72 @@ public class MongoQueryService {
 			for (int i = 0; i < eqArr.length; i++) {
 				eqArr[i] = eqArr[i].trim();
 			}
+			BsonArray orQuery = new BsonArray();
+			Set<String> readPointSet = new HashSet<String>();
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
 				readPointSet = getWDList(readPointSet, eqArr[i]);
+				BsonDocument regexQuery = MongoQueryUtil.getSingleRegexQueryObject("readPoint.id", eqArr[i]);
+				if (regexQuery != null)
+					orQuery.add(regexQuery);
 			}
-		}
-
-		if (!readPointSet.isEmpty()) {
-			BsonDocument query = getINQueryObject("readPoint.id", readPointSet);
-			if (query != null)
-				queryList.add(query);
+			if (!readPointSet.isEmpty()) {
+				BsonDocument inQuery = getINQueryObject("readPoint.id", readPointSet);
+				if (inQuery != null)
+					orQuery.add(inQuery);
+			}
+			if (orQuery.size() != 0)
+				queryList.add(new BsonDocument("$or", orQuery));
 		}
 
 		/**
-		 * EQ_bizLocation: Like the EQ_readPoint parameter, but for the
+		 * EQ_bizLocation: Like the EQ_ readPoint parameter, but for the
 		 * bizLocation field.
+		 * 
+		 * OR semantic Regex Supported
+		 * 
 		 */
-		Set<String> bizLocationSet = new HashSet<String>();
 		if (EQ_bizLocation != null) {
-			String[] eqArr = EQ_bizLocation.split(",");
-			for (int i = 0; i < eqArr.length; i++) {
-				String eqString = eqArr[i].trim();
-				bizLocationSet.add(eqString);
+			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("bizLocation.id", EQ_bizLocation);
+			if (query != null) {
+				queryList.add(query);
+			} else {
+				query = getINQueryObject("bizLocation.id", EQ_bizLocation);
+				if (query != null)
+					queryList.add(query);
 			}
 		}
+
 		/**
 		 * WD_bizLocation: Like the WD_readPoint parameter, but for the
 		 * bizLocation field.
+		 * 
+		 * OR semantic Regex Supported
+		 * 
 		 */
+
 		if (WD_bizLocation != null) {
+
 			String[] eqArr = WD_bizLocation.split(",");
 			for (int i = 0; i < eqArr.length; i++) {
 				eqArr[i] = eqArr[i].trim();
 			}
+			BsonArray orQuery = new BsonArray();
+			Set<String> bizLocationSet = new HashSet<String>();
 			for (int i = 0; i < eqArr.length; i++) {
 				// Invoke vocabulary query with EQ_name and includeChildren
 				bizLocationSet = getWDList(bizLocationSet, eqArr[i]);
+				BsonDocument regexQuery = MongoQueryUtil.getSingleRegexQueryObject("bizLocation.id", eqArr[i]);
+				if (regexQuery != null)
+					orQuery.add(regexQuery);
 			}
-		}
-
-		if (!bizLocationSet.isEmpty()) {
-			BsonDocument query = getINQueryObject("bizLocation.id", bizLocationSet);
-			if (query != null)
-				queryList.add(query);
+			if (!bizLocationSet.isEmpty()) {
+				BsonDocument inQuery = getINQueryObject("bizLocation.id", bizLocationSet);
+				if (inQuery != null)
+					orQuery.add(inQuery);
+			}
+			if (orQuery.size() != 0)
+				queryList.add(new BsonDocument("$or", orQuery));
 		}
 
 		/**
@@ -1479,11 +1531,19 @@ public class MongoQueryService {
 		 * TransformationEvents or extension event type that extend
 		 * TransformationEvent); and where (b) the transformationID field is
 		 * equal to one of the values specified in this parameter.
+		 * 
+		 * OR semantic Regex Supported
+		 * 
 		 */
 		if (EQ_transformationID != null) {
-			BsonDocument query = getINQueryObject("transformationID", EQ_transformationID);
-			if (query != null)
+			BsonDocument query = MongoQueryUtil.getSingleRegexQueryObject("transformationID", EQ_transformationID);
+			if (query != null) {
 				queryList.add(query);
+			} else {
+				query = getINQueryObject("transformationID", EQ_transformationID);
+				if (query != null)
+					queryList.add(query);
+			}
 		}
 
 		/**

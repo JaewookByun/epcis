@@ -7,6 +7,7 @@ import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
+import org.bson.BsonValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
@@ -103,9 +104,9 @@ public class MasterDataWriteConverter {
 							// SimpleType xsd:string
 							String value = valueList.get(0).toString();
 							BsonArray eArr = null;
-							if( !attrObj.containsKey(key) ){
+							if (!attrObj.containsKey(key)) {
 								eArr = new BsonArray();
-							}else{
+							} else {
 								eArr = attrObj.getArray(key);
 							}
 							eArr.add(MongoWriterUtil.converseType(value));
@@ -265,14 +266,16 @@ public class MasterDataWriteConverter {
 			while (mapIter.hasNext()) {
 				String key = mapIter.next();
 				key = encodeMongoObjectKey(key);
-				Object value = map2Save.get(key);
-				attrObj.put(key, new BsonString(value.toString()));
+				BsonValue value = (BsonValue) map2Save.get(key);
+				attrObj.put(key, value);
 			}
 
 			attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
 			voc.put("attributes", attrObj);
 
-			collection.findOneAndReplace(new BsonDocument("id", new BsonString(id)), voc);
+			if (collection.findOneAndReplace(new BsonDocument("id", new BsonString(id)), voc) == null) {
+				collection.insertOne(voc);
+			}
 		}
 
 		return 0;

@@ -37,7 +37,6 @@ import com.mongodb.client.MongoCollection;
 public class MongoQueryUtil {
 
 	static BsonDocument getINQueryObject(String field, Set<String> set) {
-
 		BsonArray subStringList = new BsonArray();
 		Iterator<String> setIter = set.iterator();
 		while (setIter.hasNext()) {
@@ -80,7 +79,7 @@ public class MongoQueryUtil {
 		for (int i = 0; i < paramValueArr.length; i++) {
 			String val = paramValueArr[i].trim();
 			type = encodeMongoObjectKey(type);
-			query.put(field+"."+type, new BsonString(val));
+			query.put(field + "." + type, new BsonString(val));
 		}
 		if (query.isEmpty() == false) {
 			return query;
@@ -211,6 +210,20 @@ public class MongoQueryUtil {
 		return null;
 	}
 
+	static BsonDocument getSingleRegexQueryObject(String field, String csv) {
+		if (csv.split(",").length == 1) {
+			if (csv.split("\\^").length == 2) {
+				if (csv.split("\\^")[1].trim().equals("regex")) {
+					String regex = csv.split("\\^")[0].trim();
+					BsonDocument query = new BsonDocument();
+					query.put(field, new BsonDocument("$regex", new BsonRegularExpression("^" + regex + "$")));
+					return query;
+				}
+			}
+		}
+		return null;
+	}
+
 	static BsonDocument getRegexQueryObject(String field, String csv) {
 		String[] wdArr = csv.split(",");
 		BsonArray subPatternList = new BsonArray();
@@ -227,10 +240,18 @@ public class MongoQueryUtil {
 
 	static Set<String> getWDList(Set<String> idSet, String id) {
 
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData", BsonDocument.class);
-		// Invoke vocabulary query with EQ_name and includeChildren
-		BsonDocument vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
-		idSet.add(id);
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
+		
+		BsonDocument vocObject = null;
+		if(id.split("\\^").length == 2 && id.split("\\^")[1].trim().equals("regex")){
+			String regex = id.split("\\^")[0].trim();
+			vocObject = collection.find(new BsonDocument("id", new BsonRegularExpression("^"+regex+"$"))).first();
+		}else{
+			vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
+			idSet.add(id);
+		}
+		
 		if (vocObject == null) {
 			return idSet;
 		}
@@ -239,9 +260,9 @@ public class MongoQueryUtil {
 			@SuppressWarnings("rawtypes")
 			Iterator childIter = childObject.iterator();
 			while (childIter.hasNext()) {
-				Object childObj = childIter.next();
+				BsonValue childObj = (BsonValue)childIter.next();
 				if (childObj != null) {
-					idSet.add(childObj.toString());
+					idSet.add(childObj.asString().getValue());
 				}
 			}
 		}
