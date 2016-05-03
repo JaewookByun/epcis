@@ -1,5 +1,6 @@
 package org.oliot.epcis.service.query.mongodb;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -35,6 +36,100 @@ import com.mongodb.client.MongoCollection;
  */
 
 public class MongoQueryUtil {
+
+	static BsonArray getWDParamBsonArray(String csv) {
+		BsonArray paramArray = new BsonArray();
+		String[] paramValueArr = csv.split(",");
+		for (String paramValue : paramValueArr) {
+			String param = paramValue.trim();
+			if (param.split(",").length == 1 && param.split("\\^").length == 2
+					&& param.split("\\^")[1].trim().equals("regex")) {
+				String regex = param.split("\\^")[0].trim();
+				BsonRegularExpression regexValue = new BsonRegularExpression("^" + regex + "$");
+				paramArray.add(regexValue);
+			} else {
+				paramArray.add(new BsonString(param));
+			}
+		}
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+				BsonDocument.class);
+		
+		Iterator<BsonValue> paramIterator = paramArray.iterator();
+		Set<BsonValue> childParamSet = new HashSet<BsonValue>();
+		while(paramIterator.hasNext()){
+			BsonValue param = paramIterator.next();
+			BsonDocument vocObject = null;
+			if( param instanceof BsonRegularExpression ){
+				BsonRegularExpression regexParam = param.asRegularExpression();
+				vocObject = collection.find(new BsonDocument("id", regexParam)).first();
+				
+			}else {
+				BsonString stringParam = param.asString();
+				vocObject = collection.find(new BsonDocument("id", stringParam)).first();
+			}
+			if( vocObject != null ){
+				BsonArray childObject = vocObject.get("children").asArray();
+				Iterator<BsonValue> childIterator = childObject.iterator();
+				while(childIterator.hasNext()){
+					BsonString child = childIterator.next().asString();
+					childParamSet.add(child);
+				}
+			}			
+		}
+		Iterator<BsonValue> childParamIterator = childParamSet.iterator();
+		while(childParamIterator.hasNext()){
+			paramArray.add(childParamIterator.next().asString());
+		}
+		
+		return paramArray;
+	}
+	
+	
+	static BsonArray getParamBsonArray(String csv) {
+		BsonArray paramArray = new BsonArray();
+		String[] paramValueArr = csv.split(",");
+		for (String paramValue : paramValueArr) {
+			String param = paramValue.trim();
+			if (param.split(",").length == 1 && param.split("\\^").length == 2
+					&& param.split("\\^")[1].trim().equals("regex")) {
+				String regex = param.split("\\^")[0].trim();
+				BsonRegularExpression regexValue = new BsonRegularExpression("^" + regex + "$");
+				paramArray.add(regexValue);
+			} else {
+				paramArray.add(new BsonString(param));
+			}
+		}
+		return paramArray;
+	}
+
+	static BsonDocument getQueryObject(String[] fieldArr, BsonArray paramArray) {
+
+		BsonArray orQueries = new BsonArray();
+		for (String field : fieldArr) {
+			Iterator<BsonValue> paramIterator = paramArray.iterator();
+			BsonArray pureStringParamArray = new BsonArray();
+			while (paramIterator.hasNext()) {
+				BsonValue param = paramIterator.next();
+				if (param instanceof BsonRegularExpression) {
+					BsonDocument regexQuery = new BsonDocument(field, new BsonDocument("$regex", param));
+					orQueries.add(regexQuery);
+				} else {
+					pureStringParamArray.add(param);
+				}
+			}
+			if (pureStringParamArray.size() != 0) {
+				BsonDocument stringInQueries = new BsonDocument(field, new BsonDocument("$in", pureStringParamArray));
+				orQueries.add(stringInQueries);
+			}
+		}
+		if (orQueries.size() != 0) {
+			BsonDocument queryObject = new BsonDocument();
+			queryObject.put("$or", orQueries);
+			return queryObject;
+		} else {
+			return null;
+		}
+	}
 
 	static BsonDocument getINQueryObject(String field, Set<String> set) {
 		BsonArray subStringList = new BsonArray();
@@ -242,16 +337,16 @@ public class MongoQueryUtil {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
 				BsonDocument.class);
-		
+
 		BsonDocument vocObject = null;
-		if(id.split("\\^").length == 2 && id.split("\\^")[1].trim().equals("regex")){
+		if (id.split("\\^").length == 2 && id.split("\\^")[1].trim().equals("regex")) {
 			String regex = id.split("\\^")[0].trim();
-			vocObject = collection.find(new BsonDocument("id", new BsonRegularExpression("^"+regex+"$"))).first();
-		}else{
+			vocObject = collection.find(new BsonDocument("id", new BsonRegularExpression("^" + regex + "$"))).first();
+		} else {
 			vocObject = collection.find(new BsonDocument("id", new BsonString(id))).first();
 			idSet.add(id);
 		}
-		
+
 		if (vocObject == null) {
 			return idSet;
 		}
@@ -260,7 +355,7 @@ public class MongoQueryUtil {
 			@SuppressWarnings("rawtypes")
 			Iterator childIter = childObject.iterator();
 			while (childIter.hasNext()) {
-				BsonValue childObj = (BsonValue)childIter.next();
+				BsonValue childObj = (BsonValue) childIter.next();
 				if (childObj != null) {
 					idSet.add(childObj.asString().getValue());
 				}
