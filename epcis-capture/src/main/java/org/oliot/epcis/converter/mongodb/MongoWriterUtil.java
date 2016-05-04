@@ -1,5 +1,8 @@
 package org.oliot.epcis.converter.mongodb;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -8,6 +11,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 
 import org.apache.axis.message.MessageElement;
+import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
@@ -16,6 +20,7 @@ import org.bson.BsonInt32;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.gcp.core.AICodeParser;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
@@ -597,7 +602,6 @@ public class MongoWriterUtil {
 		for (int i = 0; i < objList.size(); i++) {
 			Object obj = objList.get(i);
 			if (obj instanceof Element) {
-				// example0:a, example0:b, example0:c
 				Element element = (Element) obj;
 				String name = element.getNodeName();
 				// Process Namespace
@@ -605,15 +609,12 @@ public class MongoWriterUtil {
 				if (checkArr.length == 2) {
 					map2Save.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
 				}
-				// A, example1:b, example1:d, example1:b, example1:e
 				Node firstChildNode = element.getFirstChild();
 				if (firstChildNode != null) {
 					if (firstChildNode instanceof Text) {
-						// A
 						String value = firstChildNode.getTextContent();
 						map2Save.put(name, converseType(value));
 					} else if (firstChildNode instanceof Element) {
-						// example1:b, example1:d, example1:b, example1:e
 						Element childNode = null;
 						BsonDocument sub2Save = new BsonDocument();
 						do {
@@ -688,6 +689,13 @@ public class MongoWriterUtil {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
 			} else if (type.equals("boolean")) {
 				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
+			} else if (type.equals("float")) {
+				return new BsonDouble(Double.parseDouble(valArr[0]));
+			} else if (type.equals("time")) {
+				long time = getTimeMillis(valArr[0]);
+				if(time != 0)
+					return new BsonInt64(time);
+				return new BsonString(value);
 			} else {
 				return new BsonString(value);
 			}
@@ -722,7 +730,27 @@ public class MongoWriterUtil {
 				errorBson.put("any", map2Save);
 			}
 		}
-		
+
 		return errorBson;
+	}
+	
+	static long getTimeMillis(String standardDateString) {
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+			eventTimeCalendar.setTime(sdf.parse(standardDateString));
+			return eventTimeCalendar.getTimeInMillis();
+		} catch (ParseException e) {
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+				eventTimeCalendar.setTime(sdf.parse(standardDateString));
+				return eventTimeCalendar.getTimeInMillis();
+			} catch (ParseException e1) {
+				Configuration.logger.log(Level.ERROR, e1.toString());
+			}
+		}
+		// Never Happened
+		return 0;
 	}
 }
