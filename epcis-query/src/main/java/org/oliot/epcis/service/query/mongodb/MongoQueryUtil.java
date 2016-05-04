@@ -128,6 +128,13 @@ public class MongoQueryUtil {
 				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
 			} else if (type.equals("regex")) {
 				return new BsonRegularExpression("^" + valArr[0] + "$");
+			} else if (type.equals("float")) {
+				return new BsonDouble(Double.parseDouble(valArr[0]));
+			} else if (type.equals("time")) {
+				long time = MongoQueryService.getTimeMillis(valArr[0]);
+				if (time != 0)
+					return new BsonInt64(time);
+				return new BsonString(value);
 			} else {
 				return new BsonString(value);
 			}
@@ -215,7 +222,7 @@ public class MongoQueryUtil {
 		if (str != null) {
 			str = encodeMongoObjectKey(str);
 			query.put(field + "." + str, new BsonDocument("$exists", isExist));
-		}else{
+		} else {
 			query.put(field, new BsonDocument("$exists", isExist));
 		}
 		return query;

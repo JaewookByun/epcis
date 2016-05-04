@@ -2311,7 +2311,7 @@ public class MongoQueryService {
 		return returnValue;
 	}
 
-	private long getTimeMillis(String standardDateString) {
+	static long getTimeMillis(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
