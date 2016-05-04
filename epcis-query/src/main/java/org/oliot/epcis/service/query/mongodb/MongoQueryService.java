@@ -19,9 +19,14 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonInt64;
+import org.bson.BsonObjectId;
+import org.bson.BsonString;
+import org.bson.BsonValue;
+import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
@@ -1004,6 +1009,8 @@ public class MongoQueryService {
 			return false;
 		if (paramName.contains("recordTime"))
 			return false;
+		if (paramName.contains("errorDeclarationTime"))
+			return false;
 		if (paramName.contains("action"))
 			return false;
 		if (paramName.contains("bizStep"))
@@ -1024,6 +1031,15 @@ public class MongoQueryService {
 			return false;
 		if (paramName.contains("ILMD"))
 			return false;
+		if (paramName.contains("eventID"))
+			return false;
+		if (paramName.contains("errorReason"))
+			return false;
+		if (paramName.contains("correctiveEventID"))
+			return false;
+		if (paramName.contains("errorDeclaration"))
+			return false;
+
 		return true;
 	}
 
@@ -1345,7 +1361,6 @@ public class MongoQueryService {
 			queryList.add(query);
 		}
 
-		// TODO: GE_errorDeclarationTime, Time
 		/**
 		 * If this parameter is specified, the result will only include events
 		 * that (a) contain an ErrorDeclaration ; and where (b) the value of the
@@ -1354,8 +1369,14 @@ public class MongoQueryService {
 		 * of whether they contain an ErrorDeclaration or what the value of the
 		 * errorDeclarationTime field is.
 		 */
+		if (GE_errorDeclarationTime != null) {
+			long geErrorDeclarationTime = getTimeMillis(GE_errorDeclarationTime);
+			BsonDocument query = new BsonDocument();
+			query.put("errorDeclaration.declarationTime",
+					new BsonDocument("$gte", new BsonInt64(geErrorDeclarationTime)));
+			queryList.add(query);
+		}
 
-		// TODO: LT_errorDeclarationTime, Time
 		/**
 		 * contain an ErrorDeclaration ; and where (b) the value of the
 		 * errorDeclarationTime field is less than to the specified value. If
@@ -1363,6 +1384,13 @@ public class MongoQueryService {
 		 * they contain an ErrorDeclaration or what the value of the
 		 * errorDeclarationTime field is.
 		 */
+		if (LT_errorDeclarationTime != null) {
+			long ltErrorDeclarationTime = getTimeMillis(LT_errorDeclarationTime);
+			BsonDocument query = new BsonDocument();
+			query.put("errorDeclaration.declarationTime",
+					new BsonDocument("$lt", new BsonInt64(ltErrorDeclarationTime)));
+			queryList.add(query);
+		}
 
 		/**
 		 * EQ_action: If specified, the result will only include events that (a)
@@ -1691,36 +1719,83 @@ public class MongoQueryService {
 		 * LT_quantity; LE_quantity
 		 **/
 
-		// TODO: EQ_eventID
 		/**
-		 * If this parameter is specified, the result will only include events
-		 * that (a) have a non-null eventID field; and where (b) the eventID
-		 * field is equal to one of the values specified in this parameter. If
-		 * this parameter is omitted, events are returned regardless of the
-		 * value of the eventID field or whether the eventID field exists at
-		 * all.
+		 * EQ_eventID : If this parameter is specified, the result will only
+		 * include events that (a) have a non-null eventID field; and where (b)
+		 * the eventID field is equal to one of the values specified in this
+		 * parameter. If this parameter is omitted, events are returned
+		 * regardless of the value of the eventID field or whether the eventID
+		 * field exists at all.
+		 * 
+		 * List of String
+		 * 
 		 */
+		if (EQ_eventID != null) {
 
-		// TODO: EQ_errorReason
+			BsonArray orQueryArray = new BsonArray();
+			BsonArray paramArray = getParamBsonArray(EQ_eventID);
+			BsonDocument queryObject = getQueryObject(new String[] { "eventID" }, paramArray);
+			if (queryObject != null) {
+				orQueryArray.add(queryObject);
+			}
+			BsonArray objectIDParamArray = new BsonArray();
+			for (int i = 0; i < paramArray.size(); i++) {
+				BsonValue paramValue = paramArray.get(i);
+				if (paramValue instanceof BsonString) {
+					try {
+						objectIDParamArray.add(new BsonObjectId(new ObjectId(paramValue.asString().getValue())));
+					} catch (IllegalArgumentException e) {
+						Configuration.logger.debug("Non MongoDB ObjectID: " + e.toString());
+					}
+				}
+			}
+			BsonDocument objectIDQueryObject = getQueryObject(new String[] { "_id" }, objectIDParamArray);
+			if (objectIDQueryObject != null) {
+				orQueryArray.add(objectIDQueryObject);
+			}
+			if (orQueryArray.size() != 0) {
+				BsonDocument orQueryObject = new BsonDocument();
+				orQueryObject.put("$or", orQueryArray);
+				queryList.add(orQueryObject);
+			}
+
+		}
+
 		/**
-		 * If this parameter is specified, the result will only include events
-		 * that (a) contain an ErrorDeclaration ; and where (b) the error
-		 * declaration contains a non-null reason field; and where (c) the
-		 * reason field is equal to one of the values specified in this
+		 * EQ_errorReason: If this parameter is specified, the result will only
+		 * include events that (a) contain an ErrorDeclaration ; and where (b)
+		 * the error declaration contains a non-null reason field; and where (c)
+		 * the reason field is equal to one of the values specified in this
 		 * parameter. If this parameter is omitted, events are returned
 		 * regardless of the they contain an ErrorDeclaration or what the value
 		 * of the reason field is.
 		 */
 
-		// TODO: EQ_correctiveEventID
+		if (EQ_errorReason != null) {
+			BsonArray paramArray = getParamBsonArray(EQ_errorReason);
+			BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.reason" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
+		}
+
 		/**
-		 * If this parameter is specified, the result will only include events
-		 * that (a) contain an ErrorDeclaration ; and where (b) one of the
-		 * elements of the correctiveEventIDs list is equal to one of the values
-		 * specified in this parameter. If this parameter is omitted, events are
-		 * returned regardless of the they contain an ErrorDeclaration or the
-		 * contents of the correctiveEventIDs list.
+		 * EQ_correctiveEventID: If this parameter is specified, the result will
+		 * only include events that (a) contain an ErrorDeclaration ; and where
+		 * (b) one of the elements of the correctiveEventIDs list is equal to
+		 * one of the values specified in this parameter. If this parameter is
+		 * omitted, events are returned regardless of the they contain an
+		 * ErrorDeclaration or the contents of the correctiveEventIDs list.
 		 */
+
+		if (EQ_correctiveEventID != null) {
+			BsonArray paramArray = getParamBsonArray(EQ_correctiveEventID);
+			BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.correctiveEventIDs" },
+					paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
+		}
 
 		Iterator<String> paramIter = paramMap.keySet().iterator();
 		while (paramIter.hasNext()) {
@@ -1793,26 +1868,64 @@ public class MongoQueryService {
 				}
 			}
 
-			// TODO: EQ_ILMD_fieldname
 			/**
-			 * Analogous to EQ_fieldname , but matches events whose ILMD area
-			 * (Section 7.3.6) contains a top-level field having the specified
-			 * fieldname whose value matches one of the specified values. “Top
-			 * level” means that the matching ILMD element must be an immediate
-			 * child of the <ilmd> element, not an element nested within such an
-			 * element. See EQ_INNER_ILMD_fieldname for querying inner extension
-			 * elements.
+			 * EQ_ILMD_field: Analogous to EQ_fieldname , but matches events
+			 * whose ILMD area (Section 7.3.6) contains a top-level field having
+			 * the specified fieldname whose value matches one of the specified
+			 * values. “Top level” means that the matching ILMD element must be
+			 * an immediate child of the <ilmd> element, not an element nested
+			 * within such an element. See EQ_INNER_ILMD_fieldname for querying
+			 * inner extension elements.
 			 */
 
-			// TODO: EQ|GT|GE|LT|LE_ILMD_fieldname
+			if (paramName.startsWith("EQ_ILMD_")) {
+				String type = paramName.substring(8, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+				BsonDocument queryObject = getQueryObject(new String[] { "extension.ilmd.any." + type, "ilmd.any." + type },
+						paramArray);
+				if (queryObject != null) {
+					queryList.add(queryObject);
+				}
+			}
+
 			/**
-			 * Analogous to EQ_fieldname , GT_fieldname , GE_fieldname ,
-			 * GE_fieldname , LT_fieldname , and LE_fieldname , respectively,
-			 * but matches events whose ILMD area (Section 7.3.6) contains a
-			 * field having the specified fieldname whose integer, float, or
-			 * time value matches the specified value according to the specified
-			 * relational operator.
+			 * GT|GE|LT|LE_ILMD_field: Analogous to EQ_fieldname , GT_fieldname
+			 * , GE_fieldname , GE_fieldname , LT_fieldname , and LE_fieldname ,
+			 * respectively, but matches events whose ILMD area (Section 7.3.6)
+			 * contains a field having the specified fieldname whose integer,
+			 * float, or time value matches the specified value according to the
+			 * specified relational operator.
 			 */
+
+			if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
+					|| paramName.startsWith("LE_")) {
+				String type = paramName.substring(8, paramName.length());
+
+				if (paramName.startsWith("GT_")) {
+					BsonDocument query = getCompExtensionQueryObject(type,
+							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GT");
+					if (query != null)
+						queryList.add(query);
+				}
+				if (paramName.startsWith("GE_")) {
+					BsonDocument query = getCompExtensionQueryObject(type,
+							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GE");
+					if (query != null)
+						queryList.add(query);
+				}
+				if (paramName.startsWith("LT_")) {
+					BsonDocument query = getCompExtensionQueryObject(type,
+							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LT");
+					if (query != null)
+						queryList.add(query);
+				}
+				if (paramName.startsWith("LE_")) {
+					BsonDocument query = getCompExtensionQueryObject(type,
+							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LE");
+					if (query != null)
+						queryList.add(query);
+				}
+			}
 
 			// TODO: EQ_INNER_ILMD_fieldname
 			/**
@@ -1832,84 +1945,59 @@ public class MongoQueryService {
 			 * applied to a field of type Int, Float, or Time.
 			 */
 
-			// TODO: EXISTS_fieldname
+			/**
+			 * EXISTS_ILMD_fieldname: Like EXISTS_fieldname as described above,
+			 * but events that have a non-empty field named fieldname in the
+			 * ILMD area (Section 7.3.6). Fieldname is constructed as for
+			 * EQ_ILMD_fieldname . Note that the value for this query parameter
+			 * is ignored.
+			 */
+			if (paramName.startsWith("EXISTS_ILMD_")) {
+				if (eventType.equals("ObjectEvent")) {
+					String field = paramName.substring(12, paramName.length());
+					Boolean isExist = Boolean.parseBoolean(paramValues);
+					BsonBoolean isExistBson = new BsonBoolean(isExist);
+					BsonDocument query = getExistsQueryObject("extension.ilmd", field, isExistBson);
+					if (query != null)
+						queryList.add(query);
+				} else if (eventType.equals("TransformationEvent")) {
+					String field = paramName.substring(12, paramName.length());
+					Boolean isExist = Boolean.parseBoolean(paramValues);
+					BsonBoolean isExistBson = new BsonBoolean(isExist);
+					BsonDocument query = getExistsQueryObject("ilmd", field, isExistBson);
+					if (query != null)
+						queryList.add(query);
+				}
+			}
 
 			/**
-			 * Like EQ_fieldname as described above, but may be applied to a
-			 * field of any type (including complex types). The result will
-			 * include events that have a non-empty field named fieldname .
-			 * Fieldname is constructed as for EQ_fieldname . EXISTS_
-			 * ILMD_fieldname HASATTR_fieldname Void Note that the value for
-			 * this query parameter is ignored.
+			 * EXISTS_errorDeclaration: If this parameter is specified, the
+			 * result will only include events that contain an ErrorDeclaration
+			 * . If this parameter is omitted, events are returned regardless of
+			 * whether they contain an ErrorDeclaration .
 			 */
 
-			// TODO: EXISTS_ILMD_fieldname
+			if (EXISTS_errorDeclaration != null) {
+
+				Boolean isExist = Boolean.parseBoolean(paramValues);
+				BsonBoolean isExistBson = new BsonBoolean(isExist);
+				BsonDocument query = getExistsQueryObject("errorDeclaration", null, isExistBson);
+				if (query != null)
+					queryList.add(query);
+			}
+
+			// TODO: EQ_ERROR_DECLARATION_fieldname
 
 			/**
-			 * Like EXISTS_fieldname as described above, but events that have a
-			 * non-empty field named fieldname in the ILMD area (Section 7.3.6).
-			 * Fieldname is constructed as for EQ_ILMD_fieldname . Note that the
-			 * value for this query parameter is ignored.
+			 * EQ_ERROR_DECLARATION_Fieldname : Analogous to EQ_fieldname , but
+			 * matches events containing an ErrorDeclaration and where the
+			 * ErrorDeclaration contains a field having the specified fieldname
+			 * whose value matches one of the specified values.
+			 * 
+			 * List of String
+			 * 
 			 */
-
-			// TODO: HASATTR_fieldname
-
-			/**
-			 * This is not a single parameter, but a family of parameters. If a
-			 * parameter of this form is specified, the result will only include
-			 * events that (a) have a field named fieldname whose type is a
-			 * vocabulary type; and (b) where the value of that field is a
-			 * vocabulary element for which master data is available; and (c)
-			 * the master data has a non-null attribute whose name matches one
-			 * of the values specified in this parameter. Fieldname is the fully
-			 * qualified name of a field. For a standard field, this is simply
-			 * the field name; e.g., bizLocation . For an extension
-			 * EQATTR_fieldname _attrname List of String field, the name of an
-			 * extension field is an XML qname; that is, a pair consisting of an
-			 * XML namespace URI and a name. The name of the corresponding query
-			 * parameter is constructed by concatenating the following: the
-			 * string HASATTR_ , the namespace URI for the extension field, a
-			 * pound sign (#), and the name of the extension field.
-			 */
-
-			// TODO: EQATTR_fieldname_attrname
-
-			/**
-			 * This is not a single parameter, but a family of parameters. If a
-			 * parameter of this form is specified, the result will only include
-			 * events that (a) have a field named fieldname whose type is a
-			 * vocabulary type; and (b) where the value of that field is a
-			 * vocabulary element for which master data is available; and (c)
-			 * the master data has a non-null attribute named attrname ; and (d)
-			 * where the value of that attribute matches one of the values
-			 * specified in this parameter. Fieldname is constructed as for
-			 * HASATTR_fieldname . The implementation MAY raise a
-			 * QueryParameterException if fieldname or attrname includes an
-			 * underscore character. EQ_eventID List of String EXISTS_
-			 * errorDeclaration Void GE_errorDeclaration Time Time Explanation
-			 * (non-normative): because the presence of an underscore in
-			 * fieldname or attrname presents an ambiguity as to where the
-			 * division between fieldname and attrname lies, an implementation
-			 * is free to reject the query parameter if it cannot disambiguate.
-			 */
-
-			// TODO: EXISTS_errorDeclaration, Void
-
-			/**
-			 * If this parameter is specified, the result will only include
-			 * events that contain an ErrorDeclaration . If this parameter is
-			 * omitted, events are returned regardless of whether they contain
-			 * an ErrorDeclaration .
-			 */
-
-			// TODO: EQ_ERROR_DECLARATION_fieldname, Void
-
-			/**
-			 * Analogous to EQ_fieldname , but matches events containing an
-			 * ErrorDeclaration and where the ErrorDeclaration contains a field
-			 * having the specified fieldname whose value matches one of the
-			 * specified values.
-			 */
+			
 
 			// TODO: EQ|GT|GE|LT|GE_ERROR_DECLARATION_fieldname, Int, Float,
 			// Time
@@ -2012,6 +2100,70 @@ public class MongoQueryService {
 					}
 				}
 
+				/**
+				 * EXISTS_fieldname: Like EQ_fieldname as described above, but
+				 * may be applied to a field of any type (including complex
+				 * types). The result will include events that have a non-empty
+				 * field named fieldname . Fieldname is constructed as for
+				 * EQ_fieldname . EXISTS_ ILMD_fieldname HASATTR_fieldname Void
+				 * Note that the value for this query parameter is ignored.
+				 * 
+				 * Regex not supported
+				 * 
+				 */
+
+				if (paramName.startsWith("EXISTS_")) {
+					String field = paramName.substring(7, paramName.length());
+					Boolean isExist = Boolean.parseBoolean(paramValues);
+					BsonBoolean isExistBson = new BsonBoolean(isExist);
+					BsonDocument query = getExistsQueryObject("any", field, isExistBson);
+					if (query != null)
+						queryList.add(query);
+				}
+
+				// TODO: HASATTR_fieldname
+
+				/**
+				 * This is not a single parameter, but a family of parameters.
+				 * If a parameter of this form is specified, the result will
+				 * only include events that (a) have a field named fieldname
+				 * whose type is a vocabulary type; and (b) where the value of
+				 * that field is a vocabulary element for which master data is
+				 * available; and (c) the master data has a non-null attribute
+				 * whose name matches one of the values specified in this
+				 * parameter. Fieldname is the fully qualified name of a field.
+				 * For a standard field, this is simply the field name; e.g.,
+				 * bizLocation . For an extension EQATTR_fieldname _attrname
+				 * List of String field, the name of an extension field is an
+				 * XML qname; that is, a pair consisting of an XML namespace URI
+				 * and a name. The name of the corresponding query parameter is
+				 * constructed by concatenating the following: the string
+				 * HASATTR_ , the namespace URI for the extension field, a pound
+				 * sign (#), and the name of the extension field.
+				 */
+
+				// TODO: EQATTR_fieldname_attrname
+
+				/**
+				 * This is not a single parameter, but a family of parameters.
+				 * If a parameter of this form is specified, the result will
+				 * only include events that (a) have a field named fieldname
+				 * whose type is a vocabulary type; and (b) where the value of
+				 * that field is a vocabulary element for which master data is
+				 * available; and (c) the master data has a non-null attribute
+				 * named attrname ; and (d) where the value of that attribute
+				 * matches one of the values specified in this parameter.
+				 * Fieldname is constructed as for HASATTR_fieldname . The
+				 * implementation MAY raise a QueryParameterException if
+				 * fieldname or attrname includes an underscore character.
+				 * EQ_eventID List of String EXISTS_ errorDeclaration Void
+				 * GE_errorDeclaration Time Time Explanation (non-normative):
+				 * because the presence of an underscore in fieldname or
+				 * attrname presents an ambiguity as to where the division
+				 * between fieldname and attrname lies, an implementation is
+				 * free to reject the query parameter if it cannot disambiguate.
+				 */
+
 				// TODO: EQ_INNER_fieldname
 				/**
 				 * Analogous to EQ_fieldname , but matches inner extension
@@ -2102,7 +2254,7 @@ public class MongoQueryService {
 			String[] attrArr = hASATTR.split(",");
 			for (int i = 0; i < attrArr.length; i++) {
 				String attrString = attrArr[i].trim();
-				BsonDocument query = getExistsQueryObject("attributes", attrString);
+				BsonDocument query = getExistsQueryObject("attributes", attrString, new BsonBoolean(true));
 				if (query != null)
 					queryList.add(query);
 			}

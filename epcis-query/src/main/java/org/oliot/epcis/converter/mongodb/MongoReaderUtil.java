@@ -21,7 +21,6 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.EPCISEventExtensionType;
-import org.oliot.model.epcis.ILMDExtensionType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
 import org.oliot.model.epcis.QuantityElementType;
@@ -53,9 +52,9 @@ import org.w3c.dom.Node;
 
 public class MongoReaderUtil {
 
-	static List<QuantityElementType> putQuantityElementTypeList(BsonArray quantityDBList){
+	static List<QuantityElementType> putQuantityElementTypeList(BsonArray quantityDBList) {
 		List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
-		
+
 		for (int i = 0; i < quantityDBList.size(); i++) {
 			QuantityElementType qet = new QuantityElementType();
 			BsonDocument quantityDBObject = quantityDBList.get(i).asDocument();
@@ -73,10 +72,9 @@ public class MongoReaderUtil {
 				qetList.add(qet);
 			}
 		}
-		return qetList;		
+		return qetList;
 	}
-	
-	
+
 	static List<Object> putAny(BsonDocument anyObject) {
 		try {
 			// Get Namespaces
@@ -142,15 +140,14 @@ public class MongoReaderUtil {
 
 	static ILMDType putILMD(ILMDType ilmd, BsonDocument anyObject) {
 		try {
-			ILMDExtensionType ilmdExtension = new ILMDExtensionType();
 			// Get Namespaces
 			Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 			Map<String, String> nsMap = new HashMap<String, String>();
 			while (anyKeysIterN.hasNext()) {
 				String anyKeyN = anyKeysIterN.next();
-				String valueN = anyObject.getString(anyKeyN).getValue();
+				BsonValue valueN = anyObject.get(anyKeyN);
 				if (anyKeyN.startsWith("@")) {
-					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
+					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN.asString().getValue());
 				}
 			}
 			Iterator<String> anyKeysIter = anyObject.keySet().iterator();
@@ -159,7 +156,21 @@ public class MongoReaderUtil {
 				String anyKey = anyKeysIter.next();
 				if (anyKey.startsWith("@"))
 					continue;
-				String value = anyObject.getString(anyKey).getValue();
+
+				BsonType type = anyObject.get(anyKey).getBsonType();
+				String value = null;
+				if (type == BsonType.STRING) {
+					value = anyObject.getString(anyKey).getValue();
+				} else if (type == BsonType.INT32) {
+					value = String.valueOf(anyObject.getInt32(anyKey).getValue());
+				} else if (type == BsonType.INT64) {
+					value = String.valueOf(anyObject.getInt64(anyKey).getValue());
+				} else if (type == BsonType.DOUBLE) {
+					value = String.valueOf(anyObject.getDouble(anyKey).getValue());
+				} else if (type == BsonType.BOOLEAN) {
+					value = String.valueOf(anyObject.getBoolean(anyKey).getValue());
+				}
+
 				// Get Namespace
 				String[] anyKeyCheck = anyKey.split(":");
 				String namespace = null;
@@ -183,8 +194,7 @@ public class MongoReaderUtil {
 					elementList.add(element);
 				}
 			}
-			ilmdExtension.setAny(elementList);
-			ilmd.setExtension(ilmdExtension);
+			ilmd.setAny(elementList);
 		} catch (ParserConfigurationException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}

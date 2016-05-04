@@ -153,7 +153,7 @@ public class TransformationEventWriteConverter {
 			if (ilmd.getAny() != null) {
 				BsonDocument map2Save = getAnyMap(ilmd.getAny());
 				if (map2Save != null && map2Save.isEmpty() == false) {
-					dbo.put("ilmd", map2Save);
+					dbo.put("ilmd", new BsonDocument("any", map2Save));
 				}
 				if (outputList != null) {
 					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
