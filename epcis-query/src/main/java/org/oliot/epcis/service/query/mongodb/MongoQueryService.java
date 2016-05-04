@@ -218,9 +218,9 @@ public class MongoQueryService {
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
 				}
-				
-				// TODO: HASATTR_fieldname
-				// TODO: EQATTR_fieldname_attrname
+
+				if (!isPostFilterPassed(paramMap))
+					continue;
 
 				if (format == null || format.equals("XML")) {
 					AggregationEventReadConverter con = new AggregationEventReadConverter();
@@ -279,9 +279,9 @@ public class MongoQueryService {
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
 				}
-				
-				// TODO: HASATTR_fieldname
-				// TODO: EQATTR_fieldname_attrname
+
+				if (!isPostFilterPassed(paramMap))
+					continue;
 
 				if (format == null || format.equals("XML")) {
 					ObjectEventReadConverter con = new ObjectEventReadConverter();
@@ -337,10 +337,10 @@ public class MongoQueryService {
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
 				}
-				
-				// TODO: HASATTR_fieldname
-				// TODO: EQATTR_fieldname_attrname
-				
+
+				if (!isPostFilterPassed(paramMap))
+					continue;
+
 				if (format == null || format.equals("XML")) {
 					QuantityEventReadConverter con = new QuantityEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
@@ -395,10 +395,10 @@ public class MongoQueryService {
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
 				}
-				
-				// TODO: HASATTR_fieldname
-				// TODO: EQATTR_fieldname_attrname
-				
+
+				if (!isPostFilterPassed(paramMap))
+					continue;
+
 				if (format == null || format.equals("XML")) {
 					TransactionEventReadConverter con = new TransactionEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
@@ -453,10 +453,10 @@ public class MongoQueryService {
 				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 					continue;
 				}
-				
-				// TODO: HASATTR_fieldname
-				// TODO: EQATTR_fieldname_attrname
-				
+
+				if (!isPostFilterPassed(paramMap))
+					continue;
+
 				if (format == null || format.equals("XML")) {
 					TransformationEventReadConverter con = new TransformationEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
@@ -1018,6 +1018,26 @@ public class MongoQueryService {
 		return "";
 	}
 
+	static long getTimeMillis(String standardDateString) {
+		try {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+			eventTimeCalendar.setTime(sdf.parse(standardDateString));
+			return eventTimeCalendar.getTimeInMillis();
+		} catch (ParseException e) {
+			try {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
+				eventTimeCalendar.setTime(sdf.parse(standardDateString));
+				return eventTimeCalendar.getTimeInMillis();
+			} catch (ParseException e1) {
+				Configuration.logger.log(Level.ERROR, e1.toString());
+			}
+		}
+		// Never Happened
+		return 0;
+	}
+
 	boolean isExtraParameter(String paramName) {
 
 		if (paramName.contains("eventTime"))
@@ -1055,8 +1075,8 @@ public class MongoQueryService {
 		if (paramName.contains("errorDeclaration"))
 			return false;
 		if (paramName.contains("ERROR_DECLARATION"))
-			return false;		
-		
+			return false;
+
 		return true;
 	}
 
@@ -1944,24 +1964,6 @@ public class MongoQueryService {
 				}
 			}
 
-			// TODO: EQ_INNER_ILMD_fieldname
-			/**
-			 * Analogous to EQ_ILMD_fieldname , but matches inner ILMD elements;
-			 * that is, any XML element nested within a top-level ILMD element.
-			 * Note that a matching inner element may exist within in more than
-			 * one top-level element or may occur more than once within a single
-			 * top-level element; this parameter matches if at least one
-			 * matching occurrence is found anywhere in the ILMD section (except
-			 * at top-level).
-			 */
-
-			// TODO: EQ|GT|GE|LT|LE_INNER_ILMD_fieldname
-
-			/**
-			 * Like EQ_INNER _ ILMD_ fieldname as described above, but may be
-			 * applied to a field of type Int, Float, or Time.
-			 */
-
 			/**
 			 * EXISTS_ILMD_fieldname: Like EXISTS_fieldname as described above,
 			 * but events that have a non-empty field named fieldname in the
@@ -2031,9 +2033,9 @@ public class MongoQueryService {
 			 * whose integer, float, or time value matches the specified value
 			 * according to the specified relational operator.
 			 */
-			
-			if (paramName.startsWith("GT_ERROR_DECLARATION_") || paramName.startsWith("GE_ERROR_DECLARATION_") || paramName.startsWith("LT_ERROR_DECLARATION_")
-					|| paramName.startsWith("LE_ERROR_DECLARATION_")) {
+
+			if (paramName.startsWith("GT_ERROR_DECLARATION_") || paramName.startsWith("GE_ERROR_DECLARATION_")
+					|| paramName.startsWith("LT_ERROR_DECLARATION_") || paramName.startsWith("LE_ERROR_DECLARATION_")) {
 				String type = paramName.substring(21, paramName.length());
 
 				if (paramName.startsWith("GT_")) {
@@ -2061,26 +2063,6 @@ public class MongoQueryService {
 						queryList.add(query);
 				}
 			}
-			
-
-			// TODO: EQ_INNER_ERROR_DECLARATION_fieldname
-
-			/**
-			 * Analogous to EQ_ERROR_DECLARATION_fieldname , but matches inner
-			 * extension elements; that is, any XML element nested within a
-			 * top-level extension element. Note that a matching inner element
-			 * may exist within in more than one top-level element or may occur
-			 * more than once within a single top-level element; this parameter
-			 * matches if at least one matching occurrence is found anywhere in
-			 * the event (except at top-level)..
-			 */
-
-			// TODO: EQ|GT|GE|LT|GE_INNER_ERROR_DECLARATION_fieldname
-
-			/**
-			 * Like EQ_INNER_ERROR_DECLARATION _ fieldname as described above,
-			 * but may be applied to a field of type Int, Float, or Time.
-			 */
 
 			boolean isExtraParam = isExtraParameter(paramName);
 
@@ -2172,28 +2154,117 @@ public class MongoQueryService {
 					if (query != null)
 						queryList.add(query);
 				}
-
-				// TODO: EQ_INNER_fieldname
-				/**
-				 * Analogous to EQ_fieldname , but matches inner extension
-				 * elements; that is, any XML element nested within a top-level
-				 * extension element. Note that a matching inner element may
-				 * exist within in more than one top-level element or may occur
-				 * more than once within a single top-level element; this
-				 * parameter matches if at least one matching occurrence is
-				 * found anywhere in the event (except at top-level).
-				 */
-
-				// TODO: EQ|GT|GE|LT|LE_INNER_fieldname
-
-				/**
-				 * Like EQ_INNER _ fieldname as described above, but may be
-				 * applied to a field of type Int, Float, or Time.
-				 */
-
 			}
 		}
 		return queryList;
+	}
+
+	private boolean isPostFilterPassed(Map<String, String> paramMap) {
+		Iterator<String> paramIter = paramMap.keySet().iterator();
+		while (paramIter.hasNext()) {
+			String paramName = paramIter.next();
+			String paramValues = paramMap.get(paramName);
+
+			// TODO: HASATTR_fieldname
+
+			/**
+			 * HASATTR_fieldname: This is not a single parameter, but a family
+			 * of parameters. If a parameter of this form is specified, the
+			 * result will only include events that (a) have a field named
+			 * fieldname whose type is a vocabulary type; and (b) where the
+			 * value of that field is a vocabulary element for which master data
+			 * is available; and (c) the master data has a non-null attribute
+			 * whose name matches one of the values specified in this parameter.
+			 * Fieldname is the fully qualified name of a field. For a standard
+			 * field, this is simply the field name; e.g., bizLocation . For an
+			 * extension EQATTR_fieldname _attrname List of String field, the
+			 * name of an extension field is an XML qname; that is, a pair
+			 * consisting of an XML namespace URI and a name. The name of the
+			 * corresponding query parameter is constructed by concatenating the
+			 * following: the string HASATTR_ , the namespace URI for the
+			 * extension field, a pound sign (#), and the name of the extension
+			 * field.
+			 */
+
+			// TODO: EQATTR_fieldname_attrname
+
+			/**
+			 * This is not a single parameter, but a family of parameters. If a
+			 * parameter of this form is specified, the result will only include
+			 * events that (a) have a field named fieldname whose type is a
+			 * vocabulary type; and (b) where the value of that field is a
+			 * vocabulary element for which master data is available; and (c)
+			 * the master data has a non-null attribute named attrname ; and (d)
+			 * where the value of that attribute matches one of the values
+			 * specified in this parameter. Fieldname is constructed as for
+			 * HASATTR_fieldname . The implementation MAY raise a
+			 * QueryParameterException if fieldname or attrname includes an
+			 * underscore character. EQ_eventID List of String EXISTS_
+			 * errorDeclaration Void GE_errorDeclaration Time Time Explanation
+			 * (non-normative): because the presence of an underscore in
+			 * fieldname or attrname presents an ambiguity as to where the
+			 * division between fieldname and attrname lies, an implementation
+			 * is free to reject the query parameter if it cannot disambiguate.
+			 */
+
+			// TODO: EQ_INNER_ILMD_fieldname
+			/**
+			 * Analogous to EQ_ILMD_fieldname , but matches inner ILMD elements;
+			 * that is, any XML element nested within a top-level ILMD element.
+			 * Note that a matching inner element may exist within in more than
+			 * one top-level element or may occur more than once within a single
+			 * top-level element; this parameter matches if at least one
+			 * matching occurrence is found anywhere in the ILMD section (except
+			 * at top-level).
+			 */
+
+			// TODO: EQ|GT|GE|LT|LE_INNER_ILMD_fieldname
+
+			/**
+			 * Like EQ_INNER _ ILMD_ fieldname as described above, but may be
+			 * applied to a field of type Int, Float, or Time.
+			 */
+
+			// TODO: EQ_INNER_ERROR_DECLARATION_fieldname
+
+			/**
+			 * Analogous to EQ_ERROR_DECLARATION_fieldname , but matches inner
+			 * extension elements; that is, any XML element nested within a
+			 * top-level extension element. Note that a matching inner element
+			 * may exist within in more than one top-level element or may occur
+			 * more than once within a single top-level element; this parameter
+			 * matches if at least one matching occurrence is found anywhere in
+			 * the event (except at top-level)..
+			 */
+
+			// TODO: EQ|GT|GE|LT|GE_INNER_ERROR_DECLARATION_fieldname
+
+			/**
+			 * Like EQ_INNER_ERROR_DECLARATION _ fieldname as described above,
+			 * but may be applied to a field of type Int, Float, or Time.
+			 */
+
+			// TODO: EQ_INNER_fieldname
+			/**
+			 * Analogous to EQ_fieldname , but matches inner extension elements;
+			 * that is, any XML element nested within a top-level extension
+			 * element. Note that a matching inner element may exist within in
+			 * more than one top-level element or may occur more than once
+			 * within a single top-level element; this parameter matches if at
+			 * least one matching occurrence is found anywhere in the event
+			 * (except at top-level).
+			 */
+
+			// TODO: EQ|GT|GE|LT|LE_INNER_fieldname
+
+			/**
+			 * Like EQ_INNER _ fieldname as described above, but may be applied
+			 * to a field of type Int, Float, or Time.
+			 */
+
+		}
+
+		return false;
 	}
 
 	private BsonArray makeMasterQueryObjects(String vocabularyName, boolean includeAttributes, boolean includeChildren,
@@ -2311,23 +2382,4 @@ public class MongoQueryService {
 		return returnValue;
 	}
 
-	static long getTimeMillis(String standardDateString) {
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
-			eventTimeCalendar.setTime(sdf.parse(standardDateString));
-			return eventTimeCalendar.getTimeInMillis();
-		} catch (ParseException e) {
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
-				eventTimeCalendar.setTime(sdf.parse(standardDateString));
-				return eventTimeCalendar.getTimeInMillis();
-			} catch (ParseException e1) {
-				Configuration.logger.log(Level.ERROR, e1.toString());
-			}
-		}
-		// Never Happened
-		return 0;
-	}
 }

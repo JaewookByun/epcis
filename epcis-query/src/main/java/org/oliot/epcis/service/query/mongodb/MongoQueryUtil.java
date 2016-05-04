@@ -38,6 +38,7 @@ import com.mongodb.client.MongoCollection;
 public class MongoQueryUtil {
 
 	static BsonDocument getFamilyQueryObject(String type, String field, String csv) {
+	
 		String[] paramValueArr = csv.split(",");
 		BsonArray subObjectList = new BsonArray();
 		for (int i = 0; i < paramValueArr.length; i++) {
