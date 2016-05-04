@@ -210,10 +210,14 @@ public class MongoQueryUtil {
 		return null;
 	}
 
-	static BsonDocument getExistsQueryObject(String field, String str) {
+	static BsonDocument getExistsQueryObject(String field, String str, BsonBoolean isExist) {
 		BsonDocument query = new BsonDocument();
-		str = encodeMongoObjectKey(str);
-		query.put(field + "." + str, new BsonDocument("$exists", new BsonBoolean(true)));
+		if (str != null) {
+			str = encodeMongoObjectKey(str);
+			query.put(field + "." + str, new BsonDocument("$exists", isExist));
+		}else{
+			query.put(field, new BsonDocument("$exists", isExist));
+		}
 		return query;
 	}
 

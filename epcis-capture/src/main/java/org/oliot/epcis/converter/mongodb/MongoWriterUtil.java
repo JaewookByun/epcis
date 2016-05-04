@@ -423,7 +423,7 @@ public class MongoWriterUtil {
 			if (ilmd.getAny() != null) {
 				BsonDocument map2Save = getAnyMap(ilmd.getAny());
 				if (map2Save != null && map2Save.isEmpty() == false) {
-					extension.put("ilmd", map2Save);
+					extension.put("ilmd", new BsonDocument("any", map2Save));
 				}
 				if (epcList != null) {
 					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
@@ -716,6 +716,13 @@ public class MongoWriterUtil {
 				errorBson.put("correctiveEventIDs", correctiveIDBsonArray);
 			}
 		}
+		if (edt.getAny() != null) {
+			BsonDocument map2Save = getAnyMap(edt.getAny());
+			if (map2Save != null && map2Save.isEmpty() == false) {
+				errorBson.put("any", map2Save);
+			}
+		}
+		
 		return errorBson;
 	}
 }

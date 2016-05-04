@@ -193,7 +193,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) Integer LE_quantity,
 
 			@RequestParam(required = false) String EQ_eventID,
-			@RequestParam(required = false, defaultValue = "false") Boolean EXISTS_errorDeclaration,
+			@RequestParam(required = false) Boolean EXISTS_errorDeclaration,
 			@RequestParam(required = false) String GE_errorDeclarationTime,
 			@RequestParam(required = false) String LT_errorDeclarationTime,
 			@RequestParam(required = false) String EQ_errorReason,

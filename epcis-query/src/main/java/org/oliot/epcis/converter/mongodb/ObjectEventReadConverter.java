@@ -247,9 +247,11 @@ public class ObjectEventReadConverter {
 
 				if (extObject.get("ilmd") != null) {
 					ILMDType ilmd = new ILMDType();
-					BsonDocument anyObject = extObject.getDocument("ilmd");
-					ilmd = putILMD(ilmd, anyObject);
-					oeet.setIlmd(ilmd);
+					BsonDocument ilmdObject = extObject.getDocument("ilmd");
+					if(ilmdObject.containsKey("any")){
+						ilmd = putILMD(ilmd, ilmdObject.get("any").asDocument());						
+						oeet.setIlmd(ilmd);
+					}
 				}
 
 				// extension2

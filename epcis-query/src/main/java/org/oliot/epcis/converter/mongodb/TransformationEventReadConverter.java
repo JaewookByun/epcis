@@ -241,11 +241,13 @@ public class TransformationEventReadConverter {
 				dlt.setDestination(sdtList);
 				transformationEventType.setDestinationList(dlt);
 			}
-			if (dbObject.get("ilmd") != null) {
+			if (dbObject.get("ilmd") != null) {				
 				ILMDType ilmd = new ILMDType();
-				BsonDocument anyObject = dbObject.get("ilmd").asDocument();
-				ilmd = putILMD(ilmd, anyObject);
-				transformationEventType.setIlmd(ilmd);
+				BsonDocument ilmdObject = dbObject.getDocument("ilmd");
+				if(ilmdObject.containsKey("any")){
+					ilmd = putILMD(ilmd, ilmdObject.get("any").asDocument());						
+					transformationEventType.setIlmd(ilmd);
+				}
 			}
 
 			// Vendor Extension
