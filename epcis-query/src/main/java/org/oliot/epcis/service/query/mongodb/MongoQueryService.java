@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
@@ -25,6 +26,7 @@ import org.bson.BsonInt32;
 import org.bson.BsonInt64;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
+import org.bson.BsonType;
 import org.bson.BsonValue;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
@@ -219,7 +221,7 @@ public class MongoQueryService {
 					continue;
 				}
 
-				if (!isPostFilterPassed(paramMap))
+				if (!isPostFilterPassed("AggregationEvent", dbObject, paramMap))
 					continue;
 
 				if (format == null || format.equals("XML")) {
@@ -280,7 +282,7 @@ public class MongoQueryService {
 					continue;
 				}
 
-				if (!isPostFilterPassed(paramMap))
+				if (!isPostFilterPassed("ObjectEvent", dbObject, paramMap))
 					continue;
 
 				if (format == null || format.equals("XML")) {
@@ -338,7 +340,7 @@ public class MongoQueryService {
 					continue;
 				}
 
-				if (!isPostFilterPassed(paramMap))
+				if (!isPostFilterPassed("QuantityEvent", dbObject, paramMap))
 					continue;
 
 				if (format == null || format.equals("XML")) {
@@ -396,7 +398,7 @@ public class MongoQueryService {
 					continue;
 				}
 
-				if (!isPostFilterPassed(paramMap))
+				if (!isPostFilterPassed("TransactionEvent", dbObject, paramMap))
 					continue;
 
 				if (format == null || format.equals("XML")) {
@@ -454,7 +456,7 @@ public class MongoQueryService {
 					continue;
 				}
 
-				if (!isPostFilterPassed(paramMap))
+				if (!isPostFilterPassed("TransformationEvent", dbObject, paramMap))
 					continue;
 
 				if (format == null || format.equals("XML")) {
@@ -1075,6 +1077,8 @@ public class MongoQueryService {
 		if (paramName.contains("errorDeclaration"))
 			return false;
 		if (paramName.contains("ERROR_DECLARATION"))
+			return false;
+		if (paramName.contains("INNER"))
 			return false;
 
 		return true;
@@ -2159,11 +2163,38 @@ public class MongoQueryService {
 		return queryList;
 	}
 
-	private boolean isPostFilterPassed(Map<String, String> paramMap) {
+	@SuppressWarnings("unused")
+	private boolean isPostFilterPassed(String eventType, BsonDocument dbObject, Map<String, String> paramMap) {
 		Iterator<String> paramIter = paramMap.keySet().iterator();
 		while (paramIter.hasNext()) {
 			String paramName = paramIter.next();
 			String paramValues = paramMap.get(paramName);
+
+			BsonDocument ilmd = null;
+			BsonDocument error = null;
+			BsonDocument ext = null;
+
+			// Prepare BsonDocument
+			if (eventType.equals("ObjectEvent")) {
+				if (dbObject.containsKey("extension") && dbObject.getDocument("extension").containsKey("ilmd")
+						&& dbObject.getDocument("extension").getDocument("ilmd").containsKey("any")) {
+					ilmd = dbObject.getDocument("extension").getDocument("ilmd").getDocument("any");
+				}
+			} else if (eventType.equals("TransformationEvent")) {
+				if (dbObject.containsKey("ilmd") && dbObject.getDocument("ilmd").containsKey("any")) {
+					ilmd = dbObject.getDocument("ilmd").getDocument("any");
+				}
+			}
+
+			if (dbObject.containsKey("errorDeclaration")) {
+				if (dbObject.getDocument("errorDeclaration").containsKey("any")) {
+					error = dbObject.getDocument("errorDeclaration").getDocument("any");
+				}
+			}
+
+			if (dbObject.containsKey("any")) {
+				ext = dbObject.getDocument("any");
+			}
 
 			// TODO: HASATTR_fieldname
 
@@ -2186,6 +2217,13 @@ public class MongoQueryService {
 			 * field.
 			 */
 
+			if (paramName.startsWith("HASATTR_")) {
+				String type = paramName.substring(8, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				continue;
+			}
+
 			// TODO: EQATTR_fieldname_attrname
 
 			/**
@@ -2207,7 +2245,19 @@ public class MongoQueryService {
 			 * is free to reject the query parameter if it cannot disambiguate.
 			 */
 
-			// TODO: EQ_INNER_ILMD_fieldname
+			if (paramName.startsWith("EQATTR_")) {
+				String type = paramName.substring(7, paramName.length());
+				String[] typeArr = type.trim().split("_");
+				if (typeArr.length != 2)
+					continue;
+				String fieldname = typeArr[0];
+				String attrname = typeArr[1];
+
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				continue;
+			}
+
 			/**
 			 * Analogous to EQ_ILMD_fieldname , but matches inner ILMD elements;
 			 * that is, any XML element nested within a top-level ILMD element.
@@ -2218,14 +2268,64 @@ public class MongoQueryService {
 			 * at top-level).
 			 */
 
-			// TODO: EQ|GT|GE|LT|LE_INNER_ILMD_fieldname
+			if (paramName.startsWith("EQ_INNER_ILMD_")) {
+				if (eventType.equals("AggregationEvent") || eventType.equals("QuantityEvent")
+						|| eventType.equals("TransactionEvent")) {
+					return false;
+				}
+				if (ilmd == null)
+					return false;
+				String type = paramName.substring(14, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (isExtensionFilterPassed(type, paramArray, ilmd) == true)
+					return true;
+				else
+					return false;
+			}
 
 			/**
-			 * Like EQ_INNER _ ILMD_ fieldname as described above, but may be
+			 * Like EQ_INNER_ILMD_ fieldname as described above, but may be
 			 * applied to a field of type Int, Float, or Time.
 			 */
 
-			// TODO: EQ_INNER_ERROR_DECLARATION_fieldname
+			if (paramName.startsWith("GT_INNER_ILMD_") || paramName.startsWith("GE_INNER_ILMD_")
+					|| paramName.startsWith("LT_INNER_ILMD_") || paramName.startsWith("LE_INNER_ILMD_")) {
+
+				if (eventType.equals("AggregationEvent") || eventType.equals("QuantityEvent")
+						|| eventType.equals("TransactionEvent")) {
+					return false;
+				}
+				if (ilmd == null)
+					return false;
+				String type = paramName.substring(14, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (paramName.startsWith("GT_")) {
+					if (isCompExtensionFilterPassed(type, "GT", paramArray, ilmd) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("GE_")) {
+					if (isCompExtensionFilterPassed(type, "GE", paramArray, ilmd) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LT_")) {
+					if (isCompExtensionFilterPassed(type, "LT", paramArray, ilmd) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LE_")) {
+					if (isCompExtensionFilterPassed(type, "LE", paramArray, ilmd) == true)
+						return true;
+					else
+						return false;
+				}
+			}
 
 			/**
 			 * Analogous to EQ_ERROR_DECLARATION_fieldname , but matches inner
@@ -2237,14 +2337,59 @@ public class MongoQueryService {
 			 * the event (except at top-level)..
 			 */
 
-			// TODO: EQ|GT|GE|LT|GE_INNER_ERROR_DECLARATION_fieldname
+			if (paramName.startsWith("EQ_INNER_ERROR_DECLARATION_")) {
+				if (error == null)
+					return false;
+				String type = paramName.substring(27, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (isExtensionFilterPassed(type, paramArray, error) == true)
+					return true;
+				else
+					return false;
+			}
 
 			/**
 			 * Like EQ_INNER_ERROR_DECLARATION _ fieldname as described above,
 			 * but may be applied to a field of type Int, Float, or Time.
 			 */
 
-			// TODO: EQ_INNER_fieldname
+			if (paramName.startsWith("GT_INNER_ERROR_DECLARATION_")
+					|| paramName.startsWith("GE_INNER_ERROR_DECLARATION_")
+					|| paramName.startsWith("LT_INNER_ERROR_DECLARATION_")
+					|| paramName.startsWith("LE_INNER_ERROR_DECLARATION_")) {
+
+				if (error == null)
+					return false;
+				String type = paramName.substring(27, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (paramName.startsWith("GT_")) {
+					if (isCompExtensionFilterPassed(type, "GT", paramArray, error) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("GE_")) {
+					if (isCompExtensionFilterPassed(type, "GE", paramArray, error) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LT_")) {
+					if (isCompExtensionFilterPassed(type, "LT", paramArray, error) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LE_")) {
+					if (isCompExtensionFilterPassed(type, "LE", paramArray, error) == true)
+						return true;
+					else
+						return false;
+				}
+			}
+
 			/**
 			 * Analogous to EQ_fieldname , but matches inner extension elements;
 			 * that is, any XML element nested within a top-level extension
@@ -2255,15 +2400,151 @@ public class MongoQueryService {
 			 * (except at top-level).
 			 */
 
-			// TODO: EQ|GT|GE|LT|LE_INNER_fieldname
+			if (paramName.startsWith("EQ_INNER_")) {
+				if (ext == null)
+					return false;
+				String type = paramName.substring(9, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (isExtensionFilterPassed(type, paramArray, ext) == true)
+					return true;
+				else
+					return false;
+			}
 
 			/**
 			 * Like EQ_INNER _ fieldname as described above, but may be applied
 			 * to a field of type Int, Float, or Time.
 			 */
 
+			if (paramName.startsWith("GT_INNER_") || paramName.startsWith("GE_INNER_")
+					|| paramName.startsWith("LT_INNER_") || paramName.startsWith("LE_INNER_")) {
+
+				if (ext == null)
+					return false;
+				String type = paramName.substring(9, paramName.length());
+				BsonArray paramArray = getParamBsonArray(paramValues);
+
+				if (paramName.startsWith("GT_")) {
+					if (isCompExtensionFilterPassed(type, "GT", paramArray, ext) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("GE_")) {
+					if (isCompExtensionFilterPassed(type, "GE", paramArray, ext) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LT_")) {
+					if (isCompExtensionFilterPassed(type, "LT", paramArray, ext) == true)
+						return true;
+					else
+						return false;
+				}
+				if (paramName.startsWith("LE_")) {
+					if (isCompExtensionFilterPassed(type, "LE", paramArray, ext) == true)
+						return true;
+					else
+						return false;
+				}
+			}
+
 		}
 
+		return false;
+	}
+
+	private boolean isExtensionFilterPassed(String type, BsonArray paramArray, BsonDocument ext) {
+		Iterator<String> keyIterator = ext.keySet().iterator();
+		while (keyIterator.hasNext()) {
+			String key = keyIterator.next();
+			BsonValue sub = ext.get(key);
+			if (key.equals(type)) {
+				for (int i = 0; i < paramArray.size(); i++) {
+					BsonValue param = paramArray.get(i);
+					if (sub.getBsonType() == param.getBsonType() && sub.toString().equals(param.toString())) {
+						return true;
+					}
+					if (param.getBsonType() == BsonType.REGULAR_EXPRESSION && sub.getBsonType() == BsonType.STRING) {
+						if (Pattern.matches(param.asRegularExpression().getPattern(), sub.asString().getValue()))
+							return true;
+					}
+				}
+				return false;
+			}
+			if (sub.getBsonType() == BsonType.DOCUMENT) {
+				if (isExtensionFilterPassed(type, paramArray, sub.asDocument()) == true) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private boolean isCompExtensionFilterPassed(String type, String comp, BsonArray paramArray, BsonDocument ext) {
+		Iterator<String> keyIterator = ext.keySet().iterator();
+		while (keyIterator.hasNext()) {
+			String key = keyIterator.next();
+			BsonValue sub = ext.get(key);
+			if (key.equals(type)) {
+				for (int i = 0; i < paramArray.size(); i++) {
+					BsonValue param = paramArray.get(i);
+					if (sub.getBsonType() == param.getBsonType()) {
+						if (sub.getBsonType() == BsonType.INT32) {
+							if (comp.equals("GT")) {
+								if (sub.asInt32().getValue() > param.asInt32().getValue())
+									return true;
+							} else if (comp.equals("GE")) {
+								if (sub.asInt32().getValue() >= param.asInt32().getValue())
+									return true;
+							} else if (comp.equals("LT")) {
+								if (sub.asInt32().getValue() < param.asInt32().getValue())
+									return true;
+							} else if (comp.equals("LE")) {
+								if (sub.asInt32().getValue() <= param.asInt32().getValue())
+									return true;
+							}
+						} else if (sub.getBsonType() == BsonType.INT64) {
+							if (comp.equals("GT")) {
+								if (sub.asInt64().getValue() > param.asInt64().getValue())
+									return true;
+							} else if (comp.equals("GE")) {
+								if (sub.asInt64().getValue() >= param.asInt64().getValue())
+									return true;
+							} else if (comp.equals("LT")) {
+								if (sub.asInt64().getValue() < param.asInt64().getValue())
+									return true;
+							} else if (comp.equals("LE")) {
+								if (sub.asInt64().getValue() <= param.asInt64().getValue())
+									return true;
+							}
+						} else if (sub.getBsonType() == BsonType.DOUBLE) {
+							if (comp.equals("GT")) {
+								if (sub.asDouble().getValue() > param.asDouble().getValue())
+									return true;
+							} else if (comp.equals("GE")) {
+								if (sub.asDouble().getValue() >= param.asDouble().getValue())
+									return true;
+							} else if (comp.equals("LT")) {
+								if (sub.asDouble().getValue() < param.asDouble().getValue())
+									return true;
+							} else if (comp.equals("LE")) {
+								if (sub.asDouble().getValue() <= param.asDouble().getValue())
+									return true;
+							}
+						}
+					}
+				}
+				return false;
+			}
+			if (sub.getBsonType() == BsonType.DOCUMENT) {
+				if (isCompExtensionFilterPassed(type, comp, paramArray, sub.asDocument()) == true) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
