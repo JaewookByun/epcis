@@ -21,9 +21,9 @@ import javax.xml.namespace.QName;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.bson.BsonInt64;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.BsonType;
@@ -1020,24 +1020,24 @@ public class MongoQueryService {
 		return "";
 	}
 
-	static long getTimeMillis(String standardDateString) {
+	static BsonDateTime getTimeMillis(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 			eventTimeCalendar.setTime(sdf.parse(standardDateString));
-			return eventTimeCalendar.getTimeInMillis();
+			return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
 		} catch (ParseException e) {
 			try {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 				eventTimeCalendar.setTime(sdf.parse(standardDateString));
-				return eventTimeCalendar.getTimeInMillis();
+				return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
 			} catch (ParseException e1) {
 				Configuration.logger.log(Level.ERROR, e1.toString());
 			}
 		}
 		// Never Happened
-		return 0;
+		return null;
 	}
 
 	boolean isExtraParameter(String paramName) {
@@ -1350,9 +1350,9 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (GE_eventTime != null) {
-			long geEventTimeMillis = getTimeMillis(GE_eventTime);
+			BsonDateTime geBsonDateTime = getTimeMillis(GE_eventTime);
 			BsonDocument query = new BsonDocument();
-			query.put("eventTime", new BsonDocument("$gte", new BsonInt64(geEventTimeMillis)));
+			query.put("eventTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
 		}
 		/**
@@ -1364,9 +1364,9 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (LT_eventTime != null) {
-			long ltEventTimeMillis = getTimeMillis(LT_eventTime);
+			BsonDateTime ltBsonDateTime = getTimeMillis(LT_eventTime);
 			BsonDocument query = new BsonDocument();
-			query.put("eventTime", new BsonDocument("$lt", new BsonInt64(ltEventTimeMillis)));
+			query.put("eventTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
 		}
 		/**
@@ -1381,9 +1381,9 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (GE_recordTime != null) {
-			long geRecordTimeMillis = getTimeMillis(GE_recordTime);
+			BsonDateTime geBsonDateTime = getTimeMillis(GE_recordTime);
 			BsonDocument query = new BsonDocument();
-			query.put("recordTime", new BsonDocument("$gte", new BsonInt64(geRecordTimeMillis)));
+			query.put("recordTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
 		}
 		/**
@@ -1396,9 +1396,9 @@ public class MongoQueryService {
 		 * Verified
 		 */
 		if (LT_recordTime != null) {
-			long ltRecordTimeMillis = getTimeMillis(LT_recordTime);
+			BsonDateTime ltBsonDateTime = getTimeMillis(LT_recordTime);
 			BsonDocument query = new BsonDocument();
-			query.put("recordTime", new BsonDocument("$lt", new BsonInt64(ltRecordTimeMillis)));
+			query.put("recordTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
 		}
 
@@ -1411,10 +1411,10 @@ public class MongoQueryService {
 		 * errorDeclarationTime field is.
 		 */
 		if (GE_errorDeclarationTime != null) {
-			long geErrorDeclarationTime = getTimeMillis(GE_errorDeclarationTime);
+			BsonDateTime geBsonDateTime = getTimeMillis(GE_errorDeclarationTime);
 			BsonDocument query = new BsonDocument();
 			query.put("errorDeclaration.declarationTime",
-					new BsonDocument("$gte", new BsonInt64(geErrorDeclarationTime)));
+					new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
 		}
 
@@ -1426,10 +1426,10 @@ public class MongoQueryService {
 		 * errorDeclarationTime field is.
 		 */
 		if (LT_errorDeclarationTime != null) {
-			long ltErrorDeclarationTime = getTimeMillis(LT_errorDeclarationTime);
+			BsonDateTime ltBsonDateTime = getTimeMillis(LT_errorDeclarationTime);
 			BsonDocument query = new BsonDocument();
 			query.put("errorDeclaration.declarationTime",
-					new BsonDocument("$lt", new BsonInt64(ltErrorDeclarationTime)));
+					new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
 		}
 
@@ -1552,7 +1552,7 @@ public class MongoQueryService {
 		 */
 
 		if (WD_bizLocation != null) {
-			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
+			BsonArray paramArray = getWDParamBsonArray(WD_bizLocation);
 			BsonDocument queryObject = getQueryObject(new String[] { "bizLocation.id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -2453,7 +2453,7 @@ public class MongoQueryService {
 
 		}
 
-		return false;
+		return true;
 	}
 
 	private boolean isExtensionFilterPassed(String type, BsonArray paramArray, BsonDocument ext) {
@@ -2532,6 +2532,20 @@ public class MongoQueryService {
 									return true;
 							} else if (comp.equals("LE")) {
 								if (sub.asDouble().getValue() <= param.asDouble().getValue())
+									return true;
+							}
+						} else if (sub.getBsonType() == BsonType.DATE_TIME) {
+							if (comp.equals("GT")) {
+								if (sub.asDateTime().getValue() > param.asDateTime().getValue())
+									return true;
+							} else if (comp.equals("GE")) {
+								if (sub.asDateTime().getValue() >= param.asDateTime().getValue())
+									return true;
+							} else if (comp.equals("LT")) {
+								if (sub.asDateTime().getValue() < param.asDateTime().getValue())
+									return true;
+							} else if (comp.equals("LE")) {
+								if (sub.asDateTime().getValue() <= param.asDateTime().getValue())
 									return true;
 							}
 						}

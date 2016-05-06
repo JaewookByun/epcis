@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonInt32;
@@ -132,9 +133,9 @@ public class MongoQueryUtil {
 			} else if (type.equals("float")) {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
 			} else if (type.equals("time")) {
-				long time = MongoQueryService.getTimeMillis(valArr[0]);
-				if (time != 0)
-					return new BsonInt64(time);
+				BsonDateTime time = MongoQueryService.getTimeMillis(valArr[0]);
+				if (time != null)
+					return time;
 				return new BsonString(value);
 			} else {
 				return new BsonString(value);

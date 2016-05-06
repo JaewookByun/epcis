@@ -1,12 +1,18 @@
 package org.oliot.epcis.converter.mongodb;
 
 import java.math.BigDecimal;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,13 +20,16 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonType;
 import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
+import org.oliot.model.epcis.CorrectiveEventIDsType;
 import org.oliot.model.epcis.EPCISEventExtensionType;
+import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ILMDType;
 import org.oliot.model.epcis.ObjectEventExtension2Type;
 import org.oliot.model.epcis.QuantityElementType;
@@ -52,6 +61,64 @@ import org.w3c.dom.Node;
 
 public class MongoReaderUtil {
 
+	static XMLGregorianCalendar getDateStream(BsonDateTime bdt, int zone) {
+		try {
+			GregorianCalendar eventCalendar = new GregorianCalendar();
+			eventCalendar.setTimeInMillis(bdt.getValue());
+			XMLGregorianCalendar xmlEventTime;
+			xmlEventTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(eventCalendar);
+			xmlEventTime.setTimezone(zone * 60);
+			return xmlEventTime;
+		} catch (DatatypeConfigurationException e) {
+			Configuration.logger.error(e.toString());
+		}
+		return null;
+	}
+
+	static String getDateStream(BsonDateTime bdt) {
+		Date date = new Date(bdt.getValue());
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		return sdf.format(date);
+	}
+
+	static EPCISEventExtensionType putEPCISEventExtensionType(BsonDocument dbObject, int zone) {
+		EPCISEventExtensionType eeet = new EPCISEventExtensionType();
+		if (dbObject.get("eventID") != null) {
+			eeet.setEventID(dbObject.getString("eventID").getValue());
+		} else {
+			eeet.setEventID(dbObject.getObjectId("_id").getValue().toHexString());
+		}
+		if (dbObject.get("errorDeclaration") != null) {
+			ErrorDeclarationType edt = new ErrorDeclarationType();
+			BsonDocument error = dbObject.getDocument("errorDeclaration");
+			if (error.containsKey("declarationTime")) {
+				edt.setDeclarationTime(getDateStream(error.getDateTime("declarationTime"), zone));
+			}
+			if (error.containsKey("reason")) {
+				edt.setReason(error.getString("reason").getValue());
+			}
+			if (error.containsKey("correctiveEventIDs")) {
+				BsonArray correctiveEventIDs = error.getArray("correctiveEventIDs");
+				List<String> correctiveIDs = new ArrayList<String>();
+				Iterator<BsonValue> cIDIterator = correctiveEventIDs.iterator();
+				while (cIDIterator.hasNext()) {
+					String cID = cIDIterator.next().asString().getValue();
+					correctiveIDs.add(cID);
+				}
+				if (correctiveIDs.size() != 0) {
+					CorrectiveEventIDsType ceit = new CorrectiveEventIDsType();
+					ceit.setCorrectiveEventID(correctiveIDs);
+					edt.setCorrectiveEventIDs(ceit);
+				}
+			}
+			if( error.containsKey("any")){
+				edt.setAny(putAny(error.getDocument("any"), null));
+			}
+			eeet.setErrorDeclaration(edt);
+		}
+		return eeet;
+	}
+
 	static List<QuantityElementType> putQuantityElementTypeList(BsonArray quantityDBList) {
 		List<QuantityElementType> qetList = new ArrayList<QuantityElementType>();
 
@@ -75,8 +142,13 @@ public class MongoReaderUtil {
 		return qetList;
 	}
 
-	static List<Object> putAny(BsonDocument anyObject) {
+	static List<Object> putAny(BsonDocument anyObject, Document doc) {
 		try {
+			if (doc == null) {
+				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+				DocumentBuilder builder = dbf.newDocumentBuilder();
+				doc = builder.newDocument();
+			}
 			// Get Namespaces
 			Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
 			Map<String, String> nsMap = new HashMap<String, String>();
@@ -95,6 +167,7 @@ public class MongoReaderUtil {
 					continue;
 				BsonType type = anyObject.get(anyKey).getBsonType();
 				String value = null;
+				List<Object> nodeList = null;
 				if (type == BsonType.STRING) {
 					value = anyObject.getString(anyKey).getValue();
 				} else if (type == BsonType.INT32) {
@@ -105,6 +178,10 @@ public class MongoReaderUtil {
 					value = String.valueOf(anyObject.getDouble(anyKey).getValue());
 				} else if (type == BsonType.BOOLEAN) {
 					value = String.valueOf(anyObject.getBoolean(anyKey).getValue());
+				} else if (type == BsonType.DATE_TIME) {
+					value = getDateStream(anyObject.getDateTime(anyKey));
+				} else if (type == BsonType.DOCUMENT) {
+					nodeList = putAny(anyObject.getDocument(anyKey), doc);
 				}
 
 				// Get Namespace
@@ -115,10 +192,8 @@ public class MongoReaderUtil {
 					namespace = anyKeyCheck[0];
 					namespaceURI = nsMap.get(namespace).toString();
 				}
-				if (anyKey != null && value != null) {
-					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					DocumentBuilder builder = dbf.newDocumentBuilder();
-					Document doc = builder.newDocument();
+
+				if (anyKey != null) {
 
 					Node node = doc.createElement("value");
 					node.setTextContent(value);
@@ -126,9 +201,16 @@ public class MongoReaderUtil {
 					if (namespace != null) {
 						element.setAttribute("xmlns:" + namespace, namespaceURI);
 					}
-					// element.appendChild(node);
-					element.setTextContent(value);
-					elementList.add(element);
+					if (value != null) {
+						element.setTextContent(value);
+						elementList.add(element);
+					}
+					if (nodeList != null) {
+						for (Object obj : nodeList) {
+							element.appendChild((Node) obj);
+						}
+						elementList.add(element);
+					}
 				}
 			}
 			return elementList;
@@ -139,65 +221,7 @@ public class MongoReaderUtil {
 	}
 
 	static ILMDType putILMD(ILMDType ilmd, BsonDocument anyObject) {
-		try {
-			// Get Namespaces
-			Iterator<String> anyKeysIterN = anyObject.keySet().iterator();
-			Map<String, String> nsMap = new HashMap<String, String>();
-			while (anyKeysIterN.hasNext()) {
-				String anyKeyN = anyKeysIterN.next();
-				BsonValue valueN = anyObject.get(anyKeyN);
-				if (anyKeyN.startsWith("@")) {
-					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN.asString().getValue());
-				}
-			}
-			Iterator<String> anyKeysIter = anyObject.keySet().iterator();
-			List<Object> elementList = new ArrayList<Object>();
-			while (anyKeysIter.hasNext()) {
-				String anyKey = anyKeysIter.next();
-				if (anyKey.startsWith("@"))
-					continue;
-
-				BsonType type = anyObject.get(anyKey).getBsonType();
-				String value = null;
-				if (type == BsonType.STRING) {
-					value = anyObject.getString(anyKey).getValue();
-				} else if (type == BsonType.INT32) {
-					value = String.valueOf(anyObject.getInt32(anyKey).getValue());
-				} else if (type == BsonType.INT64) {
-					value = String.valueOf(anyObject.getInt64(anyKey).getValue());
-				} else if (type == BsonType.DOUBLE) {
-					value = String.valueOf(anyObject.getDouble(anyKey).getValue());
-				} else if (type == BsonType.BOOLEAN) {
-					value = String.valueOf(anyObject.getBoolean(anyKey).getValue());
-				}
-
-				// Get Namespace
-				String[] anyKeyCheck = anyKey.split(":");
-				String namespace = null;
-				String namespaceURI = null;
-				if (anyKeyCheck.length == 2) {
-					namespace = anyKeyCheck[0];
-					namespaceURI = nsMap.get(namespace).toString();
-				}
-				if (anyKey != null && value != null) {
-					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					DocumentBuilder builder = dbf.newDocumentBuilder();
-					Document doc = builder.newDocument();
-
-					Node node = doc.createElement("value");
-					node.setTextContent(value);
-					Element element = doc.createElement(anyKey);
-					if (namespace != null) {
-						element.setAttribute("xmlns:" + namespace, namespaceURI);
-					}
-					element.appendChild(node);
-					elementList.add(element);
-				}
-			}
-			ilmd.setAny(elementList);
-		} catch (ParserConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
-		}
+		ilmd.setAny(putAny(anyObject, null));
 		return ilmd;
 	}
 

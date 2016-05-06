@@ -3,18 +3,11 @@ package org.oliot.epcis.converter.mongodb;
 import static org.oliot.epcis.converter.mongodb.MongoReaderUtil.*;
 
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -46,122 +39,108 @@ import org.oliot.model.epcis.ReadPointType;
 public class QuantityEventReadConverter {
 
 	public QuantityEventType convert(BsonDocument dbObject) {
-		try {
-			QuantityEventType quantityEventType = new QuantityEventType();
-			int zone = 0;
-			if (dbObject.get("eventTimeZoneOffset") != null) {
-				String eventTimeZoneOffset = dbObject.getString("eventTimeZoneOffset").getValue();
-				quantityEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
-				if (eventTimeZoneOffset.split(":").length == 2) {
-					zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
-				}
+		QuantityEventType quantityEventType = new QuantityEventType();
+		int zone = 0;
+		if (dbObject.get("eventTimeZoneOffset") != null) {
+			String eventTimeZoneOffset = dbObject.getString("eventTimeZoneOffset").getValue();
+			quantityEventType.setEventTimeZoneOffset(eventTimeZoneOffset);
+			if (eventTimeZoneOffset.split(":").length == 2) {
+				zone = Integer.parseInt(eventTimeZoneOffset.split(":")[0]);
 			}
-			if (dbObject.get("eventTime") != null) {
-				long eventTime = dbObject.getInt64("eventTime").getValue();
-				GregorianCalendar eventCalendar = new GregorianCalendar();
-				eventCalendar.setTimeInMillis(eventTime);
-				XMLGregorianCalendar xmlEventTime = DatatypeFactory.newInstance()
-						.newXMLGregorianCalendar(eventCalendar);
-				xmlEventTime.setTimezone(zone * 60);
-				quantityEventType.setEventTime(xmlEventTime);
-			}
-			if (dbObject.get("recordTime") != null) {
-				long eventTime = dbObject.getInt64("recordTime").getValue();
-				GregorianCalendar recordCalendar = new GregorianCalendar();
-				recordCalendar.setTimeInMillis(eventTime);
-				XMLGregorianCalendar xmlRecordTime = DatatypeFactory.newInstance()
-						.newXMLGregorianCalendar(recordCalendar);
-				xmlRecordTime.setTimezone(zone * 60);
-				quantityEventType.setRecordTime(xmlRecordTime);
-			}
-			if (dbObject.get("epcClass") != null)
-				quantityEventType.setEpcClass(dbObject.getString("epcClass").getValue());
-			if (dbObject.get("bizStep") != null)
-				quantityEventType.setBizStep(dbObject.getString("bizStep").getValue());
-			if (dbObject.get("disposition") != null)
-				quantityEventType.setDisposition(dbObject.getString("disposition").getValue());
-			if (dbObject.get("baseExtension") != null) {
-				EPCISEventExtensionType eeet = new EPCISEventExtensionType();
-				BsonDocument baseExtension = dbObject.getDocument("baseExtension");
-				eeet = putEPCISExtension(eeet, baseExtension);
-				quantityEventType.setBaseExtension(eeet);
-			}
-			if (dbObject.get("quantity") != null) {
-				int quantity = (int) dbObject.getInt64("quantity").getValue();
-				quantityEventType.setQuantity(quantity);
-			}
-			if (dbObject.get("readPoint") != null) {
-				BsonDocument readPointObject = dbObject.getDocument("readPoint");
-				ReadPointType readPointType = new ReadPointType();
-				if (readPointObject.get("id") != null) {
-					readPointType.setId(readPointObject.get("id").toString());
-				}
-				if (readPointObject.get("extension") != null) {
-					ReadPointExtensionType rpet = new ReadPointExtensionType();
-					BsonDocument extension = readPointObject.getDocument("extension");
-					rpet = putReadPointExtension(rpet, extension);
-					readPointType.setExtension(rpet);
-				}
-				quantityEventType.setReadPoint(readPointType);
-			}
-			// BusinessLocation
-			if (dbObject.get("bizLocation") != null) {
-				BsonDocument bizLocationObject = dbObject.getDocument("bizLocation");
-				BusinessLocationType bizLocationType = new BusinessLocationType();
-				if (bizLocationObject.get("id") != null) {
-					bizLocationType.setId(bizLocationObject.get("id").toString());
-				}
-				if (bizLocationObject.get("extension") != null) {
-					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
-					BsonDocument extension = bizLocationObject.getDocument("extension");
-					blet = putBusinessLocationExtension(blet, extension);
-					bizLocationType.setExtension(blet);
-				}
-				quantityEventType.setBizLocation(bizLocationType);
-			}
-			if (dbObject.get("bizTransactionList") != null) {
-				BsonArray bizTranList = dbObject.getArray("bizTransactionList");
-				BusinessTransactionListType btlt = new BusinessTransactionListType();
-				List<BusinessTransactionType> bizTranArrayList = new ArrayList<BusinessTransactionType>();
-				for (int i = 0; i < bizTranList.size(); i++) {
-					// DBObject, key and value
-					BsonDocument bizTran = bizTranList.get(i).asDocument();
-					BusinessTransactionType btt = new BusinessTransactionType();
-					Iterator<String> keyIter = bizTran.keySet().iterator();
-					// at most one bizTran
-					if (keyIter.hasNext()) {
-						String key = keyIter.next();
-						String value = bizTran.getString(key).getValue();
-						if (key != null && value != null) {
-							btt.setType(key);
-							btt.setValue(value);
-						}
-					}
-					if (btt != null)
-						bizTranArrayList.add(btt);
-				}
-				btlt.setBizTransaction(bizTranArrayList);
-				quantityEventType.setBizTransactionList(btlt);
-			}
-
-			// Vendor Extension
-			if (dbObject.get("any") != null) {
-				BsonDocument anyObject = dbObject.getDocument("any");
-				List<Object> any = putAny(anyObject);
-				quantityEventType.setAny(any);
-			}
-
-			// Extension Field
-			if (dbObject.get("extension") != null) {
-				QuantityEventExtensionType qeet = new QuantityEventExtensionType();
-				BsonDocument extension = dbObject.getDocument("extension");
-				qeet = putQuantityExtension(qeet, extension);
-				quantityEventType.setExtension(qeet);
-			}
-			return quantityEventType;
-		} catch (DatatypeConfigurationException e) {
-			Configuration.logger.log(Level.ERROR, e.toString());
 		}
-		return null;
+		if (dbObject.get("eventTime") != null) {
+			quantityEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+		}
+		if (dbObject.get("recordTime") != null) {
+			quantityEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+		}
+		if (dbObject.get("epcClass") != null)
+			quantityEventType.setEpcClass(dbObject.getString("epcClass").getValue());
+		if (dbObject.get("bizStep") != null)
+			quantityEventType.setBizStep(dbObject.getString("bizStep").getValue());
+		if (dbObject.get("disposition") != null)
+			quantityEventType.setDisposition(dbObject.getString("disposition").getValue());
+		if (dbObject.get("baseExtension") != null) {
+			EPCISEventExtensionType eeet = new EPCISEventExtensionType();
+			BsonDocument baseExtension = dbObject.getDocument("baseExtension");
+			eeet = putEPCISExtension(eeet, baseExtension);
+			quantityEventType.setBaseExtension(eeet);
+		}
+		if (dbObject.get("quantity") != null) {
+			int quantity = (int) dbObject.getInt64("quantity").getValue();
+			quantityEventType.setQuantity(quantity);
+		}
+		if (dbObject.get("readPoint") != null) {
+			BsonDocument readPointObject = dbObject.getDocument("readPoint");
+			ReadPointType readPointType = new ReadPointType();
+			if (readPointObject.get("id") != null) {
+				readPointType.setId(readPointObject.getString("id").getValue());
+			}
+			if (readPointObject.get("extension") != null) {
+				ReadPointExtensionType rpet = new ReadPointExtensionType();
+				BsonDocument extension = readPointObject.getDocument("extension");
+				rpet = putReadPointExtension(rpet, extension);
+				readPointType.setExtension(rpet);
+			}
+			quantityEventType.setReadPoint(readPointType);
+		}
+		// BusinessLocation
+		if (dbObject.get("bizLocation") != null) {
+			BsonDocument bizLocationObject = dbObject.getDocument("bizLocation");
+			BusinessLocationType bizLocationType = new BusinessLocationType();
+			if (bizLocationObject.get("id") != null) {
+				bizLocationType.setId(bizLocationObject.getString("id").getValue());
+			}
+			if (bizLocationObject.get("extension") != null) {
+				BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
+				BsonDocument extension = bizLocationObject.getDocument("extension");
+				blet = putBusinessLocationExtension(blet, extension);
+				bizLocationType.setExtension(blet);
+			}
+			quantityEventType.setBizLocation(bizLocationType);
+		}
+		if (dbObject.get("bizTransactionList") != null) {
+			BsonArray bizTranList = dbObject.getArray("bizTransactionList");
+			BusinessTransactionListType btlt = new BusinessTransactionListType();
+			List<BusinessTransactionType> bizTranArrayList = new ArrayList<BusinessTransactionType>();
+			for (int i = 0; i < bizTranList.size(); i++) {
+				// DBObject, key and value
+				BsonDocument bizTran = bizTranList.get(i).asDocument();
+				BusinessTransactionType btt = new BusinessTransactionType();
+				Iterator<String> keyIter = bizTran.keySet().iterator();
+				// at most one bizTran
+				if (keyIter.hasNext()) {
+					String key = keyIter.next();
+					String value = bizTran.getString(key).getValue();
+					if (key != null && value != null) {
+						btt.setType(key);
+						btt.setValue(value);
+					}
+				}
+				if (btt != null)
+					bizTranArrayList.add(btt);
+			}
+			btlt.setBizTransaction(bizTranArrayList);
+			quantityEventType.setBizTransactionList(btlt);
+		}
+		
+		// EventID and ErrorDeclaration
+		quantityEventType.setBaseExtension(putEPCISEventExtensionType(dbObject, zone));
+
+		// Vendor Extension
+		if (dbObject.get("any") != null) {
+			BsonDocument anyObject = dbObject.getDocument("any");
+			List<Object> any = putAny(anyObject, null);
+			quantityEventType.setAny(any);
+		}
+
+		// Extension Field
+		if (dbObject.get("extension") != null) {
+			QuantityEventExtensionType qeet = new QuantityEventExtensionType();
+			BsonDocument extension = dbObject.getDocument("extension");
+			qeet = putQuantityExtension(qeet, extension);
+			quantityEventType.setExtension(qeet);
+		}
+		return quantityEventType;
 	}
 }

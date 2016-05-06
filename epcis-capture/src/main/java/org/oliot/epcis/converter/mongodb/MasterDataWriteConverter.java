@@ -4,12 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
-import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.bson.BsonValue;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPC;
@@ -141,7 +139,7 @@ public class MasterDataWriteConverter {
 							}
 						}
 					}
-					attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+					attrObj.put("lastUpdated", new BsonDateTime(System.currentTimeMillis()));
 					voc.put("attributes", attrObj);
 				}
 
@@ -162,71 +160,6 @@ public class MasterDataWriteConverter {
 				}
 			}
 		}
-		return 0;
-	}
-
-	public int capture(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
-
-		// ID is mandatory
-		if (event.has("id") == false) {
-			System.out.println("no id!!");
-		}
-
-		// Existence Check
-		String vocID = event.getString("id");
-
-		// each id should have one document
-		BsonDocument voc = collection.find(new BsonDocument("id", new BsonString(vocID))).first();
-
-		if (voc == null) {
-			voc = new BsonDocument();
-
-		}
-
-		if (event.has("type") != false)
-			voc.put("type", new BsonString(event.getString("type")));
-		if (event.has("id") != false)
-			voc.put("id", new BsonString(event.getString("id")));
-
-		// Prepare vocabularyList JSONObject
-		BsonDocument attrObj = null;
-		if (!voc.containsKey("attributes")) {
-			attrObj = new BsonDocument();
-		} else {
-			attrObj = voc.getDocument("attributes");
-		}
-
-		// According to XML rule
-		// Specification is not possible
-		// Select Simple Content as one of two option
-		if (event.getJSONObject("attributes") != null) {
-			JSONObject json_attr = event.getJSONObject("attributes");
-			Iterator<String> json_iter = json_attr.keys();
-			while (json_iter.hasNext()) {
-				String temp = json_iter.next();
-				attrObj.put(temp, new BsonString(json_attr.getString(temp)));
-			}
-			attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
-			voc.put("attributes", attrObj);
-		}
-
-		// If children found, overwrite previous one(s)
-		if (event.has("children") == true) {
-			BsonArray bsonChildArray = new BsonArray();
-			JSONArray jsonChildArray = event.getJSONArray("children");
-
-			Iterator<Object> jsonChildIterator = jsonChildArray.iterator();
-			while (jsonChildIterator.hasNext()) {
-				String childStr = jsonChildIterator.next().toString();
-				bsonChildArray.add(new BsonString(childStr));
-			}
-			voc.put("children", bsonChildArray);
-		}
-
-		collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
 		return 0;
 	}
 
@@ -270,7 +203,7 @@ public class MasterDataWriteConverter {
 				attrObj.put(key, value);
 			}
 
-			attrObj.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+			attrObj.put("lastUpdated", new BsonDateTime(System.currentTimeMillis()));
 			voc.put("attributes", attrObj);
 
 			if (collection.findOneAndReplace(new BsonDocument("id", new BsonString(id)), voc) == null) {

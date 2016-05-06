@@ -6,6 +6,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
@@ -45,14 +46,14 @@ public class QuantityEventWriteConverter {
 		// Event Time
 		if (quantityEventType.getEventTime() != null)
 			dbo.put("eventTime",
-					new BsonInt64(quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+					new BsonDateTime(quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time zone
 		if (quantityEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset", new BsonString(quantityEventType.getEventTimeZoneOffset()));
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", new BsonInt64(recordTimeMilis));
+		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
 		// EPC Class
 		if (quantityEventType.getEpcClass() != null)
 			dbo.put("epcClass",
