@@ -6,7 +6,6 @@ import org.bson.BsonInt64;
 import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.types.ObjectId;
-import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.converter.mongodb.AggregationEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.ObjectEventWriteConverter;
@@ -21,7 +20,6 @@ import org.oliot.model.epcis.TransformationEventType;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.util.JSON;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -307,57 +305,5 @@ public class MongoCaptureUtil {
 				}
 			}
 		}
-	}
-
-	// JsonObject event capture series..
-
-	public void captureObjectEvent(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
-				BsonDocument.class);
-		BsonDocument dbObject = BsonDocument.parse(event.toString());
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void captureAggregationEvent(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
-				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void captureTransformationEvent(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
-				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void captureTransactionEvent(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
-				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
-	}
-
-	public void masterdata_capture(JSONObject event) {
-
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
-
-		BsonDocument dbObject = (BsonDocument) JSON.parse(event.toString());
-
-		collection.insertOne(dbObject);
-		Configuration.logger.info(" Event Saved ");
 	}
 }

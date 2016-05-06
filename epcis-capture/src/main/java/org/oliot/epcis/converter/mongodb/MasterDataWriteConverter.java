@@ -84,11 +84,17 @@ public class MasterDataWriteConverter {
 					attrObj = new BsonDocument();
 				} else {
 					attrObj = voc.getDocument("attributes");
+					if (vocabularyElement.getAttribute() != null) {
+						List<AttributeType> attributeList = vocabularyElement.getAttribute();
+						for (int j = 0; j < attributeList.size(); j++) {
+							AttributeType attribute = attributeList.get(j);
+							// e.g. defnition
+							String key = attribute.getId();
+							key = encodeMongoObjectKey(key);
+							attrObj.remove(key);
+						}
+					}
 				}
-
-				// According to XML rule
-				// Specification is not possible
-				// Select Simple Content as one of two option
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
 					for (int j = 0; j < attributeList.size(); j++) {
@@ -120,7 +126,7 @@ public class MasterDataWriteConverter {
 									String name = element.getNodeName();
 									String[] checkArr = name.split(":");
 									if (checkArr.length == 2) {
-										map2Save.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
+										complexAttr.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
 									}
 									NodeList childNodeList = element.getChildNodes();
 									for (int n = 0; n < childNodeList.getLength(); n++) {
