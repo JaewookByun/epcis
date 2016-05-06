@@ -534,6 +534,12 @@ public class MongoQueryService {
 			Boolean includeChildren, String attributeNames, String eQ_name, String wD_name, String hASATTR,
 			Integer maxElementCount, String format, Map<String, String> paramMap) {
 
+		// Required Field Check
+		if (includeAttributes == null || includeChildren == null) {
+			return makeErrorResult("SimpleMasterDataQuery's Required Field: includeAttributes, includeChildren",
+					QueryTooLargeException.class);
+		}
+
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = null;
 		JSONArray retArray = new JSONArray();
@@ -578,7 +584,7 @@ public class MongoQueryService {
 			if (format == null || format.equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
 				VocabularyType vt = con.convert(dbObject);
-
+				
 				boolean isMatched = true;
 				if (vt.getVocabularyElementList() != null) {
 					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
@@ -588,22 +594,7 @@ public class MongoQueryService {
 							if (includeAttributes == false) {
 								vet.setAttribute(null);
 							} else if (includeAttributes == true && attributeNames != null) {
-								/**
-								 * attributeNames : If specified, only those
-								 * attributes whose names match one of the
-								 * specified names will be included in the
-								 * results. If omitted, all attributes for each
-								 * matching vocabulary element will be included.
-								 * (To obtain a list of vocabulary element names
-								 * with no attributes, specify false for
-								 * includeAttributes.) The value of this
-								 * parameter SHALL be ignored if
-								 * includeAttributes is false. Note that this
-								 * parameter does not affect which vocabulary
-								 * elements are included in the result; it only
-								 * limits which attributes will be included with
-								 * each vocabulary element.
-								 */
+								
 								isMatched = false;
 								String[] attrArr = attributeNames.split(",");
 								Set<String> attrSet = new HashSet<String>();
@@ -658,7 +649,9 @@ public class MongoQueryService {
 				if (isMatched == true) {
 					retArray.put(dbObject);
 				}
+				
 			}
+			
 		}
 
 		if (format == null || format.equals("XML")) {
@@ -1124,9 +1117,11 @@ public class MongoQueryService {
 
 		// M27
 		if (orderBy != null) {
+			/*
 			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
 				return makeErrorResult("orderBy should be eventTime or recordTime", QueryParameterException.class);
 			}
+			*/
 			if (orderDirection != null) {
 				if (!orderDirection.equals("ASC") && !orderDirection.equals("DESC")) {
 					return makeErrorResult("orderDirection should be ASC or DESC", QueryParameterException.class);
@@ -1295,6 +1290,14 @@ public class MongoQueryService {
 						cursor = cursor.sort(new BsonDocument("recordTime", new BsonInt32(-1)));
 					}
 				}
+			} else {
+				if (orderDirection != null) {
+					if (orderDirection.trim().equals("ASC")) {
+						cursor = cursor.sort(new BsonDocument("any."+orderBy, new BsonInt32(1)));
+					} else if (orderDirection.trim().equals("DESC")) {
+						cursor = cursor.sort(new BsonDocument("any."+orderBy, new BsonInt32(-1)));
+					}
+				}
 			}
 		}
 
@@ -1413,8 +1416,7 @@ public class MongoQueryService {
 		if (GE_errorDeclarationTime != null) {
 			BsonDateTime geBsonDateTime = getTimeMillis(GE_errorDeclarationTime);
 			BsonDocument query = new BsonDocument();
-			query.put("errorDeclaration.declarationTime",
-					new BsonDocument("$gte", geBsonDateTime));
+			query.put("errorDeclaration.declarationTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
 		}
 
@@ -1428,8 +1430,7 @@ public class MongoQueryService {
 		if (LT_errorDeclarationTime != null) {
 			BsonDateTime ltBsonDateTime = getTimeMillis(LT_errorDeclarationTime);
 			BsonDocument query = new BsonDocument();
-			query.put("errorDeclaration.declarationTime",
-					new BsonDocument("$lt", ltBsonDateTime));
+			query.put("errorDeclaration.declarationTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
 		}
 

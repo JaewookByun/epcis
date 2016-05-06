@@ -26,6 +26,7 @@ import org.bson.BsonType;
 import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
+import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
 import org.oliot.model.epcis.CorrectiveEventIDsType;
 import org.oliot.model.epcis.EPCISEventExtensionType;
@@ -60,6 +61,41 @@ import org.w3c.dom.Node;
  */
 
 public class MongoReaderUtil {
+
+	static AttributeType getAttributeType(Document doc, String key, BsonValue attrValue) {
+		AttributeType attrType = new AttributeType();
+		Element element = doc.createElement("attribute");
+		attrType.setId(key);
+		BsonType attrValueType = attrValue.getBsonType();
+		List<Object> content = new ArrayList<Object>();
+		if (attrValueType == BsonType.STRING) {
+			String value = attrValue.asString().getValue();
+			element.setTextContent(value);
+			content.add(value);
+		} else if (attrValueType == BsonType.INT32) {
+			String value = String.valueOf(attrValue.asInt32().getValue());
+			element.setTextContent(value);
+			content.add(value);
+		} else if (attrValueType == BsonType.INT64) {
+			String value = String.valueOf(attrValue.asInt64().getValue());
+			element.setTextContent(value);
+			content.add(value);
+		} else if (attrValueType == BsonType.DOUBLE) {
+			String value = String.valueOf(attrValue.asDouble().getValue());
+			element.setTextContent(value);
+			content.add(value);
+		} else if (attrValueType == BsonType.BOOLEAN) {
+			String value = String.valueOf(attrValue.asBoolean().getValue());
+			element.setTextContent(value);
+			content.add(value);
+		} else if (attrValueType == BsonType.DATE_TIME) {
+			String value = String.valueOf(attrValue.asDateTime().getValue());
+			element.setTextContent(value);
+			content.add(value);
+		}
+		attrType.setContent(content);
+		return attrType;
+	}
 
 	static XMLGregorianCalendar getDateStream(BsonDateTime bdt, int zone) {
 		try {
@@ -111,7 +147,7 @@ public class MongoReaderUtil {
 					edt.setCorrectiveEventIDs(ceit);
 				}
 			}
-			if( error.containsKey("any")){
+			if (error.containsKey("any")) {
 				edt.setAny(putAny(error.getDocument("any"), null));
 			}
 			eeet.setErrorDeclaration(edt);
