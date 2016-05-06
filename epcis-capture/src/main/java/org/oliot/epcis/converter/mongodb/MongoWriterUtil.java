@@ -14,6 +14,7 @@ import org.apache.axis.message.MessageElement;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonInt32;
@@ -692,9 +693,9 @@ public class MongoWriterUtil {
 			} else if (type.equals("float")) {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
 			} else if (type.equals("time")) {
-				long time = getTimeMillis(valArr[0]);
-				if(time != 0)
-					return new BsonInt64(time);
+				BsonDateTime time = getBsonDateTime(valArr[0]);
+				if(time != null)
+					return time;
 				return new BsonString(value);
 			} else {
 				return new BsonString(value);
@@ -707,7 +708,7 @@ public class MongoWriterUtil {
 	static BsonDocument getErrorDeclaration(ErrorDeclarationType edt) {
 		BsonDocument errorBson = new BsonDocument();
 		long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
-		errorBson.put("declarationTime", new BsonInt64(declarationTime));
+		errorBson.put("declarationTime", new BsonDateTime(declarationTime));
 		// (Optional) reason
 		if (edt.getReason() != null) {
 			errorBson.put("reason", new BsonString(edt.getReason()));
@@ -734,23 +735,24 @@ public class MongoWriterUtil {
 		return errorBson;
 	}
 	
-	static long getTimeMillis(String standardDateString) {
+	static BsonDateTime getBsonDateTime(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 			eventTimeCalendar.setTime(sdf.parse(standardDateString));
-			return eventTimeCalendar.getTimeInMillis();
+			return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
 		} catch (ParseException e) {
 			try {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 				eventTimeCalendar.setTime(sdf.parse(standardDateString));
-				return eventTimeCalendar.getTimeInMillis();
+				return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
 			} catch (ParseException e1) {
 				Configuration.logger.log(Level.ERROR, e1.toString());
 			}
 		}
 		// Never Happened
-		return 0;
+		return null;
 	}
+	
 }

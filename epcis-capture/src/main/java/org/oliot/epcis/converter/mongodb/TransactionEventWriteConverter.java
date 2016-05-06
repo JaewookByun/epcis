@@ -6,8 +6,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
-import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -47,14 +47,14 @@ public class TransactionEventWriteConverter {
 		// Event Time
 		if (transactionEventType.getEventTime() != null)
 			dbo.put("eventTime",
-					new BsonInt64(transactionEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+					new BsonDateTime(transactionEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time Zone
 		if (transactionEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset", new BsonString(transactionEventType.getEventTimeZoneOffset()));
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", new BsonInt64(recordTimeMilis));
+		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
 		// Parent ID
 		if (transactionEventType.getParentID() != null)
 			dbo.put("parentID",

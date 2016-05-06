@@ -62,7 +62,7 @@ public class MasterDataReadConverter {
 					//attrType.setValue(value);
 					attrListType.add(attrType);
 				} else {
-					String value = String.valueOf(attrObj.getInt64(key).getValue());
+					String value = String.valueOf(attrObj.getDateTime(key).getValue());
 					AttributeType attrType = new AttributeType();
 					attrType.setId(key);
 					//attrType.setValue(value);

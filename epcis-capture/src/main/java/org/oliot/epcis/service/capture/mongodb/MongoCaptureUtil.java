@@ -1,5 +1,6 @@
 package org.oliot.epcis.service.capture.mongodb;
 
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonObjectId;
@@ -121,7 +122,7 @@ public class MongoCaptureUtil {
 				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
 				if (cursor.hasNext()) {
 					BsonDocument foundDoc = cursor.next();
-					foundDoc.put("recordTime", new BsonInt64(System.currentTimeMillis()));
+					foundDoc.put("recordTime", new BsonDateTime(System.currentTimeMillis()));
 					foundDoc.put("errorDeclaration", error);
 					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
 				} else {

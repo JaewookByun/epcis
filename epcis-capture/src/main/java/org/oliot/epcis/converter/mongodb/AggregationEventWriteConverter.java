@@ -6,8 +6,8 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
-import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.AggregationEventType;
@@ -46,14 +46,14 @@ public class AggregationEventWriteConverter {
 		// Event Time
 		if (aggregationEventType.getEventTime() != null)
 			dbo.put("eventTime",
-					new BsonInt64(aggregationEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+					new BsonDateTime(aggregationEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time Zone
 		if (aggregationEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset", new BsonString(aggregationEventType.getEventTimeZoneOffset()));
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", new BsonInt64(recordTimeMilis));
+		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
 
 		// Parent ID
 		if (aggregationEventType.getParentID() != null) {
