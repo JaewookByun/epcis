@@ -17,6 +17,7 @@ Copyright (C) 2014-2016 Jaewook Byun
 
 ### Temporary Server for EPCIS v1.2 prototyping ###
 > [Capture Server](http://143.248.56.100:8080/epcis-capture)
+
 > [Query Server](http://143.248.56.100:8080/epcis-query)
 
 ### Specification ###
