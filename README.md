@@ -16,7 +16,8 @@ Copyright (C) 2014-2016 Jaewook Byun
 > Then, these events can be globally shared with given queries 
 
 ### Temporary Server for EPCIS v1.2 prototyping ###
-> [Main Page](http://143.248.56.100:8080/epcis-capture)
+> [Capture Server](http://143.248.56.100:8080/epcis-capture)
+> [Query Server](http://143.248.56.100:8080/epcis-query)
 
 ### Specification ###
 > Java, Web Service
