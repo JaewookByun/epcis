@@ -11,10 +11,10 @@
 		a.async = 1;
 		a.src = g;
 		m.parentNode.insertBefore(a, m)
-	})(window, document, 'script', '//www.google-analytics.com/analytics.js',
-			'ga');
+	})(window, document, 'script',
+			'https://www.google-analytics.com/analytics.js', 'ga');
 
-	ga('create', 'UA-64257932-1', 'auto');
+	ga('create', 'UA-64257932-4', 'auto');
 	ga('send', 'pageview');
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,34 +46,78 @@
 								<li class="list-group-item">URL:
 									http://{base-url}:{base-port}/epcis/Service/Poll/{queryName}</li>
 								<li class="list-group-item">Additional Parameters: <br>
-									eventType : Comma separated event type (e.g. ObjectEvent) <br>
-									(GE|LT)_eventTime : yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br>
-									(GE|LT)_recordTime : yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br>
-									EQ_action : Comma separated action (e.g. ADD) <br>
-									EQ_bizStep : Comma separated bizStep <br> EQ_disposition :
-									Comma separated disposition <br> (EQ|WD)_readPoint : Comma
-									separated readPoint <br> (EQ|WD)_bizLocation : Comma
-									separated bizLocation <br> EQ_transformationID : Comma
-									separated transformationID <br>
-									MATCH_(epc|parentID|inputEPC|outputEPC|anyEPC) : Comma
-									separated EPC <br>
-									MATCH_(epcClass|inputEPCClass|outputEPCClass|anyEPCClass) :
-									Comma separated EPC Class <br> orderBy : Field used by
-									sorting (e.g. eventTime) <br> orderDirection : ASC, DESC
-									(default) <br> eventCountLimit : return specified number
-									of events <br> maxEventCount : yield error if # of events
-									exceeds specified number <br> vocabularyName : Comma
-									separated vocabularyName <br> includeAttributes : whether
-									including attributes or not <br> includeChildren : whether
-									including children or not <br> attributeNames : Comma
-									separated attribute names, result only will include specified
-									list of names <br> (EQ|WD)_name : Comma separated
-									attribute names <br> HASATTR : Comma separated attribute
-									names <br> maxElementCount : yield error if # of events
-									exceeds specified number <br> format : (XML|JSON)
-									formatted Output <code>NEW</code> <br> userID : your
-									Facebook ID <code>NEW</code> <br> accessToken : your
-									Facebook AccessToken <code>NEW</code>
+									<h4>{queryName}==SimpleEventQuery</h4> <code>eventType</code> :
+									CSV, Regex (e.g., ObjectEvent, (.)*Event^regex) <br> <code>(GE|LT)_eventTime</code>
+									: yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br> <code>(GE|LT)_recordTime</code>
+									: yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br> <code>(GE|LT)_errorDeclaration
+										Time</code> : yyyy-MM-dd'T'HH:mm:ss.SSSXXX <br> <code>EQ_action</code>
+									: CSV (e.g. ADD, OBSERVE, DELETE) <br> <code>EQ_bizStep</code>
+									: CSV, Regex (e.g., urn:epcglobal:cbv:bizstep:shipping,
+									urn:epcglobal:cbv:bizstep:........^regex) <br> <code>EQ_disposition</code>
+									: CSV, Regex (e.g., urn:epcglobal:cbv:disp:in_transit,
+									urn:epcglobal:cbv:disp:..........^regex ) <br> <code>(EQ|WD)_readPoint</code>
+									: CSV, Regex (e.g., urn:epc:id:sgln:0614141.07346.1234
+									urn:epc:id:sgln:0614141[.]07346[.]....^regex ) <br> <code>(EQ|WD)_bizLocation</code>
+									: CSV, Regex (e.g., urn:epc:id:sgln:0614141.07346.1234
+									urn:epc:id:sgln:0614141[.]07346[.]....^regex ) <br> <code>EQ_transformationID</code>
+									: CSV, Regex <br> <code>MATCH_(epc|parentID|inputEPC|outputEPC|anyEPC)</code>
+									: CSV, Regex (e.g., urn:epc:id:sgtin:0614141.107346.2018,
+									urn:epc:id:sgtin:0614141[.]......[.]....^regex ) <br> <code>MATCH_(epcClass|inputEPCClass|outputEPCClass|anyEPCClass)</code>
+									: CSV, Regex (e.g., urn:epc:class:lgtin:4012345.012345.998877,
+									urn:epc:idpat:sgtin:4012345.098765.*,
+									urn:epc:class:lgtin:4012345[.]012345[.]......^regex ) <br>
+									<code>EQ_bizTransaction_type</code> : CSV (e.g.,
+									EQ_bizTransaction_urn:epcglobal:cbv:btt:po =
+									http://transaction.acme.com/po/12345678 ) <br> <code>EQ_source_type</code>
+									: CSV (e.g., EQ_source_urn:epcglobal:cbv:sdt:possessing_party =
+									urn:epc:id:sgln:4012345.00001.0) <br> <code>EQ_destination_type</code>
+									: CSV (e.g., EQ_destination_urn:epcglobal:cbv:sdt:owning_party
+									= urn:epc:id:sgln:0614141.00001.0) <br> <code>EQ_fieldname</code>
+									: Type-available CSV , Regex (e.g., EQ_example0:a=15^int,
+									EQ_example0:a=string, EQ_example1:c=20.5^double,
+									EQ_example2:f=2013-06-08T23:58:56.591%2B09:00^time and
+									long/boolean are available) <br> <code>(GT|GE|LT|LE)_fieldname</code>
+									: Type-available CSV for (int|long|double|boolean|float|time) <br>
+									<code>EQ_INNER_fieldname</code> : Type-available CSV , Regex <br>
+									<code>(GT|GE|LT|GE)_INNER_fieldname</code> : Type-available CSV
+									for (int|long|double|boolean|float|time) <br> <code>EQ_ILMD_fieldname</code>
+									: Type-available CSV , Regex <br> <code>(GT|GE|LT|LE)_ILMD_fieldname</code>
+									: Type-available CSV for (int|long|double|boolean|float|time) <br>
+									<code>EQ_INNER_ILMD_fieldname</code> : Type-available CSV ,
+									Regex <br> <code>(GT|GE|LT|GE)_INNER_ILMD_fieldname</code>
+									: Type-available CSV for (int|long|double|boolean|float|time) <br>
+
+									<code>EQ_ERROR_DECLARATION_fieldname</code> : Type-available
+									CSV , Regex <br> <code>(GT|GE|LT|LE)_ERROR_DECLARATION_fieldname</code>
+									: Type-available CSV for (int|long|double|boolean|float|time) <br>
+									<code>EQ_INNER_ERROR_DECLARATION_fieldname</code> :
+									Type-available CSV , Regex <br> <code>(GT|GE|LT|GE)_INNER_ERROR_DECLARATION_fieldname</code>
+									: Type-available CSV for (int|long|double|boolean|float|time) <br>
+
+									<code>EXISTS_fieldname</code> : true or false (e.g.,
+									EXISTS_example:myField=false) <br> <code>EXISTS_ILMD_fieldname</code>
+									: true or false (e.g., EXISTS_ILMD_example:myField=false) <br>
+									<code>EXISTS_errorDeclaration</code> : true or false<br> <code>EQ_eventID</code>
+									: user-defined eventID, auto-generated Mongo object ID (e.g.,
+									57294415deab32126d209d13) <br> <code>EQ_errorReason</code>
+									: CSV, Regex (e.g., urn:epcglobal:cbv:error:add) <br> <code>EQ_correctiveEventID</code>
+									: CSV, Regex (e.g., 5722d7e1deab322596705146^regex ) <br>
+
+									<code>orderBy</code> : (eventTime|recordTime|fieldName) <br>
+									<code>orderDirection</code> : ASC, DESC (default) <br> <code>eventCountLimit</code>
+									: return specified number of events <br> <code>maxEventCount</code>
+									: yield error if # of events exceeds specified number <br>
+									<br>
+									<h4>{queryName}==SimpleMasterDataQuery</h4> <code>vocabularyName</code>
+									: Comma separated vocabularyName <br> <code>includeAttributes</code>
+									: whether including attributes or not <br> <code>includeChildren</code>
+									: whether including children or not <br> <code>attributeNames</code>
+									: Comma separated attribute names, result only will include
+									specified list of names <br> <code>(EQ|WD)_name</code> :
+									Comma separated attribute names <br> <code>HASATTR</code>
+									: Comma separated attribute names <br> <code>maxElementCount</code>
+									: yield error if # of events exceeds specified number <br>
+									<code>format</code> : (XML|JSON) formatted Output
 								</li>
 								<li class="list-group-item"><a
 									href="./rest-like-query-examples.html">SimpleEventQuery

@@ -2,7 +2,7 @@
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
 	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.1">
+	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.2">
 	<EPCISBody>
 		<EventList>
 			<AggregationEvent>
@@ -37,6 +37,7 @@
 						</quantityElement>
 					</childQuantityList>
 				</extension>
+				<example:myField>Example of a vendor/user extension</example:myField>
 			</AggregationEvent>
 		</EventList>
 	</EPCISBody>

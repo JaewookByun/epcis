@@ -5,10 +5,18 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 /**
- * Copyright (C) 2015 Jaewook Byun
+ * Copyright (C) 2014-2016 Jaewook Byun
  *
- * @author Jaewook Byun, Ph.D student Korea Advanced Institute of Science and
- *         Technology (KAIST) Real-time Embedded System Laboratory(RESL)
+ * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
+ * v1.2.x is Java Web Service complying with Electronic Product Code Information
+ * Service (EPCIS) v1.2.
+ *
+ * @author Jaewook Jack Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
@@ -38,10 +46,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("00")) {
 			String sscc = applicationIdentifierMap.get("00");
 			sscc = sscc.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = sscc.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isSsccCheckDigitCorrect(temp)){
-					return "(00)"+temp;
+				if (isSsccCheckDigitCorrect(temp)) {
+					return "(00)" + temp;
 				}
 			}
 		}
@@ -50,10 +58,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("01")) {
 			String gtin = applicationIdentifierMap.get("01");
 			gtin = gtin.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = gtin.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGtinCheckDigitCorrect(temp)){
-					return "(01)"+temp;
+				if (isGtinCheckDigitCorrect(temp)) {
+					return "(01)" + temp;
 				}
 			}
 		}
@@ -62,10 +70,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("253")) {
 			String gdti = applicationIdentifierMap.get("253");
 			gdti = gdti.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = gdti.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGdtiCheckDigitCorrect(temp)){
-					return "(253)"+temp;
+				if (isGdtiCheckDigitCorrect(temp)) {
+					return "(253)" + temp;
 				}
 			}
 		}
@@ -74,10 +82,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("255")) {
 			String sgcn = applicationIdentifierMap.get("255");
 			sgcn = sgcn.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = sgcn.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isSgcnCheckDigitCorrect(temp)){
-					return "(255)"+temp;
+				if (isSgcnCheckDigitCorrect(temp)) {
+					return "(255)" + temp;
 				}
 			}
 		}
@@ -86,10 +94,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("414")) {
 			String sgln = applicationIdentifierMap.get("414");
 			sgln = sgln.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = sgln.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGlnCheckDigitCorrect(temp)){
-					return "(414)"+temp;
+				if (isGlnCheckDigitCorrect(temp)) {
+					return "(414)" + temp;
 				}
 			}
 		}
@@ -98,10 +106,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("8003")) {
 			String grai = applicationIdentifierMap.get("8003");
 			grai = grai.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = grai.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGraiCheckDigitCorrect(temp)){
-					return "(8003)"+temp;
+				if (isGraiCheckDigitCorrect(temp)) {
+					return "(8003)" + temp;
 				}
 			}
 		}
@@ -110,10 +118,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("8017")) {
 			String gsrnp = applicationIdentifierMap.get("8017");
 			gsrnp = gsrnp.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = gsrnp.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGsrnCheckDigitCorrect(temp)){
-					return "(8017)"+temp;
+				if (isGsrnCheckDigitCorrect(temp)) {
+					return "(8017)" + temp;
 				}
 			}
 		}
@@ -122,10 +130,10 @@ public class AICodeParser {
 		if (applicationIdentifierMap.containsKey("8018")) {
 			String gsrn = applicationIdentifierMap.get("8018");
 			gsrn = gsrn.replaceAll("\\s", "");
-			for(int i = 0 ; i < 10 ; i++){
+			for (int i = 0; i < 10; i++) {
 				String temp = gsrn.replace('*', String.valueOf(i).toCharArray()[0]);
-				if( isGsrnCheckDigitCorrect(temp)){
-					return "(8018)"+temp;
+				if (isGsrnCheckDigitCorrect(temp)) {
+					return "(8018)" + temp;
 				}
 			}
 		}

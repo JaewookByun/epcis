@@ -115,7 +115,6 @@ public class MongoQueryService {
 
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = null;
-		JSONObject retJSON = new JSONObject();
 
 		if (format == null || format.equals("XML")) {
 			epcisQueryDocumentType = makeBaseResultDocument(queryName);
@@ -135,342 +134,81 @@ public class MongoQueryService {
 		} else {
 			// foramt == JSON -> Do Nothing
 		}
-		// To be filtered by eventType
-		boolean toGetAggregationEvent = true;
-		boolean toGetObjectEvent = true;
-		boolean toGetQuantityEvent = true;
-		boolean toGetTransactionEvent = true;
-		boolean toGetTransformationEvent = true;
 
-		/**
-		 * EventType : If specified, the result will only include events whose
-		 * type matches one of the types specified in the parameter value. Each
-		 * element of the parameter value may be one of the following strings:
-		 * ObjectEvent, AggregationEvent, QuantityEvent, TransactionEvent, or
-		 * TransformationEvent. An element of the parameter value may also be
-		 * the name of an extension event type. If omitted, all event types will
-		 * be considered for inclusion in the result.
-		 */
-		if (eventType != null) {
-			toGetAggregationEvent = false;
-			toGetObjectEvent = false;
-			toGetQuantityEvent = false;
-			toGetTransactionEvent = false;
-			toGetTransformationEvent = false;
+		// Event Collection
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
+				BsonDocument.class);
+		// Queries
+		BsonArray queryList = makeQueryObjects(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
+				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
+				orderDirection, eventCountLimit, maxEventCount, format, userID, friendList, paramMap);
 
-			String[] eventTypeArray = eventType.split(",");
-
-			for (int i = 0; i < eventTypeArray.length; i++) {
-				String eventTypeString = eventTypeArray[i];
-
-				if (eventTypeString != null)
-					eventTypeString = eventTypeString.trim();
-
-				if (eventTypeString.equals("AggregationEvent"))
-					toGetAggregationEvent = true;
-				else if (eventTypeString.equals("ObjectEvent"))
-					toGetObjectEvent = true;
-				else if (eventTypeString.equals("QuantityEvent"))
-					toGetQuantityEvent = true;
-				else if (eventTypeString.equals("TransactionEvent"))
-					toGetTransactionEvent = true;
-				else if (eventTypeString.equals("TransformationEvent"))
-					toGetTransformationEvent = true;
+		// Merge All the queries with $and
+		BsonDocument baseQuery = new BsonDocument();
+		FindIterable<BsonDocument> cursor;
+		if (queryList.isEmpty() == false) {
+			BsonArray aggreQueryList = new BsonArray();
+			for (int i = 0; i < queryList.size(); i++) {
+				aggreQueryList.add(queryList.get(i));
 			}
+			baseQuery.put("$and", aggreQueryList);
+			// Query
+			cursor = collection.find(baseQuery);
+		} else {
+			cursor = collection.find();
 		}
+		// Sort and Limit
+		cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
 
-		if (toGetAggregationEvent == true) {
-			// Aggregation Event Collection
-			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("AggregationEvent",
-					BsonDocument.class);
+		JSONArray retArray = new JSONArray();
 
-			// Queries
-			BsonArray queryList = makeQueryObjects(queryName, "AggregationEvent", GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, format, userID,
-					friendList, paramMap);
+		MongoCursor<BsonDocument> slCursor = cursor.iterator();
+		while (slCursor.hasNext()) {
+			BsonDocument dbObject = slCursor.next();
 
-			// Merge All the queries with $and
-			BsonDocument baseQuery = new BsonDocument();
-			FindIterable<BsonDocument> cursor;
-			if (queryList.isEmpty() == false) {
-				BsonArray aggreQueryList = new BsonArray();
-				for (int i = 0; i < queryList.size(); i++) {
-					aggreQueryList.add(queryList.get(i));
-				}
-				baseQuery.put("$and", aggreQueryList);
-				// Query
-				cursor = collection.find(baseQuery);
-			} else {
-				cursor = collection.find();
+			String eventTypeInDoc = dbObject.getString("eventType").getValue();
+
+			if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
+				continue;
 			}
-			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
 
-			JSONArray aggrJSONArray = new JSONArray();
+			if (!isPostFilterPassed(eventTypeInDoc, dbObject, paramMap))
+				continue;
 
-			MongoCursor<BsonDocument> slCursor = cursor.iterator();
-			while (slCursor.hasNext()) {
-				BsonDocument dbObject = slCursor.next();
-
-				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
-					continue;
-				}
-
-				if (!isPostFilterPassed("AggregationEvent", dbObject, paramMap))
-					continue;
-
-				if (format == null || format.equals("XML")) {
+			if (format == null || format.equals("XML")) {
+				if (eventTypeInDoc.equals("AggregationEvent")) {
 					AggregationEventReadConverter con = new AggregationEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
 							con.convert(dbObject));
 					eventObjects.add(element);
-				} else {
-					dbObject.remove("_id");
-					aggrJSONArray.put(dbObject);
-				}
-			}
-			if (aggrJSONArray.length() > 0) {
-				retJSON.put("AggregationEvent", aggrJSONArray);
-			}
-		}
-
-		// For Each Event Type!
-		if (toGetObjectEvent == true) {
-
-			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("ObjectEvent",
-					BsonDocument.class);
-			// Queries
-			BsonArray queryList = makeQueryObjects(queryName, "ObjectEvent", GE_eventTime, LT_eventTime, GE_recordTime,
-					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, format, userID,
-					friendList, paramMap);
-
-			// Merge All the queries with $and
-			BsonDocument baseQuery = new BsonDocument();
-			FindIterable<BsonDocument> cursor;
-			if (queryList.isEmpty() == false) {
-				BsonArray aggreQueryList = new BsonArray();
-				for (int i = 0; i < queryList.size(); i++) {
-					aggreQueryList.add(queryList.get(i));
-				}
-				baseQuery.put("$and", aggreQueryList);
-				// Query
-				cursor = collection.find(baseQuery);
-			} else {
-				cursor = collection.find();
-			}
-			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
-
-			JSONArray objJSONArray = new JSONArray();
-
-			MongoCursor<BsonDocument> slCursor = cursor.iterator();
-
-			while (slCursor.hasNext()) {
-				BsonDocument dbObject = slCursor.next();
-
-				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
-					continue;
-				}
-
-				if (!isPostFilterPassed("ObjectEvent", dbObject, paramMap))
-					continue;
-
-				if (format == null || format.equals("XML")) {
+				} else if (eventTypeInDoc.equals("ObjectEvent")) {
 					ObjectEventReadConverter con = new ObjectEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
 							con.convert(dbObject));
 					eventObjects.add(element);
-				} else {
-					dbObject.remove("_id");
-					objJSONArray.put(dbObject);
-				}
-			}
-			if (objJSONArray.length() > 0) {
-				retJSON.put("ObjectEvent", objJSONArray);
-			}
-		}
-		if (toGetQuantityEvent == true) {
-
-			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("QuantityEvent",
-					BsonDocument.class);
-			// Queries
-			BsonArray queryList = makeQueryObjects(queryName, "QuantityEvent", GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, format, userID,
-					friendList, paramMap);
-
-			// Merge All the queries with $and
-			BsonDocument baseQuery = new BsonDocument();
-			FindIterable<BsonDocument> cursor;
-			if (queryList.isEmpty() == false) {
-				BsonArray aggreQueryList = new BsonArray();
-				for (int i = 0; i < queryList.size(); i++) {
-					aggreQueryList.add(queryList.get(i));
-				}
-				baseQuery.put("$and", aggreQueryList);
-				// Query
-				cursor = collection.find(baseQuery);
-			} else {
-				cursor = collection.find();
-			}
-			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
-
-			JSONArray qntJSONArray = new JSONArray();
-
-			MongoCursor<BsonDocument> slCursor = cursor.iterator();
-			while (slCursor.hasNext()) {
-				BsonDocument dbObject = slCursor.next();
-
-				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
-					continue;
-				}
-
-				if (!isPostFilterPassed("QuantityEvent", dbObject, paramMap))
-					continue;
-
-				if (format == null || format.equals("XML")) {
+				} else if (eventTypeInDoc.equals("QuantityEvent")) {
 					QuantityEventReadConverter con = new QuantityEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
 							con.convert(dbObject));
 					eventObjects.add(element);
-				} else {
-					dbObject.remove("_id");
-					qntJSONArray.put(dbObject);
-				}
-			}
-			if (qntJSONArray.length() > 0) {
-				retJSON.put("QuantityEvent", qntJSONArray);
-			}
-		}
-		if (toGetTransactionEvent == true) {
-
-			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransactionEvent",
-					BsonDocument.class);
-			// Queries
-			BsonArray queryList = makeQueryObjects(queryName, "TransactionEvent", GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, format, userID,
-					friendList, paramMap);
-
-			// Merge All the queries with $and
-			BsonDocument baseQuery = new BsonDocument();
-			FindIterable<BsonDocument> cursor;
-			if (queryList.isEmpty() == false) {
-				BsonArray aggreQueryList = new BsonArray();
-				for (int i = 0; i < queryList.size(); i++) {
-					aggreQueryList.add(queryList.get(i));
-				}
-				baseQuery.put("$and", aggreQueryList);
-				// Query
-				cursor = collection.find(baseQuery);
-			} else {
-				cursor = collection.find();
-			}
-			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
-
-			JSONArray transactionJSONArray = new JSONArray();
-
-			MongoCursor<BsonDocument> slCursor = cursor.iterator();
-			while (slCursor.hasNext()) {
-				BsonDocument dbObject = slCursor.next();
-
-				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
-					continue;
-				}
-
-				if (!isPostFilterPassed("TransactionEvent", dbObject, paramMap))
-					continue;
-
-				if (format == null || format.equals("XML")) {
+				} else if (eventTypeInDoc.equals("TransactionEvent")) {
 					TransactionEventReadConverter con = new TransactionEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
 							con.convert(dbObject));
 					eventObjects.add(element);
-				} else {
-					dbObject.remove("_id");
-					transactionJSONArray.put(dbObject);
-				}
-			}
-			if (transactionJSONArray.length() > 0) {
-				retJSON.put("TransactionEvent", transactionJSONArray);
-			}
-		}
-		if (toGetTransformationEvent == true) {
-
-			MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("TransformationEvent",
-					BsonDocument.class);
-			// Queries
-			BsonArray queryList = makeQueryObjects(queryName, "TransformationEvent", GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, format, userID,
-					friendList, paramMap);
-
-			// Merge All the queries with $and
-			BsonDocument baseQuery = new BsonDocument();
-			FindIterable<BsonDocument> cursor;
-			if (queryList.isEmpty() == false) {
-				BsonArray aggreQueryList = new BsonArray();
-				for (int i = 0; i < queryList.size(); i++) {
-					aggreQueryList.add(queryList.get(i));
-				}
-				baseQuery.put("$and", aggreQueryList);
-				// Query
-				cursor = collection.find(baseQuery);
-			} else {
-				cursor = collection.find();
-			}
-			// Sort and Limit
-			cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
-
-			JSONArray transformationJSONArray = new JSONArray();
-
-			MongoCursor<BsonDocument> slCursor = cursor.iterator();
-			while (slCursor.hasNext()) {
-				BsonDocument dbObject = slCursor.next();
-
-				if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
-					continue;
-				}
-
-				if (!isPostFilterPassed("TransformationEvent", dbObject, paramMap))
-					continue;
-
-				if (format == null || format.equals("XML")) {
+				} else if (eventTypeInDoc.equals("TransformationEvent")) {
 					TransformationEventReadConverter con = new TransformationEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
 							TransformationEventType.class, con.convert(dbObject));
 					eventObjects.add(element);
-				} else {
-					dbObject.remove("_id");
-					transformationJSONArray.put(dbObject);
 				}
-			}
-			if (transformationJSONArray.length() > 0) {
-				retJSON.put("TransformationEvent", transformationJSONArray);
+			} else {
+				dbObject.remove("_id");
+				retArray.put(new JSONObject(dbObject.toJson()));
 			}
 		}
 
@@ -478,55 +216,21 @@ public class MongoQueryService {
 		if (maxEventCount != null) {
 			if (format == null || format.equals("XML")) {
 				if (eventObjects.size() > maxEventCount) {
-
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			} else {
-				int cnt = 0;
-				if (!retJSON.isNull("AggregationEvent")) {
-					cnt += retJSON.getJSONArray("AggregationEvent").length();
-				}
-				if (!retJSON.isNull("ObjectEvent")) {
-					cnt += retJSON.getJSONArray("ObjectEvent").length();
-				}
-				if (!retJSON.isNull("QuantityEvent")) {
-					cnt += retJSON.getJSONArray("QuantityEvent").length();
-				}
-				if (!retJSON.isNull("TransactionEvent")) {
-					cnt += retJSON.getJSONArray("TransactionEvent").length();
-				}
-				if (!retJSON.isNull("TransformationEvent")) {
-					cnt += retJSON.getJSONArray("TransformationEvent").length();
-				}
-				if (cnt > maxEventCount) {
+				if (retArray.length() > maxEventCount) {
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			}
 		}
+
 		if (format == null || format.equals("XML")) {
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(epcisQueryDocumentType, sw);
 			return sw.toString();
 		} else {
-
-			// BSONObject doc = (BSONObject) JSON.parse(retJSON.toString());
-			// BasicBSONEncoder en = new BasicBSONEncoder();
-			// System.out.println(doc.toString().length());
-			// byte[] ret = en.encode(doc);
-			// try {
-			// FileUtils.writeByteArrayToFile(new File("/home/jack/temp.bson"),
-			// ret);
-			// } catch (IOException e) {
-			// e.printStackTrace();
-			// }
-			// System.out.println(ret.length);
-			// return new String(en.encode(doc));
-
-			// BasicBSONDecoder de = new BasicBSONDecoder();
-			// BSONObject obj = de.readObject(ret);
-			// System.out.println(obj);
-
-			return retJSON.toString(1);
+			return retArray.toString(1);
 		}
 	}
 
@@ -584,7 +288,7 @@ public class MongoQueryService {
 			if (format == null || format.equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
 				VocabularyType vt = con.convert(dbObject);
-				
+
 				boolean isMatched = true;
 				if (vt.getVocabularyElementList() != null) {
 					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
@@ -594,7 +298,7 @@ public class MongoQueryService {
 							if (includeAttributes == false) {
 								vet.setAttribute(null);
 							} else if (includeAttributes == true && attributeNames != null) {
-								
+
 								isMatched = false;
 								String[] attrArr = attributeNames.split(",");
 								Set<String> attrSet = new HashSet<String>();
@@ -649,9 +353,9 @@ public class MongoQueryService {
 				if (isMatched == true) {
 					retArray.put(dbObject);
 				}
-				
+
 			}
-			
+
 		}
 
 		if (format == null || format.equals("XML")) {
@@ -1118,10 +822,11 @@ public class MongoQueryService {
 		// M27
 		if (orderBy != null) {
 			/*
-			if (!orderBy.equals("eventTime") && !orderBy.equals("recordTime")) {
-				return makeErrorResult("orderBy should be eventTime or recordTime", QueryParameterException.class);
-			}
-			*/
+			 * if (!orderBy.equals("eventTime") &&
+			 * !orderBy.equals("recordTime")) { return makeErrorResult(
+			 * "orderBy should be eventTime or recordTime",
+			 * QueryParameterException.class); }
+			 */
 			if (orderDirection != null) {
 				if (!orderDirection.equals("ASC") && !orderDirection.equals("DESC")) {
 					return makeErrorResult("orderDirection should be ASC or DESC", QueryParameterException.class);
@@ -1281,6 +986,8 @@ public class MongoQueryService {
 					} else if (orderDirection.trim().equals("DESC")) {
 						cursor = cursor.sort(new BsonDocument("eventTime", new BsonInt32(-1)));
 					}
+				} else {
+					cursor = cursor.sort(new BsonDocument("eventTime", new BsonInt32(-1)));
 				}
 			} else if (orderBy.trim().equals("recordTime")) {
 				if (orderDirection != null) {
@@ -1289,14 +996,18 @@ public class MongoQueryService {
 					} else if (orderDirection.trim().equals("DESC")) {
 						cursor = cursor.sort(new BsonDocument("recordTime", new BsonInt32(-1)));
 					}
+				} else {
+					cursor = cursor.sort(new BsonDocument("recordTime", new BsonInt32(-1)));
 				}
 			} else {
 				if (orderDirection != null) {
 					if (orderDirection.trim().equals("ASC")) {
-						cursor = cursor.sort(new BsonDocument("any."+orderBy, new BsonInt32(1)));
+						cursor = cursor.sort(new BsonDocument("any." + orderBy, new BsonInt32(1)));
 					} else if (orderDirection.trim().equals("DESC")) {
-						cursor = cursor.sort(new BsonDocument("any."+orderBy, new BsonInt32(-1)));
+						cursor = cursor.sort(new BsonDocument("any." + orderBy, new BsonInt32(-1)));
 					}
+				} else {
+					cursor = cursor.sort(new BsonDocument("any." + orderBy, new BsonInt32(-1)));
 				}
 			}
 		}
@@ -1340,6 +1051,26 @@ public class MongoQueryService {
 			Map<String, String> paramMap) {
 
 		BsonArray queryList = new BsonArray();
+
+		/**
+		 * eventType : If specified, the result will only include events whose
+		 * type matches one of the types specified in the parameter value. Each
+		 * element of the parameter value may be one of the following strings:
+		 * ObjectEvent, AggregationEvent, QuantityEvent, TransactionEvent, or
+		 * TransformationEvent. An element of the parameter value may also be
+		 * the name of an extension event type. If omitted, all event types will
+		 * be considered for inclusion in the result.
+		 * 
+		 * List of String CSV REGEX
+		 */
+		if (eventType != null) {
+			BsonArray paramArray = getParamBsonArray(eventType);
+			BsonDocument queryObject = getQueryObject(new String[] { "eventType" }, paramArray);
+			if (queryObject != null) {
+				queryList.add(queryObject);
+			}
+		}
+
 		/**
 		 * GE_eventTime: If specified, only events with eventTime greater than
 		 * or equal to the specified value will be included in the result. If
@@ -1406,12 +1137,12 @@ public class MongoQueryService {
 		}
 
 		/**
-		 * If this parameter is specified, the result will only include events
-		 * that (a) contain an ErrorDeclaration ; and where (b) the value of the
-		 * errorDeclarationTime field is greater than or equal to the specified
-		 * value. If this parameter is omitted, events are returned regardless
-		 * of whether they contain an ErrorDeclaration or what the value of the
-		 * errorDeclarationTime field is.
+		 * GE_errorDeclaration Time: If this parameter is specified, the result
+		 * will only include events that (a) contain an ErrorDeclaration ; and
+		 * where (b) the value of the errorDeclarationTime field is greater than
+		 * or equal to the specified value. If this parameter is omitted, events
+		 * are returned regardless of whether they contain an ErrorDeclaration
+		 * or what the value of the errorDeclarationTime field is.
 		 */
 		if (GE_errorDeclarationTime != null) {
 			BsonDateTime geBsonDateTime = getTimeMillis(GE_errorDeclarationTime);
@@ -1421,11 +1152,11 @@ public class MongoQueryService {
 		}
 
 		/**
-		 * contain an ErrorDeclaration ; and where (b) the value of the
-		 * errorDeclarationTime field is less than to the specified value. If
-		 * this parameter is omitted, events are returned regardless of whether
-		 * they contain an ErrorDeclaration or what the value of the
-		 * errorDeclarationTime field is.
+		 * LT_errorDeclaration Time: contain an ErrorDeclaration ; and where (b)
+		 * the value of the errorDeclarationTime field is less than to the
+		 * specified value. If this parameter is omitted, events are returned
+		 * regardless of whether they contain an ErrorDeclaration or what the
+		 * value of the errorDeclarationTime field is.
 		 */
 		if (LT_errorDeclarationTime != null) {
 			BsonDateTime ltBsonDateTime = getTimeMillis(LT_errorDeclarationTime);
@@ -1856,7 +1587,7 @@ public class MongoQueryService {
 			 */
 			if (paramName.contains("EQ_bizTransaction_")) {
 				String type = paramName.substring(18, paramName.length());
-				BsonDocument query = getFamilyQueryObject(type, "bizTransactionList", paramValues);
+				BsonDocument query = getFamilyQueryObject(type, new String[] { "bizTransactionList" }, paramValues);
 				if (query != null)
 					queryList.add(query);
 			}
@@ -1873,17 +1604,29 @@ public class MongoQueryService {
 
 			if (paramName.contains("EQ_source_")) {
 				String type = paramName.substring(10, paramName.length());
-				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
-						|| eventType.equals("TransactionEvent")) {
-					BsonDocument query = getFamilyQueryObject(type, "extension.sourceList", paramValues);
-					if (query != null)
-						queryList.add(query);
-				}
-				if (eventType.equals("TransformationEvent")) {
-					BsonDocument query = getFamilyQueryObject(type, "sourceList", paramValues);
-					if (query != null)
-						queryList.add(query);
-				}
+				/*
+				 * if (eventType.equals("AggregationEvent") ||
+				 * eventType.equals("ObjectEvent") ||
+				 * eventType.equals("TransactionEvent")) { BsonDocument query =
+				 * getFamilyQueryObject(type, "extension.sourceList",
+				 * paramValues); if (query != null) queryList.add(query); } if
+				 * (eventType.equals("TransformationEvent")) { BsonDocument
+				 * query = getFamilyQueryObject(type, "sourceList",
+				 * paramValues); if (query != null) queryList.add(query); }
+				 */
+				/*
+				 * if (eventType.equals("AggregationEvent") ||
+				 * eventType.equals("ObjectEvent") ||
+				 * eventType.equals("TransactionEvent")) {
+				 * 
+				 * } if (eventType.equals("TransformationEvent")) { BsonDocument
+				 * query = getFamilyQueryObject(type, "sourceList",
+				 * paramValues); if (query != null) queryList.add(query); }
+				 */
+				BsonDocument query = getFamilyQueryObject(type, new String[] { "extension.sourceList", "sourceList" },
+						paramValues);
+				if (query != null)
+					queryList.add(query);
 			}
 
 			/**
@@ -1897,17 +1640,20 @@ public class MongoQueryService {
 			 */
 			if (paramName.contains("EQ_destination_")) {
 				String type = paramName.substring(15, paramName.length());
-				if (eventType.equals("AggregationEvent") || eventType.equals("ObjectEvent")
-						|| eventType.equals("TransactionEvent")) {
-					BsonDocument query = getFamilyQueryObject(type, "extension.destinationList", paramValues);
-					if (query != null)
-						queryList.add(query);
-				}
-				if (eventType.equals("TransformationEvent")) {
-					BsonDocument query = getFamilyQueryObject(type, "destinationList", paramValues);
-					if (query != null)
-						queryList.add(query);
-				}
+				/*
+				 * if (eventType.equals("AggregationEvent") ||
+				 * eventType.equals("ObjectEvent") ||
+				 * eventType.equals("TransactionEvent")) { BsonDocument query =
+				 * getFamilyQueryObject(type, "extension.destinationList",
+				 * paramValues); if (query != null) queryList.add(query); } if
+				 * (eventType.equals("TransformationEvent")) { BsonDocument
+				 * query = getFamilyQueryObject(type, "destinationList",
+				 * paramValues); if (query != null) queryList.add(query); }
+				 */
+				BsonDocument query = getFamilyQueryObject(type,
+						new String[] { "extension.destinationList", "destinationList" }, paramValues);
+				if (query != null)
+					queryList.add(query);
 			}
 
 			/**
