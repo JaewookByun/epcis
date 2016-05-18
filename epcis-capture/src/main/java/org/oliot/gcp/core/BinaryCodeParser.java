@@ -4,6 +4,22 @@ import java.math.BigInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Copyright (C) 2014-2016 Jaewook Byun
+ *
+ * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
+ * v1.2.x is Java Web Service complying with Electronic Product Code Information
+ * Service (EPCIS) v1.2.
+ *
+ * @author Jaewook Jack Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ */
+
 public class BinaryCodeParser {
 
 	/**
@@ -35,7 +51,7 @@ public class BinaryCodeParser {
 
 			} else if (binaryCode.matches("00110010([01]+)")) {
 				// SGLN-96
-				
+
 			} else if (binaryCode.matches("00110000([01]+)")) {
 				// SGTIN-96
 				return generateSgtin96(binaryCode);

@@ -38,22 +38,31 @@ import com.mongodb.client.MongoCollection;
 
 public class MongoQueryUtil {
 
-	static BsonDocument getFamilyQueryObject(String type, String field, String csv) {
+	static BsonDocument getFamilyQueryObject(String type, String[] fieldArr, String csv) {
 	
-		String[] paramValueArr = csv.split(",");
-		BsonArray subObjectList = new BsonArray();
-		for (int i = 0; i < paramValueArr.length; i++) {
-			String val = paramValueArr[i].trim();
-			BsonDocument dbo = new BsonDocument();
-			dbo.put(type, new BsonString(val));
-			subObjectList.add(dbo);
+		BsonArray orQueries = new BsonArray();
+		for (String field : fieldArr) {
+			String[] paramValueArr = csv.split(",");
+			BsonArray subObjectList = new BsonArray();
+			for (int i = 0; i < paramValueArr.length; i++) {
+				String val = paramValueArr[i].trim();
+				BsonDocument dbo = new BsonDocument();
+				dbo.put(type, new BsonString(val));
+				subObjectList.add(dbo);
+			}
+			if (subObjectList.isEmpty() == false) {
+				BsonDocument query = new BsonDocument();
+				query.put(field, new BsonDocument("$in", subObjectList));
+				orQueries.add(query);
+			}
 		}
-		if (subObjectList.isEmpty() == false) {
-			BsonDocument query = new BsonDocument();
-			query.put(field, new BsonDocument("$in", subObjectList));
-			return query;
+		if (orQueries.size() != 0) {
+			BsonDocument queryObject = new BsonDocument();
+			queryObject.put("$or", orQueries);
+			return queryObject;
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	static BsonArray getWDParamBsonArray(String csv) {

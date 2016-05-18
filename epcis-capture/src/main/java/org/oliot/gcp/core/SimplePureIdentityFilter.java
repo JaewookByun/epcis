@@ -1,5 +1,21 @@
 package org.oliot.gcp.core;
 
+/**
+ * Copyright (C) 2014-2016 Jaewook Byun
+ *
+ * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
+ * v1.2.x is Java Web Service complying with Electronic Product Code Information
+ * Service (EPCIS) v1.2.
+ *
+ * @author Jaewook Jack Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ */
+
 public class SimplePureIdentityFilter {
 
 	private static final String[] ADIVarList = new String[] {
@@ -29,21 +45,14 @@ public class SimplePureIdentityFilter {
 			"^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{1,17})$",
 			"^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{1,17})$" };
 
-	private static final String[] GIAIList = new String[] {
-			"^urn:epc:id:giai:([0-9]{12})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{11})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{10})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{9})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{8})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{7})\\.([0-9]{1,12})$",
-			"^urn:epc:id:giai:([0-9]{6})\\.([0-9]{1,12})$",
+	private static final String[] GIAIList = new String[] { "^urn:epc:id:giai:([0-9]{12})\\.([0-9]{1,12})$",
+			"^urn:epc:id:giai:([0-9]{11})\\.([0-9]{1,12})$", "^urn:epc:id:giai:([0-9]{10})\\.([0-9]{1,12})$",
+			"^urn:epc:id:giai:([0-9]{9})\\.([0-9]{1,12})$", "^urn:epc:id:giai:([0-9]{8})\\.([0-9]{1,12})$",
+			"^urn:epc:id:giai:([0-9]{7})\\.([0-9]{1,12})$", "^urn:epc:id:giai:([0-9]{6})\\.([0-9]{1,12})$",
 
-			"^urn:epc:id:giai:([0-9]{12})\\.([0-9]{1,13})$",
-			"^urn:epc:id:giai:([0-9]{11})\\.([0-9]{1,14})$",
-			"^urn:epc:id:giai:([0-9]{10})\\.([0-9]{1,15})$",
-			"^urn:epc:id:giai:([0-9]{9})\\.([0-9]{1,16})$",
-			"^urn:epc:id:giai:([0-9]{8})\\.([0-9]{1,17})$",
-			"^urn:epc:id:giai:([0-9]{7})\\.([0-9]{1,18})$",
+			"^urn:epc:id:giai:([0-9]{12})\\.([0-9]{1,13})$", "^urn:epc:id:giai:([0-9]{11})\\.([0-9]{1,14})$",
+			"^urn:epc:id:giai:([0-9]{10})\\.([0-9]{1,15})$", "^urn:epc:id:giai:([0-9]{9})\\.([0-9]{1,16})$",
+			"^urn:epc:id:giai:([0-9]{8})\\.([0-9]{1,17})$", "^urn:epc:id:giai:([0-9]{7})\\.([0-9]{1,18})$",
 			"^urn:epc:id:giai:([0-9]{6})\\.([0-9]{1,19})$",
 
 			"^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$",
@@ -56,8 +65,7 @@ public class SimplePureIdentityFilter {
 
 	private static final String GID = "^urn:epc:id:gid:([0-9]{1,9})\\.([0-9]{1,8})\\.([0-9]{1,11})$";
 
-	private static final String[] GRAIList = new String[] {
-			"^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
+	private static final String[] GRAIList = new String[] { "^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
 			"^urn:epc:id:grai:([0-9]{11})\\.([0-9]{1})\\.([0-9]{1,6})$",
 			"^urn:epc:id:grai:([0-9]{10})\\.([0-9]{2})\\.([0-9]{1,6})$",
 			"^urn:epc:id:grai:([0-9]{9})\\.([0-9]{3})\\.([0-9]{1,6})$",
@@ -81,17 +89,12 @@ public class SimplePureIdentityFilter {
 			"^urn:epc:id:grai:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
 			"^urn:epc:id:grai:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,16})$" };
 
-	private static final String[] GSRNList = new String[] {
-			"^urn:epc:id:gsrn:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:gsrn:([0-9]{11})\\.([0-9]{6})$",
-			"^urn:epc:id:gsrn:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:gsrn:([0-9]{9})\\.([0-9]{8})$",
-			"^urn:epc:id:gsrn:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:gsrn:([0-9]{7})\\.([0-9]{10})$",
-			"^urn:epc:id:gsrn:([0-9]{6})\\.([0-9]{11})$" };
+	private static final String[] GSRNList = new String[] { "^urn:epc:id:gsrn:([0-9]{12})\\.([0-9]{5})$",
+			"^urn:epc:id:gsrn:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:gsrn:([0-9]{10})\\.([0-9]{7})$",
+			"^urn:epc:id:gsrn:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:gsrn:([0-9]{8})\\.([0-9]{9})$",
+			"^urn:epc:id:gsrn:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:gsrn:([0-9]{6})\\.([0-9]{11})$" };
 
-	private static final String[] SGLNList = new String[] {
-			"^urn:epc:id:sgln:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
+	private static final String[] SGLNList = new String[] { "^urn:epc:id:sgln:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
 			"^urn:epc:id:sgln:([0-9]{11})\\.([0-9]{1})\\.([0-9]{1,6})$",
 			"^urn:epc:id:sgln:([0-9]{10})\\.([0-9]{2})\\.([0-9]{1,6})$",
 			"^urn:epc:id:sgln:([0-9]{9})\\.([0-9]{3})\\.([0-9]{1,6})$",
@@ -140,25 +143,17 @@ public class SimplePureIdentityFilter {
 			"^urn:epc:id:sgtin:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgtin:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String[] SSCCList = new String[] {
-			"^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$",
-			"^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$",
-			"^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$",
-			"^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$",
+	private static final String[] SSCCList = new String[] { "^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
+			"^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$",
+			"^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$",
+			"^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$",
 
-			"^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$",
-			"^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$",
-			"^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$",
+			"^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$", "^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$",
+			"^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$", "^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$",
+			"^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$", "^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$",
 			"^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$" };
 
-	private static final String[] USDODList = new String[] {
-			"^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$",
+	private static final String[] USDODList = new String[] { "^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$",
 
 			"^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5,6})\\.([0-9]{1,11})$" };
 

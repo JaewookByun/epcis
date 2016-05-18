@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xmlns:example="http://ns.example.com/epcis"
-	creationDate="2005-07-11T11:30:47.0Z"
-	schemaVersion="1.1">
+	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.2">
 	<EPCISBody>
 		<EventList>
 			<ObjectEvent>
@@ -43,9 +41,7 @@
 					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
 					<bizTransaction type="urn:epcglobal:cbv:btt:desadv">urn:epcglobal:cbv:bt:0614141073467:1152</bizTransaction>
 				</bizTransactionList>
-				<example:temperature>36</example:temperature>
-				<example:emg>22</example:emg>
-				<example:ecg>11</example:ecg>
+				<example:myField>Example of a vendor/user extension</example:myField>
 			</ObjectEvent>
 		</EventList>
 	</EPCISBody>
