@@ -289,7 +289,7 @@ public class MongoQueryService {
 				MasterDataReadConverter con = new MasterDataReadConverter();
 				VocabularyType vt = con.convert(dbObject);
 
-				boolean isMatched = true;
+				
 				if (vt.getVocabularyElementList() != null) {
 					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
 						List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
@@ -298,8 +298,6 @@ public class MongoQueryService {
 							if (includeAttributes == false) {
 								vet.setAttribute(null);
 							} else if (includeAttributes == true && attributeNames != null) {
-
-								isMatched = false;
 								String[] attrArr = attributeNames.split(",");
 								Set<String> attrSet = new HashSet<String>();
 								for (int j = 0; j < attrArr.length; j++) {
@@ -307,11 +305,13 @@ public class MongoQueryService {
 								}
 
 								List<AttributeType> atList = vet.getAttribute();
+								List<AttributeType> filteredList = new ArrayList<AttributeType>(); 
 								for (int j = 0; j < atList.size(); j++) {
 									if (attrSet.contains(atList.get(j).getId())) {
-										isMatched = true;
+										filteredList.add(atList.get(j));
 									}
 								}
+								vet.setAttribute(filteredList);
 							}
 
 							if (includeChildren == false) {
@@ -320,10 +320,8 @@ public class MongoQueryService {
 						}
 					}
 				}
-				if (isMatched == true)
-					vList.add(vt);
+				vList.add(vt);
 			} else {
-				boolean isMatched = true;
 				dbObject.remove("_id");
 				if (includeAttributes == false) {
 					dbObject.remove("attributes");
@@ -334,26 +332,23 @@ public class MongoQueryService {
 						attrSet.add(attrArr[j].trim());
 					}
 					BsonDocument attrObject = dbObject.get("attributes").asDocument();
-					isMatched = false;
+					BsonDocument newObject = new BsonDocument();
 					if (attrObject != null) {
 						Iterator<String> attrKeys = attrObject.keySet().iterator();
 						while (attrKeys.hasNext()) {
 							String attrKey = attrKeys.next();
 							if (attrSet.contains(attrKey)) {
-								isMatched = true;
+								newObject.put(attrKey, attrObject.get(attrKey));
 							}
 						}
 					}
+					dbObject.put("attributes", newObject);
 
 				}
 				if (includeChildren == false) {
 					dbObject.remove("children");
 				}
-
-				if (isMatched == true) {
-					retArray.put(dbObject);
-				}
-
+				retArray.put(dbObject);
 			}
 
 		}
