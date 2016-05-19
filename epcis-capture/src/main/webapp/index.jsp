@@ -80,5 +80,8 @@
 			</div>
 		</div>
 	</div>
+	<footer>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs. Korea 2016</code>
+	</footer>
 </body>
 </html>

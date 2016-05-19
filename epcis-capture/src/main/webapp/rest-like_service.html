@@ -48,21 +48,21 @@
 			url : captureURL,
 			data : captureXMLString,
 			contentType : "application/xml; charset=utf-8"
-		}).done(function(result){
-			$("#resp")	.val(result);		
-		}).error(function(result){
-			$("#resp")	.val(result.responseText);	
+		}).done(function(result) {
+			$("#resp").val(result);
+		}).error(function(result) {
+			$("#resp").val(result.responseText);
 		});
 	}
-	
-	function replaceURL(type){
-		if(type == "event"){
+
+	function replaceURL(type) {
+		if (type == "event") {
 			var str = $("#captureURL").val();
-			str = str.replace("Vocabulary","Event");
+			str = str.replace("Vocabulary", "Event");
 			$("#captureURL").val(str);
-		}else if(type == "vocabulary"){
+		} else if (type == "vocabulary") {
 			var str = $("#captureURL").val();
-			str = str.replace("Event","Vocabulary");
+			str = str.replace("Event", "Vocabulary");
 			$("#captureURL").val(str);
 		}
 	}
@@ -81,10 +81,14 @@
 					<input id="captureURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis-capture/Service/EventCapture"
 						placeholder="http://localhost:8080/epcis-capture/Service/EventCapture">
+					<h4>Event/Vocabulary Capture</h4>
+					<button type="button" class="btn btn-success" onclick="capture()">Capture</button>
+					<input id="resp" type="text" class="form-control" disabled
+						placeholder="Capture Server Response">
 				</div>
-				<div class="col-sm-6">
+				<div class="col-sm-8">
 					<h4>HTTP.POST Body</h4>
-					
+
 					<div class="dropdown">
 						<button class="btn btn-default dropdown-toggle" type="button"
 							id="dropData" data-toggle="dropdown" aria-haspopup="true"
@@ -135,13 +139,7 @@
 						</ul>
 					</div>
 					<textarea id="xmlTextArea" class="form-control auto-text-area"
-						rows="3"></textarea>
-				</div>
-				<div class="col-sm-2">
-					<h4>Event/Vocabulary Capture</h4>
-					<button type="button" class="btn btn-success" onclick="capture()">Capture</button>
-					<input id="resp" type="text" class="form-control" disabled
-						placeholder="Capture Server Response">
+						rows="12"></textarea>
 				</div>
 			</div>
 		</div>
@@ -155,7 +153,8 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><button type="button" class="btn btn-info" onclick="replaceURL('event')">Event Capture</button></td>
+						<td><button type="button" class="btn btn-info"
+								onclick="replaceURL('event')">Event Capture</button></td>
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">This service allows you to
@@ -173,7 +172,8 @@
 						</td>
 					</tr>
 					<tr>
-						<td><button type="button" class="btn btn-info" onclick="replaceURL('vocabulary')">Vocabulary Capture</button></td>
+						<td><button type="button" class="btn btn-info"
+								onclick="replaceURL('vocabulary')">Vocabulary Capture</button></td>
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">This service allows you to
@@ -196,5 +196,8 @@
 			</table>
 		</div>
 	</div>
+	<footer>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs. Korea 2016</code>
+	</footer>
 </body>
 </html>
