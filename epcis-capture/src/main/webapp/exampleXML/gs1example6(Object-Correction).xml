@@ -16,9 +16,6 @@
 						<correctiveEventIDs>
 							<correctiveEventID>5722d7e1deab322596705146</correctiveEventID>
 						</correctiveEventIDs>
-						<extension>
-							<ANY-ELEMENT />
-						</extension>
 					</errorDeclaration>			
 				</baseExtension>
 				<epcList>
