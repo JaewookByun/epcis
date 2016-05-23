@@ -12,6 +12,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
+import org.oliot.epcis.service.subscription.MongoSubscription;
+
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
@@ -40,6 +42,7 @@ public class Configuration implements ServletContextListener {
 	public static boolean isCaptureVerfificationOn;
 	public static String facebookAppID;
 	public static boolean isQueryAccessControlOn;
+	public static boolean isTriggerSupported;
 	public static MongoClient mongoClient;
 	public static MongoDatabase mongoDatabase;
 
@@ -57,6 +60,8 @@ public class Configuration implements ServletContextListener {
 		// Set Basic Configuration with Configuration.json
 		setBasicConfiguration(servletContextEvent.getServletContext());
 
+		// load existing subscription
+		loadExistingSubscription();
 	}
 
 	private void setLogger() {
@@ -143,6 +148,14 @@ public class Configuration implements ServletContextListener {
 				setMongoDB(json);
 			}
 
+			// Trigger Support
+			String triggerSupport = json.getString("trigger_support");
+			if (triggerSupport == null || triggerSupport.trim().equals("on")) {
+				isTriggerSupported = true;
+			} else {
+				isTriggerSupported = false;
+			}
+
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
 		}
@@ -165,4 +178,14 @@ public class Configuration implements ServletContextListener {
 		mongoDatabase = mongoClient.getDatabase("epcis");
 	}
 
+	private void loadExistingSubscription() {
+		if (Configuration.backend.equals("MongoDB")) {
+			MongoSubscription ms = new MongoSubscription();
+			ms.init();
+		} else if (Configuration.backend.equals("Cassandra")) {
+
+		} else if (Configuration.backend.equals("MySQL")) {
+
+		}
+	}
 }

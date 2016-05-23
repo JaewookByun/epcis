@@ -15,5 +15,8 @@
 	"query_access_control" : "on",
 	
 	"_facebook_application_id" : "Your Facebook Application ID",
-	"facebook_app_id" : "118108055224260"
+	"facebook_app_id" : "118108055224260",
+	
+	"_trigger_support" : "(on|off)",
+	"trigger_support" : "on"
 }

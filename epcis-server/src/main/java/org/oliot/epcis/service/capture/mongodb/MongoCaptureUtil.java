@@ -13,6 +13,7 @@ import org.oliot.epcis.converter.mongodb.ObjectEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.QuantityEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.TransactionEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.TransformationEventWriteConverter;
+import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
@@ -45,19 +46,25 @@ public class MongoCaptureUtil {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
 		BsonDocument object2Save = null;
+		String type = null;
 		if (event instanceof AggregationEventType) {
+			type = "AggregationEvent";
 			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
 			object2Save = wc.convert((AggregationEventType) event, gcpLength);
 		} else if (event instanceof ObjectEventType) {
+			type = "ObjectEvent";
 			ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
 			object2Save = wc.convert((ObjectEventType) event, gcpLength);
 		} else if (event instanceof QuantityEventType) {
+			type = "QuantityEvent";
 			QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
 			object2Save = wc.convert((QuantityEventType) event, gcpLength);
 		} else if (event instanceof TransactionEventType) {
+			type = "TransactionEvent";
 			TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
 			object2Save = wc.convert((TransactionEventType) event, gcpLength);
 		} else if (event instanceof TransformationEventType) {
+			type = "TransformationEvent";
 			TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
 			object2Save = wc.convert((TransformationEventType) event, gcpLength);
 		}
@@ -65,6 +72,10 @@ public class MongoCaptureUtil {
 		if (object2Save == null)
 			return;
 
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire(type, object2Save);
+		}
+		
 		if (!object2Save.containsKey("errorDeclaration")) {
 			if (userID != null && accessModifier != null) {
 				object2Save.put("userID", new BsonString(userID));

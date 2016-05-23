@@ -91,6 +91,18 @@
 			<version>3.2.1</version>
 		</dependency>
 
+		<!-- Quartz Scheduler -->
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz-jobs</artifactId>
+			<version>2.2.2</version>
+		</dependency>
+		
 		<!-- CXF Web Service -->
 		<dependency>
 			<groupId>org.apache.cxf</groupId>
