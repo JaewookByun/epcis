@@ -36,23 +36,41 @@ import org.oliot.model.epcis.SubscriptionControls;
 @WebService(endpointInterface = "org.oliot.epcis.service.query.CoreQueryService")
 public class SoapQueryService implements CoreQueryService {
 
-	@Deprecated
 	@Override
 	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
 			String subscriptionID) {
-		Configuration.logger.error("epcis-query service does not provide this API");
+		if (Configuration.backend.equals("MongoDB")) {
+			MongoQueryService mqs = new MongoQueryService();
+			mqs.subscribe(queryName, params, dest, controls, subscriptionID);
+		} else if (Configuration.backend.equals("Cassandra")) {
+
+		} else if (Configuration.backend.equals("MySQL")) {
+
+		}
 	}
 
-	@Deprecated
 	@Override
 	public void unsubscribe(String subscriptionID) {
-		Configuration.logger.error("epcis-query service does not provide this API");
+		if (Configuration.backend.equals("MongoDB")) {
+			MongoQueryService mqs = new MongoQueryService();
+			mqs.unsubscribe(subscriptionID);
+		} else if (Configuration.backend.equals("Cassandra")) {
+
+		} else if (Configuration.backend.equals("MySQL")) {
+
+		}
 	}
 
-	@Deprecated
 	@Override
 	public List<String> getSubscriptionIDs(String queryName) {
-		Configuration.logger.error("epcis-query service does not provide this API");
+		if (Configuration.backend.equals("MongoDB")) {
+			MongoQueryService mqs = new MongoQueryService();
+			return mqs.getSubscriptionIDs(queryName);
+		} else if (Configuration.backend.equals("Cassandra")) {
+
+		} else if (Configuration.backend.equals("MySQL")) {
+
+		}
 		return null;
 	}
 

@@ -1,11 +1,14 @@
 package org.oliot.epcis.service.query.mongodb;
 
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +42,9 @@ import org.oliot.epcis.converter.mongodb.QuantityEventReadConverter;
 import org.oliot.epcis.converter.mongodb.TransactionEventReadConverter;
 import org.oliot.epcis.converter.mongodb.TransformationEventReadConverter;
 import org.oliot.epcis.security.OAuthUtil;
+import org.oliot.epcis.service.subscription.MongoSubscription;
+import org.oliot.epcis.service.subscription.MongoSubscriptionTask;
+import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
@@ -46,26 +52,39 @@ import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.InvalidURIException;
 import org.oliot.model.epcis.ObjectEventType;
+import org.oliot.model.epcis.PollParameters;
 import org.oliot.model.epcis.QuantityEventType;
-import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryParams;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryResultsBody;
+import org.oliot.model.epcis.QuerySchedule;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.oliot.model.epcis.SubscribeNotPermittedException;
+import org.oliot.model.epcis.SubscriptionControls;
 import org.oliot.model.epcis.SubscriptionControlsException;
+import org.oliot.model.epcis.SubscriptionType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.JobKey.jobKey;
+import static org.quartz.TriggerBuilder.newTrigger;
+import static org.quartz.TriggerKey.triggerKey;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -86,28 +105,195 @@ import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 
 public class MongoQueryService {
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public String pollEventQuery(String queryName, String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
-			String MATCH_outputEPCClass, String MATCH_anyEPCClass, Integer EQ_quantity, Integer GT_quantity,
-			Integer GE_quantity, Integer LT_quantity, Integer LE_quantity, String EQ_eventID,
-			Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime, String LT_errorDeclarationTime,
-			String EQ_errorReason, String EQ_correctiveEventID, String orderBy, String orderDirection,
-			Integer eventCountLimit, Integer maxEventCount, String format, String userID, List<String> friendList,
-			Map<String, String> paramMap) {
+	public String subscribeEventQuery(SubscriptionType s, String userID, List<String> friendList) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
-		String reason = checkConstraintSimpleEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-				GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
-				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, paramMap);
+		String reason = checkConstraintSimpleEventQuery(s.getPollParameters());
+		if (reason != null) {
+			return makeErrorResult(reason, QueryParameterException.class);
+		}
+
+		// Existing subscription Check
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+		BsonDocument exist = collection.find(new BsonDocument("subscriptionID", new BsonString(s.getSubscriptionID())))
+				.first();
+		if (exist != null) {
+			return "SubscriptionID : " + s.getSubscriptionID() + " is already subscribed. ";
+		}
+
+		// cron Example
+		// 0/10 * * * * ? : every 10 second
+
+		if (s.getSchedule() != null && s.getTrigger() == null) {
+			try {
+				cronSchedule(s.getSchedule());
+				addScheduleToQuartz(s);
+
+			} catch (RuntimeException e) {
+				return makeErrorResult(e.toString(), SubscriptionControlsException.class);
+			}
+		} else if (s.getSchedule() == null && s.getTrigger() != null) {
+			// Add Trigger with Query
+			TriggerEngine.addTriggerSubscription(s.getSubscriptionID(), s);
+		} else {
+			return makeErrorResult("One of schedule, trigger should be null", SubscriptionControlsException.class);
+		}
+
+		// Manage Subscription Persistently
+		addScheduleToDB(s, userID, friendList);
+
+		String retString = "SubscriptionID : " + s.getSubscriptionID() + " is successfully triggered. ";
+		return retString;
+	}
+
+	public String subscribe(SubscriptionType s, String userID, List<String> friendList) {
+		// M20 : Throw an InvalidURIException for an incorrect dest argument in
+		// the subscribe method in EPCIS Query Control Interface
+		try {
+			new URL(s.getDest());
+		} catch (MalformedURLException e) {
+			return makeErrorResult(e.toString(), InvalidURIException.class);
+		}
+
+		// M24 : Virtual Error Handling
+		// Automatically processed by URI param
+		// v1.2 not work
+		if (s.getDest() == null) {
+			return makeErrorResult("Fill the mandatory field in subscribe method", QueryParameterException.class);
+		}
+
+		// M46
+		if (s.getPollParameters().getQueryName().equals("SimpleMasterDataQuery")) {
+			return makeErrorResult("SimpleMasterDataQuery is not available in subscription method",
+					SubscribeNotPermittedException.class);
+		}
+
+		String retString = "";
+		if (s.getPollParameters().getQueryName().equals("SimpleEventQuery")) {
+			retString = subscribeEventQuery(s, userID, friendList);
+		}
+
+		return retString;
+	}
+
+	// Soap Query Adaptor
+	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
+			String subscriptionID) {
+		PollParameters p = new PollParameters(queryName, params);
+
+		// Subscription Control Processing
+		/*
+		 * QuerySchedule: (Optional) Defines the periodic schedule on which the
+		 * query is to be executed. See Section 8.2.5.3. Exactly one of schedule
+		 * or trigger is required; if both are specified or both are omitted,
+		 * the implementation SHALL raise a SubscriptionControls- Exception..
+		 */
+		QuerySchedule querySchedule = controls.getSchedule();
+		String schedule = null;
+		if (querySchedule != null) {
+			String sec = querySchedule.getSecond();
+			String min = querySchedule.getMinute();
+			String hours = querySchedule.getHour();
+			String dayOfMonth = querySchedule.getDayOfMonth();
+			String month = querySchedule.getMonth();
+			String dayOfWeek = querySchedule.getDayOfWeek();
+			schedule = sec + " " + min + " " + hours + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+		}
+
+		/*
+		 * InitialRecordTime: (Optional) Specifies a time used to constrain what
+		 * events are considered when processing the query when it is executed
+		 * for the first time. See Section 8.2.5.2. If omitted, defaults to the
+		 * time at which the subscription is created.
+		 */
+		XMLGregorianCalendar initialRecordTime = controls.getInitialRecordTime();
+		String initialRecordTimeStr = null;
+		if (initialRecordTime != null) {
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+			Date initialRecordDate = initialRecordTime.toGregorianCalendar().getTime();
+			initialRecordTimeStr = sdf.format(initialRecordDate);
+		}
+
+		/*
+		 * reportIfEmpty: If true, a QueryResults instance is always sent to the
+		 * subscriber when the query is executed. If false, a QueryResults
+		 * instance is sent to the subscriber only when the results are
+		 * non-empty.
+		 */
+		Boolean reportIfEmpty = controls.isReportIfEmpty();
+
+		SubscriptionType subscription = new SubscriptionType(subscriptionID, dest.toString(), schedule,
+				controls.getTrigger(), initialRecordTimeStr, reportIfEmpty, p);
+
+		subscribe(subscription, null, null);
+
+	}
+
+	public void unsubscribe(String subscriptionID) {
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		// Its size should be 0 or 1
+		BsonDocument s = collection
+				.findOneAndDelete(new BsonDocument("subscriptionID", new BsonString(subscriptionID)));
+
+		if (s != null) {
+			SubscriptionType subscription = new SubscriptionType(s);
+			if (subscription.getSchedule() != null && subscription.getTrigger() == null) {
+				// Remove from current Quartz
+				removeScheduleFromQuartz(subscription);
+			} else {
+				TriggerEngine.removeTriggerSubscription(subscription.getSubscriptionID());
+			}
+		}
+	}
+
+	public String getSubscriptionIDsREST(@PathVariable String queryName) {
+
+		JSONArray retArray = new JSONArray();
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		Iterator<BsonDocument> subIterator = collection
+				.find(new BsonDocument("pollParameters.queryName", new BsonString(queryName)), BsonDocument.class)
+				.iterator();
+
+		while (subIterator.hasNext()) {
+			BsonDocument subscription = subIterator.next();
+			retArray.put(subscription.getString("subscriptionID").getValue());
+		}
+
+		return retArray.toString(1);
+	}
+
+	public List<String> getSubscriptionIDs(String queryName) {
+
+		List<String> retList = new ArrayList<String>();
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		Iterator<BsonDocument> subIterator = collection
+				.find(new BsonDocument("queryName", new BsonString(queryName)), BsonDocument.class).iterator();
+
+		while (subIterator.hasNext()) {
+			BsonDocument subscription = subIterator.next();
+			retList.add(subscription.getString("subscriptionID").asString().getValue());
+		}
+
+		return retList;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String pollEventQuery(PollParameters p, String userID, List<String> friendList) {
+
+		// M27 - query params' constraint
+		// M39 - query params' constraint
+		String reason = checkConstraintSimpleEventQuery(p);
 
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
@@ -116,9 +302,9 @@ public class MongoQueryService {
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = null;
 
-		if (format == null || format.equals("XML")) {
-			epcisQueryDocumentType = makeBaseResultDocument(queryName);
-		} else if (format.equals("JSON")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
+		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
 			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
@@ -128,7 +314,7 @@ public class MongoQueryService {
 		// eventObjects : Container which all the query results (events) will be
 		// contained
 		List<Object> eventObjects = null;
-		if (format == null || format.equals("XML")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
 			eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody().getEventList()
 					.getObjectEventOrAggregationEventOrQuantityEvent();
 		} else {
@@ -139,13 +325,7 @@ public class MongoQueryService {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
 		// Queries
-		BsonArray queryList = makeQueryObjects(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-				GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
-				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
-				orderDirection, eventCountLimit, maxEventCount, format, userID, friendList, paramMap);
+		BsonArray queryList = makeQueryObjects(p, userID, friendList);
 
 		// Merge All the queries with $and
 		BsonDocument baseQuery = new BsonDocument();
@@ -162,7 +342,7 @@ public class MongoQueryService {
 			cursor = collection.find();
 		}
 		// Sort and Limit
-		cursor = makeSortedLimitedCursor(cursor, orderBy, orderDirection, eventCountLimit);
+		cursor = makeSortedLimitedCursor(cursor, p.getOrderBy(), p.getOrderDirection(), p.getEventCountLimit());
 
 		JSONArray retArray = new JSONArray();
 
@@ -176,10 +356,10 @@ public class MongoQueryService {
 				continue;
 			}
 
-			if (!isPostFilterPassed(eventTypeInDoc, dbObject, paramMap))
+			if (!isPostFilterPassed(eventTypeInDoc, dbObject, p.getParams()))
 				continue;
 
-			if (format == null || format.equals("XML")) {
+			if (p.getFormat() == null || p.getFormat().equals("XML")) {
 				if (eventTypeInDoc.equals("AggregationEvent")) {
 					AggregationEventReadConverter con = new AggregationEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
@@ -213,19 +393,19 @@ public class MongoQueryService {
 		}
 
 		// M44
-		if (maxEventCount != null) {
-			if (format == null || format.equals("XML")) {
-				if (eventObjects.size() > maxEventCount) {
+		if (p.getMaxEventCount() != null) {
+			if (p.getFormat() == null || p.getFormat().equals("XML")) {
+				if (eventObjects.size() > p.getMaxEventCount()) {
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			} else {
-				if (retArray.length() > maxEventCount) {
+				if (retArray.length() > p.getMaxEventCount()) {
 					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
 				}
 			}
 		}
 
-		if (format == null || format.equals("XML")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(epcisQueryDocumentType, sw);
 			return sw.toString();
@@ -234,12 +414,10 @@ public class MongoQueryService {
 		}
 	}
 
-	public String pollMasterDataQuery(String queryName, String vocabularyName, Boolean includeAttributes,
-			Boolean includeChildren, String attributeNames, String eQ_name, String wD_name, String hASATTR,
-			Integer maxElementCount, String format, Map<String, String> paramMap) {
+	public String pollMasterDataQuery(PollParameters p, String userID, List<String> friendList) {
 
 		// Required Field Check
-		if (includeAttributes == null || includeChildren == null) {
+		if (p.getIncludeAttributes() == null || p.getIncludeChildren() == null) {
 			return makeErrorResult("SimpleMasterDataQuery's Required Field: includeAttributes, includeChildren",
 					QueryTooLargeException.class);
 		}
@@ -248,9 +426,9 @@ public class MongoQueryService {
 		EPCISQueryDocumentType epcisQueryDocumentType = null;
 		JSONArray retArray = new JSONArray();
 
-		if (format == null || format.equals("XML")) {
-			epcisQueryDocumentType = makeBaseResultDocument(queryName);
-		} else if (format.equals("JSON")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
+		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
 			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
@@ -260,8 +438,7 @@ public class MongoQueryService {
 				BsonDocument.class);
 
 		// Make Query
-		BsonArray queryList = makeMasterQueryObjects(vocabularyName, includeAttributes, includeChildren, attributeNames,
-				eQ_name, wD_name, hASATTR, maxElementCount, paramMap);
+		BsonArray queryList = makeMasterQueryObjects(p);
 
 		// Merge All the queries with $and
 		BsonDocument baseQuery = new BsonDocument();
@@ -285,27 +462,26 @@ public class MongoQueryService {
 		while (slCursor.hasNext()) {
 			BsonDocument dbObject = slCursor.next();
 
-			if (format == null || format.equals("XML")) {
+			if (p.getFormat() == null || p.getFormat().equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
 				VocabularyType vt = con.convert(dbObject);
 
-				
 				if (vt.getVocabularyElementList() != null) {
 					if (vt.getVocabularyElementList().getVocabularyElement() != null) {
 						List<VocabularyElementType> vetList = vt.getVocabularyElementList().getVocabularyElement();
 						for (int i = 0; i < vetList.size(); i++) {
 							VocabularyElementType vet = vetList.get(i);
-							if (includeAttributes == false) {
+							if (p.getIncludeAttributes() == false) {
 								vet.setAttribute(null);
-							} else if (includeAttributes == true && attributeNames != null) {
-								String[] attrArr = attributeNames.split(",");
+							} else if (p.getIncludeAttributes() == true && p.getAttributeNames() != null) {
+								String[] attrArr = p.getAttributeNames().split(",");
 								Set<String> attrSet = new HashSet<String>();
 								for (int j = 0; j < attrArr.length; j++) {
 									attrSet.add(attrArr[j].trim());
 								}
 
 								List<AttributeType> atList = vet.getAttribute();
-								List<AttributeType> filteredList = new ArrayList<AttributeType>(); 
+								List<AttributeType> filteredList = new ArrayList<AttributeType>();
 								for (int j = 0; j < atList.size(); j++) {
 									if (attrSet.contains(atList.get(j).getId())) {
 										filteredList.add(atList.get(j));
@@ -314,7 +490,7 @@ public class MongoQueryService {
 								vet.setAttribute(filteredList);
 							}
 
-							if (includeChildren == false) {
+							if (p.getIncludeChildren() == false) {
 								vet.setChildren(null);
 							}
 						}
@@ -323,10 +499,10 @@ public class MongoQueryService {
 				vList.add(vt);
 			} else {
 				dbObject.remove("_id");
-				if (includeAttributes == false) {
+				if (p.getIncludeAttributes() == false) {
 					dbObject.remove("attributes");
-				} else if (includeAttributes == true && attributeNames != null) {
-					String[] attrArr = attributeNames.split(",");
+				} else if (p.getIncludeAttributes() == true && p.getAttributeNames() != null) {
+					String[] attrArr = p.getAttributeNames().split(",");
 					Set<String> attrSet = new HashSet<String>();
 					for (int j = 0; j < attrArr.length; j++) {
 						attrSet.add(attrArr[j].trim());
@@ -345,7 +521,7 @@ public class MongoQueryService {
 					dbObject.put("attributes", newObject);
 
 				}
-				if (includeChildren == false) {
+				if (p.getIncludeChildren() == false) {
 					dbObject.remove("children");
 				}
 				retArray.put(dbObject);
@@ -353,7 +529,7 @@ public class MongoQueryService {
 
 		}
 
-		if (format == null || format.equals("XML")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
 			QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody();
 
 			VocabularyListType vlt = new VocabularyListType();
@@ -362,14 +538,14 @@ public class MongoQueryService {
 		}
 
 		// M47
-		if (maxElementCount != null) {
+		if (p.getMaxElementCount() != null) {
 			try {
-				if (format == null || format.equals("XML")) {
-					if (vList.size() > maxElementCount) {
+				if (p.getFormat() == null || p.getFormat().equals("XML")) {
+					if (vList.size() > p.getMaxElementCount()) {
 						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
 					}
 				} else {
-					if (retArray.length() > maxElementCount) {
+					if (retArray.length() > p.getMaxElementCount()) {
 						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
 					}
 				}
@@ -377,7 +553,7 @@ public class MongoQueryService {
 
 			}
 		}
-		if (format == null || format.equals("XML")) {
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(epcisQueryDocumentType, sw);
 			return sw.toString();
@@ -387,328 +563,24 @@ public class MongoQueryService {
 	}
 
 	// Soap Service Adaptor
-	@SuppressWarnings("unchecked")
 	public String poll(String queryName, QueryParams queryParams) {
-		List<QueryParam> queryParamList = queryParams.getParam();
-
-		String eventType = null;
-		String GE_eventTime = null;
-		String LT_eventTime = null;
-		String GE_recordTime = null;
-		String LT_recordTime = null;
-		String EQ_action = null;
-		String EQ_bizStep = null;
-		String EQ_disposition = null;
-		String EQ_readPoint = null;
-		String WD_readPoint = null;
-		String EQ_bizLocation = null;
-		String WD_bizLocation = null;
-		String EQ_transformationID = null;
-		String MATCH_epc = null;
-		String MATCH_parentID = null;
-		String MATCH_inputEPC = null;
-		String MATCH_outputEPC = null;
-		String MATCH_anyEPC = null;
-		String MATCH_epcClass = null;
-		String MATCH_inputEPCClass = null;
-		String MATCH_outputEPCClass = null;
-		String MATCH_anyEPCClass = null;
-		Integer EQ_quantity = null;
-		Integer GT_quantity = null;
-		Integer GE_quantity = null;
-		Integer LT_quantity = null;
-		Integer LE_quantity = null;
-
-		String EQ_eventID = null;
-		Boolean EXISTS_errorDeclaration = null;
-		String GE_errorDeclarationTime = null;
-		String LT_errorDeclarationTime = null;
-		String EQ_errorReason = null;
-		String EQ_correctiveEventID = null;
-
-		String orderBy = null;
-		String orderDirection = null;
-		Integer eventCountLimit = null;
-		Integer maxEventCount = null;
-
-		String vocabularyName = null;
-		Boolean includeAttributes = null;
-		Boolean includeChildren = null;
-		String attributeNames = null;
-		String EQ_name = null;
-		String WD_name = null;
-		String HASATTR = null;
-		Integer maxElementCount = null;
-
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-
-		Map<String, String> extMap = new HashMap<String, String>();
-		for (QueryParam qp : queryParamList) {
-			String name = qp.getName();
-			/*
-			 * List<String>: If specified, the result will only include events
-			 * whose type matches one of the types specified in the parameter
-			 * value. Each element of the parameter value may be one of the
-			 * following strings: ObjectEvent , AggregationEvent , QuantityEvent
-			 * , TransactionEvent , or TransformationEvent . An element of the
-			 * parameter value may also be the name of an extension event type.
-			 * If omitted, all event types will be considered for inclusion in
-			 * the result.
-			 */
-			if (name.equals("eventType")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				eventType = generateCSV(valueList);
-				continue;
-			} else if (name.equals("GE_eventTime")) {
-				GE_eventTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("LT_eventTime")) {
-				LT_eventTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("GE_recordTime")) {
-				GE_recordTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("LT_recordTime")) {
-				LT_recordTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("EQ_action")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_action = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_bizStep")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_bizStep = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_disposition")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_disposition = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_readPoint")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_readPoint = generateCSV(valueList);
-				continue;
-			} else if (name.equals("WD_readPoint")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				WD_readPoint = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_bizLocation")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_bizLocation = generateCSV(valueList);
-				continue;
-			} else if (name.equals("WD_bizLocation")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				WD_bizLocation = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_transformationID")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_transformationID = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_epc")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_epc = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_parentID")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_parentID = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_inputEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_inputEPC = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_outputEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_outputEPC = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_anyEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_anyEPC = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_epcClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_epcClass = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_inputEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_inputEPCClass = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_outputEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_outputEPCClass = generateCSV(valueList);
-				continue;
-			} else if (name.equals("MATCH_anyEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				MATCH_anyEPCClass = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_quantity")) {
-				EQ_quantity = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("GT_quantity")) {
-				GT_quantity = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("GE_quantity")) {
-				GE_quantity = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("LT_quantity")) {
-				LT_quantity = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("LE_quantity")) {
-				LE_quantity = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("EQ_eventID")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_eventID = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EXISTS_errorDeclaration")) {
-				EXISTS_errorDeclaration = true;
-				continue;
-			} else if (name.equals("GE_errorDeclarationTime")) {
-				GE_errorDeclarationTime = sdf
-						.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("LT_errorDeclarationTime")) {
-				LT_errorDeclarationTime = sdf
-						.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
-				continue;
-			} else if (name.equals("EQ_errorReason")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_errorReason = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_correctiveEventID")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_correctiveEventID = generateCSV(valueList);
-				continue;
-			} else if (name.equals("orderBy")) {
-				orderBy = (String) qp.getValue();
-				continue;
-			} else if (name.equals("orderDirection")) {
-				// ASC or DESC
-				if (((String) qp.getValue()).equals("ASC") || ((String) qp.getValue()).equals("DESC")) {
-					orderDirection = (String) qp.getValue();
-				}
-				continue;
-			} else if (name.equals("eventCountLimit")) {
-				eventCountLimit = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("maxEventCount")) {
-				maxEventCount = (Integer) qp.getValue();
-				continue;
-			} else if (name.equals("vocabularyName")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				vocabularyName = generateCSV(valueList);
-				continue;
-			} else if (name.equals("includeAttributes")) {
-				includeAttributes = (Boolean) qp.getValue();
-				continue;
-			} else if (name.equals("includeChildren")) {
-				includeChildren = (Boolean) qp.getValue();
-				continue;
-			} else if (name.equals("attributeNames")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				attributeNames = generateCSV(valueList);
-				continue;
-			} else if (name.equals("EQ_name")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				EQ_name = generateCSV(valueList);
-				continue;
-			} else if (name.equals("WD_name")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				WD_name = generateCSV(valueList);
-				continue;
-			} else if (name.equals("HASATTR")) {
-				List<String> valueList = (List<String>) qp.getValue();
-				HASATTR = generateCSV(valueList);
-				continue;
-			} else if (name.equals("maxElementCount")) {
-				maxElementCount = (Integer) qp.getValue();
-				continue;
-			} else {
-				// EQ_bizTransaction_type : lString
-				// EQ_source_type : lString
-				// EQ_destination_type : lString
-				// EQ_fieldname : lString
-				// EQ_fieldname : int / float / time
-				// GT|GE|LT|LE_fieldname : int / float / time
-				// EQ_ILMD_fieldname : lString
-				// EQ|GT|GE|LT|LE_ILMD_fieldname : int / float / time
-
-				// EQ_INNER_fieldname : lString
-				// EQ|GT|GE|LT|LE_INNER_fieldname : lString
-				// EQ_INNER_ILMD_fieldname : lString
-				// EQ|GT|GE|LT|LE_INNER_ILMD_fieldname : int / float / time
-
-				// EXISTS_fieldname : Void
-				// EXISTS_ILMD_fieldname : Void
-				// EXISTS_ILMD_fieldname : Void
-
-				// HASATTR_fieldname : lString
-				// EQATTR_fieldname_attrname : lString
-
-				// EQ_ERROR_DECLARATION_fieldname : lString
-				// EQ|GT|GE|LT|GE_ERROR_DECLARATION_fieldname : int / float /
-				// time
-				// EQ_INNER_ERROR_DECLARATION_fieldname : lString
-				// EQ|GT|GE|LT|GE_ERROR_DECLARATION_fieldname : int / float /
-				// time
-
-				if (qp.getValue() instanceof Integer) {
-					extMap.put(name, String.valueOf(qp.getValue()) + "^int");
-				} else if (qp.getValue() instanceof Float) {
-					extMap.put(name, String.valueOf(qp.getValue()) + "^double");
-				} else if (qp.getValue() instanceof XMLGregorianCalendar) {
-					extMap.put(name,
-							String.valueOf(
-									((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTimeInMillis())
-									+ "^long");
-				} else if (qp.getValue() instanceof Void) {
-					extMap.put(name, "true");
-				} else if (qp.getValue() instanceof List<?>) {
-					List<String> valueList = (List<String>) qp.getValue();
-					extMap.put(name, generateCSV(valueList));
-				}
-			}
-		}
-		return poll(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-				EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-				MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity, GT_quantity,
-				GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration, GE_errorDeclarationTime,
-				LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit,
-				maxEventCount, vocabularyName, includeAttributes, includeChildren, attributeNames, EQ_name, WD_name,
-				HASATTR, maxElementCount, null, null, null, extMap);
+		PollParameters p = new PollParameters(queryName, queryParams);
+		return poll(p, null, null);
 	}
 
-	public String poll(String queryName, String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
-			String MATCH_outputEPCClass, String MATCH_anyEPCClass, Integer EQ_quantity, Integer GT_quantity,
-			Integer GE_quantity, Integer LT_quantity, Integer LE_quantity, String EQ_eventID,
-			Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime, String LT_errorDeclarationTime,
-			String EQ_errorReason, String EQ_correctiveEventID, String orderBy, String orderDirection,
-			Integer eventCountLimit, Integer maxEventCount, String vocabularyName, Boolean includeAttributes,
-			Boolean includeChildren, String attributeNames, String EQ_name, String WD_name, String HASATTR,
-			Integer maxElementCount, String format, String userID, List<String> friendList,
-			Map<String, String> paramMap) {
+	public String poll(PollParameters p, String userID, List<String> friendList) {
 
 		// M24
-		if (queryName == null) {
+		if (p.getQueryName() == null) {
 			// It is not possible, automatically filtered by URI param
 			return makeErrorResult("queryName is mandatory field in poll method", QueryParameterException.class);
 		}
 
-		if (queryName.equals("SimpleEventQuery"))
-			return pollEventQuery(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
-					GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
-					orderDirection, eventCountLimit, maxEventCount, format, userID, friendList, paramMap);
+		if (p.getQueryName().equals("SimpleEventQuery"))
+			return pollEventQuery(p, userID, friendList);
 
-		if (queryName.equals("SimpleMasterDataQuery"))
-			return pollMasterDataQuery(queryName, vocabularyName, includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount, format, paramMap);
+		if (p.getQueryName().equals("SimpleMasterDataQuery"))
+			return pollMasterDataQuery(p, userID, friendList);
 		return "";
 	}
 
@@ -776,77 +648,68 @@ public class MongoQueryService {
 		return true;
 	}
 
-	private String checkConstraintSimpleEventQuery(String queryName, String eventType, String GE_eventTime,
-			String LT_eventTime, String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint, String EQ_bizLocation,
-			String WD_bizLocation, String EQ_transformationID, String MATCH_epc, String MATCH_parentID,
-			String MATCH_inputEPC, String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass, String MATCH_anyEPCClass, Integer EQ_quantity,
-			Integer GT_quantity, Integer GE_quantity, Integer LT_quantity, Integer LE_quantity, String EQ_eventID,
-			Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime, String LT_errorDeclarationTime,
-			String EQ_errorReason, String EQ_correctiveEventID, String orderBy, String orderDirection,
-			Integer eventCountLimit, Integer maxEventCount, Map<String, String> paramMap) {
+	private String checkConstraintSimpleEventQuery(PollParameters p) {
 
 		// M27
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-			if (GE_eventTime != null)
-				sdf.parse(GE_eventTime);
-			if (LT_eventTime != null)
-				sdf.parse(LT_eventTime);
-			if (GE_recordTime != null)
-				sdf.parse(GE_recordTime);
-			if (LT_recordTime != null)
-				sdf.parse(LT_recordTime);
+			if (p.getGE_eventTime() != null)
+				sdf.parse(p.getGE_eventTime());
+			if (p.getLT_eventTime() != null)
+				sdf.parse(p.getLT_eventTime());
+			if (p.getGE_recordTime() != null)
+				sdf.parse(p.getGE_recordTime());
+			if (p.getLT_recordTime() != null)
+				sdf.parse(p.getLT_recordTime());
 		} catch (ParseException e) {
 			try {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-				if (GE_eventTime != null)
-					sdf.parse(GE_eventTime);
-				if (LT_eventTime != null)
-					sdf.parse(LT_eventTime);
-				if (GE_recordTime != null)
-					sdf.parse(GE_recordTime);
-				if (LT_recordTime != null)
-					sdf.parse(LT_recordTime);
+				if (p.getGE_eventTime() != null)
+					sdf.parse(p.getGE_eventTime());
+				if (p.getLT_eventTime() != null)
+					sdf.parse(p.getLT_eventTime());
+				if (p.getGE_recordTime() != null)
+					sdf.parse(p.getGE_recordTime());
+				if (p.getLT_recordTime() != null)
+					sdf.parse(p.getLT_recordTime());
 			} catch (ParseException e1) {
 				return makeErrorResult(e.toString(), QueryParameterException.class);
 			}
 		}
 
 		// M27
-		if (orderBy != null) {
+		if (p.getOrderBy() != null) {
 			/*
 			 * if (!orderBy.equals("eventTime") &&
 			 * !orderBy.equals("recordTime")) { return makeErrorResult(
 			 * "orderBy should be eventTime or recordTime",
 			 * QueryParameterException.class); }
 			 */
-			if (orderDirection != null) {
-				if (!orderDirection.equals("ASC") && !orderDirection.equals("DESC")) {
+			if (p.getOrderDirection() != null) {
+				if (!p.getOrderDirection().equals("ASC") && !p.getOrderDirection().equals("DESC")) {
 					return makeErrorResult("orderDirection should be ASC or DESC", QueryParameterException.class);
 				}
 			}
 		}
 
 		// M27
-		if (eventCountLimit != null) {
-			if (eventCountLimit <= 0) {
+		if (p.getEventCountLimit() != null) {
+			if (p.getEventCountLimit() <= 0) {
 				return makeErrorResult("eventCount should be natural number", QueryParameterException.class);
 			}
 		}
 
 		// M27
-		if (maxEventCount != null) {
-			if (maxEventCount <= 0) {
+		if (p.getMaxEventCount() != null) {
+			if (p.getMaxEventCount() <= 0) {
 				return makeErrorResult("maxEventCount should be natural number", QueryParameterException.class);
 			}
 		}
 
 		// M39
-		if (EQ_action != null) {
+		if (p.getEQ_action() != null) {
 
-			String[] actionArr = EQ_action.split(",");
+			String[] actionArr = p.getEQ_action().split(",");
 			for (String action : actionArr) {
 				action = action.trim();
 				if (action.equals(""))
@@ -858,14 +721,14 @@ public class MongoQueryService {
 		}
 
 		// M42
-		if (eventCountLimit != null && maxEventCount != null) {
+		if (p.getEventCountLimit() != null && p.getMaxEventCount() != null) {
 			return makeErrorResult("One of eventCountLimit and maxEventCount should be omitted",
 					QueryParameterException.class);
 		}
 		return null;
 	}
 
-	private EPCISQueryDocumentType makeBaseResultDocument(String queryName) {
+	public EPCISQueryDocumentType makeBaseResultDocument(String queryName) {
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = new EPCISQueryDocumentType();
 		EPCISQueryBodyType epcisBody = new EPCISQueryBodyType();
@@ -1033,17 +896,7 @@ public class MongoQueryService {
 		return cursor;
 	}
 
-	private BsonArray makeQueryObjects(String queryName, String eventType, String GE_eventTime, String LT_eventTime,
-			String GE_recordTime, String LT_recordTime, String EQ_action, String EQ_bizStep, String EQ_disposition,
-			String EQ_readPoint, String WD_readPoint, String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc, String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass, String MATCH_inputEPCClass,
-			String MATCH_outputEPCClass, String MATCH_anyEPCClass, Integer EQ_quantity, Integer GT_quantity,
-			Integer GE_quantity, Integer LT_quantity, Integer LE_quantity, String EQ_eventID,
-			Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime, String LT_errorDeclarationTime,
-			String EQ_errorReason, String EQ_correctiveEventID, String orderBy, String orderDirection,
-			Integer eventCountLimit, Integer maxEventCount, String format, String userID, List<String> friendList,
-			Map<String, String> paramMap) {
+	private BsonArray makeQueryObjects(PollParameters p, String userID, List<String> friendList) {
 
 		BsonArray queryList = new BsonArray();
 
@@ -1058,8 +911,8 @@ public class MongoQueryService {
 		 * 
 		 * List of String CSV REGEX
 		 */
-		if (eventType != null) {
-			BsonArray paramArray = getParamBsonArray(eventType);
+		if (p.getEventType() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEventType());
 			BsonDocument queryObject = getQueryObject(new String[] { "eventType" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1078,8 +931,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (GE_eventTime != null) {
-			BsonDateTime geBsonDateTime = getTimeMillis(GE_eventTime);
+		if (p.getGE_eventTime() != null) {
+			BsonDateTime geBsonDateTime = getTimeMillis(p.getGE_eventTime());
 			BsonDocument query = new BsonDocument();
 			query.put("eventTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
@@ -1092,8 +945,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (LT_eventTime != null) {
-			BsonDateTime ltBsonDateTime = getTimeMillis(LT_eventTime);
+		if (p.getLT_eventTime() != null) {
+			BsonDateTime ltBsonDateTime = getTimeMillis(p.getLT_eventTime());
 			BsonDocument query = new BsonDocument();
 			query.put("eventTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
@@ -1109,8 +962,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (GE_recordTime != null) {
-			BsonDateTime geBsonDateTime = getTimeMillis(GE_recordTime);
+		if (p.getGE_recordTime() != null) {
+			BsonDateTime geBsonDateTime = getTimeMillis(p.getGE_recordTime());
 			BsonDocument query = new BsonDocument();
 			query.put("recordTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
@@ -1124,8 +977,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (LT_recordTime != null) {
-			BsonDateTime ltBsonDateTime = getTimeMillis(LT_recordTime);
+		if (p.getLT_recordTime() != null) {
+			BsonDateTime ltBsonDateTime = getTimeMillis(p.getLT_recordTime());
 			BsonDocument query = new BsonDocument();
 			query.put("recordTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
@@ -1139,8 +992,8 @@ public class MongoQueryService {
 		 * are returned regardless of whether they contain an ErrorDeclaration
 		 * or what the value of the errorDeclarationTime field is.
 		 */
-		if (GE_errorDeclarationTime != null) {
-			BsonDateTime geBsonDateTime = getTimeMillis(GE_errorDeclarationTime);
+		if (p.getGE_errorDeclarationTime() != null) {
+			BsonDateTime geBsonDateTime = getTimeMillis(p.getGE_errorDeclarationTime());
 			BsonDocument query = new BsonDocument();
 			query.put("errorDeclaration.declarationTime", new BsonDocument("$gte", geBsonDateTime));
 			queryList.add(query);
@@ -1153,8 +1006,8 @@ public class MongoQueryService {
 		 * regardless of whether they contain an ErrorDeclaration or what the
 		 * value of the errorDeclarationTime field is.
 		 */
-		if (LT_errorDeclarationTime != null) {
-			BsonDateTime ltBsonDateTime = getTimeMillis(LT_errorDeclarationTime);
+		if (p.getLT_errorDeclarationTime() != null) {
+			BsonDateTime ltBsonDateTime = getTimeMillis(p.getLT_errorDeclarationTime());
 			BsonDocument query = new BsonDocument();
 			query.put("errorDeclaration.declarationTime", new BsonDocument("$lt", ltBsonDateTime));
 			queryList.add(query);
@@ -1173,9 +1026,9 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (EQ_action != null) {
+		if (p.getEQ_action() != null) {
 			// Constrained already checked
-			BsonArray paramArray = getParamBsonArray(EQ_action);
+			BsonArray paramArray = getParamBsonArray(p.getEQ_action());
 			BsonDocument queryObject = getQueryObject(new String[] { "action" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1192,8 +1045,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (EQ_bizStep != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_bizStep);
+		if (p.getEQ_bizStep() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_bizStep());
 			BsonDocument queryObject = getQueryObject(new String[] { "bizStep" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1206,8 +1059,8 @@ public class MongoQueryService {
 		 * 
 		 * Verified
 		 */
-		if (EQ_disposition != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_disposition);
+		if (p.getEQ_disposition() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_disposition());
 			BsonDocument queryObject = getQueryObject(new String[] { "disposition" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1224,8 +1077,8 @@ public class MongoQueryService {
 		 * OR semantic Regex supported
 		 * 
 		 */
-		if (EQ_readPoint != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_readPoint);
+		if (p.getEQ_readPoint() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_readPoint());
 			BsonDocument queryObject = getQueryObject(new String[] { "readPoint.id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1247,8 +1100,8 @@ public class MongoQueryService {
 		 * 
 		 */
 
-		if (WD_readPoint != null) {
-			BsonArray paramArray = getWDParamBsonArray(WD_readPoint);
+		if (p.getWD_readPoint() != null) {
+			BsonArray paramArray = getWDParamBsonArray(p.getWD_readPoint());
 			BsonDocument queryObject = getQueryObject(new String[] { "readPoint.id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1262,8 +1115,8 @@ public class MongoQueryService {
 		 * OR semantic Regex Supported
 		 * 
 		 */
-		if (EQ_bizLocation != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_bizLocation);
+		if (p.getEQ_bizLocation() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_bizLocation());
 			BsonDocument queryObject = getQueryObject(new String[] { "bizLocation.id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1278,8 +1131,8 @@ public class MongoQueryService {
 		 * 
 		 */
 
-		if (WD_bizLocation != null) {
-			BsonArray paramArray = getWDParamBsonArray(WD_bizLocation);
+		if (p.getWD_bizLocation() != null) {
+			BsonArray paramArray = getWDParamBsonArray(p.getWD_bizLocation());
 			BsonDocument queryObject = getQueryObject(new String[] { "bizLocation.id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1296,8 +1149,8 @@ public class MongoQueryService {
 		 * OR semantic Regex Supported
 		 * 
 		 */
-		if (EQ_transformationID != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_transformationID);
+		if (p.getEQ_transformationID() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_transformationID());
 			BsonDocument queryObject = getQueryObject(new String[] { "transformationID" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1318,8 +1171,8 @@ public class MongoQueryService {
 		 * 
 		 * 
 		 */
-		if (MATCH_epc != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_epc);
+		if (p.getMATCH_epc() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_epc());
 			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1333,8 +1186,8 @@ public class MongoQueryService {
 		 * TransactionEvent. The meaning of “matches” is as specified in Section
 		 * 8.2.7.1.1.
 		 */
-		if (MATCH_parentID != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_parentID);
+		if (p.getMATCH_parentID() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_parentID());
 			BsonDocument queryObject = getQueryObject(new String[] { "parentID" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1352,8 +1205,8 @@ public class MongoQueryService {
 		 * regardless of their inputEPCList field or whether the inputEPCList
 		 * field exists.
 		 */
-		if (MATCH_inputEPC != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_inputEPC);
+		if (p.getMATCH_inputEPC() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_inputEPC());
 			BsonDocument queryObject = getQueryObject(new String[] { "inputEPCList.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1371,8 +1224,8 @@ public class MongoQueryService {
 		 * regardless of their inputEPCList field or whether the inputEPCList
 		 * field exists.
 		 */
-		if (MATCH_outputEPC != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_outputEPC);
+		if (p.getMATCH_outputEPC() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_outputEPC());
 			BsonDocument queryObject = getQueryObject(new String[] { "outputEPCList.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1392,8 +1245,8 @@ public class MongoQueryService {
 		 * specified in Section 8.2.7.1.1.
 		 */
 
-		if (MATCH_anyEPC != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_anyEPC);
+		if (p.getMATCH_anyEPC() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_anyEPC());
 			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc",
 					"outputEPCList.epc", "parentID" }, paramArray);
 			if (queryObject != null) {
@@ -1413,9 +1266,9 @@ public class MongoQueryService {
 		 * EPC patterns or URIs specified in this parameter. The meaning of
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
-		if (MATCH_epcClass != null) {
+		if (p.getMATCH_epcClass() != null) {
 
-			BsonArray paramArray = getParamBsonArray(MATCH_epcClass);
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_epcClass());
 			BsonDocument queryObject = getQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
 					paramArray);
@@ -1433,8 +1286,8 @@ public class MongoQueryService {
 		 * URIs specified in this parameter. The meaning of “matches” is as
 		 * specified in Section 8.2.7.1.1.
 		 */
-		if (MATCH_inputEPCClass != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_inputEPCClass);
+		if (p.getMATCH_inputEPCClass() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_inputEPCClass());
 			BsonDocument queryObject = getQueryObject(new String[] { "inputQuantityList.epcClass" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1451,8 +1304,8 @@ public class MongoQueryService {
 		 * specified in Section 8.2.7.1.1.
 		 */
 
-		if (MATCH_outputEPCClass != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_outputEPCClass);
+		if (p.getMATCH_outputEPCClass() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_outputEPCClass());
 			BsonDocument queryObject = getQueryObject(new String[] { "outputQuantityList.epcClass" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1471,8 +1324,8 @@ public class MongoQueryService {
 		 * patterns or URIs specified in this parameter. The meaning of
 		 * “matches” is as specified in Section 8.2.7.1.1.
 		 */
-		if (MATCH_anyEPCClass != null) {
-			BsonArray paramArray = getParamBsonArray(MATCH_anyEPCClass);
+		if (p.getMATCH_anyEPCClass() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getMATCH_anyEPCClass());
 			BsonDocument queryObject = getQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
 							"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
@@ -1498,10 +1351,10 @@ public class MongoQueryService {
 		 * List of String
 		 * 
 		 */
-		if (EQ_eventID != null) {
+		if (p.getEQ_eventID() != null) {
 
 			BsonArray orQueryArray = new BsonArray();
-			BsonArray paramArray = getParamBsonArray(EQ_eventID);
+			BsonArray paramArray = getParamBsonArray(p.getEQ_eventID());
 			BsonDocument queryObject = getQueryObject(new String[] { "eventID" }, paramArray);
 			if (queryObject != null) {
 				orQueryArray.add(queryObject);
@@ -1539,8 +1392,8 @@ public class MongoQueryService {
 		 * of the reason field is.
 		 */
 
-		if (EQ_errorReason != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_errorReason);
+		if (p.getEQ_errorReason() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_errorReason());
 			BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.reason" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -1556,8 +1409,8 @@ public class MongoQueryService {
 		 * ErrorDeclaration or the contents of the correctiveEventIDs list.
 		 */
 
-		if (EQ_correctiveEventID != null) {
-			BsonArray paramArray = getParamBsonArray(EQ_correctiveEventID);
+		if (p.getEQ_correctiveEventID() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_correctiveEventID());
 			BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.correctiveEventIDs" },
 					paramArray);
 			if (queryObject != null) {
@@ -1565,10 +1418,10 @@ public class MongoQueryService {
 			}
 		}
 
-		Iterator<String> paramIter = paramMap.keySet().iterator();
+		Iterator<String> paramIter = p.getParams().keySet().iterator();
 		while (paramIter.hasNext()) {
 			String paramName = paramIter.next();
-			String paramValues = paramMap.get(paramName);
+			String paramValues = p.getParams().get(paramName);
 
 			/**
 			 * EQ_bizTransaction_type: This is not a single parameter, but a
@@ -1718,14 +1571,14 @@ public class MongoQueryService {
 			 * is ignored.
 			 */
 			if (paramName.startsWith("EXISTS_ILMD_")) {
-				if (eventType.equals("ObjectEvent")) {
+				if (p.getEventType().equals("ObjectEvent")) {
 					String field = paramName.substring(12, paramName.length());
 					Boolean isExist = Boolean.parseBoolean(paramValues);
 					BsonBoolean isExistBson = new BsonBoolean(isExist);
 					BsonDocument query = getExistsQueryObject("extension.ilmd", field, isExistBson);
 					if (query != null)
 						queryList.add(query);
-				} else if (eventType.equals("TransformationEvent")) {
+				} else if (p.getEventType().equals("TransformationEvent")) {
 					String field = paramName.substring(12, paramName.length());
 					Boolean isExist = Boolean.parseBoolean(paramValues);
 					BsonBoolean isExistBson = new BsonBoolean(isExist);
@@ -1742,7 +1595,7 @@ public class MongoQueryService {
 			 * whether they contain an ErrorDeclaration .
 			 */
 
-			if (EXISTS_errorDeclaration != null) {
+			if (p.getEXISTS_errorDeclaration() != null) {
 
 				Boolean isExist = Boolean.parseBoolean(paramValues);
 				BsonBoolean isExistBson = new BsonBoolean(isExist);
@@ -2304,9 +2157,7 @@ public class MongoQueryService {
 		return false;
 	}
 
-	private BsonArray makeMasterQueryObjects(String vocabularyName, boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name, String hASATTR, Integer maxElementCount,
-			Map<String, String> paramMap) {
+	private BsonArray makeMasterQueryObjects(PollParameters p) {
 
 		BsonArray queryList = new BsonArray();
 
@@ -2318,9 +2169,9 @@ public class MongoQueryService {
 		 * of Section 7.2. If omitted, all vocabularies are considered.
 		 */
 
-		if (vocabularyName != null) {
+		if (p.getVocabularyName() != null) {
 
-			BsonArray paramArray = getParamBsonArray(vocabularyName);
+			BsonArray paramArray = getParamBsonArray(p.getVocabularyName());
 			BsonDocument queryObject = getQueryObject(new String[] { "type" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -2334,8 +2185,8 @@ public class MongoQueryService {
 		 * this parameter and WD_name are both omitted, vocabulary elements are
 		 * included regardless of their names.
 		 */
-		if (eQ_name != null) {
-			BsonArray paramArray = getParamBsonArray(eQ_name);
+		if (p.getEQ_name() != null) {
+			BsonArray paramArray = getParamBsonArray(p.getEQ_name());
 			BsonDocument queryObject = getQueryObject(new String[] { "id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -2351,9 +2202,9 @@ public class MongoQueryService {
 		 * descendants.”) If this parameter and EQ_name are both omitted,
 		 * vocabulary elements are included regardless of their names.
 		 */
-		if (wD_name != null) {
+		if (p.getWD_name() != null) {
 
-			BsonArray paramArray = getWDParamBsonArray(wD_name);
+			BsonArray paramArray = getWDParamBsonArray(p.getWD_name());
 			BsonDocument queryObject = getQueryObject(new String[] { "id" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
@@ -2367,8 +2218,8 @@ public class MongoQueryService {
 		 * values specified in this parameter.
 		 */
 
-		if (hASATTR != null) {
-			String[] attrArr = hASATTR.split(",");
+		if (p.getHASATTR() != null) {
+			String[] attrArr = p.getHASATTR().split(",");
 			for (int i = 0; i < attrArr.length; i++) {
 				String attrString = attrArr[i].trim();
 				BsonDocument query = getExistsQueryObject("attributes", attrString, new BsonBoolean(true));
@@ -2384,11 +2235,11 @@ public class MongoQueryService {
 		 * attrname, and where the value of that attribute matches one of the
 		 * values specified in this parameter.
 		 */
-		if (paramMap != null) {
-			Iterator<String> paramIter = paramMap.keySet().iterator();
+		if (p.getParams() != null) {
+			Iterator<String> paramIter = p.getParams().keySet().iterator();
 			while (paramIter.hasNext()) {
 				String paramName = paramIter.next();
-				String paramValues = paramMap.get(paramName);
+				String paramValues = p.getParams().get(paramName);
 
 				if (paramName.contains("EQATTR_")) {
 					String type = paramName.substring(7, paramName.length());
@@ -2405,18 +2256,58 @@ public class MongoQueryService {
 		return queryList;
 	}
 
-	private String generateCSV(List<String> valueList) {
-		String returnValue = null;
-		if (valueList.size() != 0)
-			returnValue = "";
-		for (int i = 0; i < valueList.size(); i++) {
-			if (i == valueList.size() - 1) {
-				returnValue += valueList.get(i).trim();
-			} else {
-				returnValue += valueList.get(i).trim() + ",";
-			}
+	public void addScheduleToQuartz(SubscriptionType subscription) {
+		try {
+			JobDataMap map = new JobDataMap();
+			map.put("jobData", SubscriptionType.asBsonDocument(subscription));
+
+			JobDetail job = newJob(MongoSubscriptionTask.class)
+					.withIdentity(subscription.getSubscriptionID(), subscription.getPollParameters().getQueryName())
+					.setJobData(map).storeDurably(false).build();
+
+			Trigger trigger = newTrigger()
+					.withIdentity(subscription.getSubscriptionID(), subscription.getPollParameters().getQueryName())
+					.startNow().withSchedule(cronSchedule(subscription.getSchedule())).build();
+
+			if (MongoSubscription.sched.isStarted() != true)
+				MongoSubscription.sched.start();
+			MongoSubscription.sched.scheduleJob(job, trigger);
+			Configuration.logger.log(Level.INFO,
+					"Subscription ID: " + subscription.getSubscriptionID() + " is added to quartz scheduler. ");
+		} catch (SchedulerException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		} catch (RuntimeException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
 		}
-		return returnValue;
+	}
+
+	private boolean addScheduleToDB(SubscriptionType s, String userID, List<String> friendList) {
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("Subscription",
+				BsonDocument.class);
+
+		BsonDocument subscription = collection
+				.find(new BsonDocument("subscriptionID", new BsonString(s.getSubscriptionID()))).first();
+
+		if (subscription == null) {
+			collection.insertOne(SubscriptionType.asBsonDocument(s));
+		}
+
+		Configuration.logger.log(Level.INFO, "Subscription ID: " + s.getSubscriptionID() + " is added to DB. ");
+		return true;
+	}
+
+	private void removeScheduleFromQuartz(SubscriptionType subscription) {
+		try {
+			MongoSubscription.sched.unscheduleJob(
+					triggerKey(subscription.getSubscriptionID(), subscription.getPollParameters().getQueryName()));
+			MongoSubscription.sched.deleteJob(
+					jobKey(subscription.getSubscriptionID(), subscription.getPollParameters().getQueryName()));
+			Configuration.logger.log(Level.INFO,
+					"Subscription ID: " + subscription.getSubscriptionID() + " is removed from scheduler");
+		} catch (SchedulerException e) {
+			Configuration.logger.log(Level.ERROR, e.toString());
+		}
 	}
 
 }
