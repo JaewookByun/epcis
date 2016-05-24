@@ -2,14 +2,11 @@
 Copyright (C) 2014-2016 Jaewook Byun
 > Note: This Repo could be forked from [URL](https://github.com/JaewookByun)
 
-> This project is part of Oliot ([Oliot Homepage](http://oliot.org)), pursuing the implementation of
-> Electronic Product Code Information Service(EPCIS) v1.1 specification in
-> EPCglobal. 
-
-> [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
+> This project is part of Oliot ([Oliot Homepage](http://oliot.org))
+> Oliot epcis is an opensource web serivce implementing Electronic Product Code Information Service(EPCIS) v1.2 specification 
 
 ### Introduction ###
-> Electronic Product Code Information Service (EPCIS) enables to capture and share EPC-based event 
+> Electronic Product Code Information Service (EPCIS), one of GS1 standards, enables to capture and share EPC-based event 
 > ( Basically RFID Tag event ).
 > With EPCIS, event producer (e.g. RFID middleware) generates and sends events
 > complying with EPCIS Document XML schema into EPCIS Repository. 
@@ -21,7 +18,7 @@ Copyright (C) 2014-2016 Jaewook Byun
 ### Specification ###
 > Java, Web Service
 
-> EPCIS v1.1
+> EPCIS v1.2
 
 > Maven
 
