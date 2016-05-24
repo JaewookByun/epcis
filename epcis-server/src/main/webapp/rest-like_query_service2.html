@@ -32,7 +32,7 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
-	function poll() {
+	function subscribe() {
 		var baseURL = $("#pollBaseURL").val();
 		var params = $("#pollParam").val();
 		var url = baseURL + params;
@@ -51,24 +51,17 @@
 		});
 	}
 
-	function getStandardVersion() {
-		var url = $("#getStandardVersionURL").val();
+	function unsubscribe() {
+		var url = $("#unsubscribeURL").val();
 		$.get(url, function(ret) {
 			$("#xmlTextArea").val(ret);
 		}).fail(function(e) {
 			$("#xmlTextArea").val(e.responseText).hide().fadeIn();
 		});
 	}
-	function getVendorVersion() {
-		var url = $("#getVendorVersionURL").val();
-		$.get(url, function(ret) {
-			$("#xmlTextArea").val(ret);
-		}).fail(function(e) {
-			$("#xmlTextArea").val(e.responseText).hide().fadeIn();
-		});
-	}
-	function getQueryNames() {
-		var url = $("#getQueryNamesURL").val();
+
+	function getSubscriptionIDs() {
+		var url = $("#getSubscriptionIDsURL").val();
 		$.get(url, function(ret) {
 			$("#xmlTextArea").val(ret);
 		}).fail(function(e) {
@@ -135,30 +128,24 @@
 				<div class="col-sm-4">
 					<h4>EPCIS Query URL (HTTP.GET)</h4>
 					<input id="pollBaseURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
-						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">
+						value="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?"
+						placeholder="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}">
 					<input id="pollParam" type="text" class="form-control"
-						placeholder="POLL PARAMETERS">
-					<button type="button" class="btn btn-info" onclick="poll()">Poll
+						placeholder="SUBSCRIBE + POLL PARAMETERS">
+					<button type="button" class="btn btn-info" onclick="subscribe()">Subscribe
 						SimpleEventQuery</button>
-					<br> <br> <input id="getStandardVersionURL" type="text"
-						class="form-control"
-						value="http://localhost:8080/epcis/Service/GetStandardVersion"
-						placeholder="http://localhost:8080/epcis/Service/GetStandardVersion">
-					<button type="button" class="btn btn-success"
-						onclick="getStandardVersion()">Get Standard Version</button>
 
-					<input id="getVendorVersionURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/GetVendorVersion"
-						placeholder="http://localhost:8080/epcis/Service/GetVendorVersion">
+					<input id="unsubscribeURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/Unsubscribe/{subscriptionID}"
+						placeholder="http://localhost:8080/epcis/Service/Unsubscribe/{subscriptionID}">
 					<button type="button" class="btn btn-success"
-						onclick="getVendorVersion()">Get Vendor Version</button>
+						onclick="unsubscribe()">Unsubscribe</button>
 
-					<input id="getQueryNamesURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/GetQueryNames"
-						placeholder="http://localhost:8080/epcis/Service/GetQueryNames">
+					<input id="getSubscriptionIDsURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/GetSubscriptionIDs/SimpleEventQuery"
+						placeholder="localhost:8080/epcis/Service/GetSubscriptionIDs/SimpleEventQuery">
 					<button type="button" class="btn btn-success"
-						onclick="getQueryNames()">Get Query Names</button>
+						onclick="getSubscriptionIDs()">Get Subscription IDs</button>
 				</div>
 				<div class="col-sm-8">
 					<h4>Query Response</h4>
@@ -178,19 +165,69 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>Poll</td>
+						<td>Subscribe</td>
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">Return events/vocabularies
 									stored in the EPCIS repository in interest immediately</li>
 								<li class="list-group-item">URL:
 									http://{base-url}:{base-port}/epcis/Service/Poll/{queryName}</li>
-								<li class="list-group-item">Parameters: <br>
-									<button type="button" class="btn btn-warning"
-										onclick="replaceURL('event')">{queryName}==SimpleEventQuery</button>
-
-
-
+								<li class="list-group-item"><h4>Parameters for
+										subscription :</h4>
+									<button type="button" class="btn btn-warning">{queryName}==SimpleEventQuery</button>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3">dest</span>
+										<input id="dest" type="text" class="form-control"
+											value="http://localhost:8080/epcis/SubscriptionTestServlet"
+											placeholder="URL" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('dest')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('dest')">ADD</button>
+										</span>
+									</div> <code>Only one of either schedule or trigger parameter
+										should be provided</code>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3">schedule</span>
+										<input id="schedule" type="text" class="form-control"
+											placeholder="Cron Expression (e.g., 0/10 * * * * ? )"
+											aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('schedule')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('schedule')">ADD</button>
+										</span> <span class="input-group-addon" id="basic-addon3">trigger</span>
+										<input id="trigger" type="text" class="form-control"
+											placeholder="Any Trigger Key" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('trigger')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('trigger')">ADD</button>
+										</span>
+									</div> <code>initialRecordTime can keep subscribers from
+										obtaining already received events</code>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3">initialRecordTime</span>
+										<input id="initialRecordTime" type="text" class="form-control"
+											placeholder="yyyy-MM-dd'T'HH:mm:ss.SSSXXX"
+											aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('initialRecordTime')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('initialRecordTime')">ADD</button>
+										</span>
+									</div>
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3">reportIfEmpty</span>
+										<input id="reportIfEmpty" type="text" class="form-control"
+											placeholder="true or false" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('reportIfEmpty')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('reportIfEmpty')">ADD</button>
+										</span>
+									</div>
+									<h4>Parameters for polling SimpleEventQuery :</h4>
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">eventType</span>
 										<input id="eventType" type="text" class="form-control"
@@ -646,153 +683,36 @@
 										(EQ|GT|GE|LT|LE)_ILMD_, (EQ|GT|GE|LT|LE)_INNER_ILMD,
 										(EQ|GT|GE|LT|LE)_ERROR_DECLARATION_,
 										(EQ|GT|GE|LT|LE)_INNER_ERROR_DECLARATION_ are supported like
-										(EQ|GT|GE|LT|GE)_ </code> <br> <br>
-
-									<button type="button" class="btn btn-warning"
-										onclick="replaceURL('vocabulary')">{queryName}==SimpleMasterDataQuery</button>
-									<br>
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">vocabularyName</span>
-										<input id="vocabularyName" type="text" class="form-control"
-											placeholder="CSV, Regex (e.g., urn:epcglobal:epcis:vtype:BusinessLocation)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('vocabularyName')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('vocabularyName')">ADD</button>
-										</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">includeAttributes</span>
-										<input id="includeAttributes" type="text" class="form-control"
-											placeholder="true or false (required)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('includeAttributes')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('includeAttributes')">ADD</button>
-										</span> <span class="input-group-addon" id="basic-addon3">includeChildren</span>
-										<input id="includeChildren" type="text" class="form-control"
-											placeholder="true or false (required)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('includeChildren')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('includeChildren')">ADD</button>
-										</span>
-									</div>
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">attributeNames</span>
-										<input id="attributeNames" type="text" class="form-control"
-											placeholder="CSV (e.g., http://epcis.example.com/mda/latitude)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('attributeNames')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('attributeNames')">ADD</button>
-										</span>
-									</div>
-
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">EQ_name</span>
-										<input id="EQ_name" type="text" class="form-control"
-											placeholder="CSV, Regex (e.g., urn:epc:id:sgln:0037000.00729.0)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('EQ_name')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('EQ_name')">ADD</button>
-										</span> <span class="input-group-addon" id="basic-addon3">WD_name</span>
-										<input id="WD_name" type="text" class="form-control"
-											placeholder="CSV, Regex" aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('WD_name')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('WD_name')">ADD</button>
-										</span>
-									</div>
-
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">HASATTR</span>
-										<input id="HASATTR" type="text" class="form-control"
-											placeholder="CSV (e.g., http://epcis.example.com/mda/latitude)"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('HASATTR')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('HASATTR')">ADD</button>
-										</span>
-									</div>
-
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">EQATTR_</span>
-										<input id="eqAttrType" type="text" class="form-control"
-											placeholder="Attribute Type (e.g., http://epcis.example.com/mda/latitude)"
-											aria-describedby="basic-addon3"> <input id="EQATTR"
-											type="text" class="form-control"
-											placeholder="Attribute Value Type-awareable CSV (e.g., .18.00..^regex)"
-											aria-describedby="basic-addon3"> <span
-											class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addFamParam('EQATTR','eqAttrType')">ADD</button>
-										</span>
-									</div>
-
-
-
-									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3">maxElementCount</span>
-										<input id="maxElementCount" type="number" class="form-control"
-											placeholder="Yield error if # of events exceeds specified number"
-											aria-describedby="basic-addon3"
-											onkeydown="if (event.keyCode == 13) addParam('maxElementCount')">
-										<span class="input-group-btn" aria-describedby="basic-addon3">
-											<button class="btn btn-default" type="button"
-												onclick="addParam('maxElementCount')">ADD</button>
-										</span>
-									</div>
-								</li>
+										(EQ|GT|GE|LT|GE)_ </code> <br> <br></li>
 							</ul>
 						</td>
 					</tr>
 					<tr>
-						<td>GetStandardVersion</td>
+						<td>Unsubscribe</td>
 						<td>
 							<ul class="list-group">
-								<li class="list-group-item">Return the standard version of
-									EPCIS</li>
+								<li class="list-group-item">Removes a previously registered
+									subscription having the specified subscriptionID.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/GetStandardVersion</li>
+									http://{base-url}:{base-port}/epcis/Service/Unsubscribe/{subscriptionID}</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
 					</tr>
 					<tr>
-						<td>GetVendorVersion</td>
+						<td>GetSubscriptionIDs</td>
 						<td>
-							<ul class="list-group">
-								<li class="list-group-item">Return the vendor specific
-									version of EPCIS</li>
-								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/GetVendorVersion</li>
-								<li class="list-group-item">Additional Parameters: Null</li>
-							</ul>
-						</td>
-					</tr>
-					<tr>
-						<td>GetQueryNames</td>
-						<td>
-							<ul class="list-group">
-								<li class="list-group-item">Return a list of all query
-									names available</li>
-								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcis/Service/GetQueryNames</li>
-								<li class="list-group-item">Additional Parameters: Null</li>
-								<li class="list-group-item">Return: [ {queryNames} ]</li>
-							</ul>
-						</td>
-					</tr>
 
+							<ul class="list-group">
+								<li class="list-group-item">Returns a list of all
+									subscriptionIDs currently subscribed to the specified named
+									query.</li>
+								<li class="list-group-item">URL:
+									http://{base-url}:{base-port}/epcis/Service/GetSubscriptionIDs/{queryName}</li>
+								<li class="list-group-item">Return: [ {SubscriptionIDs} ]</li>
+							</ul>
+						</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>

@@ -18,7 +18,7 @@
 	})(window, document, 'script',
 			'https://www.google-analytics.com/analytics.js', 'ga');
 
-	ga('create', 'UA-64257932-3', 'auto');
+	ga('create', 'UA-64257932-1', 'auto');
 	ga('send', 'pageview');
 </script>
 </head>
@@ -36,8 +36,8 @@
 					src="image/intro.png" style="height: 96px; width: 365px;"></a> <a
 					href="#" class="list-group-item">Electronic Product Code
 					Information Service (EPCIS) enables to capture and share EPC-based
-					event ( Basically RFID Tag Reading Events ).<br> With EPCIS, event
-					producer (e.g. RFID middleware) generates and sends events
+					event ( Basically RFID Tag Reading Events ).<br> With EPCIS,
+					event producer (e.g. RFID middleware) generates and sends events
 					complying with EPCIS Document XML schema into EPCIS Repository <br>
 					Then, these events can be globally shared with given queries <br>
 				</a>
@@ -77,7 +77,9 @@
 				<a href="#" class="list-group-item active"> REST-Like Web
 					Service </a> <a href="./rest-like_capture_service.html"
 					class="list-group-item">EPCIS Capture Client</a> <a
-					href="./rest-like_query_service.html" class="list-group-item">EPCIS Query Client</a>
+					href="./rest-like_query_service.html" class="list-group-item">EPCIS
+					Query Client</a> <a href="./rest-like_query_service2.html"
+					class="list-group-item">EPCIS Query Client (Subscription)</a>
 			</div>
 		</div>
 	</div>

@@ -289,7 +289,7 @@ public class MongoQueryService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public String pollEventQuery(PollParameters p, String userID, List<String> friendList) {
+	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID) {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
@@ -303,7 +303,7 @@ public class MongoQueryService {
 		EPCISQueryDocumentType epcisQueryDocumentType = null;
 
 		if (p.getFormat() == null || p.getFormat().equals("XML")) {
-			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
+			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName(), subscriptionID);
 		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
@@ -427,7 +427,7 @@ public class MongoQueryService {
 		JSONArray retArray = new JSONArray();
 
 		if (p.getFormat() == null || p.getFormat().equals("XML")) {
-			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
+			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName(), null);
 		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
@@ -565,10 +565,10 @@ public class MongoQueryService {
 	// Soap Service Adaptor
 	public String poll(String queryName, QueryParams queryParams) {
 		PollParameters p = new PollParameters(queryName, queryParams);
-		return poll(p, null, null);
+		return poll(p, null, null, null);
 	}
 
-	public String poll(PollParameters p, String userID, List<String> friendList) {
+	public String poll(PollParameters p, String userID, List<String> friendList, String subscriptionID) {
 
 		// M24
 		if (p.getQueryName() == null) {
@@ -577,7 +577,7 @@ public class MongoQueryService {
 		}
 
 		if (p.getQueryName().equals("SimpleEventQuery"))
-			return pollEventQuery(p, userID, friendList);
+			return pollEventQuery(p, userID, friendList, subscriptionID);
 
 		if (p.getQueryName().equals("SimpleMasterDataQuery"))
 			return pollMasterDataQuery(p, userID, friendList);
@@ -728,7 +728,7 @@ public class MongoQueryService {
 		return null;
 	}
 
-	public EPCISQueryDocumentType makeBaseResultDocument(String queryName) {
+	public EPCISQueryDocumentType makeBaseResultDocument(String queryName, String subscriptionID) {
 		// Make Base Result Document
 		EPCISQueryDocumentType epcisQueryDocumentType = new EPCISQueryDocumentType();
 		EPCISQueryBodyType epcisBody = new EPCISQueryBodyType();
@@ -738,6 +738,8 @@ public class MongoQueryService {
 		epcisBody.setQueryResults(queryResults);
 		QueryResultsBody queryResultsBody = new QueryResultsBody();
 		queryResults.setResultsBody(queryResultsBody);
+		if (subscriptionID != null)
+			queryResults.setSubscriptionID(subscriptionID);
 		EventListType eventListType = new EventListType();
 		queryResultsBody.setEventList(eventListType);
 		// Object instanceof JAXBElement
