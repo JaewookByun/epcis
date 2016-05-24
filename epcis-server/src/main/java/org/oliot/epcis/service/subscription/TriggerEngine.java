@@ -106,19 +106,17 @@ public class TriggerEngine {
 				SubscriptionType sub = triggerSubscriptionMap.get(subID);
 				try {
 					if (isPassed(eventType, bsonDocument, sub)) {
-						if(sub.getPollParameters().getFormat() == null ){
-							sendPost(new URL(sub.getDest()), bsonDocument.toString().getBytes());	
-						}else{
-							// Make Base Result Document
+						if (sub.getPollParameters().getFormat() == null
+								|| sub.getPollParameters().getFormat().equals("XML")) {
 							EPCISQueryDocumentType epcisQueryDocumentType = null;
 							MongoQueryService qs = new MongoQueryService();
-							epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery");
-							List<Object> eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody().getEventList()
-									.getObjectEventOrAggregationEventOrQuantityEvent();	
+							epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery", sub.getSubscriptionID());
+							List<Object> eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults()
+									.getResultsBody().getEventList().getObjectEventOrAggregationEventOrQuantityEvent();
 							if (eventType.equals("AggregationEvent")) {
 								AggregationEventReadConverter con = new AggregationEventReadConverter();
-								JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
-										con.convert(bsonDocument));
+								JAXBElement element = new JAXBElement(new QName("AggregationEvent"),
+										AggregationEventType.class, con.convert(bsonDocument));
 								eventObjects.add(element);
 							} else if (eventType.equals("ObjectEvent")) {
 								ObjectEventReadConverter con = new ObjectEventReadConverter();
@@ -127,13 +125,13 @@ public class TriggerEngine {
 								eventObjects.add(element);
 							} else if (eventType.equals("QuantityEvent")) {
 								QuantityEventReadConverter con = new QuantityEventReadConverter();
-								JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
-										con.convert(bsonDocument));
+								JAXBElement element = new JAXBElement(new QName("QuantityEvent"),
+										QuantityEventType.class, con.convert(bsonDocument));
 								eventObjects.add(element);
 							} else if (eventType.equals("TransactionEvent")) {
 								TransactionEventReadConverter con = new TransactionEventReadConverter();
-								JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
-										con.convert(bsonDocument));
+								JAXBElement element = new JAXBElement(new QName("TransactionEvent"),
+										TransactionEventType.class, con.convert(bsonDocument));
 								eventObjects.add(element);
 							} else if (eventType.equals("TransformationEvent")) {
 								TransformationEventReadConverter con = new TransformationEventReadConverter();
@@ -143,7 +141,24 @@ public class TriggerEngine {
 							}
 							StringWriter sw = new StringWriter();
 							JAXB.marshal(epcisQueryDocumentType, sw);
-							sendPost(new URL(sub.getDest()), sw.toString().getBytes());	
+							sendPost(new URL(sub.getDest()), sw.toString().getBytes());
+						} else {
+							sendPost(new URL(sub.getDest()), bsonDocument.toJson().getBytes());
+						}
+					}else{
+						// failed to pass
+						if( sub.getReportIfEmpty() == true ){
+							if (sub.getPollParameters().getFormat() == null
+									|| sub.getPollParameters().getFormat().equals("XML")) {
+								EPCISQueryDocumentType epcisQueryDocumentType = null;
+								MongoQueryService qs = new MongoQueryService();
+								epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery",sub.getSubscriptionID());
+								StringWriter sw = new StringWriter();
+								JAXB.marshal(epcisQueryDocumentType, sw);
+								sendPost(new URL(sub.getDest()), sw.toString().getBytes());
+							}else{
+								sendPost(new URL(sub.getDest()), new BsonDocument().toJson().getBytes());
+							}
 						}
 					}
 				} catch (MalformedURLException e) {

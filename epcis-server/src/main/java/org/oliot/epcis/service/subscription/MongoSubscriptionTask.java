@@ -80,7 +80,7 @@ public class MongoSubscriptionTask implements Job {
 			}
 		}
 		MongoQueryService queryService = new MongoQueryService();
-		String pollResult = queryService.poll(s.getPollParameters(), null,null);
+		String pollResult = queryService.poll(s.getPollParameters(), null,null, s.getSubscriptionID());
 
 		String resultString = "";
 
@@ -117,7 +117,7 @@ public class MongoSubscriptionTask implements Job {
 				QueryResults queryResults = new QueryResults();
 				queryResults.setQueryName(s.getPollParameters().getQueryName());
 				queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
-
+				queryResults.setSubscriptionID(s.getSubscriptionID());
 				StringWriter sw = new StringWriter();
 				JAXB.marshal(queryResults, sw);
 				resultString = sw.toString();

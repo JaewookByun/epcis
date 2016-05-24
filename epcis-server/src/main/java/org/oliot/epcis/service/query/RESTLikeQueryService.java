@@ -385,7 +385,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 					format, params);
 
 			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.poll(pollParams, userID, friendList);
+			String result = mongoQueryService.poll(pollParams, userID, friendList, null);
 			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 		} else if (Configuration.backend.equals("Cassandra")) {
 			return null;
