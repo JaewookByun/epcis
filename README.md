@@ -1,6 +1,6 @@
 ### Oliot EPCIS Repository ###
 Copyright (C) 2014-2016 Jaewook Byun
-> Note: This Repo could be forked from [URL](https://github.com/JaewookByun)
+> Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
 
 > This project is part of Oliot ([Oliot Homepage](http://oliot.org)).
 
