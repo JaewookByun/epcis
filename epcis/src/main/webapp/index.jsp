@@ -80,6 +80,8 @@
 					href="./rest-like_query_service.html" class="list-group-item">EPCIS
 					Query Client</a> <a href="./rest-like_query_service2.html"
 					class="list-group-item">EPCIS Query Client (Subscription)</a>
+					<a href="./accessControlTool.jsp"
+					class="list-group-item">Access Control Tool</a>
 			</div>
 		</div>
 	</div>
