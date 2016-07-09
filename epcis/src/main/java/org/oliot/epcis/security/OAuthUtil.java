@@ -3,6 +3,7 @@ package org.oliot.epcis.security;
 import java.util.List;
 
 import org.bson.BsonDocument;
+import org.oliot.epcis.configuration.Configuration;
 
 import com.restfb.DefaultFacebookClient;
 import com.restfb.FacebookClient;
@@ -67,6 +68,27 @@ public class OAuthUtil {
 		if (userID == null) {
 			return false;
 		}
+
+		// If Owner, accessible
+		if (providerID.equals(userID)) {
+			return true;
+		}
+
+		// If Not Owner
+		if (am.equals("Friend")) {
+			if (friendList.contains(providerID)) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+		return false;
+	}
+	
+	public static boolean isAdministratable(String userID, List<String> friendList) {
+		String am = Configuration.adminScope;
+		String providerID = Configuration.adminID;
 
 		// If Owner, accessible
 		if (providerID.equals(userID)) {

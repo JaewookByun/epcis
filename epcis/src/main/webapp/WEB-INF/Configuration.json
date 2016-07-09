@@ -17,6 +17,12 @@
 	"_facebook_application_id" : "Your Facebook Application ID",
 	"facebook_app_id" : "118108055224260",
 	
+	"_admin_facebook_id" : "Facebook_ID of administrator",
+	"admin_facebook_id" : "10153929775271807",
+	
+	"_admin_scope" : "Scope of administrators from admin_facebook_id, (Private|Friend)",
+	"admin_scope" : "Friend",
+	
 	"_trigger_support" : "(on|off)",
 	"trigger_support" : "on"
 }

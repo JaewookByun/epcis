@@ -41,6 +41,8 @@ public class Configuration implements ServletContextListener {
 	public static String wsdlPath;
 	public static boolean isCaptureVerfificationOn;
 	public static String facebookAppID;
+	public static String adminID;
+	public static String adminScope;
 	public static boolean isQueryAccessControlOn;
 	public static boolean isTriggerSupported;
 	public static MongoClient mongoClient;
@@ -144,6 +146,22 @@ public class Configuration implements ServletContextListener {
 			}
 			facebookAppID = fai.trim();
 
+			// Admin Facebook ID
+			String aID = json.getString("admin_facebook_id");
+			if( aID == null ){
+				Configuration.logger
+				.error("admin_facebook_id, please make sure Configuration.json is correct, and restart.");
+			}
+			adminID = aID.trim();
+			
+			// Admin Scope
+			String aScope = json.getString("admin_scope");
+			if ( aScope == null ){
+				Configuration.logger
+				.error("admin_scope, please make sure Configuration.json is correct, and restart.");
+			}
+			adminScope = aScope.trim();	
+			
 			if (backend.equals("MongoDB")) {
 				setMongoDB(json);
 			}
