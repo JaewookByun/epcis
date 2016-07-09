@@ -559,16 +559,15 @@
 											<button class="btn btn-default" type="button"
 												onclick="addFamParam('EXISTS_ILMD','existILMDExtensionType')">ADD</button>
 										</span> <span class="input-group-addon" id="basic-addon3">EXISTS_errorDeclaration</span>
-										<input id="existErrorExtensionType" type="text"
-											class="form-control"
-											placeholder="Error Declaration field name (e.g., example:a)"
-											aria-describedby="basic-addon3"> <input
-											id="EXISTS_errorDeclaration" type="text" class="form-control"
-											placeholder="true or false" aria-describedby="basic-addon3">
+										<input id="EXISTS_errorDeclaration" type="text"
+											class="form-control" placeholder="true or false"
+											aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('EXISTS_errorDeclaration')">
 										<span class="input-group-btn" aria-describedby="basic-addon3">
 											<button class="btn btn-default" type="button"
-												onclick="addFamParam('EXISTS_errorDeclaration','existErrorExtensionType')">ADD</button>
+												onclick="addParam('EXISTS_errorDeclaration')">ADD</button>
 										</span>
+
 									</div>
 
 									<div class="input-group input-group-sm">
