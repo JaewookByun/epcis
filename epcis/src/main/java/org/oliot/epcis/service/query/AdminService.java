@@ -79,10 +79,8 @@ public class AdminService implements ServletContextAware {
 			friendList = new ArrayList<String>();
 
 			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
-			for (List<User> friends : friendConnection) {
-				for (User friend : friends) {
-					friendList.add(friend.getId());
-				}
+			for (User friend : friendConnection.getData()) {
+				friendList.add(friend.getId());
 			}
 		}
 
