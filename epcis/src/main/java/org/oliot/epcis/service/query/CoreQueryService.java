@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.oliot.model.epcis.QueryParams;
@@ -39,7 +40,7 @@ public interface CoreQueryService {
 	public void unsubscribe(String subscriptionID);
 
 	@WebMethod
-	public QueryResults poll(String queryName, QueryParams params);
+	public QueryResults poll(@WebParam(name = "queryName") String queryName, @WebParam(name = "params") QueryParams params);
 
 	@WebMethod
 	public List<String> getQueryNames();
