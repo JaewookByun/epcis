@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	xmlns:example="http://ns.example.com/epcis" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	creationDate="2005-07-11T11:30:47.0Z" schemaVersion="1.2">
+	xmlns:example="http://ns.example.com/epcis" xmlns:example0="http://ns.example.com/epcis"
+	xmlns:example1="http://ns.example.com/epcis" xmlns:example2="http://ns.example.com/epcis"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" creationDate="2005-07-11T11:30:47.0Z"
+	schemaVersion="1.2">
 	<EPCISBody>
 		<EventList>
 			<ObjectEvent>
@@ -16,7 +18,18 @@
 						<correctiveEventIDs>
 							<correctiveEventID>5722d7e1deab322596705146</correctiveEventID>
 						</correctiveEventIDs>
-					</errorDeclaration>			
+						<example0:a>15^int</example0:a>
+						<example0:b>
+							<example1:c>20.5^double</example1:c>
+						</example0:b>
+						<example0:h>
+							<example1:d>True^boolean</example1:d>
+							<example1:e>
+								<example2:f>2013-06-08T14:58:56.591Z^time</example2:f>
+							</example1:e>
+							<example1:g>50^long</example1:g>
+						</example0:h>
+					</errorDeclaration>
 				</baseExtension>
 				<epcList>
 					<epc>urn:epc:id:sgtin:0614141.107346.2017</epc>

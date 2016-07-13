@@ -1,12 +1,9 @@
 package org.oliot.model.epcis;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
@@ -344,6 +341,14 @@ public class PollParameters {
 		}
 	}
 
+	private String getString(Element element) {
+		Node node = element.getFirstChild();
+		if (node.getNodeName().equals("string")) {
+			return node.getTextContent();
+		}
+		return null;
+	}
+
 	private List<String> getListOfString(Element element) {
 		List<String> los = new ArrayList<String>();
 
@@ -357,16 +362,49 @@ public class PollParameters {
 		return los;
 	}
 
-	@SuppressWarnings("unchecked")
+	private Integer getInteger(Element element) {
+		Node node = element.getFirstChild();
+		if (node.getNodeName().equals("int")) {
+			try {
+				return Integer.parseInt(node.getTextContent());
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
+	private String getTime(Element element) {
+		Node node = element.getFirstChild();
+		if (node.getNodeName().equals("time")) {
+			return node.getTextContent() + "^time";
+		}
+		return null;
+	}
+
+	private Boolean getBoolean(Element element) {
+		Node node = element.getFirstChild();
+		if (node.getNodeName().equals("boolean")) {
+			try {
+				return Boolean.parseBoolean(node.getTextContent());
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		return null;
+	}
+
 	public PollParameters(String queryName, QueryParams queryParams) {
 		this.queryName = queryName;
 		List<QueryParam> queryParamList = queryParams.getParam();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-		Map<String, String> extMap = new HashMap<String, String>();
+		// SimpleDateFormat sdf = new
+		// SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		this.params = new HashMap<String, String>();
 		for (QueryParam qp : queryParamList) {
 			String name = qp.getName();
 
-			//Note: We refer Fosstrak how they represent parameter values
+			// Note: We refer Fosstrak how they represent parameter values
+			// Supported Type: int, long, float, double, boolean, time
 			if (name.equals("eventType")) {
 				// List of String
 				// <value>
@@ -379,182 +417,311 @@ public class PollParameters {
 			} else if (name.equals("GE_eventTime")) {
 				// Time
 				// <value>
-				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				GE_eventTime = ((Element)qp.getValue()).getTextContent();
+				GE_eventTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_eventTime")) {
 				// Time
 				// <value>
-				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				LT_eventTime = ((Element)qp.getValue()).getTextContent();
+				LT_eventTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("GE_recordTime")) {
 				// Time
 				// <value>
-				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				GE_recordTime = ((Element)qp.getValue()).getTextContent();
+				GE_recordTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_recordTime")) {
 				// Time
 				// <value>
-				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				LT_recordTime = ((Element)qp.getValue()).getTextContent();
+				LT_recordTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("EQ_action")) {
-				
-				
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>ADD</string>
+				// <string>OBSERVE</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_action = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_bizStep")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epcglobal:cbv:bizstep:receiving</string>
+				// <string>urn:epcglobal:cbv:bizstep:accepting</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_bizStep = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_disposition")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epcglobal:cbv:bizstep:receiving</string>
+				// <string>urn:epcglobal:cbv:bizstep:receiving2</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_disposition = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_readPoint")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgln:0614141.00777.0</string>
+				// <string>urn:epc:id:sgln:0614141.00777.1</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_readPoint = generateCSV(valueList);
 				continue;
 			} else if (name.equals("WD_readPoint")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				WD_readPoint = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_bizLocation")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgln:0614141.00888.0</string>
+				// <string>urn:epc:id:sgln:0614141.00888.1</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_bizLocation = generateCSV(valueList);
 				continue;
 			} else if (name.equals("WD_bizLocation")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				WD_bizLocation = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_transformationID")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>TransformationID</string>
+				// <string>TransformationID2</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_transformationID = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_epc")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgtin:0614141.107346.2018</string>
+				// <string>urn:epc:id:sgtin:0614141.107346.2019</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_epc = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_parentID")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sscc:0614141.1234567890</string>
+				// <string>urn:epc:id:sscc:0614141.1234567891</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_parentID = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_inputEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgtin:4012345.011122.25</string>
+				// <string>urn:epc:id:sgtin:4000001.065432.99886655</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_inputEPC = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_outputEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgtin:4012345.077889.25</string>
+				// <string>urn:epc:id:sgtin:4012345.077889.26</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_outputEPC = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_anyEPC")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sscc:0614141.1234567890</string>
+				// <string>urn:epc:id:sgtin:4012345.011122.25</string>
+				// <string>urn:epc:id:sgtin:4012345.077889.26</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_anyEPC = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_epcClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:class:lgtin:4012345.012345.998877</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_epcClass = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_inputEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:class:lgtin:4012345.011111.4444</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_inputEPCClass = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_outputEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:class:lgtin:4012345.011111.4444</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_outputEPCClass = generateCSV(valueList);
 				continue;
 			} else if (name.equals("MATCH_anyEPCClass")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:class:lgtin:4012345.012345.998877</string>
+				// <string>urn:epc:class:lgtin:4012345.011111.4444</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				MATCH_anyEPCClass = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_quantity")) {
-				EQ_quantity = (Integer) qp.getValue();
+				// Deprecated
+				EQ_quantity = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("GT_quantity")) {
-				GT_quantity = (Integer) qp.getValue();
+				// Deprecated
+				GT_quantity = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("GE_quantity")) {
-				GE_quantity = (Integer) qp.getValue();
+				// Deprecated
+				GE_quantity = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_quantity")) {
-				LT_quantity = (Integer) qp.getValue();
+				// Deprecated
+				LT_quantity = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LE_quantity")) {
-				LE_quantity = (Integer) qp.getValue();
+				// Deprecated
+				LE_quantity = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("EQ_eventID")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>5785b1c7deab32499fe6a299</string>
+				// <string>5785b1c7deab32499fe6a200</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_eventID = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EXISTS_errorDeclaration")) {
+				// Void
 				EXISTS_errorDeclaration = true;
 				continue;
 			} else if (name.equals("GE_errorDeclarationTime")) {
-				GE_errorDeclarationTime = sdf
-						.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// </value>
+				GE_errorDeclarationTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_errorDeclarationTime")) {
-				LT_errorDeclarationTime = sdf
-						.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// </value>
+				LT_errorDeclarationTime = getTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("EQ_errorReason")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epcglobal:cbv:error:add</string>
+				// <string>urn:epcglobal:cbv:error:remove</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_errorReason = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_correctiveEventID")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>5722d7e1deab322596705146</string>
+				// <string>5722d7e1deab322596705147</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_correctiveEventID = generateCSV(valueList);
 				continue;
 			} else if (name.equals("orderBy")) {
-				orderBy = (String) qp.getValue();
+				// String
+				// <value>
+				// <string>eventTime / recordTime / example0:a</string>
+				// </value>
+				orderBy = getString((Element) qp.getValue());
 				continue;
 			} else if (name.equals("orderDirection")) {
-				// ASC or DESC
-				if (((String) qp.getValue()).equals("ASC") || ((String) qp.getValue()).equals("DESC")) {
-					orderDirection = (String) qp.getValue();
-				}
+				// String
+				// <value>
+				// <string>ASC DESC</string>
+				// </value>
+				orderDirection = getString((Element) qp.getValue());
 				continue;
 			} else if (name.equals("eventCountLimit")) {
-				eventCountLimit = (Integer) qp.getValue();
+				// Integer
+				eventCountLimit = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("maxEventCount")) {
-				maxEventCount = (Integer) qp.getValue();
+				// Integer
+				maxEventCount = getInteger((Element) qp.getValue());
 				continue;
 			} else if (name.equals("vocabularyName")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epcglobal:epcis:vtype:BusinessLocation</string>
+				// <string>urn:epcglobal:epcis:vtype:ReadPoint</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				vocabularyName = generateCSV(valueList);
 				continue;
 			} else if (name.equals("includeAttributes")) {
-				includeAttributes = (Boolean) qp.getValue();
+				// boolean
+				includeAttributes = getBoolean((Element) qp.getValue());
 				continue;
 			} else if (name.equals("includeChildren")) {
-				includeChildren = (Boolean) qp.getValue();
+				// boolean
+				includeChildren = getBoolean((Element) qp.getValue());
 				continue;
 			} else if (name.equals("attributeNames")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>http://epcis.example.com/mda/latitude</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				attributeNames = generateCSV(valueList);
 				continue;
 			} else if (name.equals("EQ_name")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgln:0037000.00729.0</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				EQ_name = generateCSV(valueList);
 				continue;
 			} else if (name.equals("WD_name")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>urn:epc:id:sgln:0037000.00729.0</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				WD_name = generateCSV(valueList);
 				continue;
 			} else if (name.equals("HASATTR")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>http://epcis.example.com/mda/latitude</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				HASATTR = generateCSV(valueList);
 				continue;
 			} else if (name.equals("maxElementCount")) {
-				maxElementCount = (Integer) qp.getValue();
+				// Integer
+				maxElementCount = getInteger((Element) qp.getValue());
 				continue;
 			} else {
 				// EQ_bizTransaction_type : lString
@@ -585,21 +752,40 @@ public class PollParameters {
 				// EQ|GT|GE|LT|GE_ERROR_DECLARATION_fieldname : int / float /
 				// time
 
-				if (qp.getValue() instanceof Integer) {
-					extMap.put(name, String.valueOf(qp.getValue()) + "^int");
-				} else if (qp.getValue() instanceof Float) {
-					extMap.put(name, String.valueOf(qp.getValue()) + "^double");
-				} else if (qp.getValue() instanceof XMLGregorianCalendar) {
-					extMap.put(name,
-							String.valueOf(
-									((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTimeInMillis())
-									+ "^long");
-				} else if (qp.getValue() instanceof Void) {
-					extMap.put(name, "true");
-				} else if (qp.getValue() instanceof List<?>) {
-					List<String> valueList = (List<String>) qp.getValue();
-					extMap.put(name, generateCSV(valueList));
+				// Supported Type: int, long, float, double, boolean, time,
+				// string
+
+				if (!(qp.getValue() instanceof Element))
+					continue;
+
+				Element element = (Element) qp.getValue();
+				NodeList nodeList = element.getChildNodes();
+				List<String> valueList = new ArrayList<String>();
+				for (int i = 0; i < nodeList.getLength(); i++) {
+					Node node = nodeList.item(i);
+					String type = node.getNodeName();
+					String value = node.getTextContent();
+					if (type.equals("#text"))
+						continue;
+					if (type.equals("int")) {
+						valueList.add(value + "^int");
+					} else if (type.equals("long")) {
+						valueList.add(value + "^long");
+					} else if (type.equals("float")) {
+						valueList.add(value + "^float");
+					} else if (type.equals("double")) {
+						valueList.add(value + "^double");
+					} else if (type.equals("boolean")) {
+						valueList.add(value + "^boolean");
+					} else if (type.equals("time")) {
+						valueList.add(value + "^time");
+					} else if (type.equals("string")) {
+						valueList.add(value);
+					} else if (type.equals("void")) {
+						valueList.add("true^boolean");
+					}
 				}
+				params.put(name, generateCSV(valueList));
 			}
 			format = "XML";
 		}
