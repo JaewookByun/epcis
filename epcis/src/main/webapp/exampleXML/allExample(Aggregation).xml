@@ -27,7 +27,6 @@
 				<bizTransactionList>
 					<bizTransaction type="urn:epcglobal:cbv:btt:po">http://transaction.acme.com/po/12345678</bizTransaction>
 				</bizTransactionList>
-				<eventID>AggregationEvent</eventID>
 				<extension>
 					<childQuantityList>
 						<quantityElement>

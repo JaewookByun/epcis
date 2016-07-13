@@ -1419,6 +1419,24 @@ public class MongoQueryService {
 				queryList.add(queryObject);
 			}
 		}
+		
+		/**
+		 * EXISTS_errorDeclaration: If this parameter is specified, the
+		 * result will only include events that contain an
+		 * ErrorDeclaration . If this parameter is omitted, events are
+		 * returned regardless of whether they contain an
+		 * ErrorDeclaration .
+		 */
+
+		if (p.getEXISTS_errorDeclaration() != null) {
+
+			Boolean isExist = Boolean.parseBoolean(p.getEXISTS_errorDeclaration().toString());
+			BsonBoolean isExistBson = new BsonBoolean(isExist);
+			BsonDocument query = getExistsQueryObject("errorDeclaration", null, isExistBson);
+			if (query != null)
+				queryList.add(query);
+		}
+		
 
 		if (p.getParams() != null) {
 			Iterator<String> paramIter = p.getParams().keySet().iterator();
@@ -1596,23 +1614,6 @@ public class MongoQueryService {
 						if (query != null)
 							queryList.add(query);
 					}
-				}
-
-				/**
-				 * EXISTS_errorDeclaration: If this parameter is specified, the
-				 * result will only include events that contain an
-				 * ErrorDeclaration . If this parameter is omitted, events are
-				 * returned regardless of whether they contain an
-				 * ErrorDeclaration .
-				 */
-
-				if (p.getEXISTS_errorDeclaration() != null) {
-
-					Boolean isExist = Boolean.parseBoolean(paramValues);
-					BsonBoolean isExistBson = new BsonBoolean(isExist);
-					BsonDocument query = getExistsQueryObject("errorDeclaration", null, isExistBson);
-					if (query != null)
-						queryList.add(query);
 				}
 
 				/**
