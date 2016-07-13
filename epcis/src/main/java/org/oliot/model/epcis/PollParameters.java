@@ -1,6 +1,7 @@
 package org.oliot.model.epcis;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,9 @@ import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonString;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class PollParameters {
 
@@ -340,31 +344,69 @@ public class PollParameters {
 		}
 	}
 
+	private List<String> getListOfString(Element element) {
+		List<String> los = new ArrayList<String>();
+
+		NodeList nodeList = element.getChildNodes();
+		for (int i = 0; i < nodeList.getLength(); i++) {
+			Node node = nodeList.item(i);
+			if (node.getNodeName().equals("string")) {
+				los.add(node.getTextContent());
+			}
+		}
+		return los;
+	}
+
 	@SuppressWarnings("unchecked")
 	public PollParameters(String queryName, QueryParams queryParams) {
+		this.queryName = queryName;
 		List<QueryParam> queryParamList = queryParams.getParam();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 		Map<String, String> extMap = new HashMap<String, String>();
 		for (QueryParam qp : queryParamList) {
 			String name = qp.getName();
 
+			//Note: We refer Fosstrak how they represent parameter values
 			if (name.equals("eventType")) {
-				List<String> valueList = (List<String>) qp.getValue();
+				// List of String
+				// <value>
+				// <string>ObjectEvent</string>
+				// <string>AggregationEvent</string>
+				// </value>
+				List<String> valueList = getListOfString((Element) qp.getValue());
 				eventType = generateCSV(valueList);
 				continue;
 			} else if (name.equals("GE_eventTime")) {
-				GE_eventTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// </value>
+				GE_eventTime = ((Element)qp.getValue()).getTextContent();
 				continue;
 			} else if (name.equals("LT_eventTime")) {
-				LT_eventTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// </value>
+				LT_eventTime = ((Element)qp.getValue()).getTextContent();
 				continue;
 			} else if (name.equals("GE_recordTime")) {
-				GE_recordTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// </value>
+				GE_recordTime = ((Element)qp.getValue()).getTextContent();
 				continue;
 			} else if (name.equals("LT_recordTime")) {
-				LT_recordTime = sdf.format(((XMLGregorianCalendar) qp.getValue()).toGregorianCalendar().getTime());
+				// Time
+				// <value>
+				// yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+				// </value>
+				LT_recordTime = ((Element)qp.getValue()).getTextContent();
 				continue;
 			} else if (name.equals("EQ_action")) {
+				
+				
 				List<String> valueList = (List<String>) qp.getValue();
 				EQ_action = generateCSV(valueList);
 				continue;

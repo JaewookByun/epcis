@@ -1420,275 +1420,216 @@ public class MongoQueryService {
 			}
 		}
 
-		Iterator<String> paramIter = p.getParams().keySet().iterator();
-		while (paramIter.hasNext()) {
-			String paramName = paramIter.next();
-			String paramValues = p.getParams().get(paramName);
-
-			/**
-			 * EQ_bizTransaction_type: This is not a single parameter, but a
-			 * family of parameters. If a parameter of this form is specified,
-			 * the result will only include events that (a) include a
-			 * bizTransactionList; (b) where the business transaction list
-			 * includes an entry whose type subfield is equal to type extracted
-			 * from the name of this parameter; and (c) where the bizTransaction
-			 * subfield of that entry is equal to one of the values specified in
-			 * this parameter.
-			 */
-			if (paramName.contains("EQ_bizTransaction_")) {
-				String type = paramName.substring(18, paramName.length());
-				BsonDocument query = getFamilyQueryObject(type, new String[] { "bizTransactionList" }, paramValues);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * EQ_source_type: This is not a single parameter, but a family of
-			 * parameters. If a parameter of this form is specified, the result
-			 * will only include events that (a) include a sourceList; (b) where
-			 * the source list includes an entry whose type subfield is equal to
-			 * type extracted from the name of this parameter; and (c) where the
-			 * source subfield of that entry is equal to one of the values
-			 * specified in this parameter.
-			 */
-
-			if (paramName.contains("EQ_source_")) {
-				String type = paramName.substring(10, paramName.length());
-				/*
-				 * if (eventType.equals("AggregationEvent") ||
-				 * eventType.equals("ObjectEvent") ||
-				 * eventType.equals("TransactionEvent")) { BsonDocument query =
-				 * getFamilyQueryObject(type, "extension.sourceList",
-				 * paramValues); if (query != null) queryList.add(query); } if
-				 * (eventType.equals("TransformationEvent")) { BsonDocument
-				 * query = getFamilyQueryObject(type, "sourceList",
-				 * paramValues); if (query != null) queryList.add(query); }
-				 */
-				/*
-				 * if (eventType.equals("AggregationEvent") ||
-				 * eventType.equals("ObjectEvent") ||
-				 * eventType.equals("TransactionEvent")) {
-				 * 
-				 * } if (eventType.equals("TransformationEvent")) { BsonDocument
-				 * query = getFamilyQueryObject(type, "sourceList",
-				 * paramValues); if (query != null) queryList.add(query); }
-				 */
-				BsonDocument query = getFamilyQueryObject(type, new String[] { "extension.sourceList", "sourceList" },
-						paramValues);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * EQ_destination_type: This is not a single parameter, but a family
-			 * of parameters. If a parameter of this form is specified, the
-			 * result will only include events that (a) include a
-			 * destinationList; (b) where the destination list includes an entry
-			 * whose type subfield is equal to type extracted from the name of
-			 * this parameter; and (c) where the destination subfield of that
-			 * entry is equal to one of the values specified in this parameter.
-			 */
-			if (paramName.contains("EQ_destination_")) {
-				String type = paramName.substring(15, paramName.length());
-				/*
-				 * if (eventType.equals("AggregationEvent") ||
-				 * eventType.equals("ObjectEvent") ||
-				 * eventType.equals("TransactionEvent")) { BsonDocument query =
-				 * getFamilyQueryObject(type, "extension.destinationList",
-				 * paramValues); if (query != null) queryList.add(query); } if
-				 * (eventType.equals("TransformationEvent")) { BsonDocument
-				 * query = getFamilyQueryObject(type, "destinationList",
-				 * paramValues); if (query != null) queryList.add(query); }
-				 */
-				BsonDocument query = getFamilyQueryObject(type,
-						new String[] { "extension.destinationList", "destinationList" }, paramValues);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * EQ_ILMD_field: Analogous to EQ_fieldname , but matches events
-			 * whose ILMD area (Section 7.3.6) contains a top-level field having
-			 * the specified fieldname whose value matches one of the specified
-			 * values. “Top level” means that the matching ILMD element must be
-			 * an immediate child of the <ilmd> element, not an element nested
-			 * within such an element. See EQ_INNER_ILMD_fieldname for querying
-			 * inner extension elements.
-			 */
-
-			if (paramName.startsWith("EQ_ILMD_")) {
-				String type = paramName.substring(8, paramName.length());
-				BsonArray paramArray = getParamBsonArray(paramValues);
-				BsonDocument queryObject = getQueryObject(
-						new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramArray);
-				if (queryObject != null) {
-					queryList.add(queryObject);
-				}
-			}
-
-			/**
-			 * GT|GE|LT|LE_ILMD_field: Analogous to EQ_fieldname , GT_fieldname
-			 * , GE_fieldname , GE_fieldname , LT_fieldname , and LE_fieldname ,
-			 * respectively, but matches events whose ILMD area (Section 7.3.6)
-			 * contains a field having the specified fieldname whose integer,
-			 * float, or time value matches the specified value according to the
-			 * specified relational operator.
-			 */
-
-			if (paramName.startsWith("GT_ILMD_") || paramName.startsWith("GE_ILMD_") || paramName.startsWith("LT_ILMD_")
-					|| paramName.startsWith("LE_ILMD_")) {
-				String type = paramName.substring(8, paramName.length());
-
-				if (paramName.startsWith("GT_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GT");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("GE_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GE");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("LT_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LT");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("LE_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LE");
-					if (query != null)
-						queryList.add(query);
-				}
-			}
-
-			/**
-			 * EXISTS_ILMD_fieldname: Like EXISTS_fieldname as described above,
-			 * but events that have a non-empty field named fieldname in the
-			 * ILMD area (Section 7.3.6). Fieldname is constructed as for
-			 * EQ_ILMD_fieldname . Note that the value for this query parameter
-			 * is ignored.
-			 */
-			if (paramName.startsWith("EXISTS_ILMD_")) {
-				if (p.getEventType().equals("ObjectEvent")) {
-					String field = paramName.substring(12, paramName.length());
-					Boolean isExist = Boolean.parseBoolean(paramValues);
-					BsonBoolean isExistBson = new BsonBoolean(isExist);
-					BsonDocument query = getExistsQueryObject("extension.ilmd", field, isExistBson);
-					if (query != null)
-						queryList.add(query);
-				} else if (p.getEventType().equals("TransformationEvent")) {
-					String field = paramName.substring(12, paramName.length());
-					Boolean isExist = Boolean.parseBoolean(paramValues);
-					BsonBoolean isExistBson = new BsonBoolean(isExist);
-					BsonDocument query = getExistsQueryObject("ilmd", field, isExistBson);
-					if (query != null)
-						queryList.add(query);
-				}
-			}
-
-			/**
-			 * EXISTS_errorDeclaration: If this parameter is specified, the
-			 * result will only include events that contain an ErrorDeclaration
-			 * . If this parameter is omitted, events are returned regardless of
-			 * whether they contain an ErrorDeclaration .
-			 */
-
-			if (p.getEXISTS_errorDeclaration() != null) {
-
-				Boolean isExist = Boolean.parseBoolean(paramValues);
-				BsonBoolean isExistBson = new BsonBoolean(isExist);
-				BsonDocument query = getExistsQueryObject("errorDeclaration", null, isExistBson);
-				if (query != null)
-					queryList.add(query);
-			}
-
-			/**
-			 * EQ_ERROR_DECLARATION_Fieldname : Analogous to EQ_fieldname , but
-			 * matches events containing an ErrorDeclaration and where the
-			 * ErrorDeclaration contains a field having the specified fieldname
-			 * whose value matches one of the specified values.
-			 * 
-			 * List of String
-			 * 
-			 */
-
-			if (paramName.startsWith("EQ_ERROR_DECLARATION_")) {
-				String type = paramName.substring(21, paramName.length());
-
-				BsonArray paramArray = getParamBsonArray(paramValues);
-				BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.any." + type }, paramArray);
-				if (queryObject != null) {
-					queryList.add(queryObject);
-				}
-			}
-
-			/**
-			 * Analogous to EQ_fieldname , GT_fieldname , GE_fieldname ,
-			 * GE_fieldname , LT_fieldname , and LE_fieldname , respectively,
-			 * but matches events containing an ErrorDeclaration and where the
-			 * ErrorDeclaration contains a field having the specified fieldname
-			 * whose integer, float, or time value matches the specified value
-			 * according to the specified relational operator.
-			 */
-
-			if (paramName.startsWith("GT_ERROR_DECLARATION_") || paramName.startsWith("GE_ERROR_DECLARATION_")
-					|| paramName.startsWith("LT_ERROR_DECLARATION_") || paramName.startsWith("LE_ERROR_DECLARATION_")) {
-				String type = paramName.substring(21, paramName.length());
-
-				if (paramName.startsWith("GT_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "errorDeclaration.any." + type }, paramValues, "GT");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("GE_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "errorDeclaration.any." + type }, paramValues, "GE");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("LT_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "errorDeclaration.any." + type }, paramValues, "LT");
-					if (query != null)
-						queryList.add(query);
-				}
-				if (paramName.startsWith("LE_")) {
-					BsonDocument query = getCompExtensionQueryObject(type,
-							new String[] { "errorDeclaration.any." + type }, paramValues, "LE");
-					if (query != null)
-						queryList.add(query);
-				}
-			}
-
-			boolean isExtraParam = isExtraParameter(paramName);
-
-			if (isExtraParam == true) {
+		if (p.getParams() != null) {
+			Iterator<String> paramIter = p.getParams().keySet().iterator();
+			while (paramIter.hasNext()) {
+				String paramName = paramIter.next();
+				String paramValues = p.getParams().get(paramName);
 
 				/**
-				 * EQ_fieldname: This is not a single parameter, but a family of
-				 * parameters. If a parameter of this form is specified, the
-				 * result will only include events that (a) have a field named
-				 * fieldname whose type is either String or a vocabulary type;
-				 * and where (b) the value of that field matches one of the
-				 * values specified in this parameter. Fieldname is the fully
-				 * qualified name of an extension field. The name of an
-				 * extension field is an XML qname; that is, a pair consisting
-				 * of an XML namespace URI and a name. The name of the
-				 * corresponding query parameter is constructed by concatenating
-				 * the following: the string EQ_, the namespace URI for the
-				 * extension field, a pound sign (#), and the name of the
-				 * extension field.
+				 * EQ_bizTransaction_type: This is not a single parameter, but a
+				 * family of parameters. If a parameter of this form is
+				 * specified, the result will only include events that (a)
+				 * include a bizTransactionList; (b) where the business
+				 * transaction list includes an entry whose type subfield is
+				 * equal to type extracted from the name of this parameter; and
+				 * (c) where the bizTransaction subfield of that entry is equal
+				 * to one of the values specified in this parameter.
 				 */
-				if (paramName.startsWith("EQ_")) {
-					String type = paramName.substring(3, paramName.length());
+				if (paramName.contains("EQ_bizTransaction_")) {
+					String type = paramName.substring(18, paramName.length());
+					BsonDocument query = getFamilyQueryObject(type, new String[] { "bizTransactionList" }, paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+
+				/**
+				 * EQ_source_type: This is not a single parameter, but a family
+				 * of parameters. If a parameter of this form is specified, the
+				 * result will only include events that (a) include a
+				 * sourceList; (b) where the source list includes an entry whose
+				 * type subfield is equal to type extracted from the name of
+				 * this parameter; and (c) where the source subfield of that
+				 * entry is equal to one of the values specified in this
+				 * parameter.
+				 */
+
+				if (paramName.contains("EQ_source_")) {
+					String type = paramName.substring(10, paramName.length());
+					/*
+					 * if (eventType.equals("AggregationEvent") ||
+					 * eventType.equals("ObjectEvent") ||
+					 * eventType.equals("TransactionEvent")) { BsonDocument
+					 * query = getFamilyQueryObject(type,
+					 * "extension.sourceList", paramValues); if (query != null)
+					 * queryList.add(query); } if
+					 * (eventType.equals("TransformationEvent")) { BsonDocument
+					 * query = getFamilyQueryObject(type, "sourceList",
+					 * paramValues); if (query != null) queryList.add(query); }
+					 */
+					/*
+					 * if (eventType.equals("AggregationEvent") ||
+					 * eventType.equals("ObjectEvent") ||
+					 * eventType.equals("TransactionEvent")) {
+					 * 
+					 * } if (eventType.equals("TransformationEvent")) {
+					 * BsonDocument query = getFamilyQueryObject(type,
+					 * "sourceList", paramValues); if (query != null)
+					 * queryList.add(query); }
+					 */
+					BsonDocument query = getFamilyQueryObject(type,
+							new String[] { "extension.sourceList", "sourceList" }, paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+
+				/**
+				 * EQ_destination_type: This is not a single parameter, but a
+				 * family of parameters. If a parameter of this form is
+				 * specified, the result will only include events that (a)
+				 * include a destinationList; (b) where the destination list
+				 * includes an entry whose type subfield is equal to type
+				 * extracted from the name of this parameter; and (c) where the
+				 * destination subfield of that entry is equal to one of the
+				 * values specified in this parameter.
+				 */
+				if (paramName.contains("EQ_destination_")) {
+					String type = paramName.substring(15, paramName.length());
+					/*
+					 * if (eventType.equals("AggregationEvent") ||
+					 * eventType.equals("ObjectEvent") ||
+					 * eventType.equals("TransactionEvent")) { BsonDocument
+					 * query = getFamilyQueryObject(type,
+					 * "extension.destinationList", paramValues); if (query !=
+					 * null) queryList.add(query); } if
+					 * (eventType.equals("TransformationEvent")) { BsonDocument
+					 * query = getFamilyQueryObject(type, "destinationList",
+					 * paramValues); if (query != null) queryList.add(query); }
+					 */
+					BsonDocument query = getFamilyQueryObject(type,
+							new String[] { "extension.destinationList", "destinationList" }, paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
+
+				/**
+				 * EQ_ILMD_field: Analogous to EQ_fieldname , but matches events
+				 * whose ILMD area (Section 7.3.6) contains a top-level field
+				 * having the specified fieldname whose value matches one of the
+				 * specified values. “Top level” means that the matching ILMD
+				 * element must be an immediate child of the <ilmd> element, not
+				 * an element nested within such an element. See
+				 * EQ_INNER_ILMD_fieldname for querying inner extension
+				 * elements.
+				 */
+
+				if (paramName.startsWith("EQ_ILMD_")) {
+					String type = paramName.substring(8, paramName.length());
+					BsonArray paramArray = getParamBsonArray(paramValues);
+					BsonDocument queryObject = getQueryObject(
+							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramArray);
+					if (queryObject != null) {
+						queryList.add(queryObject);
+					}
+				}
+
+				/**
+				 * GT|GE|LT|LE_ILMD_field: Analogous to EQ_fieldname ,
+				 * GT_fieldname , GE_fieldname , GE_fieldname , LT_fieldname ,
+				 * and LE_fieldname , respectively, but matches events whose
+				 * ILMD area (Section 7.3.6) contains a field having the
+				 * specified fieldname whose integer, float, or time value
+				 * matches the specified value according to the specified
+				 * relational operator.
+				 */
+
+				if (paramName.startsWith("GT_ILMD_") || paramName.startsWith("GE_ILMD_")
+						|| paramName.startsWith("LT_ILMD_") || paramName.startsWith("LE_ILMD_")) {
+					String type = paramName.substring(8, paramName.length());
+
+					if (paramName.startsWith("GT_")) {
+						BsonDocument query = getCompExtensionQueryObject(type,
+								new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GT");
+						if (query != null)
+							queryList.add(query);
+					}
+					if (paramName.startsWith("GE_")) {
+						BsonDocument query = getCompExtensionQueryObject(type,
+								new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "GE");
+						if (query != null)
+							queryList.add(query);
+					}
+					if (paramName.startsWith("LT_")) {
+						BsonDocument query = getCompExtensionQueryObject(type,
+								new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LT");
+						if (query != null)
+							queryList.add(query);
+					}
+					if (paramName.startsWith("LE_")) {
+						BsonDocument query = getCompExtensionQueryObject(type,
+								new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramValues, "LE");
+						if (query != null)
+							queryList.add(query);
+					}
+				}
+
+				/**
+				 * EXISTS_ILMD_fieldname: Like EXISTS_fieldname as described
+				 * above, but events that have a non-empty field named fieldname
+				 * in the ILMD area (Section 7.3.6). Fieldname is constructed as
+				 * for EQ_ILMD_fieldname . Note that the value for this query
+				 * parameter is ignored.
+				 */
+				if (paramName.startsWith("EXISTS_ILMD_")) {
+					if (p.getEventType().equals("ObjectEvent")) {
+						String field = paramName.substring(12, paramName.length());
+						Boolean isExist = Boolean.parseBoolean(paramValues);
+						BsonBoolean isExistBson = new BsonBoolean(isExist);
+						BsonDocument query = getExistsQueryObject("extension.ilmd", field, isExistBson);
+						if (query != null)
+							queryList.add(query);
+					} else if (p.getEventType().equals("TransformationEvent")) {
+						String field = paramName.substring(12, paramName.length());
+						Boolean isExist = Boolean.parseBoolean(paramValues);
+						BsonBoolean isExistBson = new BsonBoolean(isExist);
+						BsonDocument query = getExistsQueryObject("ilmd", field, isExistBson);
+						if (query != null)
+							queryList.add(query);
+					}
+				}
+
+				/**
+				 * EXISTS_errorDeclaration: If this parameter is specified, the
+				 * result will only include events that contain an
+				 * ErrorDeclaration . If this parameter is omitted, events are
+				 * returned regardless of whether they contain an
+				 * ErrorDeclaration .
+				 */
+
+				if (p.getEXISTS_errorDeclaration() != null) {
+
+					Boolean isExist = Boolean.parseBoolean(paramValues);
+					BsonBoolean isExistBson = new BsonBoolean(isExist);
+					BsonDocument query = getExistsQueryObject("errorDeclaration", null, isExistBson);
+					if (query != null)
+						queryList.add(query);
+				}
+
+				/**
+				 * EQ_ERROR_DECLARATION_Fieldname : Analogous to EQ_fieldname ,
+				 * but matches events containing an ErrorDeclaration and where
+				 * the ErrorDeclaration contains a field having the specified
+				 * fieldname whose value matches one of the specified values.
+				 * 
+				 * List of String
+				 * 
+				 */
+
+				if (paramName.startsWith("EQ_ERROR_DECLARATION_")) {
+					String type = paramName.substring(21, paramName.length());
 
 					BsonArray paramArray = getParamBsonArray(paramValues);
-					BsonDocument queryObject = getQueryObject(new String[] { "any." + type, "otherAttributes." + type },
+					BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.any." + type },
 							paramArray);
 					if (queryObject != null) {
 						queryList.add(queryObject);
@@ -1696,64 +1637,138 @@ public class MongoQueryService {
 				}
 
 				/**
-				 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described above,
-				 * but may be applied to a field of type Int, Float, or Time.
-				 * The result will include events that (a) have a field named
-				 * fieldname; and where (b) the type of the field matches the
-				 * type of this parameter (Int, Float, or Time); and where (c)
-				 * the value of the field is greater than the specified value.
-				 * Fieldname is constructed as for EQ_fieldname.
+				 * Analogous to EQ_fieldname , GT_fieldname , GE_fieldname ,
+				 * GE_fieldname , LT_fieldname , and LE_fieldname ,
+				 * respectively, but matches events containing an
+				 * ErrorDeclaration and where the ErrorDeclaration contains a
+				 * field having the specified fieldname whose integer, float, or
+				 * time value matches the specified value according to the
+				 * specified relational operator.
 				 */
 
-				if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
-						|| paramName.startsWith("LE_")) {
-					String type = paramName.substring(3, paramName.length());
+				if (paramName.startsWith("GT_ERROR_DECLARATION_") || paramName.startsWith("GE_ERROR_DECLARATION_")
+						|| paramName.startsWith("LT_ERROR_DECLARATION_")
+						|| paramName.startsWith("LE_ERROR_DECLARATION_")) {
+					String type = paramName.substring(21, paramName.length());
 
 					if (paramName.startsWith("GT_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
-								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
+								new String[] { "errorDeclaration.any." + type }, paramValues, "GT");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("GE_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
-								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
+								new String[] { "errorDeclaration.any." + type }, paramValues, "GE");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("LT_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
-								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
+								new String[] { "errorDeclaration.any." + type }, paramValues, "LT");
 						if (query != null)
 							queryList.add(query);
 					}
 					if (paramName.startsWith("LE_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
-								new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
+								new String[] { "errorDeclaration.any." + type }, paramValues, "LE");
 						if (query != null)
 							queryList.add(query);
 					}
 				}
 
-				/**
-				 * EXISTS_fieldname: Like EQ_fieldname as described above, but
-				 * may be applied to a field of any type (including complex
-				 * types). The result will include events that have a non-empty
-				 * field named fieldname . Fieldname is constructed as for
-				 * EQ_fieldname . EXISTS_ ILMD_fieldname HASATTR_fieldname Void
-				 * Note that the value for this query parameter is ignored.
-				 * 
-				 * Regex not supported
-				 * 
-				 */
+				boolean isExtraParam = isExtraParameter(paramName);
 
-				if (paramName.startsWith("EXISTS_")) {
-					String field = paramName.substring(7, paramName.length());
-					Boolean isExist = Boolean.parseBoolean(paramValues);
-					BsonBoolean isExistBson = new BsonBoolean(isExist);
-					BsonDocument query = getExistsQueryObject("any", field, isExistBson);
-					if (query != null)
-						queryList.add(query);
+				if (isExtraParam == true) {
+
+					/**
+					 * EQ_fieldname: This is not a single parameter, but a
+					 * family of parameters. If a parameter of this form is
+					 * specified, the result will only include events that (a)
+					 * have a field named fieldname whose type is either String
+					 * or a vocabulary type; and where (b) the value of that
+					 * field matches one of the values specified in this
+					 * parameter. Fieldname is the fully qualified name of an
+					 * extension field. The name of an extension field is an XML
+					 * qname; that is, a pair consisting of an XML namespace URI
+					 * and a name. The name of the corresponding query parameter
+					 * is constructed by concatenating the following: the string
+					 * EQ_, the namespace URI for the extension field, a pound
+					 * sign (#), and the name of the extension field.
+					 */
+					if (paramName.startsWith("EQ_")) {
+						String type = paramName.substring(3, paramName.length());
+
+						BsonArray paramArray = getParamBsonArray(paramValues);
+						BsonDocument queryObject = getQueryObject(
+								new String[] { "any." + type, "otherAttributes." + type }, paramArray);
+						if (queryObject != null) {
+							queryList.add(queryObject);
+						}
+					}
+
+					/**
+					 * GT/GE/LT/LE_fieldname: Like EQ_fieldname as described
+					 * above, but may be applied to a field of type Int, Float,
+					 * or Time. The result will include events that (a) have a
+					 * field named fieldname; and where (b) the type of the
+					 * field matches the type of this parameter (Int, Float, or
+					 * Time); and where (c) the value of the field is greater
+					 * than the specified value. Fieldname is constructed as for
+					 * EQ_fieldname.
+					 */
+
+					if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
+							|| paramName.startsWith("LE_")) {
+						String type = paramName.substring(3, paramName.length());
+
+						if (paramName.startsWith("GT_")) {
+							BsonDocument query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GT");
+							if (query != null)
+								queryList.add(query);
+						}
+						if (paramName.startsWith("GE_")) {
+							BsonDocument query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "GE");
+							if (query != null)
+								queryList.add(query);
+						}
+						if (paramName.startsWith("LT_")) {
+							BsonDocument query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LT");
+							if (query != null)
+								queryList.add(query);
+						}
+						if (paramName.startsWith("LE_")) {
+							BsonDocument query = getCompExtensionQueryObject(type,
+									new String[] { "any." + type, "otherAttributes." + type }, paramValues, "LE");
+							if (query != null)
+								queryList.add(query);
+						}
+					}
+
+					/**
+					 * EXISTS_fieldname: Like EQ_fieldname as described above,
+					 * but may be applied to a field of any type (including
+					 * complex types). The result will include events that have
+					 * a non-empty field named fieldname . Fieldname is
+					 * constructed as for EQ_fieldname . EXISTS_ ILMD_fieldname
+					 * HASATTR_fieldname Void Note that the value for this query
+					 * parameter is ignored.
+					 * 
+					 * Regex not supported
+					 * 
+					 */
+
+					if (paramName.startsWith("EXISTS_")) {
+						String field = paramName.substring(7, paramName.length());
+						Boolean isExist = Boolean.parseBoolean(paramValues);
+						BsonBoolean isExistBson = new BsonBoolean(isExist);
+						BsonDocument query = getExistsQueryObject("any", field, isExistBson);
+						if (query != null)
+							queryList.add(query);
+					}
 				}
 			}
 		}
@@ -1762,6 +1777,8 @@ public class MongoQueryService {
 
 	@SuppressWarnings("unused")
 	private boolean isPostFilterPassed(String eventType, BsonDocument dbObject, Map<String, String> paramMap) {
+		if( paramMap == null || paramMap.isEmpty() )
+			return true;
 		Iterator<String> paramIter = paramMap.keySet().iterator();
 		while (paramIter.hasNext()) {
 			String paramName = paramIter.next();
