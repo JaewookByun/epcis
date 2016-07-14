@@ -612,6 +612,7 @@ public class MongoWriterUtil {
 				if (firstChildNode != null) {
 					if (firstChildNode instanceof Text) {
 						String value = firstChildNode.getTextContent();
+						value = reflectXsiType(value, element);
 						map2Save.put(name, converseType(value));
 					} else if (firstChildNode instanceof Element) {
 						Element childNode = null;
@@ -635,11 +636,13 @@ public class MongoWriterUtil {
 		return map2Save;
 	}
 
+	// Inside recursive logic
 	static BsonDocument getAnyMap(Element element, BsonDocument map2Save) {
 		Node firstChildNode = element.getFirstChild();
 		if (firstChildNode instanceof Text) {
 			// A
 			String value = firstChildNode.getTextContent();
+			value = reflectXsiType(value, element);
 			map2Save.put(element.getNodeName(), converseType(value));
 		} else if (firstChildNode instanceof Element) {
 			// example1:b, example1:d, example1:b, example1:e
@@ -672,6 +675,34 @@ public class MongoWriterUtil {
 		}
 		return map2Save;
 	}
+	
+	static String reflectXsiType(String targetValue, Element element){
+		// xsi: int, long, float, double, boolean, dateTime 
+		// Wedge is evaluated before xsi
+		String type = element.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "type");
+		if( type != null && !type.isEmpty() && targetValue.indexOf('^') == -1){
+			if(type.contains("int")){
+				targetValue = targetValue.trim();
+				targetValue += "^int";
+			}else if(type.contains("long")){
+				targetValue = targetValue.trim();
+				targetValue += "^long";
+			}else if(type.contains("float")){
+				targetValue = targetValue.trim();
+				targetValue += "^float";
+			}else if(type.contains("double")){
+				targetValue = targetValue.trim();
+				targetValue += "^double";
+			}else if(type.contains("boolean")){
+				targetValue = targetValue.trim();
+				targetValue += "^boolean";
+			}else if(type.contains("dateTime")){
+				targetValue = targetValue.trim();
+				targetValue += "^dateTime";
+			}
+		}
+		return targetValue;
+	}
 
 	static BsonValue converseType(String value) {
 		String[] valArr = value.split("\\^");
@@ -690,7 +721,7 @@ public class MongoWriterUtil {
 				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
 			} else if (type.equals("float")) {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
-			} else if (type.equals("time")) {
+			} else if (type.equals("dateTime")) {
 				BsonDateTime time = getBsonDateTime(valArr[0]);
 				if(time != null)
 					return time;

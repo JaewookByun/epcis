@@ -12,6 +12,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -43,6 +44,7 @@ import org.w3c.dom.Element;
  * 
  * 
  */
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SubscriptionControls", namespace = "urn:epcglobal:epcis-query:xsd:1", propOrder = { "schedule",
 		"trigger", "initialRecordTime", "reportIfEmpty", "extension", "any" })

@@ -194,12 +194,37 @@ public class MongoQueryService {
 		String schedule = null;
 		if (querySchedule != null) {
 			String sec = querySchedule.getSecond();
+			if( sec == null )
+				sec = "*";
 			String min = querySchedule.getMinute();
-			String hours = querySchedule.getHour();
+			if( min == null )
+				min = "*";
+			String hour = querySchedule.getHour();
+			if( hour == null )
+				hour = "*";
 			String dayOfMonth = querySchedule.getDayOfMonth();
+			if( dayOfMonth == null)
+				dayOfMonth = "*";
 			String month = querySchedule.getMonth();
 			String dayOfWeek = querySchedule.getDayOfWeek();
-			schedule = sec + " " + min + " " + hours + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+			
+			// either month or dayOfWeek should be ?
+			// two are not null -> dayOfWeek = ?
+			// one of two exists -> non-exist = ?
+			// two are null -> month=* , dayOfWeek=?
+			
+			if( month == null && dayOfWeek == null){
+				month = "*";
+				dayOfWeek = "?";
+			}else if( month != null && dayOfWeek == null ){
+				dayOfWeek = "?";
+			}else if( month == null && dayOfWeek != null ){
+				month = "?";
+			}else{
+				dayOfWeek = "?";
+			}
+		
+			schedule = sec + " " + min + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
 		}
 
 		/*
@@ -278,7 +303,7 @@ public class MongoQueryService {
 				BsonDocument.class);
 
 		Iterator<BsonDocument> subIterator = collection
-				.find(new BsonDocument("queryName", new BsonString(queryName)), BsonDocument.class).iterator();
+				.find(new BsonDocument("pollParameters.queryName", new BsonString(queryName)), BsonDocument.class).iterator();
 
 		while (subIterator.hasNext()) {
 			BsonDocument subscription = subIterator.next();
@@ -1419,13 +1444,12 @@ public class MongoQueryService {
 				queryList.add(queryObject);
 			}
 		}
-		
+
 		/**
-		 * EXISTS_errorDeclaration: If this parameter is specified, the
-		 * result will only include events that contain an
-		 * ErrorDeclaration . If this parameter is omitted, events are
-		 * returned regardless of whether they contain an
-		 * ErrorDeclaration .
+		 * EXISTS_errorDeclaration: If this parameter is specified, the result
+		 * will only include events that contain an ErrorDeclaration . If this
+		 * parameter is omitted, events are returned regardless of whether they
+		 * contain an ErrorDeclaration .
 		 */
 
 		if (p.getEXISTS_errorDeclaration() != null) {
@@ -1436,7 +1460,6 @@ public class MongoQueryService {
 			if (query != null)
 				queryList.add(query);
 		}
-		
 
 		if (p.getParams() != null) {
 			Iterator<String> paramIter = p.getParams().keySet().iterator();
@@ -1778,7 +1801,7 @@ public class MongoQueryService {
 
 	@SuppressWarnings("unused")
 	private boolean isPostFilterPassed(String eventType, BsonDocument dbObject, Map<String, String> paramMap) {
-		if( paramMap == null || paramMap.isEmpty() )
+		if (paramMap == null || paramMap.isEmpty())
 			return true;
 		Iterator<String> paramIter = paramMap.keySet().iterator();
 		while (paramIter.hasNext()) {
@@ -1893,7 +1916,7 @@ public class MongoQueryService {
 				String type = paramName.substring(14, paramName.length());
 				BsonArray paramArray = getParamBsonArray(paramValues);
 
-				if (isExtensionFilterPassed(type, paramArray, ilmd) == true)
+				if (isExtensionFilterPassed(type, paramArray, ilmd, true) == true)
 					return true;
 				else
 					return false;
@@ -1958,7 +1981,7 @@ public class MongoQueryService {
 				String type = paramName.substring(27, paramName.length());
 				BsonArray paramArray = getParamBsonArray(paramValues);
 
-				if (isExtensionFilterPassed(type, paramArray, error) == true)
+				if (isExtensionFilterPassed(type, paramArray, error, true) == true)
 					return true;
 				else
 					return false;
@@ -2021,7 +2044,7 @@ public class MongoQueryService {
 				String type = paramName.substring(9, paramName.length());
 				BsonArray paramArray = getParamBsonArray(paramValues);
 
-				if (isExtensionFilterPassed(type, paramArray, ext) == true)
+				if (isExtensionFilterPassed(type, paramArray, ext, true) == true)
 					return true;
 				else
 					return false;
@@ -2071,26 +2094,29 @@ public class MongoQueryService {
 		return true;
 	}
 
-	private boolean isExtensionFilterPassed(String type, BsonArray paramArray, BsonDocument ext) {
+	private boolean isExtensionFilterPassed(String type, BsonArray paramArray, BsonDocument ext, boolean isTopLevel) {
 		Iterator<String> keyIterator = ext.keySet().iterator();
 		while (keyIterator.hasNext()) {
 			String key = keyIterator.next();
 			BsonValue sub = ext.get(key);
-			if (key.equals(type)) {
-				for (int i = 0; i < paramArray.size(); i++) {
-					BsonValue param = paramArray.get(i);
-					if (sub.getBsonType() == param.getBsonType() && sub.toString().equals(param.toString())) {
-						return true;
-					}
-					if (param.getBsonType() == BsonType.REGULAR_EXPRESSION && sub.getBsonType() == BsonType.STRING) {
-						if (Pattern.matches(param.asRegularExpression().getPattern(), sub.asString().getValue()))
+			if (isTopLevel == false) {
+				if (key.equals(type)) {
+					for (int i = 0; i < paramArray.size(); i++) {
+						BsonValue param = paramArray.get(i);
+						if (sub.getBsonType() == param.getBsonType() && sub.toString().equals(param.toString())) {
 							return true;
+						}
+						if (param.getBsonType() == BsonType.REGULAR_EXPRESSION
+								&& sub.getBsonType() == BsonType.STRING) {
+							if (Pattern.matches(param.asRegularExpression().getPattern(), sub.asString().getValue()))
+								return true;
+						}
 					}
+					return false;
 				}
-				return false;
 			}
 			if (sub.getBsonType() == BsonType.DOCUMENT) {
-				if (isExtensionFilterPassed(type, paramArray, sub.asDocument()) == true) {
+				if (isExtensionFilterPassed(type, paramArray, sub.asDocument(), false) == true) {
 					return true;
 				}
 			}
