@@ -374,10 +374,10 @@ public class PollParameters {
 		return null;
 	}
 
-	private String getTime(Element element) {
+	private String getDateTime(Element element) {
 		Node node = element.getFirstChild();
-		if (node.getNodeName().equals("time")) {
-			return node.getTextContent() + "^time";
+		if (node.getNodeName().equals("dateTime")) {
+			return node.getTextContent() + "^dateTime";
 		}
 		return null;
 	}
@@ -404,7 +404,7 @@ public class PollParameters {
 			String name = qp.getName();
 
 			// Note: We refer Fosstrak how they represent parameter values
-			// Supported Type: int, long, float, double, boolean, time
+			// Supported Type: int, long, float, double, boolean, dateTime
 			if (name.equals("eventType")) {
 				// List of String
 				// <value>
@@ -417,30 +417,30 @@ public class PollParameters {
 			} else if (name.equals("GE_eventTime")) {
 				// Time
 				// <value>
-				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// <dateTime>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<dateTime>
 				// </value>
-				GE_eventTime = getTime((Element) qp.getValue());
+				GE_eventTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_eventTime")) {
 				// Time
 				// <value>
-				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// <dateTime>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<dateTime>
 				// </value>
-				LT_eventTime = getTime((Element) qp.getValue());
+				LT_eventTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("GE_recordTime")) {
 				// Time
 				// <value>
-				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// <dateTime>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<dateTime>
 				// </value>
-				GE_recordTime = getTime((Element) qp.getValue());
+				GE_recordTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_recordTime")) {
 				// Time
 				// <value>
-				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
+				// <dateTime>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<dateTime>
 				// </value>
-				LT_recordTime = getTime((Element) qp.getValue());
+				LT_recordTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("EQ_action")) {
 				// List of String
@@ -621,14 +621,14 @@ public class PollParameters {
 				// <value>
 				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				GE_errorDeclarationTime = getTime((Element) qp.getValue());
+				GE_errorDeclarationTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("LT_errorDeclarationTime")) {
 				// Time
 				// <value>
 				// <time>yyyy-MM-dd'T'HH:mm:ss.SSSXXX<time>
 				// </value>
-				LT_errorDeclarationTime = getTime((Element) qp.getValue());
+				LT_errorDeclarationTime = getDateTime((Element) qp.getValue());
 				continue;
 			} else if (name.equals("EQ_errorReason")) {
 				// List of String
@@ -777,8 +777,8 @@ public class PollParameters {
 						valueList.add(value + "^double");
 					} else if (type.equals("boolean")) {
 						valueList.add(value + "^boolean");
-					} else if (type.equals("time")) {
-						valueList.add(value + "^time");
+					} else if (type.equals("dateTime")) {
+						valueList.add(value + "^dateTime");
 					} else if (type.equals("string")) {
 						valueList.add(value);
 					} else if (type.equals("void")) {

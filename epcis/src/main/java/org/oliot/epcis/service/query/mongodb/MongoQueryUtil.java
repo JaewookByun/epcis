@@ -141,7 +141,7 @@ public class MongoQueryUtil {
 				return new BsonRegularExpression("^" + valArr[0] + "$");
 			} else if (type.equals("float")) {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
-			} else if (type.equals("time")) {
+			} else if (type.equals("dateTime")) {
 				BsonDateTime time = MongoQueryService.getTimeMillis(valArr[0]);
 				if (time != null)
 					return time;

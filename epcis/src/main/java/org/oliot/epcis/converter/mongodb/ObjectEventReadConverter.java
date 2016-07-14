@@ -154,6 +154,8 @@ public class ObjectEventReadConverter {
 		 * objectEventType.setIlmd(ilmd); }
 		 */
 		// Vendor Extension
+		// Supported Type: int, long, float, double, boolean, time
+		// xsi: int, long, float, double, boolean, dateTime 
 		if (dbObject.get("any") != null) {
 			BsonDocument anyObject = dbObject.getDocument("any");
 			List<Object> any = putAny(anyObject, null);

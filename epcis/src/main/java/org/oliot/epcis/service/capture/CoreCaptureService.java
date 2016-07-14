@@ -1,6 +1,7 @@
 package org.oliot.epcis.service.capture;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -26,8 +27,8 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 public interface CoreCaptureService {
 
 	@WebMethod(operationName = "EventCapture")
-	public void capture(EPCISDocumentType epcisDocument);
+	public void capture(@WebParam(name = "epcisDocument") EPCISDocumentType epcisDocument);
 
 	@WebMethod(operationName = "VocabularyCapture")
-	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument);
+	public void capture(@WebParam(name = "epcisMasterDataDocument") EPCISMasterDataDocumentType epcisMasterDataDocument);
 }

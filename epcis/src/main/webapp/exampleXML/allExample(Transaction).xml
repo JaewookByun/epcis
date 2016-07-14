@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:example0="http://ns.example.com/epcis" xmlns:example1="http://ns.example.com/epcis"
 	xmlns:example2="http://epcis.example.com/ns" xmlns:example3="http://epcis.example.com/ns"
 	creationDate="2013-06-04T14:59:02.099+02:00" xmlns:epcis="urn:epcglobal:epcis:xsd:1"
@@ -44,16 +45,16 @@
 						<destination type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:0614141.00777.0</destination>
 					</destinationList>
 				</extension>
-				<example0:a>15^int</example0:a>
+				<example0:a xsi:type="xsd:int">15</example0:a>
 				<example0:b>
-					<example1:c>20.5^double</example1:c>
+					<example1:c xsi:type="xsd:double">20.5</example1:c>
 				</example0:b>
 				<example0:h>
-					<example1:d>True^boolean</example1:d>
+					<example1:d xsi:type="xsd:boolean">true</example1:d>
 					<example1:e>
-						<example2:f>2013-06-08T14:58:56.591Z^time</example2:f>
+						<example2:f xsi:type="xsd:dateTime">2013-06-08T14:58:56.591Z</example2:f>
 					</example1:e>
-					<example1:g>50^long</example1:g>
+					<example1:g xsi:type="xsd:long">50</example1:g>
 				</example0:h>
 			</TransactionEvent>
 		</EventList>
