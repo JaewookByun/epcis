@@ -1,11 +1,8 @@
 package org.oliot.epcis.service.capture.mongodb;
 
-import org.bson.BsonDateTime;
+import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
-import org.bson.BsonInt64;
-import org.bson.BsonObjectId;
 import org.bson.BsonString;
-import org.bson.types.ObjectId;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.converter.mongodb.AggregationEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.MasterDataWriteConverter;
@@ -22,7 +19,6 @@ import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyType;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -42,7 +38,7 @@ import com.mongodb.client.MongoCursor;
 
 public class MongoCaptureUtil {
 
-	public void capture(Object event, String userID, String accessModifier, Integer gcpLength) {
+	public String capture(Object event, String userID, String accessModifier, Integer gcpLength) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
 		BsonDocument object2Save = null;
@@ -70,12 +66,12 @@ public class MongoCaptureUtil {
 		}
 
 		if (object2Save == null)
-			return;
+			return null;
 
 		if (Configuration.isTriggerSupported == true) {
 			TriggerEngine.examineAndFire(type, object2Save);
 		}
-		
+
 		if (!object2Save.containsKey("errorDeclaration")) {
 			if (userID != null && accessModifier != null) {
 				object2Save.put("userID", new BsonString(userID));
@@ -84,45 +80,50 @@ public class MongoCaptureUtil {
 			collection.insertOne(object2Save);
 			Configuration.logger.info(" Event Saved ");
 		} else {
-			BsonDocument error = object2Save.getDocument("errorDeclaration");
-			if (!object2Save.containsKey("eventID")) {
-				// If no eventID found, error
-				Configuration.logger.info(" Error Declaration failed");
+			// Error Declaration Mechanism
+			BsonDocument filter = object2Save.clone();
+			// Make 'otherwise identical' event filter
+			filter = makeOtherwiseIdenticalFilter(filter);
+			boolean isReplacing = replaceErroneousEvents(collection, filter, object2Save);
+			if (isReplacing == true) {
+				Configuration.logger.info(" Error Declaration succeed");
 			} else {
-				BsonString eventID = object2Save.getString("eventID");
-				MongoCursor<BsonDocument> cursor = collection.find(new BsonDocument("eventID", eventID)).iterator();
-				if (cursor.hasNext()) {
-					BsonDocument foundDoc = cursor.next();
-					foundDoc.put("recordTime", new BsonDateTime(System.currentTimeMillis()));
-					foundDoc.put("errorDeclaration", error);
-					collection.findOneAndReplace(new BsonDocument("eventID", eventID), foundDoc);
-				} else {
-					// There is no matched event ID
-					// Try to find with ObjectID
-					try {
-						MongoCursor<BsonDocument> cursor2 = collection
-								.find(new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))))
-								.iterator();
-						if (cursor2.hasNext()) {
-							BsonDocument foundDoc2 = cursor2.next();
-							foundDoc2.put("recordTime", new BsonInt64(System.currentTimeMillis()));
-							foundDoc2.put("errorDeclaration", error);
-							collection.findOneAndReplace(
-									new BsonDocument("_id", new BsonObjectId(new ObjectId(eventID.getValue()))),
-									foundDoc2);
-						} else {
-							Configuration.logger.info(" Error Declaration failed");
-						}
-					} catch (IllegalArgumentException e) {
-						Configuration.logger.info(" Error Declaration failed");
-					}
-				}
+				Configuration.logger.info(" Error Declaration failed");
+				return "[ERROR] Error Declaration failed";
 			}
 		}
+		return null;
 	}
-	
-	public void capture(VocabularyType vocabulary, String userID, String accessModifier, Integer gcpLength) {
+
+	private BsonDocument makeOtherwiseIdenticalFilter(BsonDocument filter) {
+		filter.remove("errorDeclaration");
+		filter.put("errorDeclaration", new BsonDocument("$exists", new BsonBoolean(false)));
+		filter.remove("recordTime");
+		return filter;
+	}
+
+	private boolean replaceErroneousEvents(MongoCollection<BsonDocument> collection, BsonDocument filter,
+			BsonDocument object2Save) {
+		boolean isReplacing = false;
+		while (true) {
+			Object result = collection.findOneAndReplace(filter, object2Save);
+			
+			if (result == null)
+				break;
+			else{
+				isReplacing = true;
+				
+			}
+		}
+		return isReplacing;
+	}
+
+	public String capture(VocabularyType vocabulary, String userID, String accessModifier, Integer gcpLength) {
 		MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-		mdConverter.capture(vocabulary, gcpLength);
+		if(mdConverter.capture(vocabulary, gcpLength) != 0){
+			return "[ERROR] Vocabulary Capture Failed";
+		}else{
+			return null;
+		}
 	}
 }

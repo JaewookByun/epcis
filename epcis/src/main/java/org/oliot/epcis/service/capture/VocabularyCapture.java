@@ -54,7 +54,8 @@ public class VocabularyCapture implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
-
+		
+		String errorMessage = null;
 		if (Configuration.isCaptureVerfificationOn == true) {
 			InputStream validateStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			// Parsing and Validating data
@@ -71,16 +72,19 @@ public class VocabularyCapture implements ServletContextAware {
 					EPCISMasterDataDocumentType.class);
 
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisMasterDataDocument, gcpLength);
+			errorMessage = cs.capture(epcisMasterDataDocument, gcpLength);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		} else {
 			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
 					EPCISMasterDataDocumentType.class);
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisMasterDataDocument, gcpLength);
+			errorMessage = cs.capture(epcisMasterDataDocument, gcpLength);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		}
-		return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);
+		if( errorMessage == null )
+			return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);
+		else
+			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);	
 	}
 }
