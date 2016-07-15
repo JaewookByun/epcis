@@ -59,7 +59,7 @@ public class EventCapture implements ServletContextAware {
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessModifier,
 			@RequestParam(required = false) Integer gcpLength) {
-
+		String errorMessage = null;
 		// Request a protection on events
 		if (userID != null) {
 			// Check accessToken
@@ -132,17 +132,19 @@ public class EventCapture implements ServletContextAware {
 					}
 				}
 			}
-
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisDocument, userID, accessModifier, gcpLength);
+			errorMessage = cs.capture(epcisDocument, userID, accessModifier, gcpLength);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		} else {
 			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
 			CaptureService cs = new CaptureService();
-			cs.capture(epcisDocument, userID, accessModifier, gcpLength);
+			errorMessage = cs.capture(epcisDocument, userID, accessModifier, gcpLength);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		}
-		return new ResponseEntity<>(new String("EPCIS Document : Captured "), HttpStatus.OK);
+		if( errorMessage == null )
+			return new ResponseEntity<>(new String("EPCIS Document : Captured "), HttpStatus.OK);
+		else
+			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
 	}
 }

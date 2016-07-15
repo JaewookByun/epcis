@@ -106,6 +106,10 @@
 	function movePage(page) {
 		document.location.href = page;
 	}
+	
+	function reset(){
+		$('#pollParam').val('');
+	}
 </script>
 
 <body>
@@ -141,6 +145,7 @@
 						placeholder="POLL PARAMETERS">
 					<button type="button" class="btn btn-info" onclick="poll()">Poll
 						SimpleEventQuery</button>
+					<button type="reset" class="btn btn-danger" onclick="reset()">Reset Params</button>	
 					<br> <br> <input id="getStandardVersionURL" type="text"
 						class="form-control"
 						value="http://localhost:8080/epcis/Service/GetStandardVersion"

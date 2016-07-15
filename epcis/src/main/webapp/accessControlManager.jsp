@@ -192,8 +192,9 @@
 						uses the system function.</p>
 					<p>2.2. If the scope is Friend, the friends of the
 						administrator are the delegated administrators.</p>
-					<p>2.2.1. The condition of 2.2: Be a member of Facebook ID via
+					<p>2.2.1. The condition of 2.2 is to be a member of Facebook ID via
 						the login button here.</p>
+					<p>2.2.2. If the application is still 'test' one, the administrator should register friends as tester </p>
 					<p>3. Try
 						http://[URL]:[Port]/epcis/Service/Admin/ResetDB?userID={Your
 						ID}&accessToken={Your Access Token}</p>
