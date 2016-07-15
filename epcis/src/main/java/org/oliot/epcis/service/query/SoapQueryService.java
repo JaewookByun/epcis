@@ -89,7 +89,7 @@ public class SoapQueryService implements CoreQueryService {
 
 	@Override
 	public String getVendorVersion() {
-		return null;
+		return "org.oliot.epcis-1.2.1";
 	}
 
 	@Override
