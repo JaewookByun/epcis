@@ -13,6 +13,12 @@ Copyright (C) 2014-2016 Jaewook Byun
 > complying with EPCIS Document XML schema into EPCIS Repository. 
 > Then, these events can be globally shared with given queries 
 
+### Paper Publication ###
+- Jaewook Byun, Daeyoung Kim. "Oliot EPCIS: New EPC information service and challenges towards the Internet of Things." RFID (RFID), 2015 IEEE International Conference on. IEEE, 2015. [URL](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7113075&tag=1)
+
+- Jaewook Byun, Daeyoung Kim, "EPC Graph Information Service: Enhanced object traceability on unified and linked EPCIS events," The 16th International Conference on Web Information System Engineering (WISE 2015), Miami, Florida, USA, November 1-3, 2015. [URL]
+(http://link.springer.com/chapter/10.1007/978-3-319-26190-4_16)
+
 ### Temporary Server for EPCIS v1.2 prototyping ###
 > [Server](http://143.248.56.100:8080/epcis)
 
