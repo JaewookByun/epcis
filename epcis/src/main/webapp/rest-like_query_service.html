@@ -32,6 +32,14 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
+
+	$(document).ready(function() {
+		$('#pollBaseURL').val("http://"+location.host+"/epcis/Service/Poll/SimpleEventQuery?");
+		$('#getStandardVersionURL').val("http://"+location.host+"/epcis/Service/GetStandardVersion");
+		$('#getVendorVersionURL').val("http://"+location.host+"/epcis/Service/GetVendorVersion");
+		$('#getQueryNamesURL').val("http://"+location.host+"/epcis/Service/GetQueryNames");
+	});
+	
 	function poll() {
 		var baseURL = $("#pollBaseURL").val();
 		var params = $("#pollParam").val();
@@ -137,7 +145,7 @@
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-sm-4">
-					<h4>EPCIS Query URL (HTTP.GET)</h4>
+					<h4>EPCIS Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
 					<input id="pollBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
 						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">

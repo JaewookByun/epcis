@@ -37,6 +37,7 @@
 		$(".dropdown-menu").on("click", "li a", function(event) {
 			$("#xmlTextArea").load($(this)[0].id);
 		})
+		$('#captureURL').val('http://'+location.host+'/epcis/Service/EventCapture');
 	});
 
 	function capture() {
@@ -92,7 +93,7 @@
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-sm-4">
-					<h4>EPCIS Capture URL</h4>
+					<h4>EPCIS Capture URL (Change IP or Domain if needed)</h4>
 					<input id="captureURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/EventCapture"
 						placeholder="http://localhost:8080/epcis/Service/EventCapture">

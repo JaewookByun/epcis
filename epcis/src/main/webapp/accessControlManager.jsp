@@ -134,11 +134,33 @@
 		$(".dropdown-menu").on("click", "li a", function(event) {
 			$("#xmlTextArea").load($(this)[0].id);
 		})
+		$('#resetURL').val("http://"+location.host+"/epcis/Service/Admin/ResetDB");
 	});
-
+	
 	function movePage(page) {
 		document.location.href = page;
 	}
+	
+	function resetDB(){
+		var baseURL = $("#resetURL").val();
+		var fid = $("#fid").val();
+		var fAccessToken = $("#fAccessToken").val();
+		var url = baseURL + "?userID=" + fid+"&accessToken="+fAccessToken;
+		$.get(
+				url,
+				function(ret) {
+					if (typeof ret == 'object') {
+						$("#consoleMsg").val(
+								(new XMLSerializer()).serializeToString(ret))
+								.hide().fadeIn();
+					} else {
+						$("#consoleMsg").val(ret).hide().fadeIn();
+					}
+				}).fail(function(e) {
+			$("#consoleMsg").val(e.responseText).hide().fadeIn();
+		});
+	}
+	
 </script>
 <body>
 	<div class="panel panel-info">
@@ -176,6 +198,14 @@
 					<p>Facebook Access Token</p>
 					<input id="fAccessToken" type="text" class="form-control"
 						placeholder="Access Token will be shown here">
+					<br>
+					<p>Reset Repository (Change IP or Domain if needed)</p>
+					<input id="resetURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/Admin/ResetDB"
+						placeholder="http://localhost:8080/epcis/Service/Admin/ResetDB">
+					<br>
+					<button type="button" class="btn btn-danger"
+								onclick="resetDB()">Reset DB</button>	
 				</div>
 			</div>
 		</div>
