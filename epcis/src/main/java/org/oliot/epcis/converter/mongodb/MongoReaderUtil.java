@@ -122,8 +122,8 @@ public class MongoReaderUtil {
 		if (dbObject.get("eventID") != null) {
 			eeet.setEventID(dbObject.getString("eventID").getValue());
 		} else {
-			if(dbObject.containsKey("_id")){
-				eeet.setEventID(dbObject.getObjectId("_id").getValue().toHexString());				
+			if (dbObject.containsKey("_id")) {
+				eeet.setEventID(dbObject.getObjectId("_id").getValue().toHexString());
 			}
 		}
 		if (dbObject.get("errorDeclaration") != null) {
@@ -223,21 +223,24 @@ public class MongoReaderUtil {
 				}
 
 				// Get Namespace
-				String[] anyKeyCheck = anyKey.split(":");
-				String namespace = null;
+				String[] anyKeyCheck = anyKey.split("#");
 				String namespaceURI = null;
+				String localName = null;
+				String prefix = null;
+				String qname = null;
 				if (anyKeyCheck.length == 2) {
-					namespace = anyKeyCheck[0];
-					namespaceURI = nsMap.get(namespace).toString();
+					namespaceURI = anyKeyCheck[0];
+					localName = anyKeyCheck[1];
+					prefix = nsMap.get(namespaceURI).toString();
+					qname = prefix + ":" + localName;
+				} else {
+					qname = anyKey;
 				}
 
 				if (anyKey != null) {
-
-					Node node = doc.createElement("value");
-					node.setTextContent(value);
-					Element element = doc.createElement(anyKey);
-					if (namespace != null) {
-						element.setAttribute("xmlns:" + namespace, namespaceURI);
+					Element element = doc.createElement(qname);
+					if (prefix != null && namespaceURI != null) {
+						element.setAttribute("xmlns:" + prefix, decodeMongoObjectKey(namespaceURI));
 					}
 					if (value != null) {
 						element.setTextContent(value);
@@ -755,5 +758,10 @@ public class MongoReaderUtil {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		}
 		return object;
+	}
+
+	static public String decodeMongoObjectKey(String key) {
+		key = key.replace("\uff0e", ".");
+		return key;
 	}
 }

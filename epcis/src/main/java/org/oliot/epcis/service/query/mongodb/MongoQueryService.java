@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.converter.mongodb.AggregationEventReadConverter;
 import org.oliot.epcis.converter.mongodb.MasterDataReadConverter;
+import org.oliot.epcis.converter.mongodb.MongoWriterUtil;
 import org.oliot.epcis.converter.mongodb.ObjectEventReadConverter;
 import org.oliot.epcis.converter.mongodb.QuantityEventReadConverter;
 import org.oliot.epcis.converter.mongodb.TransactionEventReadConverter;
@@ -194,36 +195,36 @@ public class MongoQueryService {
 		String schedule = null;
 		if (querySchedule != null) {
 			String sec = querySchedule.getSecond();
-			if( sec == null )
+			if (sec == null)
 				sec = "*";
 			String min = querySchedule.getMinute();
-			if( min == null )
+			if (min == null)
 				min = "*";
 			String hour = querySchedule.getHour();
-			if( hour == null )
+			if (hour == null)
 				hour = "*";
 			String dayOfMonth = querySchedule.getDayOfMonth();
-			if( dayOfMonth == null)
+			if (dayOfMonth == null)
 				dayOfMonth = "*";
 			String month = querySchedule.getMonth();
 			String dayOfWeek = querySchedule.getDayOfWeek();
-			
+
 			// either month or dayOfWeek should be ?
 			// two are not null -> dayOfWeek = ?
 			// one of two exists -> non-exist = ?
 			// two are null -> month=* , dayOfWeek=?
-			
-			if( month == null && dayOfWeek == null){
+
+			if (month == null && dayOfWeek == null) {
 				month = "*";
 				dayOfWeek = "?";
-			}else if( month != null && dayOfWeek == null ){
+			} else if (month != null && dayOfWeek == null) {
 				dayOfWeek = "?";
-			}else if( month == null && dayOfWeek != null ){
+			} else if (month == null && dayOfWeek != null) {
 				month = "?";
-			}else{
+			} else {
 				dayOfWeek = "?";
 			}
-		
+
 			schedule = sec + " " + min + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
 		}
 
@@ -303,7 +304,8 @@ public class MongoQueryService {
 				BsonDocument.class);
 
 		Iterator<BsonDocument> subIterator = collection
-				.find(new BsonDocument("pollParameters.queryName", new BsonString(queryName)), BsonDocument.class).iterator();
+				.find(new BsonDocument("pollParameters.queryName", new BsonString(queryName)), BsonDocument.class)
+				.iterator();
 
 		while (subIterator.hasNext()) {
 			BsonDocument subscription = subIterator.next();
@@ -863,6 +865,7 @@ public class MongoQueryService {
 
 		// Update Query with ORDER and LIMIT
 		if (orderBy != null) {
+			orderBy = MongoWriterUtil.encodeMongoObjectKey(orderBy);
 			// Currently only eventTime, recordTime can be used
 			if (orderBy.trim().equals("eventTime")) {
 				if (orderDirection != null) {
@@ -1479,6 +1482,7 @@ public class MongoQueryService {
 				 */
 				if (paramName.contains("EQ_bizTransaction_")) {
 					String type = paramName.substring(18, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 					BsonDocument query = getFamilyQueryObject(type, new String[] { "bizTransactionList" }, paramValues);
 					if (query != null)
 						queryList.add(query);
@@ -1497,6 +1501,7 @@ public class MongoQueryService {
 
 				if (paramName.contains("EQ_source_")) {
 					String type = paramName.substring(10, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 					/*
 					 * if (eventType.equals("AggregationEvent") ||
 					 * eventType.equals("ObjectEvent") ||
@@ -1536,6 +1541,7 @@ public class MongoQueryService {
 				 */
 				if (paramName.contains("EQ_destination_")) {
 					String type = paramName.substring(15, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 					/*
 					 * if (eventType.equals("AggregationEvent") ||
 					 * eventType.equals("ObjectEvent") ||
@@ -1566,6 +1572,7 @@ public class MongoQueryService {
 
 				if (paramName.startsWith("EQ_ILMD_")) {
 					String type = paramName.substring(8, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 					BsonArray paramArray = getParamBsonArray(paramValues);
 					BsonDocument queryObject = getQueryObject(
 							new String[] { "extension.ilmd.any." + type, "ilmd.any." + type }, paramArray);
@@ -1587,6 +1594,7 @@ public class MongoQueryService {
 				if (paramName.startsWith("GT_ILMD_") || paramName.startsWith("GE_ILMD_")
 						|| paramName.startsWith("LT_ILMD_") || paramName.startsWith("LE_ILMD_")) {
 					String type = paramName.substring(8, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 
 					if (paramName.startsWith("GT_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
@@ -1622,21 +1630,33 @@ public class MongoQueryService {
 				 * parameter is ignored.
 				 */
 				if (paramName.startsWith("EXISTS_ILMD_")) {
-					if (p.getEventType().equals("ObjectEvent")) {
-						String field = paramName.substring(12, paramName.length());
-						Boolean isExist = Boolean.parseBoolean(paramValues);
-						BsonBoolean isExistBson = new BsonBoolean(isExist);
-						BsonDocument query = getExistsQueryObject("extension.ilmd", field, isExistBson);
-						if (query != null)
-							queryList.add(query);
-					} else if (p.getEventType().equals("TransformationEvent")) {
-						String field = paramName.substring(12, paramName.length());
-						Boolean isExist = Boolean.parseBoolean(paramValues);
-						BsonBoolean isExistBson = new BsonBoolean(isExist);
-						BsonDocument query = getExistsQueryObject("ilmd", field, isExistBson);
-						if (query != null)
-							queryList.add(query);
-					}
+					/*
+					 * if (p.getEventType().equals("ObjectEvent")) { String
+					 * field = paramName.substring(12, paramName.length());
+					 * field = MongoWriterUtil.encodeMongoObjectKey(field);
+					 * Boolean isExist = Boolean.parseBoolean(paramValues);
+					 * BsonBoolean isExistBson = new BsonBoolean(isExist);
+					 * BsonDocument query =
+					 * getExistsQueryObject("extension.ilmd", field,
+					 * isExistBson); if (query != null) queryList.add(query); }
+					 * else if (p.getEventType().equals("TransformationEvent"))
+					 * { String field = paramName.substring(12,
+					 * paramName.length()); field =
+					 * MongoWriterUtil.encodeMongoObjectKey(field); Boolean
+					 * isExist = Boolean.parseBoolean(paramValues); BsonBoolean
+					 * isExistBson = new BsonBoolean(isExist); BsonDocument
+					 * query = getExistsQueryObject("ilmd", field, isExistBson);
+					 * if (query != null) queryList.add(query); }
+					 */
+
+					String field = paramName.substring(12, paramName.length());
+					field = MongoWriterUtil.encodeMongoObjectKey(field);
+					Boolean isExist = Boolean.parseBoolean(paramValues);
+					BsonBoolean isExistBson = new BsonBoolean(isExist);
+					BsonDocument query = getExistsQueryObject(new String[] { "extension.ilmd.any", "ilmd.any" }, field,
+							isExistBson);
+					if (query != null)
+						queryList.add(query);
 				}
 
 				/**
@@ -1651,6 +1671,7 @@ public class MongoQueryService {
 
 				if (paramName.startsWith("EQ_ERROR_DECLARATION_")) {
 					String type = paramName.substring(21, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 
 					BsonArray paramArray = getParamBsonArray(paramValues);
 					BsonDocument queryObject = getQueryObject(new String[] { "errorDeclaration.any." + type },
@@ -1674,6 +1695,7 @@ public class MongoQueryService {
 						|| paramName.startsWith("LT_ERROR_DECLARATION_")
 						|| paramName.startsWith("LE_ERROR_DECLARATION_")) {
 					String type = paramName.substring(21, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
 
 					if (paramName.startsWith("GT_")) {
 						BsonDocument query = getCompExtensionQueryObject(type,
@@ -1722,6 +1744,7 @@ public class MongoQueryService {
 					 */
 					if (paramName.startsWith("EQ_")) {
 						String type = paramName.substring(3, paramName.length());
+						type = MongoWriterUtil.encodeMongoObjectKey(type);
 
 						BsonArray paramArray = getParamBsonArray(paramValues);
 						BsonDocument queryObject = getQueryObject(
@@ -1745,6 +1768,7 @@ public class MongoQueryService {
 					if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
 							|| paramName.startsWith("LE_")) {
 						String type = paramName.substring(3, paramName.length());
+						type = MongoWriterUtil.encodeMongoObjectKey(type);
 
 						if (paramName.startsWith("GT_")) {
 							BsonDocument query = getCompExtensionQueryObject(type,
@@ -1787,6 +1811,8 @@ public class MongoQueryService {
 
 					if (paramName.startsWith("EXISTS_")) {
 						String field = paramName.substring(7, paramName.length());
+						field = MongoWriterUtil.encodeMongoObjectKey(field);
+
 						Boolean isExist = Boolean.parseBoolean(paramValues);
 						BsonBoolean isExistBson = new BsonBoolean(isExist);
 						BsonDocument query = getExistsQueryObject("any", field, isExistBson);
@@ -1857,6 +1883,8 @@ public class MongoQueryService {
 
 			if (paramName.startsWith("HASATTR_")) {
 				String type = paramName.substring(8, paramName.length());
+				type = MongoWriterUtil.encodeMongoObjectKey(type);
+
 				BsonArray paramArray = getParamBsonArray(paramValues);
 
 				continue;
@@ -2095,6 +2123,7 @@ public class MongoQueryService {
 	}
 
 	private boolean isExtensionFilterPassed(String type, BsonArray paramArray, BsonDocument ext, boolean isTopLevel) {
+		type = MongoWriterUtil.encodeMongoObjectKey(type);
 		Iterator<String> keyIterator = ext.keySet().iterator();
 		while (keyIterator.hasNext()) {
 			String key = keyIterator.next();
