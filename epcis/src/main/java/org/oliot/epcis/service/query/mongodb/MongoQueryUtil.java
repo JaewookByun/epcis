@@ -39,7 +39,7 @@ import com.mongodb.client.MongoCollection;
 public class MongoQueryUtil {
 
 	static BsonDocument getFamilyQueryObject(String type, String[] fieldArr, String csv) {
-	
+
 		BsonArray orQueries = new BsonArray();
 		for (String field : fieldArr) {
 			String[] paramValueArr = csv.split(",");
@@ -237,6 +237,31 @@ public class MongoQueryUtil {
 			query.put(field, new BsonDocument("$exists", isExist));
 		}
 		return query;
+	}
+
+	static BsonDocument getExistsQueryObject(String[] fieldArr, String str, BsonBoolean isExist) {
+		BsonArray conjQueries = new BsonArray();
+		for (String field : fieldArr) {
+			BsonDocument query = new BsonDocument();
+			if (str != null) {
+				str = encodeMongoObjectKey(str);
+				query.put(field + "." + str, new BsonDocument("$exists", isExist));
+			} else {
+				query.put(field, new BsonDocument("$exists", isExist));
+			}
+			conjQueries.add(query);
+		}
+		if (conjQueries.size() != 0) {
+			BsonDocument queryObject = new BsonDocument();
+			if (isExist.equals(BsonBoolean.TRUE))
+				queryObject.put("$or", conjQueries);
+			else{
+				queryObject.put("$and", conjQueries);
+			}
+			return queryObject;
+		} else {
+			return null;
+		}
 	}
 
 	static String encodeMongoObjectKey(String key) {

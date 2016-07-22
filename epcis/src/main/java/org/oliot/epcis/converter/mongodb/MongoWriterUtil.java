@@ -602,31 +602,44 @@ public class MongoWriterUtil {
 			Object obj = objList.get(i);
 			if (obj instanceof Element) {
 				Element element = (Element) obj;
-				String name = element.getNodeName();
+				String qname = element.getNodeName();
 				// Process Namespace
-				String[] checkArr = name.split(":");
-				if (checkArr.length == 2) {
-					map2Save.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
-				}
+				String[] checkArr = qname.split(":");
+
+				if (checkArr.length != 2)
+					continue;
+
+				String prefix = checkArr[0];
+				String localName = checkArr[1];
+				String namespaceURI = encodeMongoObjectKey(element.getNamespaceURI());
+				String qnameKey = encodeMongoObjectKey(namespaceURI + "#" + localName);
+				// checkArr[0] : example1
+				// getNamespaceURI : http
+				map2Save.put("@" + namespaceURI, new BsonString(prefix));
+
 				Node firstChildNode = element.getFirstChild();
 				if (firstChildNode != null) {
 					if (firstChildNode instanceof Text) {
 						String value = firstChildNode.getTextContent();
 						value = reflectXsiType(value, element);
-						map2Save.put(name, converseType(value));
+						map2Save.put(qnameKey, converseType(value));
 					} else if (firstChildNode instanceof Element) {
 						Element childNode = null;
 						BsonDocument sub2Save = new BsonDocument();
 						do {
 							if (firstChildNode instanceof Element) {
 								childNode = (Element) firstChildNode;
+								String childQName = childNode.getNodeName();
+								String[] childCheckArr = childQName.split(":");
+								if (childCheckArr.length != 2)
+									continue;
 
-								String childName = childNode.getNodeName();
-								String[] checkArr2 = childName.split(":");
-								if (checkArr2.length == 2) {
-									sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
-								}
-								map2Save.put(name, getAnyMap(childNode, sub2Save));
+								String childPrefix = childCheckArr[0];
+								String childNamespaceURI = encodeMongoObjectKey(childNode.getNamespaceURI());
+								
+								sub2Save.put("@" + childNamespaceURI, new BsonString(childPrefix));
+
+								map2Save.put(qnameKey, getAnyMap(childNode, sub2Save));
 							}
 						} while ((firstChildNode = firstChildNode.getNextSibling()) != null);
 					}
@@ -638,12 +651,24 @@ public class MongoWriterUtil {
 
 	// Inside recursive logic
 	static BsonDocument getAnyMap(Element element, BsonDocument map2Save) {
+
+		String qname = element.getNodeName();
+		// Process Namespace
+		String[] checkArr = qname.split(":");
+		if (checkArr.length != 2)
+			return null;
+
+		String localName = checkArr[1];
+		String namespaceURI = encodeMongoObjectKey(element.getNamespaceURI());
+		String qnameKey = encodeMongoObjectKey(namespaceURI + "#" + localName);
+
 		Node firstChildNode = element.getFirstChild();
+
 		if (firstChildNode instanceof Text) {
 			// A
 			String value = firstChildNode.getTextContent();
 			value = reflectXsiType(value, element);
-			map2Save.put(element.getNodeName(), converseType(value));
+			map2Save.put(qnameKey, converseType(value));
 		} else if (firstChildNode instanceof Element) {
 			// example1:b, example1:d, example1:b, example1:e
 			Element childNode = null;
@@ -651,12 +676,14 @@ public class MongoWriterUtil {
 			do {
 				if (firstChildNode instanceof Element) {
 					childNode = (Element) firstChildNode;
-					String childName = childNode.getNodeName();
-					String[] checkArr2 = childName.split(":");
-					if (checkArr2.length == 2) {
-						sub2Save.put("@" + checkArr2[0], new BsonString(childNode.getNamespaceURI()));
-					}
-					map2Save.put(element.getNodeName(), getAnyMap(childNode, sub2Save));
+					String childQName = childNode.getNodeName();
+					String[] childCheckArr = childQName.split(":");
+					if (childCheckArr.length != 2)
+						continue;
+					String childPrefix = childCheckArr[0];
+					String childNamespaceURI = encodeMongoObjectKey(childNode.getNamespaceURI());
+					sub2Save.put("@" + childNamespaceURI, new BsonString(childPrefix));
+					map2Save.put(qnameKey, getAnyMap(childNode, sub2Save));
 				}
 			} while (firstChildNode.getNextSibling() != null && firstChildNode.getNextSibling() instanceof Element
 					&& (firstChildNode = (Element) firstChildNode.getNextSibling()) != null);
@@ -675,28 +702,28 @@ public class MongoWriterUtil {
 		}
 		return map2Save;
 	}
-	
-	static String reflectXsiType(String targetValue, Element element){
-		// xsi: int, long, float, double, boolean, dateTime 
+
+	static String reflectXsiType(String targetValue, Element element) {
+		// xsi: int, long, float, double, boolean, dateTime
 		// Wedge is evaluated before xsi
 		String type = element.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "type");
-		if( type != null && !type.isEmpty() && targetValue.indexOf('^') == -1){
-			if(type.contains("int")){
+		if (type != null && !type.isEmpty() && targetValue.indexOf('^') == -1) {
+			if (type.contains("int")) {
 				targetValue = targetValue.trim();
 				targetValue += "^int";
-			}else if(type.contains("long")){
+			} else if (type.contains("long")) {
 				targetValue = targetValue.trim();
 				targetValue += "^long";
-			}else if(type.contains("float")){
+			} else if (type.contains("float")) {
 				targetValue = targetValue.trim();
 				targetValue += "^float";
-			}else if(type.contains("double")){
+			} else if (type.contains("double")) {
 				targetValue = targetValue.trim();
 				targetValue += "^double";
-			}else if(type.contains("boolean")){
+			} else if (type.contains("boolean")) {
 				targetValue = targetValue.trim();
 				targetValue += "^boolean";
-			}else if(type.contains("dateTime")){
+			} else if (type.contains("dateTime")) {
 				targetValue = targetValue.trim();
 				targetValue += "^dateTime";
 			}
@@ -723,7 +750,7 @@ public class MongoWriterUtil {
 				return new BsonDouble(Double.parseDouble(valArr[0]));
 			} else if (type.equals("dateTime")) {
 				BsonDateTime time = getBsonDateTime(valArr[0]);
-				if(time != null)
+				if (time != null)
 					return time;
 				return new BsonString(value);
 			} else {
@@ -763,7 +790,7 @@ public class MongoWriterUtil {
 
 		return errorBson;
 	}
-	
+
 	static BsonDateTime getBsonDateTime(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
@@ -784,4 +811,8 @@ public class MongoWriterUtil {
 		return null;
 	}
 	
+	static public String encodeMongoObjectKey(String key) {
+		key = key.replace(".", "\uff0e");
+		return key;
+	}
 }

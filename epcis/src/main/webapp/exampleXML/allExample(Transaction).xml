@@ -2,10 +2,10 @@
 <!DOCTYPE project>
 <epcis:EPCISDocument schemaVersion="1.2"
 	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:example0="http://ns.example.com/epcis" xmlns:example1="http://ns.example.com/epcis"
-	xmlns:example2="http://epcis.example.com/ns" xmlns:example3="http://epcis.example.com/ns"
-	creationDate="2013-06-04T14:59:02.099+02:00" xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	xmlns:example="http://ns.example.com/epcis">
+	xmlns:example0="http://ns.example.com/epcis0" xmlns:example1="http://ns.example.com/epcis1"
+	xmlns:example2="http://ns.example.com/epcis2" xmlns:example3="http://ns.example.com/epcis3"
+	xmlns:example="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
 	<EPCISBody>
 		<EventList>
 			<TransactionEvent>

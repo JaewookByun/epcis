@@ -88,7 +88,7 @@ public class MasterDataWriteConverter {
 							AttributeType attribute = attributeList.get(j);
 							// e.g. defnition
 							String key = attribute.getId();
-							key = encodeMongoObjectKey(key);
+							key = MongoWriterUtil.encodeMongoObjectKey(key);
 							attrObj.remove(key);
 						}
 					}
@@ -99,7 +99,7 @@ public class MasterDataWriteConverter {
 						AttributeType attribute = attributeList.get(j);
 						// e.g. defnition
 						String key = attribute.getId();
-						key = encodeMongoObjectKey(key);
+						key = MongoWriterUtil.encodeMongoObjectKey(key);
 						List<Object> valueList = attribute.getContent();
 
 						if (valueList.size() == 1 && valueList.get(0) instanceof String) {
@@ -120,12 +120,19 @@ public class MasterDataWriteConverter {
 									BsonDocument complexAttr = new BsonDocument();
 									BsonDocument map2Save = new BsonDocument();
 									Element element = (Element) value;
-									// example:Address
-									String name = element.getNodeName();
-									String[] checkArr = name.split(":");
-									if (checkArr.length == 2) {
-										complexAttr.put("@" + checkArr[0], new BsonString(element.getNamespaceURI()));
-									}
+									String qname = element.getNodeName();
+									String[] checkArr = qname.split(":");
+									
+									if(checkArr.length != 2)
+										continue;
+									
+									String prefix = checkArr[0];
+									String localName = checkArr[1];
+									String namespaceURI = MongoWriterUtil.encodeMongoObjectKey(element.getNamespaceURI());
+									String qnameKey = MongoWriterUtil.encodeMongoObjectKey(namespaceURI+"#"+localName);
+									
+									complexAttr.put("@"+ namespaceURI, new BsonString(prefix));
+									
 									NodeList childNodeList = element.getChildNodes();
 									for (int n = 0; n < childNodeList.getLength(); n++) {
 										Node childNode = childNodeList.item(n);
@@ -137,7 +144,7 @@ public class MasterDataWriteConverter {
 											map2Save.put(cname, new BsonString(cval));
 										}
 									}
-									complexAttr.put(name, map2Save);
+									complexAttr.put(qnameKey, map2Save);
 									attrObj.put(key, complexAttr);
 								}
 							}
@@ -202,7 +209,7 @@ public class MasterDataWriteConverter {
 			Iterator<String> mapIter = map2Save.keySet().iterator();
 			while (mapIter.hasNext()) {
 				String key = mapIter.next();
-				key = encodeMongoObjectKey(key);
+				key = MongoWriterUtil.encodeMongoObjectKey(key);
 				BsonValue value = (BsonValue) map2Save.get(key);
 				attrObj.put(key, value);
 			}
@@ -217,15 +224,4 @@ public class MasterDataWriteConverter {
 
 		return 0;
 	}
-
-	public String encodeMongoObjectKey(String key) {
-		key = key.replace(".", "\uff0e");
-		return key;
-	}
-
-	public String decodeMongoObjectKey(String key) {
-		key = key.replace("\uff0e", ".");
-		return key;
-	}
-
 }
