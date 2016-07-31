@@ -33,7 +33,7 @@ import org.oliot.model.epcis.SubscriptionControls;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService(endpointInterface = "org.oliot.epcis.service.query.CoreQueryService")
+@WebService(endpointInterface = "org.oliot.epcis.service.query.CoreQueryService", targetNamespace="urn:epcglobal:epcis-query:xsd:1")
 public class SoapQueryService implements CoreQueryService {
 
 	@Override
