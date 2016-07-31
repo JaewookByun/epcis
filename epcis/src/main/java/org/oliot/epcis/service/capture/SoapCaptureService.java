@@ -21,7 +21,7 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService(endpointInterface = "org.oliot.epcis.service.capture.CoreCaptureService")
+@WebService(endpointInterface = "org.oliot.epcis.service.capture.CoreCaptureService", targetNamespace="urn:epcglobal:epcis-capture:xsd:1")
 public class SoapCaptureService implements CoreCaptureService {
 
 	@Override

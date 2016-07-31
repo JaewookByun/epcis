@@ -29,7 +29,7 @@ import org.oliot.model.epcis.SubscriptionControls;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService
+@WebService(targetNamespace="urn:epcglobal:epcis-query:xsd:1")
 public interface CoreQueryService {
 
 	@WebMethod
