@@ -72,29 +72,32 @@ public class MongoCaptureUtil {
 			TriggerEngine.examineAndFire(type, object2Save);
 		}
 
-		if (!object2Save.containsKey("errorDeclaration")) {
-			if (userID != null && accessModifier != null) {
-				object2Save.put("userID", new BsonString(userID));
-				object2Save.put("accessModifier", new BsonString(accessModifier));
-			}
-			collection.insertOne(object2Save);
-			Configuration.logger.info(" Event Saved ");
-		} else {
-			// Error Declaration Mechanism
-			BsonDocument filter = object2Save.clone();
-			// Make 'otherwise identical' event filter
-			filter = makeOtherwiseIdenticalFilter(filter);
-			boolean isReplacing = replaceErroneousEvents(collection, filter, object2Save);
-			if (isReplacing == true) {
-				Configuration.logger.info(" Error Declaration succeed");
-			} else {
-				Configuration.logger.info(" Error Declaration failed");
-				return "[ERROR] Error Declaration failed";
-			}
+		if (userID != null && accessModifier != null) {
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
 		}
+		collection.insertOne(object2Save);
+		Configuration.logger.info(" Event Saved ");
+
+		/*
+		 * if (!object2Save.containsKey("errorDeclaration")) { if (userID !=
+		 * null && accessModifier != null) { object2Save.put("userID", new
+		 * BsonString(userID)); object2Save.put("accessModifier", new
+		 * BsonString(accessModifier)); } collection.insertOne(object2Save);
+		 * Configuration.logger.info(" Event Saved "); } else { // Error
+		 * Declaration Mechanism BsonDocument filter = object2Save.clone(); //
+		 * Make 'otherwise identical' event filter filter =
+		 * makeOtherwiseIdenticalFilter(filter); boolean isReplacing =
+		 * replaceErroneousEvents(collection, filter, object2Save); if
+		 * (isReplacing == true) { Configuration.logger.info(
+		 * " Error Declaration succeed"); } else { Configuration.logger.info(
+		 * " Error Declaration failed"); return
+		 * "[ERROR] Error Declaration failed"; } }
+		 */
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private BsonDocument makeOtherwiseIdenticalFilter(BsonDocument filter) {
 		filter.remove("errorDeclaration");
 		filter.put("errorDeclaration", new BsonDocument("$exists", new BsonBoolean(false)));
@@ -102,17 +105,18 @@ public class MongoCaptureUtil {
 		return filter;
 	}
 
+	@SuppressWarnings("unused")
 	private boolean replaceErroneousEvents(MongoCollection<BsonDocument> collection, BsonDocument filter,
 			BsonDocument object2Save) {
 		boolean isReplacing = false;
 		while (true) {
 			Object result = collection.findOneAndReplace(filter, object2Save);
-			
+
 			if (result == null)
 				break;
-			else{
+			else {
 				isReplacing = true;
-				
+
 			}
 		}
 		return isReplacing;
@@ -120,9 +124,9 @@ public class MongoCaptureUtil {
 
 	public String capture(VocabularyType vocabulary, String userID, String accessModifier, Integer gcpLength) {
 		MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-		if(mdConverter.capture(vocabulary, gcpLength) != 0){
+		if (mdConverter.capture(vocabulary, gcpLength) != 0) {
 			return "[ERROR] Vocabulary Capture Failed";
-		}else{
+		} else {
 			return null;
 		}
 	}
