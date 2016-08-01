@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Poll", namespace = "urn:epcglobal:epcis-query:xsd:1", propOrder = { "queryName", "params" })
+@XmlType(name = "Poll", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName", "params" })
 public class Poll {
 
 	@XmlElement(required = true)
