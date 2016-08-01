@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Unsubscribe", namespace = "urn:epcglobal:epcis-query:xsd:1", propOrder = { "subscriptionID" })
+@XmlType(name = "Unsubscribe", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "subscriptionID" })
 public class Unsubscribe {
 
 	@XmlElement(required = true)

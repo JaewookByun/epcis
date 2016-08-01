@@ -32,28 +32,28 @@ import org.oliot.model.epcis.SubscriptionControls;
 @WebService(targetNamespace="urn:epcglobal:epcis-query:xsd:1")
 public interface CoreQueryService {
 
-	@WebMethod
+	@WebMethod(operationName="Subscribe")
 	public void subscribe(@WebParam(name = "queryName") String queryName, @WebParam(name = "params") QueryParams params,
 			@WebParam(name = "dest") URI dest, @WebParam(name = "controls") SubscriptionControls controls,
 			@WebParam(name = "subscriptionID") String subscriptionID);
 
-	@WebMethod
+	@WebMethod(operationName="Unsubscribe")
 	public void unsubscribe(@WebParam(name = "subscriptionID") String subscriptionID);
 
-	@WebMethod
+	@WebMethod(operationName="Poll")
 	public QueryResults poll(@WebParam(name = "queryName") String queryName,
 			@WebParam(name = "params") QueryParams params);
 
-	@WebMethod
+	@WebMethod(operationName="GetQueryNames")
 	public List<String> getQueryNames();
 
-	@WebMethod
+	@WebMethod(operationName="GetSubscriptionIDs")
 	public List<String> getSubscriptionIDs(@WebParam(name = "queryName") String queryName);
 
-	@WebMethod
+	@WebMethod(operationName="GetStandardVersion")
 	public String getStandardVersion();
 
-	@WebMethod
+	@WebMethod(operationName="GetVendorVersion")
 	public String getVendorVersion();
 
 }

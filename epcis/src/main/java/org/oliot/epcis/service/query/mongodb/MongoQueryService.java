@@ -2154,6 +2154,7 @@ public class MongoQueryService {
 	}
 
 	private boolean isCompExtensionFilterPassed(String type, String comp, BsonArray paramArray, BsonDocument ext) {
+		type = MongoWriterUtil.encodeMongoObjectKey(type);
 		Iterator<String> keyIterator = ext.keySet().iterator();
 		while (keyIterator.hasNext()) {
 			String key = keyIterator.next();
