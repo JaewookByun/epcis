@@ -228,9 +228,13 @@ public class MongoReaderUtil {
 				String localName = null;
 				String prefix = null;
 				String qname = null;
-				if (anyKeyCheck.length == 2) {
-					namespaceURI = anyKeyCheck[0];
-					localName = anyKeyCheck[1];
+				if (anyKeyCheck.length >= 2) {
+					namespaceURI = "";
+					for (int i = 0; i < anyKeyCheck.length - 1; i++) {
+						namespaceURI += anyKeyCheck[i] + "#";
+					}
+					namespaceURI = namespaceURI.substring(0, namespaceURI.length()-1);
+					localName = anyKeyCheck[anyKeyCheck.length - 1];
 					prefix = nsMap.get(namespaceURI).toString();
 					qname = prefix + ":" + localName;
 				} else {
