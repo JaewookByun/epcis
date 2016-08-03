@@ -2,6 +2,7 @@ package org.oliot.epcis.service.query;
 
 import java.io.StringReader;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,9 +12,11 @@ import javax.xml.bind.JAXB;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
-import org.oliot.model.epcis.QueryParams;
+import org.oliot.model.epcis.GetSubscriptionIDs;
+import org.oliot.model.epcis.Poll;
 import org.oliot.model.epcis.QueryResults;
-import org.oliot.model.epcis.SubscriptionControls;
+import org.oliot.model.epcis.Subscribe;
+import org.oliot.model.epcis.Unsubscribe;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -33,15 +36,22 @@ import org.oliot.model.epcis.SubscriptionControls;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService(endpointInterface = "org.oliot.epcis.service.query.CoreQueryService", targetNamespace="urn:epcglobal:epcis-query:xsd:1")
+@WebService(endpointInterface = "org.oliot.epcis.service.query.CoreQueryService", targetNamespace = "urn:epcglobal:epcis-query:xsd:1")
 public class SoapQueryService implements CoreQueryService {
 
 	@Override
-	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
-			String subscriptionID) {
+	public void subscribe(Subscribe subscribe) {
+		URI destURI = null;
+		try {
+			destURI = new URI(subscribe.getDest());
+		} catch (URISyntaxException e) {
+			return;
+		}
+
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
-			mqs.subscribe(queryName, params, dest, controls, subscriptionID);
+			mqs.subscribe(subscribe.getQueryName(), subscribe.getParams(), destURI, subscribe.getControls(),
+					subscribe.getSubscriptionID());
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -50,10 +60,10 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public void unsubscribe(String subscriptionID) {
+	public void unsubscribe(Unsubscribe unsubscribe) {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
-			mqs.unsubscribe(subscriptionID);
+			mqs.unsubscribe(unsubscribe.getSubscriptionID());
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -62,10 +72,10 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public List<String> getSubscriptionIDs(String queryName) {
+	public List<String> getSubscriptionIDs(GetSubscriptionIDs getSubscriptionIDs) {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
-			return mqs.getSubscriptionIDs(queryName);
+			return mqs.getSubscriptionIDs(getSubscriptionIDs.getQueryName());
 		} else if (Configuration.backend.equals("Cassandra")) {
 
 		} else if (Configuration.backend.equals("MySQL")) {
@@ -93,10 +103,10 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public QueryResults poll(String queryName, QueryParams params) {
+	public QueryResults poll(Poll poll) {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
-			String queryResultString = mqs.poll(queryName, params);
+			String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
 			// QueryResults Cannot Contains Error Message if according to SPEC
 			EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(queryResultString),
 					EPCISQueryDocumentType.class);
@@ -104,7 +114,7 @@ public class SoapQueryService implements CoreQueryService {
 					&& resultXML.getEPCISBody().getQueryResults() != null
 					&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
 				QueryResults queryResults = new QueryResults();
-				queryResults.setQueryName(queryName);
+				queryResults.setQueryName(poll.getQueryName());
 				queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
 				return queryResults;
 			}

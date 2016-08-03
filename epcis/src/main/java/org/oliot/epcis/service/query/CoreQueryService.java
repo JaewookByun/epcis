@@ -1,15 +1,20 @@
 package org.oliot.epcis.service.query;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
+import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.jws.soap.SOAPBinding;
+import javax.jws.soap.SOAPBinding.ParameterStyle;
+import javax.xml.ws.ResponseWrapper;
 
-import org.oliot.model.epcis.QueryParams;
+import org.oliot.model.epcis.GetSubscriptionIDs;
+import org.oliot.model.epcis.Poll;
 import org.oliot.model.epcis.QueryResults;
-import org.oliot.model.epcis.SubscriptionControls;
+import org.oliot.model.epcis.Subscribe;
+import org.oliot.model.epcis.Unsubscribe;
 
 /**
  * Copyright (C) 2014 Jaewook Byun
@@ -29,31 +34,31 @@ import org.oliot.model.epcis.SubscriptionControls;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService(targetNamespace="urn:epcglobal:epcis-query:xsd:1")
+@WebService(targetNamespace = "urn:epcglobal:epcis-query:xsd:1")
+@SOAPBinding(parameterStyle = ParameterStyle.BARE)
 public interface CoreQueryService {
 
-	@WebMethod(operationName="Subscribe")
-	public void subscribe(@WebParam(name = "queryName") String queryName, @WebParam(name = "params") QueryParams params,
-			@WebParam(name = "dest") URI dest, @WebParam(name = "controls") SubscriptionControls controls,
-			@WebParam(name = "subscriptionID") String subscriptionID);
+	@WebMethod(operationName = "Subscribe")
+	public void subscribe(@WebParam(name="Subscribe") Subscribe subscribe);
 
-	@WebMethod(operationName="Unsubscribe")
-	public void unsubscribe(@WebParam(name = "subscriptionID") String subscriptionID);
+	@WebMethod(operationName = "Unsubscribe")
+	public void unsubscribe(@WebParam(name="Unsubscribe") Unsubscribe unsubscribe);
 
-	@WebMethod(operationName="Poll")
-	public QueryResults poll(@WebParam(name = "queryName") String queryName,
-			@WebParam(name = "params") QueryParams params);
+	@WebMethod(operationName = "Poll")
+	@WebResult(name="QueryResults")
+	public QueryResults poll(@WebParam(name="Poll") Poll poll);
 
-	@WebMethod(operationName="GetQueryNames")
+	@WebMethod(operationName = "GetQueryNames")
 	public List<String> getQueryNames();
 
-	@WebMethod(operationName="GetSubscriptionIDs")
-	public List<String> getSubscriptionIDs(@WebParam(name = "queryName") String queryName);
+	@WebMethod(operationName = "GetSubscriptionIDs")
+	public List<String> getSubscriptionIDs(@WebParam(name = "GetSubscriptionIDs") GetSubscriptionIDs getSubscriptionIDs);
 
-	@WebMethod(operationName="GetStandardVersion")
+	@WebMethod(operationName = "GetStandardVersion")
+	@ResponseWrapper(targetNamespace = "urn:epcglobal:epcis-query:xsd:1", localName = "GetStandardVersionResponse")
 	public String getStandardVersion();
 
-	@WebMethod(operationName="GetVendorVersion")
+	@WebMethod(operationName = "GetVendorVersion")
 	public String getVendorVersion();
 
 }
