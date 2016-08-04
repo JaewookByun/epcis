@@ -57,10 +57,10 @@ public class TransformationEventReadConverter {
 			}
 		}
 		if (dbObject.get("eventTime") != null) {
-			transformationEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+			transformationEventType.setEventTime(getXMLGregorianCalendar(dbObject.getDateTime("eventTime")));
 		}
 		if (dbObject.get("recordTime") != null) {
-			transformationEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+			transformationEventType.setRecordTime(getXMLGregorianCalendar(dbObject.getDateTime("recordTime")));
 		}
 		if (dbObject.get("inputEPCList") != null) {
 			BsonArray epcListM = dbObject.get("inputEPCList").asArray();

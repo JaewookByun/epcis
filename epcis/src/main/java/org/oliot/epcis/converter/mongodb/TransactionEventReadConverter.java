@@ -58,10 +58,10 @@ public class TransactionEventReadConverter {
 			}
 		}
 		if (dbObject.get("eventTime") != null) {
-			transactionEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+			transactionEventType.setEventTime(getXMLGregorianCalendar(dbObject.getDateTime("eventTime")));
 		}
 		if (dbObject.get("recordTime") != null) {
-			transactionEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+			transactionEventType.setRecordTime(getXMLGregorianCalendar(dbObject.getDateTime("recordTime")));
 		}
 		if (dbObject.get("parentID") != null)
 			transactionEventType.setParentID(dbObject.getString("parentID").getValue());
@@ -146,7 +146,7 @@ public class TransactionEventReadConverter {
 			btlt.setBizTransaction(bizTranArrayList);
 			transactionEventType.setBizTransactionList(btlt);
 		}
-		
+
 		// EventID and ErrorDeclaration
 		transactionEventType.setBaseExtension(putEPCISEventExtensionType(dbObject, zone));
 

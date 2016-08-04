@@ -48,6 +48,7 @@ import org.oliot.epcis.service.subscription.MongoSubscriptionTask;
 import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.AttributeType;
+import org.oliot.model.epcis.EPCISEventListExtensionType;
 import org.oliot.model.epcis.EPCISQueryBodyType;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
@@ -409,8 +410,11 @@ public class MongoQueryService {
 					eventObjects.add(element);
 				} else if (eventTypeInDoc.equals("TransformationEvent")) {
 					TransformationEventReadConverter con = new TransformationEventReadConverter();
-					JAXBElement element = new JAXBElement(new QName("TransformationEvent"),
-							TransformationEventType.class, con.convert(dbObject));
+					TransformationEventType transformationEvent = con.convert(dbObject);
+					EPCISEventListExtensionType extension = new EPCISEventListExtensionType();
+					extension.setTransformationEvent(transformationEvent);
+					JAXBElement element = new JAXBElement(new QName("extension"),
+							EPCISEventListExtensionType.class, extension);
 					eventObjects.add(element);
 				}
 			} else {

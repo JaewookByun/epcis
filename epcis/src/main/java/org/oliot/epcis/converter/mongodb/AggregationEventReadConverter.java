@@ -60,10 +60,10 @@ public class AggregationEventReadConverter {
 			}
 		}
 		if (dbObject.get("eventTime") != null) {
-			aggregationEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+			aggregationEventType.setEventTime(getXMLGregorianCalendar(dbObject.getDateTime("eventTime")));
 		}
 		if (dbObject.get("recordTime") != null) {
-			aggregationEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+			aggregationEventType.setRecordTime(getXMLGregorianCalendar(dbObject.getDateTime("recordTime")));
 		}
 		if (dbObject.get("parentID") != null)
 			aggregationEventType.setParentID(dbObject.getString("parentID").getValue());

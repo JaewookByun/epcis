@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -97,13 +98,12 @@ public class MongoReaderUtil {
 		return attrType;
 	}
 
-	static XMLGregorianCalendar getDateStream(BsonDateTime bdt, int zone) {
+	static XMLGregorianCalendar getXMLGregorianCalendar(BsonDateTime bdt) {
 		try {
-			GregorianCalendar eventCalendar = new GregorianCalendar();
+			GregorianCalendar eventCalendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
 			eventCalendar.setTimeInMillis(bdt.getValue());
 			XMLGregorianCalendar xmlEventTime;
 			xmlEventTime = DatatypeFactory.newInstance().newXMLGregorianCalendar(eventCalendar);
-			xmlEventTime.setTimezone(zone * 60);
 			return xmlEventTime;
 		} catch (DatatypeConfigurationException e) {
 			Configuration.logger.error(e.toString());
@@ -130,7 +130,7 @@ public class MongoReaderUtil {
 			ErrorDeclarationType edt = new ErrorDeclarationType();
 			BsonDocument error = dbObject.getDocument("errorDeclaration");
 			if (error.containsKey("declarationTime")) {
-				edt.setDeclarationTime(getDateStream(error.getDateTime("declarationTime"), zone));
+				edt.setDeclarationTime(getXMLGregorianCalendar(error.getDateTime("declarationTime")));
 			}
 			if (error.containsKey("reason")) {
 				edt.setReason(error.getString("reason").getValue());
