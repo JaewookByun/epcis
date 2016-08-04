@@ -60,10 +60,10 @@ public class ObjectEventReadConverter {
 			}
 		}
 		if (dbObject.get("eventTime") != null) {
-			objectEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+			objectEventType.setEventTime(getXMLGregorianCalendar(dbObject.getDateTime("eventTime")));
 		}
 		if (dbObject.get("recordTime") != null) {
-			objectEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+			objectEventType.setRecordTime(getXMLGregorianCalendar(dbObject.getDateTime("recordTime")));
 		}
 		if (dbObject.get("epcList") != null) {
 			BsonArray epcListM = dbObject.getArray("epcList");

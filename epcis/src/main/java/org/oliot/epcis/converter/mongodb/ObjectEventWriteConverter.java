@@ -40,7 +40,6 @@ public class ObjectEventWriteConverter {
 
 	public BsonDocument convert(ObjectEventType objectEventType, Integer gcpLength) {
 		BsonDocument dbo = new BsonDocument();
-
 		dbo.put("eventType", new BsonString("ObjectEvent"));
 		// Event Time
 		if (objectEventType.getEventTime() != null)

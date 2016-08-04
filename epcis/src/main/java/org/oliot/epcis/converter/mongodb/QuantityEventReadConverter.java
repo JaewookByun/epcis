@@ -49,10 +49,10 @@ public class QuantityEventReadConverter {
 			}
 		}
 		if (dbObject.get("eventTime") != null) {
-			quantityEventType.setEventTime(getDateStream(dbObject.getDateTime("eventTime"), zone));
+			quantityEventType.setEventTime(getXMLGregorianCalendar(dbObject.getDateTime("eventTime")));
 		}
 		if (dbObject.get("recordTime") != null) {
-			quantityEventType.setRecordTime(getDateStream(dbObject.getDateTime("recordTime"), zone));
+			quantityEventType.setRecordTime(getXMLGregorianCalendar(dbObject.getDateTime("recordTime")));
 		}
 		if (dbObject.get("epcClass") != null)
 			quantityEventType.setEpcClass(dbObject.getString("epcClass").getValue());
