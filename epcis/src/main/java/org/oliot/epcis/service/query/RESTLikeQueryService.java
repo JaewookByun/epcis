@@ -14,8 +14,20 @@ import org.json.JSONArray;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.model.epcis.DuplicateSubscriptionException;
+import org.oliot.model.epcis.ImplementationException;
+import org.oliot.model.epcis.InvalidURIException;
+import org.oliot.model.epcis.NoSuchNameException;
+import org.oliot.model.epcis.NoSuchSubscriptionException;
 import org.oliot.model.epcis.PollParameters;
+import org.oliot.model.epcis.QueryParameterException;
+import org.oliot.model.epcis.QueryTooComplexException;
+import org.oliot.model.epcis.QueryTooLargeException;
+import org.oliot.model.epcis.SecurityException;
+import org.oliot.model.epcis.SubscribeNotPermittedException;
+import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.SubscriptionType;
+import org.oliot.model.epcis.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -87,6 +99,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * authenticated identity of the caller. If the EPCIS implementation does
 	 * not have a destination pre-arranged for the caller, or does not permit
 	 * this usage, it SHALL raise an InvalidURIException.
+	 * 
+	 * @throws QueryParameterException
 	 */
 	@RequestMapping(value = "/Subscribe/{queryName}/{subscriptionID}", method = RequestMethod.GET)
 	@ResponseBody
@@ -126,7 +140,10 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) Integer maxElementCount, @RequestParam(required = false) String format,
 			@RequestParam(required = false) String userID, @RequestParam(required = false) String accessToken,
-			@RequestParam Map<String, String> params) {
+			@RequestParam Map<String, String> params)
+			throws NoSuchNameException, InvalidURIException, DuplicateSubscriptionException, QueryParameterException,
+			QueryTooComplexException, SubscriptionControlsException, SubscribeNotPermittedException, SecurityException,
+			ValidationException, ImplementationException {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
@@ -185,7 +202,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 	}
 
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
-	public ResponseEntity<?> unsubscribe(@PathVariable String subscriptionID) {
+	public ResponseEntity<?> unsubscribe(@PathVariable String subscriptionID)
+			throws NoSuchSubscriptionException, ValidationException, ImplementationException {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
@@ -204,7 +222,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 	@RequestMapping(value = "/GetSubscriptionIDs/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getSubscriptionIDsREST(@PathVariable String queryName) {
+	public ResponseEntity<?> getSubscriptionIDsREST(@PathVariable String queryName)
+			throws NoSuchNameException, SecurityException, ValidationException, ImplementationException {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
@@ -232,7 +251,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetQueryNames", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getQueryNamesREST() {
+	public ResponseEntity<?> getQueryNamesREST()
+			throws SecurityException, ValidationException, ImplementationException {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
@@ -252,7 +272,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 * 
 	 * @return a list of all query names
 	 */
-	public List<String> getQueryNames() {
+	public List<String> getQueryNames() throws SecurityException, ValidationException, ImplementationException {
 		List<String> queryNames = new ArrayList<String>();
 		queryNames.add("SimpleEventQuery");
 		queryNames.add("SimpleMasterDataQuery");
@@ -273,7 +293,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetStandardVersion", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getStandardVersion() {
+	public ResponseEntity<?> getStandardVersion()
+			throws SecurityException, ValidationException, ImplementationException {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 		return new ResponseEntity<>(new String("1.2"), responseHeaders, HttpStatus.OK);
@@ -295,7 +316,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/GetVendorVersion", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getVendorVersion() {
+	public ResponseEntity<?> getVendorVersion() throws SecurityException, ValidationException, ImplementationException {
 		// It is not a version of Vendor
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
@@ -345,7 +366,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken,
 
-			@RequestParam Map<String, String> params) {
+			@RequestParam Map<String, String> params)
+			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
+			SecurityException, ValidationException, ImplementationException {
 
 		HttpHeaders responseHeaders = new HttpHeaders();
 		if (format != null && format.equals("JSON")) {

@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
+@SuppressWarnings("serial")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SecurityException", namespace = "urn:epcglobal:epcis-query:xsd:1")
 public class SecurityException extends EPCISException {

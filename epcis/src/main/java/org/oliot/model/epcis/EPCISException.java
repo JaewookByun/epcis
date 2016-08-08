@@ -34,13 +34,14 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
+@SuppressWarnings("serial")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "EPCISException", namespace = "urn:epcglobal:epcis-query:xsd:1", propOrder = { "reason" })
 @XmlSeeAlso({ ValidationException.class, InvalidURIException.class, NoSuchSubscriptionException.class,
 		SubscribeNotPermittedException.class, DuplicateSubscriptionException.class, SubscriptionControlsException.class,
 		QueryTooLargeException.class, ImplementationException.class, SecurityException.class, NoSuchNameException.class,
 		QueryTooComplexException.class, QueryParameterException.class, DuplicateNameException.class })
-public class EPCISException {
+public class EPCISException extends Exception {
 
 	@XmlElement(required = true)
 	protected String reason;

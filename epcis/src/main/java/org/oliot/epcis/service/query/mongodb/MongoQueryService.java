@@ -107,13 +107,15 @@ import static org.quartz.TriggerKey.triggerKey;
 
 public class MongoQueryService {
 
-	public String subscribeEventQuery(SubscriptionType s, String userID, List<String> friendList) {
+	public String subscribeEventQuery(SubscriptionType s, String userID, List<String> friendList)
+			throws QueryParameterException, SubscriptionControlsException {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
 		String reason = checkConstraintSimpleEventQuery(s.getPollParameters());
 		if (reason != null) {
-			return makeErrorResult(reason, QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult(reason, QueryParameterException.class);
 		}
 
 		// Existing subscription Check
@@ -134,13 +136,17 @@ public class MongoQueryService {
 				addScheduleToQuartz(s);
 
 			} catch (RuntimeException e) {
-				return makeErrorResult(e.toString(), SubscriptionControlsException.class);
+				throw new SubscriptionControlsException();
+				// return makeErrorResult(e.toString(),
+				// SubscriptionControlsException.class);
 			}
 		} else if (s.getSchedule() == null && s.getTrigger() != null) {
 			// Add Trigger with Query
 			TriggerEngine.addTriggerSubscription(s.getSubscriptionID(), s);
 		} else {
-			return makeErrorResult("One of schedule, trigger should be null", SubscriptionControlsException.class);
+			throw new SubscriptionControlsException();
+			// return makeErrorResult("One of schedule, trigger should be null",
+			// SubscriptionControlsException.class);
 		}
 
 		// Manage Subscription Persistently
@@ -150,26 +156,31 @@ public class MongoQueryService {
 		return retString;
 	}
 
-	public String subscribe(SubscriptionType s, String userID, List<String> friendList) {
+	public String subscribe(SubscriptionType s, String userID, List<String> friendList) throws QueryParameterException,
+			SubscriptionControlsException, InvalidURIException, SubscribeNotPermittedException {
 		// M20 : Throw an InvalidURIException for an incorrect dest argument in
 		// the subscribe method in EPCIS Query Control Interface
 		try {
 			new URL(s.getDest());
 		} catch (MalformedURLException e) {
-			return makeErrorResult(e.toString(), InvalidURIException.class);
+			throw new InvalidURIException();
+			// return makeErrorResult(e.toString(), InvalidURIException.class);
 		}
 
 		// M24 : Virtual Error Handling
 		// Automatically processed by URI param
 		// v1.2 not work
 		if (s.getDest() == null) {
-			return makeErrorResult("Fill the mandatory field in subscribe method", QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("Fill the mandatory field in subscribe
+			// method", QueryParameterException.class);
 		}
 
 		// M46
 		if (s.getPollParameters().getQueryName().equals("SimpleMasterDataQuery")) {
-			return makeErrorResult("SimpleMasterDataQuery is not available in subscription method",
-					SubscribeNotPermittedException.class);
+			throw new SubscribeNotPermittedException();
+			// return makeErrorResult("SimpleMasterDataQuery is not available in
+			// subscription method", SubscribeNotPermittedException.class);
 		}
 
 		String retString = "";
@@ -182,7 +193,8 @@ public class MongoQueryService {
 
 	// Soap Query Adaptor
 	public void subscribe(String queryName, QueryParams params, URI dest, SubscriptionControls controls,
-			String subscriptionID) {
+			String subscriptionID) throws QueryParameterException, SubscriptionControlsException, InvalidURIException,
+			SubscribeNotPermittedException {
 		PollParameters p = new PollParameters(queryName, params);
 
 		// Subscription Control Processing
@@ -317,14 +329,16 @@ public class MongoQueryService {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID) {
+	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID)
+			throws QueryParameterException, QueryTooLargeException {
 
 		// M27 - query params' constraint
 		// M39 - query params' constraint
 		String reason = checkConstraintSimpleEventQuery(p);
 
 		if (reason != null) {
-			return makeErrorResult(reason, QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult(reason, QueryParameterException.class);
 		}
 
 		// Make Base Result Document
@@ -335,7 +349,9 @@ public class MongoQueryService {
 		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
-			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("format param should be one of XML or
+			// JSON", QueryParameterException.class);
 		}
 
 		// Prepare container which query results are included
@@ -413,8 +429,8 @@ public class MongoQueryService {
 					TransformationEventType transformationEvent = con.convert(dbObject);
 					EPCISEventListExtensionType extension = new EPCISEventListExtensionType();
 					extension.setTransformationEvent(transformationEvent);
-					JAXBElement element = new JAXBElement(new QName("extension"),
-							EPCISEventListExtensionType.class, extension);
+					JAXBElement element = new JAXBElement(new QName("extension"), EPCISEventListExtensionType.class,
+							extension);
 					eventObjects.add(element);
 				}
 			} else {
@@ -427,11 +443,15 @@ public class MongoQueryService {
 		if (p.getMaxEventCount() != null) {
 			if (p.getFormat() == null || p.getFormat().equals("XML")) {
 				if (eventObjects.size() > p.getMaxEventCount()) {
-					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+					throw new QueryTooLargeException();
+					// return makeErrorResult("Violate maxEventCount",
+					// QueryTooLargeException.class);
 				}
 			} else {
 				if (retArray.length() > p.getMaxEventCount()) {
-					return makeErrorResult("Violate maxEventCount", QueryTooLargeException.class);
+					throw new QueryTooLargeException();
+					// return makeErrorResult("Violate maxEventCount",
+					// QueryTooLargeException.class);
 				}
 			}
 		}
@@ -445,12 +465,15 @@ public class MongoQueryService {
 		}
 	}
 
-	public String pollMasterDataQuery(PollParameters p, String userID, List<String> friendList) {
+	public String pollMasterDataQuery(PollParameters p, String userID, List<String> friendList)
+			throws QueryTooLargeException, QueryParameterException {
 
 		// Required Field Check
 		if (p.getIncludeAttributes() == null || p.getIncludeChildren() == null) {
-			return makeErrorResult("SimpleMasterDataQuery's Required Field: includeAttributes, includeChildren",
-					QueryTooLargeException.class);
+			throw new QueryTooLargeException();
+			// return makeErrorResult("SimpleMasterDataQuery's Required Field:
+			// includeAttributes, includeChildren",
+			// QueryTooLargeException.class);
 		}
 
 		// Make Base Result Document
@@ -462,7 +485,9 @@ public class MongoQueryService {
 		} else if (p.getFormat().equals("JSON")) {
 			// Do Nothing
 		} else {
-			return makeErrorResult("format param should be one of XML or JSON", QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("format param should be one of XML or
+			// JSON", QueryParameterException.class);
 		}
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
@@ -573,11 +598,15 @@ public class MongoQueryService {
 			try {
 				if (p.getFormat() == null || p.getFormat().equals("XML")) {
 					if (vList.size() > p.getMaxElementCount()) {
-						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+						throw new QueryTooLargeException();
+						// return makeErrorResult("Too Large Master Data
+						// result", QueryTooLargeException.class);
 					}
 				} else {
 					if (retArray.length() > p.getMaxElementCount()) {
-						return makeErrorResult("Too Large Master Data result", QueryTooLargeException.class);
+						throw new QueryTooLargeException();
+						// return makeErrorResult("Too Large Master Data
+						// result", QueryTooLargeException.class);
 					}
 				}
 			} catch (NumberFormatException e) {
@@ -594,17 +623,21 @@ public class MongoQueryService {
 	}
 
 	// Soap Service Adaptor
-	public String poll(String queryName, QueryParams queryParams) {
+	public String poll(String queryName, QueryParams queryParams)
+			throws QueryParameterException, QueryTooLargeException {
 		PollParameters p = new PollParameters(queryName, queryParams);
 		return poll(p, null, null, null);
 	}
 
-	public String poll(PollParameters p, String userID, List<String> friendList, String subscriptionID) {
+	public String poll(PollParameters p, String userID, List<String> friendList, String subscriptionID)
+			throws QueryParameterException, QueryTooLargeException {
 
 		// M24
 		if (p.getQueryName() == null) {
 			// It is not possible, automatically filtered by URI param
-			return makeErrorResult("queryName is mandatory field in poll method", QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("queryName is mandatory field in poll
+			// method", QueryParameterException.class);
 		}
 
 		if (p.getQueryName().equals("SimpleEventQuery"))
@@ -679,7 +712,7 @@ public class MongoQueryService {
 		return true;
 	}
 
-	private String checkConstraintSimpleEventQuery(PollParameters p) {
+	private String checkConstraintSimpleEventQuery(PollParameters p) throws QueryParameterException {
 
 		// M27
 		try {
@@ -704,7 +737,9 @@ public class MongoQueryService {
 				if (p.getLT_recordTime() != null)
 					sdf.parse(p.getLT_recordTime());
 			} catch (ParseException e1) {
-				return makeErrorResult(e.toString(), QueryParameterException.class);
+				throw new QueryParameterException();
+				// return makeErrorResult(e.toString(),
+				// QueryParameterException.class);
 			}
 		}
 
@@ -718,7 +753,9 @@ public class MongoQueryService {
 			 */
 			if (p.getOrderDirection() != null) {
 				if (!p.getOrderDirection().equals("ASC") && !p.getOrderDirection().equals("DESC")) {
-					return makeErrorResult("orderDirection should be ASC or DESC", QueryParameterException.class);
+					throw new QueryParameterException();
+					// return makeErrorResult("orderDirection should be ASC or
+					// DESC", QueryParameterException.class);
 				}
 			}
 		}
@@ -726,14 +763,18 @@ public class MongoQueryService {
 		// M27
 		if (p.getEventCountLimit() != null) {
 			if (p.getEventCountLimit() <= 0) {
-				return makeErrorResult("eventCount should be natural number", QueryParameterException.class);
+				throw new QueryParameterException();
+				// return makeErrorResult("eventCount should be natural number",
+				// QueryParameterException.class);
 			}
 		}
 
 		// M27
 		if (p.getMaxEventCount() != null) {
 			if (p.getMaxEventCount() <= 0) {
-				return makeErrorResult("maxEventCount should be natural number", QueryParameterException.class);
+				throw new QueryParameterException();
+				// return makeErrorResult("maxEventCount should be natural
+				// number", QueryParameterException.class);
 			}
 		}
 
@@ -746,15 +787,18 @@ public class MongoQueryService {
 				if (action.equals(""))
 					continue;
 				if (!action.equals("ADD") && !action.equals("OBSERVE") && !action.equals("DELETE")) {
-					return makeErrorResult("EQ_action: ADD | OBSERVE | DELETE", QueryParameterException.class);
+					throw new QueryParameterException();
+					// return makeErrorResult("EQ_action: ADD | OBSERVE |
+					// DELETE", QueryParameterException.class);
 				}
 			}
 		}
 
 		// M42
 		if (p.getEventCountLimit() != null && p.getMaxEventCount() != null) {
-			return makeErrorResult("One of eventCountLimit and maxEventCount should be omitted",
-					QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("One of eventCountLimit and maxEventCount
+			// should be omitted", QueryParameterException.class);
 		}
 		return null;
 	}
@@ -779,7 +823,7 @@ public class MongoQueryService {
 		return epcisQueryDocumentType;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unused" })
 	private String makeErrorResult(String err, Class type) {
 		if (type == InvalidURIException.class) {
 			InvalidURIException e = new InvalidURIException();
@@ -1207,7 +1251,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_epc() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_epc());
-			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "epcList.epc", "childEPCs.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1222,7 +1266,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_parentID() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_parentID());
-			BsonDocument queryObject = getQueryObject(new String[] { "parentID" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "parentID" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1241,7 +1285,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_inputEPC() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_inputEPC());
-			BsonDocument queryObject = getQueryObject(new String[] { "inputEPCList.epc" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "inputEPCList.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1260,7 +1304,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_outputEPC() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_outputEPC());
-			BsonDocument queryObject = getQueryObject(new String[] { "outputEPCList.epc" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "outputEPCList.epc" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1281,8 +1325,8 @@ public class MongoQueryService {
 
 		if (p.getMATCH_anyEPC() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_anyEPC());
-			BsonDocument queryObject = getQueryObject(new String[] { "epcList.epc", "childEPCs.epc", "inputEPCList.epc",
-					"outputEPCList.epc", "parentID" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "epcList.epc", "childEPCs.epc",
+					"inputEPCList.epc", "outputEPCList.epc", "parentID" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1303,7 +1347,7 @@ public class MongoQueryService {
 		if (p.getMATCH_epcClass() != null) {
 
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_epcClass());
-			BsonDocument queryObject = getQueryObject(
+			BsonDocument queryObject = getMatchQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass" },
 					paramArray);
 			if (queryObject != null) {
@@ -1322,7 +1366,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_inputEPCClass() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_inputEPCClass());
-			BsonDocument queryObject = getQueryObject(new String[] { "inputQuantityList.epcClass" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "inputQuantityList.epcClass" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1340,7 +1384,7 @@ public class MongoQueryService {
 
 		if (p.getMATCH_outputEPCClass() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_outputEPCClass());
-			BsonDocument queryObject = getQueryObject(new String[] { "outputQuantityList.epcClass" }, paramArray);
+			BsonDocument queryObject = getMatchQueryObject(new String[] { "outputQuantityList.epcClass" }, paramArray);
 			if (queryObject != null) {
 				queryList.add(queryObject);
 			}
@@ -1360,7 +1404,7 @@ public class MongoQueryService {
 		 */
 		if (p.getMATCH_anyEPCClass() != null) {
 			BsonArray paramArray = getParamBsonArray(p.getMATCH_anyEPCClass());
-			BsonDocument queryObject = getQueryObject(
+			BsonDocument queryObject = getMatchQueryObject(
 					new String[] { "extension.quantityList.epcClass", "extension.childQuantityList.epcClass",
 							"inputQuantityList.epcClass", "outputQuantityList.epcClass" },
 					paramArray);
@@ -1814,9 +1858,10 @@ public class MongoQueryService {
 					 */
 
 					if (paramName.startsWith("EXISTS_")) {
+						
 						String field = paramName.substring(7, paramName.length());
 						field = MongoWriterUtil.encodeMongoObjectKey(field);
-
+						paramValues = MongoWriterUtil.encodeMongoObjectKey(paramValues);
 						Boolean isExist = Boolean.parseBoolean(paramValues);
 						BsonBoolean isExistBson = new BsonBoolean(isExist);
 						BsonDocument query = getExistsQueryObject("any", field, isExistBson);

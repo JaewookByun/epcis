@@ -755,37 +755,38 @@ public class PollParameters {
 				// Supported Type: int, long, float, double, boolean, time,
 				// string
 
-				if (!(qp.getValue() instanceof Element))
-					continue;
-
-				Element element = (Element) qp.getValue();
-				NodeList nodeList = element.getChildNodes();
-				List<String> valueList = new ArrayList<String>();
-				for (int i = 0; i < nodeList.getLength(); i++) {
-					Node node = nodeList.item(i);
-					String type = node.getNodeName();
-					String value = node.getTextContent();
-					if (type.equals("#text"))
-						continue;
-					if (type.equals("int")) {
-						valueList.add(value + "^int");
-					} else if (type.equals("long")) {
-						valueList.add(value + "^long");
-					} else if (type.equals("float")) {
-						valueList.add(value + "^float");
-					} else if (type.equals("double")) {
-						valueList.add(value + "^double");
-					} else if (type.equals("boolean")) {
-						valueList.add(value + "^boolean");
-					} else if (type.equals("dateTime")) {
-						valueList.add(value + "^dateTime");
-					} else if (type.equals("string")) {
-						valueList.add(value);
-					} else if (type.equals("void")) {
-						valueList.add("true^boolean");
+				if ((qp.getValue() instanceof Element)) {
+					Element element = (Element) qp.getValue();
+					NodeList nodeList = element.getChildNodes();
+					List<String> valueList = new ArrayList<String>();
+					for (int i = 0; i < nodeList.getLength(); i++) {
+						Node node = nodeList.item(i);
+						String type = node.getNodeName();
+						String value = node.getTextContent();
+						if (type.equals("#text"))
+							continue;
+						if (type.equals("int")) {
+							valueList.add(value + "^int");
+						} else if (type.equals("long")) {
+							valueList.add(value + "^long");
+						} else if (type.equals("float")) {
+							valueList.add(value + "^float");
+						} else if (type.equals("double")) {
+							valueList.add(value + "^double");
+						} else if (type.equals("boolean")) {
+							valueList.add(value + "^boolean");
+						} else if (type.equals("dateTime")) {
+							valueList.add(value + "^dateTime");
+						} else if (type.equals("string")) {
+							valueList.add(value);
+						} else if (type.equals("void")) {
+							valueList.add("true^boolean");
+						}
 					}
+					params.put(name, generateCSV(valueList));
+				}else if(qp.getValue() == null && qp.getName().contains("EXISTS")){
+					params.put(name, "true");
 				}
-				params.put(name, generateCSV(valueList));
 			}
 			format = "XML";
 		}
@@ -1245,7 +1246,7 @@ public class PollParameters {
 			if (i == valueList.size() - 1) {
 				returnValue += valueList.get(i).trim();
 			} else {
-				returnValue += valueList.get(i).trim() + ",";
+				returnValue += valueList.get(i).trim() + "|";
 			}
 		}
 		return returnValue;

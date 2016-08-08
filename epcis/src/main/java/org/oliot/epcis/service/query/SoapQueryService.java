@@ -11,12 +11,24 @@ import javax.xml.bind.JAXB;
 
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.model.epcis.DuplicateSubscriptionException;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.GetSubscriptionIDs;
+import org.oliot.model.epcis.ImplementationException;
+import org.oliot.model.epcis.InvalidURIException;
+import org.oliot.model.epcis.NoSuchNameException;
+import org.oliot.model.epcis.NoSuchSubscriptionException;
 import org.oliot.model.epcis.Poll;
+import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryResults;
+import org.oliot.model.epcis.QueryTooComplexException;
+import org.oliot.model.epcis.QueryTooLargeException;
+import org.oliot.model.epcis.SecurityException;
 import org.oliot.model.epcis.Subscribe;
+import org.oliot.model.epcis.SubscribeNotPermittedException;
+import org.oliot.model.epcis.SubscriptionControlsException;
 import org.oliot.model.epcis.Unsubscribe;
+import org.oliot.model.epcis.ValidationException;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -40,7 +52,10 @@ import org.oliot.model.epcis.Unsubscribe;
 public class SoapQueryService implements CoreQueryService {
 
 	@Override
-	public void subscribe(Subscribe subscribe) {
+	public void subscribe(Subscribe subscribe)
+			throws NoSuchNameException, InvalidURIException, DuplicateSubscriptionException, QueryParameterException,
+			QueryTooComplexException, SubscriptionControlsException, SubscribeNotPermittedException, SecurityException,
+			ValidationException, ImplementationException {
 		URI destURI = null;
 		try {
 			destURI = new URI(subscribe.getDest());
@@ -60,7 +75,8 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public void unsubscribe(Unsubscribe unsubscribe) {
+	public void unsubscribe(Unsubscribe unsubscribe)
+			throws NoSuchSubscriptionException, ValidationException, ImplementationException {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
 			mqs.unsubscribe(unsubscribe.getSubscriptionID());
@@ -72,7 +88,8 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public List<String> getSubscriptionIDs(GetSubscriptionIDs getSubscriptionIDs) {
+	public List<String> getSubscriptionIDs(GetSubscriptionIDs getSubscriptionIDs)
+			throws NoSuchNameException, SecurityException, ValidationException, ImplementationException {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
 			return mqs.getSubscriptionIDs(getSubscriptionIDs.getQueryName());
@@ -85,7 +102,7 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public List<String> getQueryNames() {
+	public List<String> getQueryNames() throws SecurityException, ValidationException, ImplementationException {
 		List<String> queryNames = new ArrayList<String>();
 		queryNames.add("SimpleEventQuery");
 		queryNames.add("SimpleMasterDataQuery");
@@ -93,17 +110,19 @@ public class SoapQueryService implements CoreQueryService {
 	}
 
 	@Override
-	public String getStandardVersion() {
+	public String getStandardVersion() throws SecurityException, ValidationException, ImplementationException {
 		return "1.2";
 	}
 
 	@Override
-	public String getVendorVersion() {
+	public String getVendorVersion() throws SecurityException, ValidationException, ImplementationException {
 		return "org.oliot.epcis-1.2.1";
 	}
 
 	@Override
-	public QueryResults poll(Poll poll) {
+	public QueryResults poll(Poll poll)
+			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
+			SecurityException, ValidationException, ImplementationException {
 		if (Configuration.backend.equals("MongoDB")) {
 			MongoQueryService mqs = new MongoQueryService();
 			String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
