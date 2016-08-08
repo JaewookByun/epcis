@@ -10,13 +10,18 @@
 
 	<wsdl:documentation>
 		<epcglobal:copyright>
-			Copyright (C) 2006, 2005 EPCglobal Inc., All Rights Reserved.
+			Copyright (C) 2006, 2005 EPCglobal Inc., All
+			Rights Reserved.
 		</epcglobal:copyright>
 		<epcglobal:disclaimer>
-			EPCglobal Inc., its members, officers, directors, employees, or agents shall
-			not be liable for any injury, loss, damages, financial or otherwise,
-			arising from, related to, or caused by the use of this document. The
-			use of said document shall constitute your express consent to the
+			EPCglobal Inc., its members, officers,
+			directors, employees, or agents shall
+			not be liable for any injury,
+			loss, damages, financial or otherwise,
+			arising from, related to, or
+			caused by the use of this document. The
+			use of said document shall
+			constitute your express consent to the
 			foregoing exculpation.
 		</epcglobal:disclaimer>
 		<epcglobal:specification>

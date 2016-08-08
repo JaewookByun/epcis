@@ -21,6 +21,7 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
+import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.oliot.model.epcis.SubscriptionType;
@@ -60,11 +61,11 @@ public class MongoSubscriptionTask implements Job {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		JobDataMap map = context.getJobDetail().getJobDataMap();
-		BsonDocument jobData = (BsonDocument)map.get("jobData");
+		BsonDocument jobData = (BsonDocument) map.get("jobData");
 		SubscriptionType s = new SubscriptionType(jobData);
-		
+
 		// InitialRecordTime limits recordTime
-		if (s.getInitialRecordTime() != null ) {
+		if (s.getInitialRecordTime() != null) {
 			try {
 				s.getPollParameters().setGE_recordTime(s.getInitialRecordTime());
 				GregorianCalendar cal = new GregorianCalendar();
@@ -80,52 +81,53 @@ public class MongoSubscriptionTask implements Job {
 			}
 		}
 		MongoQueryService queryService = new MongoQueryService();
-		String pollResult = queryService.poll(s.getPollParameters(), null,null, s.getSubscriptionID());
 
-		String resultString = "";
-
-		if (s.getPollParameters().getFormat() == null || s.getPollParameters().getFormat().equals("XML")) {
-			EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(pollResult),
-					EPCISQueryDocumentType.class);
-
-			if (resultXML != null && resultXML.getEPCISBody() != null
-					&& resultXML.getEPCISBody().getQueryTooLargeException() != null) {
-				QueryTooLargeException e = resultXML.getEPCISBody().getQueryTooLargeException();
-				StringWriter sw = new StringWriter();
-				JAXB.marshal(e, sw);
-				resultString = sw.toString();
-			} else if (resultXML != null && resultXML.getEPCISBody() != null
-					&& resultXML.getEPCISBody().getImplementationException() != null) {
-				ImplementationException e = resultXML.getEPCISBody().getImplementationException();
-				StringWriter sw = new StringWriter();
-				JAXB.marshal(e, sw);
-				resultString = sw.toString();
-			} else if (resultXML != null && resultXML.getEPCISBody() != null
-					&& resultXML.getEPCISBody().getQueryResults() != null
-					&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
-
-				List<Object> checkList = resultXML.getEPCISBody().getQueryResults().getResultsBody().getEventList()
-						.getObjectEventOrAggregationEventOrQuantityEvent();
-
-				if (s.getReportIfEmpty() == false) {
-					if (checkList == null || checkList.size() == 0) {
-						// Do not report if reportIfEmpty is true
-						return;
-					}
-				}
-
-				QueryResults queryResults = new QueryResults();
-				queryResults.setQueryName(s.getPollParameters().getQueryName());
-				queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
-				queryResults.setSubscriptionID(s.getSubscriptionID());
-				StringWriter sw = new StringWriter();
-				JAXB.marshal(queryResults, sw);
-				resultString = sw.toString();
-			}
-		} else {
-			resultString = pollResult;
-		}
 		try {
+			String pollResult;
+			pollResult = queryService.poll(s.getPollParameters(), null, null, s.getSubscriptionID());
+			String resultString = "";
+
+			if (s.getPollParameters().getFormat() == null || s.getPollParameters().getFormat().equals("XML")) {
+				EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(pollResult),
+						EPCISQueryDocumentType.class);
+
+				if (resultXML != null && resultXML.getEPCISBody() != null
+						&& resultXML.getEPCISBody().getQueryTooLargeException() != null) {
+					QueryTooLargeException e = resultXML.getEPCISBody().getQueryTooLargeException();
+					StringWriter sw = new StringWriter();
+					JAXB.marshal(e, sw);
+					resultString = sw.toString();
+				} else if (resultXML != null && resultXML.getEPCISBody() != null
+						&& resultXML.getEPCISBody().getImplementationException() != null) {
+					ImplementationException e = resultXML.getEPCISBody().getImplementationException();
+					StringWriter sw = new StringWriter();
+					JAXB.marshal(e, sw);
+					resultString = sw.toString();
+				} else if (resultXML != null && resultXML.getEPCISBody() != null
+						&& resultXML.getEPCISBody().getQueryResults() != null
+						&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
+
+					List<Object> checkList = resultXML.getEPCISBody().getQueryResults().getResultsBody().getEventList()
+							.getObjectEventOrAggregationEventOrQuantityEvent();
+
+					if (s.getReportIfEmpty() == false) {
+						if (checkList == null || checkList.size() == 0) {
+							// Do not report if reportIfEmpty is true
+							return;
+						}
+					}
+
+					QueryResults queryResults = new QueryResults();
+					queryResults.setQueryName(s.getPollParameters().getQueryName());
+					queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
+					queryResults.setSubscriptionID(s.getSubscriptionID());
+					StringWriter sw = new StringWriter();
+					JAXB.marshal(queryResults, sw);
+					resultString = sw.toString();
+				}
+			} else {
+				resultString = pollResult;
+			}
 			URL url = new URL(s.getDest());
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("POST");
@@ -140,12 +142,15 @@ public class MongoSubscriptionTask implements Job {
 			int x = conn.getResponseCode();
 			System.out.println(x);
 			conn.disconnect();
-		} catch (MalformedURLException e) {
+		} catch (QueryParameterException e1) {
+			Configuration.logger.log(Level.ERROR, e1.toString());
+		}catch (MalformedURLException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
+		} catch (QueryTooLargeException e1) {
+			Configuration.logger.log(Level.ERROR, e1.toString());
 		}
-
 	}
 
 	private void updateInitialRecordTime(String subscriptionID, String initialRecordTime) {

@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * 
  */
+@SuppressWarnings("serial")
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "QueryTooLargeException", namespace = "urn:epcglobal:epcis-query:xsd:1", propOrder = { "queryName",
 		"subscriptionID" })

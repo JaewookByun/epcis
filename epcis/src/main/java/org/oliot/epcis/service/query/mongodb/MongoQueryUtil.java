@@ -42,7 +42,7 @@ public class MongoQueryUtil {
 
 		BsonArray orQueries = new BsonArray();
 		for (String field : fieldArr) {
-			String[] paramValueArr = csv.split(",");
+			String[] paramValueArr = csv.split("\\|");
 			BsonArray subObjectList = new BsonArray();
 			for (int i = 0; i < paramValueArr.length; i++) {
 				String val = paramValueArr[i].trim();
@@ -67,10 +67,10 @@ public class MongoQueryUtil {
 
 	static BsonArray getWDParamBsonArray(String csv) {
 		BsonArray paramArray = new BsonArray();
-		String[] paramValueArr = csv.split(",");
+		String[] paramValueArr = csv.split("\\|");
 		for (String paramValue : paramValueArr) {
 			String param = paramValue.trim();
-			if (param.split(",").length == 1 && param.split("\\^").length == 2
+			if (param.split("\\|").length == 1 && param.split("\\^").length == 2
 					&& param.split("\\^")[1].trim().equals("regex")) {
 				String regex = param.split("\\^")[0].trim();
 				BsonRegularExpression regexValue = new BsonRegularExpression("^" + regex + "$");
@@ -114,7 +114,7 @@ public class MongoQueryUtil {
 
 	static BsonArray getParamBsonArray(String csv) {
 		BsonArray paramArray = new BsonArray();
-		String[] paramValueArr = csv.split(",");
+		String[] paramValueArr = csv.split("\\|");
 		for (String paramValue : paramValueArr) {
 			String param = paramValue.trim();
 			paramArray.add(converseType(param));
@@ -151,6 +151,41 @@ public class MongoQueryUtil {
 			}
 		} catch (NumberFormatException e) {
 			return new BsonString(value);
+		}
+	}
+
+	static BsonDocument getMatchQueryObject(String[] fieldArr, BsonArray paramArray) {
+
+		BsonArray orQueries = new BsonArray();
+		for (String field : fieldArr) {
+			Iterator<BsonValue> paramIterator = paramArray.iterator();
+			// BsonArray pureStringParamArray = new BsonArray();
+			while (paramIterator.hasNext()) {
+				BsonValue param = paramIterator.next();
+				if (param instanceof BsonRegularExpression) {
+					BsonDocument regexQuery = new BsonDocument(field, new BsonDocument("$regex", param));
+					orQueries.add(regexQuery);
+				} else {
+					String value = param.asString().getValue();
+					value = value.replace(".", "[.]");
+					value = value.replace("*", "(.)*");
+					BsonRegularExpression expr = new BsonRegularExpression(value);
+					BsonDocument regexQuery = new BsonDocument(field, new BsonDocument("$regex", expr));
+					orQueries.add(regexQuery);
+				}
+			}
+			/*
+			 * if (pureStringParamArray.size() != 0) { BsonDocument
+			 * stringInQueries = new BsonDocument(field, new BsonDocument("$in",
+			 * pureStringParamArray)); orQueries.add(stringInQueries); }
+			 */
+		}
+		if (orQueries.size() != 0) {
+			BsonDocument queryObject = new BsonDocument();
+			queryObject.put("$or", orQueries);
+			return queryObject;
+		} else {
+			return null;
 		}
 	}
 
@@ -255,7 +290,7 @@ public class MongoQueryUtil {
 			BsonDocument queryObject = new BsonDocument();
 			if (isExist.equals(BsonBoolean.TRUE))
 				queryObject.put("$or", conjQueries);
-			else{
+			else {
 				queryObject.put("$and", conjQueries);
 			}
 			return queryObject;
