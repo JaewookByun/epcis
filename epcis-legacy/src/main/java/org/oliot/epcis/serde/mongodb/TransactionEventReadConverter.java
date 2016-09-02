@@ -118,7 +118,7 @@ public class TransactionEventReadConverter {
 				BsonDocument readPointObject = dbObject.getDocument("readPoint");
 				ReadPointType readPointType = new ReadPointType();
 				if (readPointObject.get("id") != null) {
-					readPointType.setId(readPointObject.get("id").toString());
+					readPointType.setId(readPointObject.getString("id").getValue());
 				}
 				if (readPointObject.get("extension") != null) {
 					ReadPointExtensionType rpet = new ReadPointExtensionType();
@@ -133,7 +133,7 @@ public class TransactionEventReadConverter {
 				BsonDocument bizLocationObject = dbObject.getDocument("bizLocation");
 				BusinessLocationType bizLocationType = new BusinessLocationType();
 				if (bizLocationObject.get("id") != null) {
-					bizLocationType.setId(bizLocationObject.get("id").toString());
+					bizLocationType.setId(bizLocationObject.getString("id").getValue());
 				}
 				if (bizLocationObject.get("extension") != null) {
 					BusinessLocationExtensionType blet = new BusinessLocationExtensionType();
