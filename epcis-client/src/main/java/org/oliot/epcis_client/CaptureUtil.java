@@ -1,6 +1,5 @@
 package org.oliot.epcis_client;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -141,29 +140,16 @@ public class CaptureUtil {
 			Map<String, Object> ilmdElementList = ilmds.get(nsKey);
 			for (String ilmdKey : ilmdElementList.keySet()) {
 				Object ilmdElement = ilmdElementList.get(ilmdKey);
-				if (ilmdElement instanceof Integer) {
-					// Integer
-					bsonILMD.put(nsKey + ":" + ilmdKey, new BsonInt32((Integer) ilmdElement));
-				} else if (ilmdElement instanceof Long) {
-					// Long
-					bsonILMD.put(nsKey + ":" + ilmdKey, new BsonInt64((Long) ilmdElement));
-				} else if (ilmdElement instanceof Double) {
-					// Double
-					bsonILMD.put(nsKey + ":" + ilmdKey, new BsonDouble((Double) ilmdElement));
-				} else if (ilmdElement instanceof Boolean) {
-					// Boolean
-					bsonILMD.put(nsKey + ":" + ilmdKey, new BsonBoolean((Boolean) ilmdElement));
-				} else {
-					// String
-					bsonILMD.put(nsKey + ":" + ilmdKey, new BsonString(ilmdElement.toString()));
-				}
+
+				// Convert element to BSON
+				BsonValue convertedILMDElement = convertToBsonValue(ilmdElement);
+				bsonILMD.put(nsKey + ":" + ilmdKey, convertedILMDElement);
 			}
 		}
 		base.put("ilmd", bsonILMD);
 		return base;
 	}
 
-	@SuppressWarnings("unchecked")
 	public BsonDocument putExtensions(BsonDocument base, Map<String, String> namespaces,
 			Map<String, Map<String, Object>> extensions) {
 		BsonDocument extension = new BsonDocument();
@@ -174,32 +160,10 @@ public class CaptureUtil {
 			Map<String, Object> extensionList = extensions.get(nsKey);
 			for (String extensionKey : extensionList.keySet()) {
 				Object extensionElement = extensionList.get(extensionKey);
-				if (extensionElement instanceof Integer) {
-					// Integer
-					extension.put(nsKey + ":" + extensionKey, new BsonInt32((Integer) extensionElement));
-				} else if (extensionElement instanceof Long) {
-					// Long
-					extension.put(nsKey + ":" + extensionKey, new BsonInt64((Long) extensionElement));
-				} else if (extensionElement instanceof Double) {
-					// Double
-					extension.put(nsKey + ":" + extensionKey, new BsonDouble((Double) extensionElement));
-				} else if (extensionElement instanceof Boolean) {
-					// Boolean
-					extension.put(nsKey + ":" + extensionKey, new BsonBoolean((Boolean) extensionElement));
-				} else if (extensionElement instanceof List) {
-					// List
-					BsonArray bsonArray = new BsonArray();
-					if (extensionElement != null) {
-						Iterator<Object> it = ((List<Object>) extensionElement).iterator();
-						while (it.hasNext()) {
-							bsonArray.add(convertToBsonValue(it.next()));
-						}
-					}
-					extension.put(nsKey + ":" + extensionKey, new BsonArray(bsonArray));
-				} else {
-					// String
-					extension.put(nsKey + ":" + extensionKey, new BsonString(extensionElement.toString()));
-				}
+
+				// Convert element to BSON
+				BsonValue convertedExtensionElement = convertToBsonValue(extensionElement);
+				extension.put(nsKey + ":" + extensionKey, convertedExtensionElement);
 			}
 		}
 		base.put("extension", extension);
