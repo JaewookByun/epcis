@@ -1,5 +1,6 @@
 package org.oliot.epcis_client;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import org.bson.BsonDouble;
 import org.bson.BsonInt32;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
+import org.bson.BsonValue;
 
 /**
  * Copyright (C) 2014-16 Jaewook Byun
@@ -161,35 +163,46 @@ public class CaptureUtil {
 		return base;
 	}
 
+	@SuppressWarnings("unchecked")
 	public BsonDocument putExtensions(BsonDocument base, Map<String, String> namespaces,
 			Map<String, Map<String, Object>> extensions) {
-		BsonDocument any = new BsonDocument();
+		BsonDocument extension = new BsonDocument();
 		for (String nsKey : extensions.keySet()) {
 			if (!namespaces.containsKey(nsKey))
 				continue;
-			any.put("@" + nsKey, new BsonString(namespaces.get(nsKey)));
+			extension.put("@" + nsKey, new BsonString(namespaces.get(nsKey)));
 			Map<String, Object> extensionList = extensions.get(nsKey);
 			for (String extensionKey : extensionList.keySet()) {
 				Object extensionElement = extensionList.get(extensionKey);
 				if (extensionElement instanceof Integer) {
 					// Integer
-					any.put(nsKey + ":" + extensionKey, new BsonInt32((Integer) extensionElement));
+					extension.put(nsKey + ":" + extensionKey, new BsonInt32((Integer) extensionElement));
 				} else if (extensionElement instanceof Long) {
 					// Long
-					any.put(nsKey + ":" + extensionKey, new BsonInt64((Long) extensionElement));
+					extension.put(nsKey + ":" + extensionKey, new BsonInt64((Long) extensionElement));
 				} else if (extensionElement instanceof Double) {
 					// Double
-					any.put(nsKey + ":" + extensionKey, new BsonDouble((Double) extensionElement));
+					extension.put(nsKey + ":" + extensionKey, new BsonDouble((Double) extensionElement));
 				} else if (extensionElement instanceof Boolean) {
 					// Boolean
-					any.put(nsKey + ":" + extensionKey, new BsonBoolean((Boolean) extensionElement));
+					extension.put(nsKey + ":" + extensionKey, new BsonBoolean((Boolean) extensionElement));
+				} else if (extensionElement instanceof List) {
+					// List
+					BsonArray bsonArray = new BsonArray();
+					if (extensionElement != null) {
+						Iterator<Object> it = ((List<Object>) extensionElement).iterator();
+						while (it.hasNext()) {
+							bsonArray.add(convertToBsonValue(it.next()));
+						}
+					}
+					extension.put(nsKey + ":" + extensionKey, new BsonArray(bsonArray));
 				} else {
 					// String
-					any.put(nsKey + ":" + extensionKey, new BsonString(extensionElement.toString()));
+					extension.put(nsKey + ":" + extensionKey, new BsonString(extensionElement.toString()));
 				}
 			}
 		}
-		base.put("any", any);
+		base.put("extension", extension);
 		return base;
 	}
 
@@ -319,5 +332,25 @@ public class CaptureUtil {
 	public String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
+	}
+
+	private BsonValue convertToBsonValue(Object o) {
+		BsonValue value;
+		if (o instanceof Integer) {
+			// Integer
+			value = new BsonInt32((Integer) o);
+		} else if (o instanceof Long) {
+			// Long
+			value = new BsonInt64((Long) o);
+		} else if (o instanceof Double) {
+			// Double
+			value = new BsonDouble((Double) o);
+		} else if (o instanceof Boolean) {
+			// Boolean
+			value = new BsonBoolean((Boolean) o);
+		} else {
+			value = new BsonString(o.toString());
+		}
+		return value;
 	}
 }
