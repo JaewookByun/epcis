@@ -1,8 +1,6 @@
 package org.oliot.epcis_client;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,14 +24,9 @@ import org.bson.BsonDocument;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class TransformationEvent {
+public class TransformationEvent extends EPCISEvent {
 
 	// EventTime, EventTimeZoneOffset required
-	private long eventTime;
-	private String eventTimeZoneOffset;
-
-	private long recordTime;
-
 	private List<String> inputEPCList;
 	private List<QuantityElement> inputQuantityList;
 	private List<String> outputEPCList;
@@ -55,10 +48,7 @@ public class TransformationEvent {
 	private Map<String, Map<String, Object>> extensions;
 
 	public TransformationEvent() {
-		eventTime = System.currentTimeMillis();
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
-		recordTime = 0;
+		super();
 
 		inputEPCList = new ArrayList<String>();
 		inputQuantityList = new ArrayList<QuantityElement>();
@@ -74,10 +64,7 @@ public class TransformationEvent {
 	}
 
 	public TransformationEvent(long eventTime, String eventTimeZoneOffset) {
-		this.eventTime = eventTime;
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
-
-		recordTime = 0;
+		super(eventTime, eventTimeZoneOffset);
 
 		inputEPCList = new ArrayList<String>();
 		inputQuantityList = new ArrayList<QuantityElement>();
@@ -90,30 +77,6 @@ public class TransformationEvent {
 		namespaces = new HashMap<String, String>();
 		ilmds = new HashMap<String, Map<String, Object>>();
 		extensions = new HashMap<String, Map<String, Object>>();
-	}
-
-	public long getEventTime() {
-		return eventTime;
-	}
-
-	public void setEventTime(long eventTime) {
-		this.eventTime = eventTime;
-	}
-
-	public String getEventTimeZoneOffset() {
-		return eventTimeZoneOffset;
-	}
-
-	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
-	}
-
-	public long getRecordTime() {
-		return recordTime;
-	}
-
-	public void setRecordTime(long recordTime) {
-		this.recordTime = recordTime;
 	}
 
 	public List<String> getInputEPCList() {
@@ -239,15 +202,9 @@ public class TransformationEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument transformationEvent = new BsonDocument();
-		// Required Fields
-		transformationEvent = util.putEventTime(transformationEvent, eventTime);
-		transformationEvent = util.putEventTimeZoneOffset(transformationEvent, eventTimeZoneOffset);
+		BsonDocument transformationEvent = super.asBsonDocument();
 
 		// Optional Fields
-		if (this.recordTime != 0) {
-			transformationEvent = util.putRecordTime(transformationEvent, recordTime);
-		}
 		if (this.inputEPCList != null && this.inputEPCList.size() != 0) {
 			transformationEvent = util.putInputEPCList(transformationEvent, inputEPCList);
 		}
