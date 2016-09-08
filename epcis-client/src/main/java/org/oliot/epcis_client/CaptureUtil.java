@@ -1,5 +1,6 @@
 package org.oliot.epcis_client;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -312,6 +313,14 @@ public class CaptureUtil {
 		} else if (o instanceof Boolean) {
 			// Boolean
 			value = new BsonBoolean((Boolean) o);
+		} else if (o instanceof List<?>) {
+			BsonArray arr = new BsonArray();
+			@SuppressWarnings("unchecked")
+			Iterator<Object> it = ((List<Object>) o).iterator();
+			while (it.hasNext()) {
+				arr.add(convertToBsonValue(it.next()));
+			}
+			value = arr;
 		} else {
 			value = new BsonString(o.toString());
 		}
