@@ -1,8 +1,6 @@
 package org.oliot.epcis_client;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +24,9 @@ import org.bson.BsonDocument;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class AggregationEvent {
+public class AggregationEvent extends EPCISEvent {
 
 	// EventTime, EventTimeZoneOffset,Action required
-	private long eventTime;
-	private long recordTime;
-	private String eventTimeZoneOffset;
 	private String action;
 
 	private String parentID;
@@ -50,10 +45,8 @@ public class AggregationEvent {
 	private Map<String, Map<String, Object>> extensions;
 
 	public AggregationEvent() {
-		eventTime = System.currentTimeMillis();
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
-		recordTime = 0;
+		super();
+
 		action = "OBSERVE";
 		childEPCs = new ArrayList<String>();
 		childQuantityList = new ArrayList<QuantityElement>();
@@ -65,10 +58,9 @@ public class AggregationEvent {
 	}
 
 	public AggregationEvent(long eventTime, String eventTimeZoneOffset, String action) {
-		this.eventTime = eventTime;
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
+		super(eventTime, eventTimeZoneOffset);
+
 		this.action = action;
-		recordTime = 0;
 		childEPCs = new ArrayList<String>();
 		childQuantityList = new ArrayList<QuantityElement>();
 		bizTransactionList = new HashMap<String, List<String>>();
@@ -76,35 +68,6 @@ public class AggregationEvent {
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
 		extensions = new HashMap<String, Map<String, Object>>();
-	}
-
-	public long getEventTime() {
-		return eventTime;
-	}
-
-	public void setEventTime(long eventTime) {
-		this.eventTime = eventTime;
-	}
-
-	public long getRecordTime() {
-		return recordTime;
-	}
-
-	public void setRecordTime(long recordTime) {
-		this.recordTime = recordTime;
-	}
-
-	public String getEventTimeZoneOffset() {
-		return eventTimeZoneOffset;
-	}
-
-	public void setEventTimeZoneOffset() {
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
-	}
-
-	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
 	}
 
 	public String getAction() {
@@ -214,16 +177,11 @@ public class AggregationEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument aggregationEvent = new BsonDocument();
+		BsonDocument aggregationEvent = super.asBsonDocument();
 		// Required Fields
-		aggregationEvent = util.putEventTime(aggregationEvent, eventTime);
-		aggregationEvent = util.putEventTimeZoneOffset(aggregationEvent, eventTimeZoneOffset);
 		aggregationEvent = util.putAction(aggregationEvent, action);
 
 		// Optional Fields
-		if (this.recordTime != 0) {
-			aggregationEvent = util.putRecordTime(aggregationEvent, recordTime);
-		}
 		if (this.parentID != null) {
 			aggregationEvent = util.putParentID(aggregationEvent, parentID);
 		}

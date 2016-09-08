@@ -1,8 +1,6 @@
 package org.oliot.epcis_client;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +24,9 @@ import org.bson.BsonDocument;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class TransactionEvent {
+public class TransactionEvent extends EPCISEvent {
 
 	// EventTime, EventTimeZoneOffset,Action, bizTransactionList required
-	private long eventTime;
-	private long recordTime;
-	private String eventTimeZoneOffset;
 	private String action;
 	private Map<String, List<String>> bizTransactionList;
 
@@ -51,14 +46,12 @@ public class TransactionEvent {
 	private Map<String, Map<String, Object>> extensions;
 
 	public TransactionEvent(Map<String, List<String>> bizTransactionList) {
+		super();
+
 		// Required Fields
-		eventTime = System.currentTimeMillis();
-		SimpleDateFormat format = new SimpleDateFormat("XXX");
-		eventTimeZoneOffset = format.format(new Date());
 		action = "OBSERVE";
 		this.bizTransactionList = bizTransactionList;
 
-		recordTime = 0;
 		epcList = new ArrayList<String>();
 		quantityList = new ArrayList<QuantityElement>();
 
@@ -70,12 +63,11 @@ public class TransactionEvent {
 
 	public TransactionEvent(long eventTime, String eventTimeZoneOffset, String action,
 			Map<String, List<String>> bizTransactionList) {
-		this.eventTime = eventTime;
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
+		super(eventTime, eventTimeZoneOffset);
+
 		this.action = action;
 		this.bizTransactionList = bizTransactionList;
 
-		recordTime = 0;
 		epcList = new ArrayList<String>();
 		quantityList = new ArrayList<QuantityElement>();
 
@@ -83,30 +75,6 @@ public class TransactionEvent {
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
 		extensions = new HashMap<String, Map<String, Object>>();
-	}
-
-	public long getEventTime() {
-		return eventTime;
-	}
-
-	public void setEventTime(long eventTime) {
-		this.eventTime = eventTime;
-	}
-
-	public long getRecordTime() {
-		return recordTime;
-	}
-
-	public void setRecordTime(long recordTime) {
-		this.recordTime = recordTime;
-	}
-
-	public String getEventTimeZoneOffset() {
-		return eventTimeZoneOffset;
-	}
-
-	public void setEventTimeZoneOffset(String eventTimeZoneOffset) {
-		this.eventTimeZoneOffset = eventTimeZoneOffset;
 	}
 
 	public String getAction() {
@@ -216,17 +184,12 @@ public class TransactionEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument transactionEvent = new BsonDocument();
+		BsonDocument transactionEvent = super.asBsonDocument();
 		// Required Fields
-		transactionEvent = util.putEventTime(transactionEvent, eventTime);
-		transactionEvent = util.putEventTimeZoneOffset(transactionEvent, eventTimeZoneOffset);
 		transactionEvent = util.putAction(transactionEvent, action);
 		transactionEvent = util.putBizTransactionList(transactionEvent, bizTransactionList);
-		
+
 		// Optional Fields
-		if (this.recordTime != 0) {
-			transactionEvent = util.putRecordTime(transactionEvent, recordTime);
-		}
 		if (this.parentID != null) {
 			transactionEvent = util.putParentID(transactionEvent, parentID);
 		}
@@ -245,7 +208,7 @@ public class TransactionEvent {
 		if (this.bizLocation != null) {
 			transactionEvent = util.putBizLocation(transactionEvent, bizLocation);
 		}
-		
+
 		if (this.extensions != null && this.extensions.isEmpty() == false) {
 			transactionEvent = util.putExtensions(transactionEvent, namespaces, extensions);
 		}
