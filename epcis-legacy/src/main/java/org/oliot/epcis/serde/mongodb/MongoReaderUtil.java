@@ -12,8 +12,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Level;
+import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonType;
+import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -33,9 +35,7 @@ import org.w3c.dom.Node;
 /**
  * Copyright (C) 2015 Jaewook Byun
  *
- * This project is part of Oliot (oliot.org), pursuing the implementation of
- * Electronic Product Code Information Service(EPCIS) v1.1 specification in
- * EPCglobal.
+ * This project is part of Oliot (oliot.org), pursuing the implementation of Electronic Product Code Information Service(EPCIS) v1.1 specification in EPCglobal.
  * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
  * 
  *
@@ -57,30 +57,25 @@ public class MongoReaderUtil {
 			Map<String, String> nsMap = new HashMap<String, String>();
 			while (anyKeysIterN.hasNext()) {
 				String anyKeyN = anyKeysIterN.next();
-				if( anyObject.containsKey(anyKeyN) && anyObject.get(anyKeyN).getBsonType().equals(BsonType.STRING) && anyKeyN.startsWith("@")){
-					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), anyObject.getString(anyKeyN).getValue());					
+				if (anyObject.containsKey(anyKeyN) && anyObject.get(anyKeyN).getBsonType().equals(BsonType.STRING) && anyKeyN.startsWith("@")) {
+					nsMap.put(anyKeyN.substring(1, anyKeyN.length()), anyObject.getString(anyKeyN).getValue());
 				}
 			}
 			Iterator<String> anyKeysIter = anyObject.keySet().iterator();
 			List<Object> elementList = new ArrayList<Object>();
+
 			while (anyKeysIter.hasNext()) {
+				// If namespace, continue to next iteration
 				String anyKey = anyKeysIter.next();
 				if (anyKey.startsWith("@"))
 					continue;
-				BsonType type = anyObject.get(anyKey).getBsonType();
-				String value = null;
-				if( type == BsonType.STRING){
-					value = anyObject.getString(anyKey).getValue();
-				}else if( type == BsonType.INT32){
-					value = String.valueOf(anyObject.getInt32(anyKey).getValue());
-				}else if( type == BsonType.INT64){
-					value = String.valueOf(anyObject.getInt64(anyKey).getValue());
-				}else if( type == BsonType.DOUBLE){
-					value = String.valueOf(anyObject.getDouble(anyKey).getValue());
-				}else if( type == BsonType.BOOLEAN){
-					value = String.valueOf(anyObject.getBoolean(anyKey).getValue());
-				}
-				
+
+				// Convert bson value to a more readable String (List are
+				// handled differently)
+				BsonValue bsonValue = anyObject.get(anyKey);
+				Boolean isBsonArray = (bsonValue.getBsonType() == BsonType.ARRAY);
+				String value = convertBsonValueToString(bsonValue);
+
 				// Get Namespace
 				String[] anyKeyCheck = anyKey.split(":");
 				String namespace = null;
@@ -89,21 +84,43 @@ public class MongoReaderUtil {
 					namespace = anyKeyCheck[0];
 					namespaceURI = nsMap.get(namespace).toString();
 				}
-				if (anyKey != null && value != null) {
-					DocumentBuilderFactory dbf = DocumentBuilderFactory
-							.newInstance();
+				if (anyKey != null && (value != null || isBsonArray)) {
+					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = dbf.newDocumentBuilder();
 					Document doc = builder.newDocument();
 
-					Node node = doc.createElement("value");
-					node.setTextContent(value);
-					Element element = doc.createElement(anyKey);
-					if (namespace != null) {
-						element.setAttribute("xmlns:" + namespace, namespaceURI);
+					if (isBsonArray) {
+						String listSuffix = "List";
+						String parentTagName = anyKey.endsWith(listSuffix) ? anyKey : anyKey + listSuffix;
+						String childTagName = anyKey.endsWith(listSuffix) ? anyKey.substring(0, anyKey.length() - listSuffix.length()) : anyKey;
+
+						Element parentElement = doc.createElement(parentTagName);
+						if (namespace != null) {
+							parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
+						}
+						BsonArray arr = bsonValue.asArray();
+						Iterator<BsonValue> it = arr.iterator();
+						while (it.hasNext()) {
+							bsonValue = it.next();
+							value = convertBsonValueToString(bsonValue);
+
+							Element element = doc.createElement(childTagName);
+							if (namespace != null) {
+								element.setAttribute("xmlns:" + namespace, namespaceURI);
+							}
+							element.setTextContent(value);
+							parentElement.appendChild(element);
+						}
+						elementList.add(parentElement);
+
+					} else {
+						Element element = doc.createElement(anyKey);
+						if (namespace != null) {
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
+						}
+						element.setTextContent(value);
+						elementList.add(element);
 					}
-					//element.appendChild(node);
-					element.setTextContent(value);
-					elementList.add(element);
 				}
 			}
 			return elementList;
@@ -112,7 +129,24 @@ public class MongoReaderUtil {
 		}
 		return null;
 	}
-	
+
+	private static String convertBsonValueToString(BsonValue bsonValue) {
+		BsonType type = bsonValue.getBsonType();
+		String value = null;
+		if (type == BsonType.STRING) {
+			value = bsonValue.asString().getValue();
+		} else if (type == BsonType.INT32) {
+			value = String.valueOf(bsonValue.asInt32().getValue());
+		} else if (type == BsonType.INT64) {
+			value = String.valueOf(bsonValue.asInt64().getValue());
+		} else if (type == BsonType.DOUBLE) {
+			value = String.valueOf(bsonValue.asDouble().getValue());
+		} else if (type == BsonType.BOOLEAN) {
+			value = String.valueOf(bsonValue.asBoolean().getValue());
+		}
+		return value;
+	}
+
 	static ILMDType putILMD(ILMDType ilmd, BsonDocument anyObject) {
 		try {
 			ILMDExtensionType ilmdExtension = new ILMDExtensionType();
@@ -142,8 +176,7 @@ public class MongoReaderUtil {
 					namespaceURI = nsMap.get(namespace).toString();
 				}
 				if (anyKey != null && value != null) {
-					DocumentBuilderFactory dbf = DocumentBuilderFactory
-							.newInstance();
+					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = dbf.newDocumentBuilder();
 					Document doc = builder.newDocument();
 
@@ -165,8 +198,7 @@ public class MongoReaderUtil {
 		return ilmd;
 	}
 
-	static BusinessLocationExtensionType putBusinessLocationExtension(
-			BusinessLocationExtensionType object, BsonDocument extension) {
+	static BusinessLocationExtensionType putBusinessLocationExtension(BusinessLocationExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -177,8 +209,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -198,8 +229,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -207,8 +237,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -219,8 +248,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
@@ -234,8 +262,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static ReadPointExtensionType putReadPointExtension(
-			ReadPointExtensionType object, BsonDocument extension) {
+	static ReadPointExtensionType putReadPointExtension(ReadPointExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -246,8 +273,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -267,8 +293,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -276,8 +301,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -288,8 +312,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.getString(anyKey).getValue();
@@ -303,8 +326,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static AggregationEventExtension2Type putAggregationExtension(
-			AggregationEventExtension2Type object, BsonDocument extension) {
+	static AggregationEventExtension2Type putAggregationExtension(AggregationEventExtension2Type object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -315,8 +337,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -336,8 +357,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -345,8 +365,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -357,8 +376,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.getString(anyKey).getValue();
@@ -372,8 +390,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static EPCISEventExtensionType putEPCISExtension(
-			EPCISEventExtensionType object, BsonDocument extension) {
+	static EPCISEventExtensionType putEPCISExtension(EPCISEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -384,8 +401,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.getString(anyKeyN).getValue();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -405,8 +421,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -414,8 +429,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -426,8 +440,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.getString(anyKey).getValue();
@@ -441,8 +454,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static ObjectEventExtension2Type putObjectExtension(
-			ObjectEventExtension2Type oee2t, BsonDocument extension) {
+	static ObjectEventExtension2Type putObjectExtension(ObjectEventExtension2Type oee2t, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -453,8 +465,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.get(anyKeyN).toString();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -474,8 +485,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -483,8 +493,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -495,8 +504,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
@@ -510,8 +518,7 @@ public class MongoReaderUtil {
 		return oee2t;
 	}
 
-	static QuantityEventExtensionType putQuantityExtension(
-			QuantityEventExtensionType object, BsonDocument extension) {
+	static QuantityEventExtensionType putQuantityExtension(QuantityEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -522,8 +529,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.get(anyKeyN).toString();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -543,8 +549,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -552,8 +557,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -564,8 +568,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
@@ -579,8 +582,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static SensorEventExtensionType putSensorExtension(
-			SensorEventExtensionType object, BsonDocument extension) {
+	static SensorEventExtensionType putSensorExtension(SensorEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -591,8 +593,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.get(anyKeyN).toString();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -612,8 +613,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -621,8 +621,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -633,8 +632,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
@@ -648,8 +646,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static TransactionEventExtension2Type putTransactionExtension(
-			TransactionEventExtension2Type object, BsonDocument extension) {
+	static TransactionEventExtension2Type putTransactionExtension(TransactionEventExtension2Type object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -660,8 +657,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.get(anyKeyN).toString();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -681,8 +677,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -690,8 +685,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -702,8 +696,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
@@ -717,8 +710,7 @@ public class MongoReaderUtil {
 		return object;
 	}
 
-	static TransformationEventExtensionType putTransformationExtension(
-			TransformationEventExtensionType object, BsonDocument extension) {
+	static TransformationEventExtensionType putTransformationExtension(TransformationEventExtensionType object, BsonDocument extension) {
 		try {
 			if (extension.get("any") != null) {
 				BsonDocument anyObject = extension.getDocument("any");
@@ -729,8 +721,7 @@ public class MongoReaderUtil {
 					String anyKeyN = anyKeysIterN.next();
 					String valueN = anyObject.get(anyKeyN).toString();
 					if (anyKeyN.startsWith("@")) {
-						nsMap.put(anyKeyN.substring(1, anyKeyN.length()),
-								valueN);
+						nsMap.put(anyKeyN.substring(1, anyKeyN.length()), valueN);
 					}
 				}
 				// Process Any
@@ -750,8 +741,7 @@ public class MongoReaderUtil {
 						namespaceURI = nsMap.get(namespace).toString();
 					}
 					if (anyKey != null && value != null) {
-						DocumentBuilderFactory dbf = DocumentBuilderFactory
-								.newInstance();
+						DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 						DocumentBuilder builder = dbf.newDocumentBuilder();
 						Document doc = builder.newDocument();
 
@@ -759,8 +749,7 @@ public class MongoReaderUtil {
 						node.setTextContent(value);
 						Element element = doc.createElement(anyKey);
 						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace,
-									namespaceURI);
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
 						element.appendChild(node);
 						elementList.add(element);
@@ -771,8 +760,7 @@ public class MongoReaderUtil {
 			if (extension.get("otherAttributes") != null) {
 				Map<QName, String> otherAttributes = new HashMap<QName, String>();
 				BsonDocument otherAttributeObject = extension.getDocument("otherAttributes");
-				Iterator<String> otherKeysIter = otherAttributeObject.keySet()
-						.iterator();
+				Iterator<String> otherKeysIter = otherAttributeObject.keySet().iterator();
 				while (otherKeysIter.hasNext()) {
 					String anyKey = otherKeysIter.next();
 					String value = otherAttributeObject.get(anyKey).toString();
