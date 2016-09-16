@@ -35,19 +35,14 @@
 					href="#" class="list-group-item"><img alt=""
 					src="image/intro.png" style="height: 96px; width: 365px;"></a> <a
 					href="#" class="list-group-item">Electronic Product Code
-					Information Service (EPCIS) enables to capture and share EPC-based
-					event ( Basically RFID Tag Reading Events ).<br> With EPCIS,
-					event producer (e.g. RFID middleware) generates and sends events
-					complying with EPCIS Document XML schema into EPCIS Repository <br>
-					Then, these events can be globally shared with given queries <br>
+					Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1.
 				</a>
 			</div>
 
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">EPCIS v1.2 compliance<br>Dynamic
-					Web Service over Tomcat v8<br>Java v8, Servlet v3.1<br>Maven<br>Spring
-					Framework<br>MongoDB v3
+					href="#" class="list-group-item">EPCIS v1.2 compliance<br>Web Application Server, Tomcat v8<br>Java v8, Servlet v3.1<br>Maven<br>Spring
+					Framework<br>MongoDB v3.2
 				</a>
 			</div>
 			<div class="list-group">
