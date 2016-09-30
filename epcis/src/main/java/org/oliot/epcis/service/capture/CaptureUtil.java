@@ -52,6 +52,22 @@ public class CaptureUtil {
 		}
 	}
 
+	public static String getValidationException(InputStream is, String docPath) {
+		try {
+			SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+			File xsdFile = new File(docPath);
+			Schema schema = schemaFactory.newSchema(xsdFile);
+			Validator validator = schema.newValidator();
+			StreamSource xmlSource = new StreamSource(is);
+			validator.validate(xmlSource);
+			return null;
+		} catch (SAXException e) {
+			return e.toString();
+		} catch (IOException e) {
+			return e.toString();
+		}
+	}
+
 	public static InputStream getXMLDocumentInputStream(String xmlString) {
 		InputStream stream = new ByteArrayInputStream(xmlString.getBytes(StandardCharsets.UTF_8));
 		return stream;
