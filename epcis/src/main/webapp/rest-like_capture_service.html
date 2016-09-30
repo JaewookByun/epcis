@@ -32,12 +32,81 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
+
+	function createValidationResultMessage(result){
+		if(result.isValidated == false)
+			return null;
+		return "EventData: " + result.numberOfEventData + " , MasterData: " + result.numberOfMasterData;
+	}
+
 	$(document).ready(function() {
 		// Loading a selected example to the text area
 		$(".dropdown-menu").on("click", "li a", function(event) {
-			$("#xmlTextArea").load($(this)[0].id);
+			$("#xmlTextArea").load($(this)[0].id, function(){
+				var docValURL = $("#docValURL").val();
+				var masterDocValURL = $("#masterDocValURL").val();
+				var valXMLString = $("#xmlTextArea").val();
+				
+				$.ajax({
+					type : "POST",
+					url : docValURL,
+					data : valXMLString,
+					contentType : "application/xml; charset=utf-8"
+				}).done(function(result) {
+					var msg = createValidationResultMessage(result);
+					$("#docValResp").val(msg).hide().fadeIn('slow');
+				}).error(function(result) {
+					$("#docValResp").val(result.responseText).hide().fadeIn('slow');
+				});
+				
+				$.ajax({
+					type : "POST",
+					url : masterDocValURL,
+					data : valXMLString,
+					contentType : "application/xml; charset=utf-8"
+				}).done(function(result) {
+					var msg = createValidationResultMessage(result);
+					$("#masterDocValResp").val(msg).hide().fadeIn('slow');
+				}).error(function(result) {
+					$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
+				});
+			});		
 		})
 		$('#captureURL').val('http://'+location.host+'/epcis/Service/EventCapture');
+		$('#docValURL').val('http://'+location.host+'/epcis/Service/EPCISDocumentValidation');
+		$('#masterDocValURL').val('http://'+location.host+'/epcis/Service/EPCISMasterDataDocumentValidation');
+		
+		$('#xmlTextArea').on('paste', function(d){
+			var docValURL = $("#docValURL").val();
+			var masterDocValURL = $("#masterDocValURL").val();
+			var valXMLString = d.originalEvent.clipboardData.getData('text');
+			
+			$.ajax({
+				type : "POST",
+				url : docValURL,
+				data : valXMLString,
+				contentType : "application/xml; charset=utf-8"
+			}).done(function(result) {
+				createValidationResultMessage(result);
+				$("#docValResp").val(result).hide().fadeIn('slow');
+			}).error(function(result) {
+				createValidationResultMessage(result);
+				$("#docValResp").val(result.responseText).hide().fadeIn('slow');
+			});
+			
+			$.ajax({
+				type : "POST",
+				url : masterDocValURL,
+				data : valXMLString,
+				contentType : "application/xml; charset=utf-8"
+			}).done(function(result) {
+				createValidationResultMessage(result);
+				$("#masterDocValResp").val(result).hide().fadeIn('slow');
+			}).error(function(result) {
+				createValidationResultMessage(result);
+				$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
+			});
+		});
 	});
 
 	function capture() {
@@ -101,11 +170,23 @@
 					<button type="button" class="btn btn-success" onclick="capture()">Capture</button>
 					<input id="resp" type="text" class="form-control" disabled
 						placeholder="Capture Server Response">
+					<h4>Validation Service</h4>
+					<input id="docValURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/EPCISDocumentValidation"
+						placeholder="http://localhost:8080/epcis/Service/EPCISDocumentValidation">
+					<input id="docValResp" type="text" class="form-control" disabled
+						placeholder="Validation result against EPCISDocument schema">
+					<input id="masterDocValURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation"
+						placeholder="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation">
+					<input id="masterDocValResp" type="text" class="form-control" disabled
+						placeholder="Validation result against EPCISMasterDataDocument schema">
 				</div>
 				<div class="col-sm-8">
 					<h4>HTTP.POST Body</h4>
 
 					<div class="dropdown">
+						
 						<button class="btn btn-default dropdown-toggle" type="button"
 							id="dropData" data-toggle="dropdown" aria-haspopup="true"
 							aria-expanded="true">
@@ -161,7 +242,7 @@
 						</ul>
 					</div>
 					<textarea id="xmlTextArea" class="form-control auto-text-area"
-						rows="12"></textarea>
+						rows="14"></textarea>
 				</div>
 			</div>
 		</div>
