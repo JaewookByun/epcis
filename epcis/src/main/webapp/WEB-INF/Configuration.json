@@ -1,11 +1,8 @@
-{
-	"_backend" : "Backend Database : (MongoDB|...|...)",
-	"backend" : "MongoDB",
-	
-	"_backend_ip" : "(MongoDB Only) ip for mongodb",
+{	
+	"_backend_ip" : "ip address for mongodb",
 	"backend_ip" : "localhost",
 	
-	"_backend_port" : "(MongoDB Only) port for mongodb",
+	"_backend_port" : "port for mongodb",
 	"backend_port" : 27017,
 	
 	"_capture_verification" : "(on|off)",

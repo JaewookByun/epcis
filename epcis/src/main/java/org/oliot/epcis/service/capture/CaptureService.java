@@ -83,12 +83,8 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(event, userID, accessModifier, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(event, userID, accessModifier, gcpLength);
 	}
 
 	public String capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -100,13 +96,8 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return "[Error] Req. M7 Error";
 		}
-
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(event, userID, accessModifier, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(event, userID, accessModifier, gcpLength);
 	}
 
 	public String capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -119,12 +110,8 @@ public class CaptureService implements CoreCaptureService {
 			return "[Error] Req. M7 Error";
 		}
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(event, userID, accessModifier, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(event, userID, accessModifier, gcpLength);
 	}
 
 	public String capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -147,12 +134,8 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(event, userID, accessModifier, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(event, userID, accessModifier, gcpLength);
 	}
 
 	public String capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -163,21 +146,13 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return "[Error]Req. M7 Error";
 		}
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(event, userID, accessModifier, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(event, userID, accessModifier, gcpLength);
 	}
 
 	public String capture(VocabularyType vocabulary, Integer gcpLength) {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoCaptureUtil m = new MongoCaptureUtil();
-			return m.capture(vocabulary, null, null, gcpLength);
-		}else {
-			return "[ERROR] Non-supported Repository";
-		}
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(vocabulary, null, null, gcpLength);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -257,12 +232,12 @@ public class CaptureService implements CoreCaptureService {
 							vocabulary.getVocabularyElementList().getVocabularyElement().clear();
 							vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
 							String message = capture(vocabulary, gcpLength);
-							if( message != null ){
-								if( errorMessage == null)
+							if (message != null) {
+								if (errorMessage == null)
 									errorMessage = message + "\n";
 								else
-									errorMessage = errorMessage + message +"\n";
-							}	
+									errorMessage = errorMessage + message + "\n";
+							}
 						}
 					}
 				}
@@ -284,27 +259,27 @@ public class CaptureService implements CoreCaptureService {
 			Object event = eventElement.getValue();
 			if (event instanceof ObjectEventType) {
 				String message = capture((ObjectEventType) event, userID, accessModifier, gcpLength);
-				if( message != null ){
-					if( errorMessage == null)
+				if (message != null) {
+					if (errorMessage == null)
 						errorMessage = message + "\n";
 					else
-						errorMessage = errorMessage + message +"\n";
+						errorMessage = errorMessage + message + "\n";
 				}
 			} else if (event instanceof AggregationEventType) {
 				String message = capture((AggregationEventType) event, userID, accessModifier, gcpLength);
-				if( message != null ){
-					if( errorMessage == null)
+				if (message != null) {
+					if (errorMessage == null)
 						errorMessage = message + "\n";
 					else
-						errorMessage = errorMessage + message +"\n";
+						errorMessage = errorMessage + message + "\n";
 				}
 			} else if (event instanceof TransactionEventType) {
 				String message = capture((TransactionEventType) event, userID, accessModifier, gcpLength);
-				if( message != null ){
-					if( errorMessage == null)
+				if (message != null) {
+					if (errorMessage == null)
 						errorMessage = message + "\n";
 					else
-						errorMessage = errorMessage + message +"\n";
+						errorMessage = errorMessage + message + "\n";
 				}
 			} /*
 				 * else if (event instanceof TransformationEventType) {
@@ -313,22 +288,22 @@ public class CaptureService implements CoreCaptureService {
 				 */
 			else if (event instanceof QuantityEventType) {
 				String message = capture((QuantityEventType) event, userID, accessModifier, gcpLength);
-				if( message != null ){
-					if( errorMessage == null)
+				if (message != null) {
+					if (errorMessage == null)
 						errorMessage = message + "\n";
 					else
-						errorMessage = errorMessage + message +"\n";
+						errorMessage = errorMessage + message + "\n";
 				}
 			} else if (event instanceof EPCISEventListExtensionType) {
 				// TransformationEvent is now included as
 				// EPCISEventListExtensionType
-				String message = capture(((EPCISEventListExtensionType) event).getTransformationEvent(), userID, accessModifier,
-						gcpLength);
-				if( message != null ){
-					if( errorMessage == null)
+				String message = capture(((EPCISEventListExtensionType) event).getTransformationEvent(), userID,
+						accessModifier, gcpLength);
+				if (message != null) {
+					if (errorMessage == null)
 						errorMessage = message + "\n";
 					else
-						errorMessage = errorMessage + message +"\n";
+						errorMessage = errorMessage + message + "\n";
 				}
 			}
 		}
@@ -407,11 +382,11 @@ public class CaptureService implements CoreCaptureService {
 						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
 						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
 						String message = capture(vocabulary, gcpLength);
-						if( message != null ){
-							if( errorMessage == null)
+						if (message != null) {
+							if (errorMessage == null)
 								errorMessage = message + "\n";
 							else
-								errorMessage = errorMessage + message +"\n";
+								errorMessage = errorMessage + message + "\n";
 						}
 					}
 				}
