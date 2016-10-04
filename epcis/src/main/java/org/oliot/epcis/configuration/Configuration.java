@@ -35,7 +35,6 @@ import com.mongodb.client.MongoDatabase;
 
 public class Configuration implements ServletContextListener {
 
-	public static String backend;
 	public static Logger logger;
 	public static String webInfoPath;
 	public static String wsdlPath;
@@ -89,15 +88,6 @@ public class Configuration implements ServletContextListener {
 			reader.close();
 			JSONObject json = new JSONObject(data);
 
-			// Set up Backend
-			String backend = json.getString("backend");
-			if (backend == null) {
-				Configuration.logger
-						.error("Backend is null, please make sure Configuration.json is correct, and restart.");
-			} else {
-				Configuration.backend = backend;
-				Configuration.logger.info("Backend - " + Configuration.backend);
-			}
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
 			Configuration.wsdlPath = context.getRealPath("/wsdl");
 
@@ -148,23 +138,20 @@ public class Configuration implements ServletContextListener {
 
 			// Admin Facebook ID
 			String aID = json.getString("admin_facebook_id");
-			if( aID == null ){
+			if (aID == null) {
 				Configuration.logger
-				.error("admin_facebook_id, please make sure Configuration.json is correct, and restart.");
+						.error("admin_facebook_id, please make sure Configuration.json is correct, and restart.");
 			}
 			adminID = aID.trim();
-			
+
 			// Admin Scope
 			String aScope = json.getString("admin_scope");
-			if ( aScope == null ){
-				Configuration.logger
-				.error("admin_scope, please make sure Configuration.json is correct, and restart.");
+			if (aScope == null) {
+				Configuration.logger.error("admin_scope, please make sure Configuration.json is correct, and restart.");
 			}
-			adminScope = aScope.trim();	
-			
-			if (backend.equals("MongoDB")) {
-				setMongoDB(json);
-			}
+			adminScope = aScope.trim();
+
+			setMongoDB(json);
 
 			// Trigger Support
 			String triggerSupport = json.getString("trigger_support");
@@ -197,13 +184,7 @@ public class Configuration implements ServletContextListener {
 	}
 
 	private void loadExistingSubscription() {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoSubscription ms = new MongoSubscription();
-			ms.init();
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
+		MongoSubscription ms = new MongoSubscription();
+		ms.init();
 	}
 }
