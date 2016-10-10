@@ -233,7 +233,7 @@ public class MongoReaderUtil {
 					for (int i = 0; i < anyKeyCheck.length - 1; i++) {
 						namespaceURI += anyKeyCheck[i] + "#";
 					}
-					namespaceURI = namespaceURI.substring(0, namespaceURI.length()-1);
+					namespaceURI = namespaceURI.substring(0, namespaceURI.length() - 1);
 					localName = anyKeyCheck[anyKeyCheck.length - 1];
 					prefix = nsMap.get(namespaceURI).toString();
 					qname = prefix + ":" + localName;

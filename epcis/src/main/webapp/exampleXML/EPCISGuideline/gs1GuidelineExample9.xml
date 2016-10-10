@@ -30,8 +30,7 @@
 							<quantity>100</quantity>
 						</quantityElement>
 					</outputQuantityList>
-					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance
-					</bizStep>
+					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance</bizStep>
 					<disposition>urn:epcglobal:cbv:disp:active</disposition>
 					<readPoint>
 						<id>urn:epc:id:sgln:0614141.00000.100</id>

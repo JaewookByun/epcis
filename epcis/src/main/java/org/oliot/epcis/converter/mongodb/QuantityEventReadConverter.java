@@ -123,7 +123,7 @@ public class QuantityEventReadConverter {
 			btlt.setBizTransaction(bizTranArrayList);
 			quantityEventType.setBizTransactionList(btlt);
 		}
-		
+
 		// EventID and ErrorDeclaration
 		quantityEventType.setBaseExtension(putEPCISEventExtensionType(dbObject, zone));
 

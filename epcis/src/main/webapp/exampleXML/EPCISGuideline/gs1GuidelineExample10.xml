@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	schemaVersion="1.1" creationDate="2015-04-14T11:14:25.411-04:00">
+	schemaVersion="1.2" creationDate="2015-04-14T11:14:25.411-04:00">
 	<EPCISBody>
 		<EventList>
 			<extension>
@@ -23,10 +23,8 @@
 							<quantity>40</quantity>
 						</quantityElement>
 					</inputQuantityList>
-					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123
-					</transformationID>
-					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance
-					</bizStep>
+					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123</transformationID>
+					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance</bizStep>
 					<disposition>urn:epcglobal:cbv:disp:active</disposition>
 					<readPoint>
 						<id>urn:epc:id:sgln:0614141.00000.100</id>
@@ -46,10 +44,8 @@
 							<quantity>30</quantity>
 						</quantityElement>
 					</outputQuantityList>
-					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123
-					</transformationID>
-					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance
-					</bizStep>
+					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123</transformationID>
+					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance</bizStep>
 					<disposition>urn:epcglobal:cbv:disp:active</disposition>
 					<readPoint>
 						<id>urn:epc:id:sgln:0614141.00000.100</id>
@@ -102,10 +98,8 @@
 							<quantity>70</quantity>
 						</quantityElement>
 					</outputQuantityList>
-					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123
-					</transformationID>
-					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance
-					</bizStep>
+					<transformationID>urn:epcglobal:cbv:xform:0614141000005:123</transformationID>
+					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance</bizStep>
 					<disposition>urn:epcglobal:cbv:disp:active</disposition>
 					<readPoint>
 						<id>urn:epc:id:sgln:0614141.00000.100</id>

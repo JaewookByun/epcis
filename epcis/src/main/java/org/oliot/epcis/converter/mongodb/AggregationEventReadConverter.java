@@ -149,7 +149,7 @@ public class AggregationEventReadConverter {
 			btlt.setBizTransaction(bizTranArrayList);
 			aggregationEventType.setBizTransactionList(btlt);
 		}
-		
+
 		// EventID and ErrorDeclaration
 		aggregationEventType.setBaseExtension(putEPCISEventExtensionType(dbObject, zone));
 

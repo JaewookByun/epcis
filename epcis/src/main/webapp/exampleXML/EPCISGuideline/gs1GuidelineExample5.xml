@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	schemaVersion="1.1" creationDate="2015-04-14T10:24:01.152-04:00">
+	schemaVersion="1.2" creationDate="2015-04-14T10:24:01.152-04:00">
 	<EPCISBody>
 		<EventList>
 			<ObjectEvent>
@@ -18,21 +18,14 @@
 				</readPoint>
 				<extension>
 					<sourceList>
-						<source type="urn:epcglobal:cbv:sdt:owning_party">
-							urn:epc:id:sgln:0614141.00000.0
-						</source>
+						<source type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:0614141.00000.0</source>
 						<source type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:0614141.00000.0</source>
-						<source type="urn:epcglobal:cbv:sdt:location">
-							urn:epc:id:sgln:0614141.11111.0
-						</source>
+						<source type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:0614141.11111.0</source>
 					</sourceList>
 					<destinationList>
-						<destination type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:9999999.00000.0
-						</destination>
-						<destination type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:5012345.00000.0
-						</destination>
-						<destination type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:5012345.11111.0
-						</destination>
+						<destination type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:9999999.00000.0</destination>
+						<destination type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:5012345.00000.0</destination>
+						<destination type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:5012345.11111.0</destination>
 					</destinationList>
 				</extension>
 			</ObjectEvent>
@@ -56,20 +49,13 @@
 						<source type="urn:epcglobal:cbv:sdt:owning_party">
 							urn:epc:id:sgln:0614141.00000.0
 						</source>
-						<source type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:0614141.00000.
-							0</source>
-						<source type="urn:epcglobal:cbv:sdt:location">
-							urn:epc:id:sgln:0614141.11111.0
-						</source>
+						<source type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:0614141.00000.0</source>
+						<source type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:0614141.11111.0</source>
 					</sourceList>
 					<destinationList>
-						<destination type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:9999999.00000.0
-						</destination>
-						<destination type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:5012345.00000.
-							0
-						</destination>
-						<destination type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:5012345.11111.0
-						</destination>
+						<destination type="urn:epcglobal:cbv:sdt:owning_party">urn:epc:id:sgln:9999999.00000.0</destination>
+						<destination type="urn:epcglobal:cbv:sdt:possessing_party">urn:epc:id:sgln:5012345.00000.0</destination>
+						<destination type="urn:epcglobal:cbv:sdt:location">urn:epc:id:sgln:5012345.11111.0</destination>
 					</destinationList>
 				</extension>
 			</ObjectEvent>
