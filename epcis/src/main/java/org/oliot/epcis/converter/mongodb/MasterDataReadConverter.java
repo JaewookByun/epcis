@@ -68,7 +68,7 @@ public class MasterDataReadConverter {
 					BsonValue attrValue = attrObj.get(key);
 					BsonType attrValueType = attrObj.get(key).getBsonType();
 					key = decodeMongoObjectKey(key);
-					
+
 					if (attrValueType == BsonType.ARRAY) {
 						BsonArray attrArray = attrValue.asArray();
 						Iterator<BsonValue> bsonValueIterator = attrArray.iterator();

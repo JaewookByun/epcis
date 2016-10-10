@@ -784,7 +784,7 @@ public class PollParameters {
 						}
 					}
 					params.put(name, generateCSV(valueList));
-				}else if(qp.getValue() == null && qp.getName().contains("EXISTS")){
+				} else if (qp.getValue() == null && qp.getName().contains("EXISTS")) {
 					params.put(name, "true");
 				}
 			}

@@ -443,13 +443,14 @@ public class MongoQueryService {
 		if (p.getMaxEventCount() != null) {
 			if (p.getFormat() == null || p.getFormat().equals("XML")) {
 				if (eventObjects.size() > p.getMaxEventCount()) {
-					throw new QueryTooLargeException();
+					throw new QueryTooLargeException(eventObjects.size(), p.getMaxEventCount(), "SimpleEventQuery",
+							null);
 					// return makeErrorResult("Violate maxEventCount",
 					// QueryTooLargeException.class);
 				}
 			} else {
 				if (retArray.length() > p.getMaxEventCount()) {
-					throw new QueryTooLargeException();
+					throw new QueryTooLargeException(retArray.length(), p.getMaxEventCount(), "SimpleEventQuery", null);
 					// return makeErrorResult("Violate maxEventCount",
 					// QueryTooLargeException.class);
 				}
@@ -470,7 +471,7 @@ public class MongoQueryService {
 
 		// Required Field Check
 		if (p.getIncludeAttributes() == null || p.getIncludeChildren() == null) {
-			throw new QueryTooLargeException();
+			throw new QueryParameterException();
 			// return makeErrorResult("SimpleMasterDataQuery's Required Field:
 			// includeAttributes, includeChildren",
 			// QueryTooLargeException.class);
@@ -598,13 +599,15 @@ public class MongoQueryService {
 			try {
 				if (p.getFormat() == null || p.getFormat().equals("XML")) {
 					if (vList.size() > p.getMaxElementCount()) {
-						throw new QueryTooLargeException();
+						throw new QueryTooLargeException(vList.size(), p.getMaxElementCount(), "SimpleMasterDataQuery",
+								null);
 						// return makeErrorResult("Too Large Master Data
 						// result", QueryTooLargeException.class);
 					}
 				} else {
 					if (retArray.length() > p.getMaxElementCount()) {
-						throw new QueryTooLargeException();
+						throw new QueryTooLargeException(retArray.length(), p.getMaxElementCount(),
+								"SimpleMasterDataQuery", null);
 						// return makeErrorResult("Too Large Master Data
 						// result", QueryTooLargeException.class);
 					}
@@ -1858,7 +1861,7 @@ public class MongoQueryService {
 					 */
 
 					if (paramName.startsWith("EXISTS_")) {
-						
+
 						String field = paramName.substring(7, paramName.length());
 						field = MongoWriterUtil.encodeMongoObjectKey(field);
 						paramValues = MongoWriterUtil.encodeMongoObjectKey(paramValues);

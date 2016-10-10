@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!DOCTYPE project>
 <epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
-	schemaVersion="1.1" creationDate="2015-04-14T10:06:18.000-04:00">
+	schemaVersion="1.2" creationDate="2015-04-14T10:06:18.000-04:00">
 	<EPCISBody>
 		<EventList>
 			<AggregationEvent>
