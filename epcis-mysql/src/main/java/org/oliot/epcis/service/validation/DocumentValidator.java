@@ -1,6 +1,7 @@
 package org.oliot.epcis.service.validation;
 
 import java.io.InputStream;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
+import org.oliot.model.epcis.VocabularyType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -65,20 +67,23 @@ public class DocumentValidator implements ServletContextAware {
 			if (epcisDocument.getEpcisBody() != null && epcisDocument.getEpcisBody().getEventList() != null
 					&& epcisDocument.getEpcisBody().getEventList()
 							.getObjectEventOrAggregationEventOrQuantityEvent() != null) {
-				retJSON.put("numberOfEventData", epcisDocument.getEpcisBody().getEventList()
+				retJSON.put("eventDataCount", epcisDocument.getEpcisBody().getEventList()
 						.getObjectEventOrAggregationEventOrQuantityEvent().size());
 			} else {
-				retJSON.put("numberOfEventData", 0);
+				retJSON.put("eventDataCount", 0);
 			}
 			if (epcisDocument.getEpcisHeader() != null && epcisDocument.getEpcisHeader().getExtension() != null
 					&& epcisDocument.getEpcisHeader().getExtension().getEpcisMasterData() != null
 					&& epcisDocument.getEpcisHeader().getExtension().getEpcisMasterData().getVocabularyList() != null
 					&& epcisDocument.getEpcisHeader().getExtension().getEpcisMasterData().getVocabularyList()
 							.getVocabulary() != null) {
-				retJSON.put("numberOfMasterData", epcisDocument.getEpcisHeader().getExtension().getEpcisMasterData()
-						.getVocabularyList().getVocabulary().size());
+				List<VocabularyType> vList = epcisDocument.getEpcisHeader().getExtension().getEpcisMasterData()
+						.getVocabularyList().getVocabulary();
+				retJSON.put("vocabularyCount", vList.size());
+				retJSON.put("vocabularyElementCount", getNumberOfVocabularyElements(vList));
 			} else {
-				retJSON.put("numberOfMasterData", 0);
+				retJSON.put("vocabularyCount", 0);
+				retJSON.put("vocabularyElementCount", 0);
 			}
 			return new ResponseEntity<>(retJSON.toString(1), responseHeaders, HttpStatus.OK);
 		} else {
@@ -107,10 +112,12 @@ public class DocumentValidator implements ServletContextAware {
 			if (epcisMasterDataDocument.getEpcisBody() != null
 					&& epcisMasterDataDocument.getEpcisBody().getVocabularyList() != null
 					&& epcisMasterDataDocument.getEpcisBody().getVocabularyList().getVocabulary() != null) {
-				retJSON.put("numberOfMasterData",
-						epcisMasterDataDocument.getEpcisBody().getVocabularyList().getVocabulary().size());
+				List<VocabularyType> vList = epcisMasterDataDocument.getEpcisBody().getVocabularyList().getVocabulary();
+				retJSON.put("vocabularyCount", vList.size());
+				retJSON.put("vocabularyElementCount", getNumberOfVocabularyElements(vList));
 			} else {
-				retJSON.put("numberOfMasterData", 0);
+				retJSON.put("vocabularyCount", 0);
+				retJSON.put("vocabularyElementCount", 0);
 			}
 			return new ResponseEntity<>(retJSON.toString(1), responseHeaders, HttpStatus.OK);
 		} else {
@@ -118,5 +125,15 @@ public class DocumentValidator implements ServletContextAware {
 			retJSON.put("errorMessage", exception);
 			return new ResponseEntity<>(retJSON.toString(1), responseHeaders, HttpStatus.BAD_REQUEST);
 		}
+	}
+	
+	public int getNumberOfVocabularyElements(List<VocabularyType> vList){
+		int cnt = 0;
+		for(VocabularyType vocabulary: vList){
+			if( vocabulary.getVocabularyElementList() != null && vocabulary.getVocabularyElementList().getVocabularyElement() != null){
+				cnt += vocabulary.getVocabularyElementList().getVocabularyElement().size();				
+			}
+		}
+		return cnt;
 	}
 }
