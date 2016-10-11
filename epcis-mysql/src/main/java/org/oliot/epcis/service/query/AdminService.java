@@ -91,26 +91,13 @@ public class AdminService implements ServletContextAware {
 					HttpStatus.BAD_REQUEST);
 
 		}
-
-		if (Configuration.backend.equals("MongoDB")) {
-
-			if (Configuration.mongoDatabase.getCollection("EventData") != null) {
-				Configuration.mongoDatabase.getCollection("EventData").drop();
-			}
-
-			if (Configuration.mongoDatabase.getCollection("MasterData") != null) {
-				Configuration.mongoDatabase.getCollection("MasterData").drop();
-			}
-
-			Configuration.logger.log(Level.INFO, " Repository Initialized ");
-
-			return new ResponseEntity<>(new String("All Event/Master Data removed"), responseHeaders, HttpStatus.OK);
-
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
+		if (Configuration.mongoDatabase.getCollection("EventData") != null) {
+			Configuration.mongoDatabase.getCollection("EventData").drop();
 		}
-		return new ResponseEntity<>(new String("Bad Request"), responseHeaders, HttpStatus.BAD_REQUEST);
+		if (Configuration.mongoDatabase.getCollection("MasterData") != null) {
+			Configuration.mongoDatabase.getCollection("MasterData").drop();
+		}
+		Configuration.logger.log(Level.INFO, " Repository Initialized ");
+		return new ResponseEntity<>(new String("All Event/Master Data removed"), responseHeaders, HttpStatus.OK);
 	}
 }

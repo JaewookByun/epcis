@@ -27,7 +27,7 @@
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
-			<h3 class="panel-title">Welcome to Oliot EPCIS</h3>
+			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.3</h3>
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
@@ -81,7 +81,7 @@
 		</div>
 	</div>
 	<footer>
-		<code style="font-size: 12pt">&copy; Auto-ID Labs. Korea 2016</code>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2016</code>
 	</footer>
 </body>
 </html>

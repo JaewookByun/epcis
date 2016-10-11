@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.DuplicateSubscriptionException;
@@ -177,28 +176,20 @@ public class RESTLikeQueryService implements ServletContextAware {
 		}
 
 		// reportIfEmpty
-		if (Configuration.backend.equals("MongoDB")) {
-			PollParameters p = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-					LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-					WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-					EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-					includeAttributes, includeChildren, attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
-					format, params);
-			SubscriptionType s = new SubscriptionType(subscriptionID, dest, schedule, trigger, initialRecordTime,
-					reportIfEmpty, p);
+		PollParameters p = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
+				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren,
+				attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format, params);
+		SubscriptionType s = new SubscriptionType(subscriptionID, dest, schedule, trigger, initialRecordTime,
+				reportIfEmpty, p);
 
-			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.subscribe(s, userID, friendList);
-			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
-		} else if (Configuration.backend.equals("Cassandra")) {
-			return null;
-		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
-		}
-		return null;
+		MongoQueryService mongoQueryService = new MongoQueryService();
+		String result = mongoQueryService.subscribe(s, userID, friendList);
+		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/Unsubscribe/{subscriptionID}", method = RequestMethod.GET)
@@ -207,17 +198,10 @@ public class RESTLikeQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mongoQueryService = new MongoQueryService();
-			mongoQueryService.unsubscribe(subscriptionID);
-			return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"),
-					responseHeaders, HttpStatus.OK);
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
-		return new ResponseEntity<>(new String("Set up Backend correctly"), HttpStatus.BAD_REQUEST);
+		MongoQueryService mongoQueryService = new MongoQueryService();
+		mongoQueryService.unsubscribe(subscriptionID);
+		return new ResponseEntity<>(new String("Subscription " + subscriptionID + " : Unsubscribed"), responseHeaders,
+				HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/GetSubscriptionIDs/{queryName}", method = RequestMethod.GET)
@@ -227,17 +211,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.getSubscriptionIDsREST(queryName);
-			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
-		} else if (Configuration.backend.equals("Cassandra")) {
-			return null;
-		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
-		}
-
-		return null;
+		MongoQueryService mongoQueryService = new MongoQueryService();
+		String result = mongoQueryService.getSubscriptionIDsREST(queryName);
+		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -396,26 +372,17 @@ public class RESTLikeQueryService implements ServletContextAware {
 			}
 		}
 
-		if (Configuration.backend.equals("MongoDB")) {
-			PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime,
-					GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-					MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID,
-					EXISTS_errorDeclaration, GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason,
-					EQ_correctiveEventID, orderBy, orderDirection, eventCountLimit, maxEventCount, vocabularyName,
-					includeAttributes, includeChildren, attributeNames, EQ_name, WD_name, HASATTR, maxElementCount,
-					format, params);
+		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
+				GT_quantity, GE_quantity, LT_quantity, LE_quantity, EQ_eventID, EXISTS_errorDeclaration,
+				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
+				orderDirection, eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren,
+				attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format, params);
 
-			MongoQueryService mongoQueryService = new MongoQueryService();
-			String result = mongoQueryService.poll(pollParams, userID, friendList, null);
-			return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
-		} else if (Configuration.backend.equals("Cassandra")) {
-			return null;
-		} else if (Configuration.backend.equals("MySQL")) {
-			return null;
-		}
-
-		return null;
+		MongoQueryService mongoQueryService = new MongoQueryService();
+		String result = mongoQueryService.poll(pollParams, userID, friendList, null);
+		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 	}
 }
