@@ -16,25 +16,25 @@ public class SubscriptionType {
 
 	public SubscriptionType(BsonDocument doc) {
 
-		if(doc.containsKey("subscriptionID")){
+		if (doc.containsKey("subscriptionID")) {
 			this.subscriptionID = doc.getString("subscriptionID").getValue();
 		}
-		if(doc.containsKey("dest")){
+		if (doc.containsKey("dest")) {
 			this.dest = doc.getString("dest").getValue();
 		}
-		if(doc.containsKey("schedule")){
+		if (doc.containsKey("schedule")) {
 			this.schedule = doc.getString("schedule").getValue();
 		}
-		if(doc.containsKey("trigger")){
+		if (doc.containsKey("trigger")) {
 			this.trigger = doc.getString("trigger").getValue();
 		}
-		if(doc.containsKey("initialRecordTime")){
+		if (doc.containsKey("initialRecordTime")) {
 			this.initialRecordTime = doc.getString("initialRecordTime").getValue();
 		}
-		if(doc.containsKey("reportIfEmpty")){
+		if (doc.containsKey("reportIfEmpty")) {
 			this.reportIfEmpty = doc.getBoolean("reportIfEmpty").getValue();
 		}
-		if(doc.containsKey("pollParameters")){
+		if (doc.containsKey("pollParameters")) {
 			this.pollParameters = new PollParameters(doc.getDocument("pollParameters"));
 		}
 	}

@@ -16,7 +16,7 @@
   </xs:complexType>
   <xs:complexType name="ContactInformation">
     <xs:sequence>
-      <xs:element name="Contact" type="xs:string" />
+      <xs:element name="Contact" type="xs:string"/>
       <xs:element name="EmailAddress" type="xs:string" minOccurs="0"/>
       <xs:element name="FaxNumber" type="xs:string" minOccurs="0"/>
       <xs:element name="TelephoneNumber" type="xs:string" minOccurs="0"/>

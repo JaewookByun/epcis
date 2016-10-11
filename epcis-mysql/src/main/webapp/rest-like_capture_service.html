@@ -36,7 +36,7 @@
 	function createValidationResultMessage(result){
 		if(result.isValidated == false)
 			return null;
-		return "EventData: " + result.numberOfEventData + " , MasterData: " + result.numberOfMasterData;
+		return "EventData: " + result.eventDataCount + " , Vocabularies: " + result.vocabularyCount + " , VocabularyElements: " + result.vocabularyElementCount;
 	}
 
 	$(document).ready(function() {
@@ -202,6 +202,18 @@
 								href="#">GS1 Example 3 [EPCIS v1.2 section 9.6.3]</a></li>
 							<li><a id="./exampleXML/gs1example4(Transformation).xml"
 								href="#">GS1 Example 4 [EPCIS v1.2 section 9.6.4]</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample1.xml" href="#">EPCIS Guideline A.1</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample2.xml" href="#">EPCIS Guideline A.2</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample3.xml" href="#">EPCIS Guideline A.3</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample4.xml" href="#">EPCIS Guideline A.4</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample5.xml" href="#">EPCIS Guideline A.5</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample6.xml" href="#">EPCIS Guideline A.6</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample7.xml" href="#">EPCIS Guideline A.7</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample8.xml" href="#">EPCIS Guideline A.8</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample9.xml" href="#">EPCIS Guideline A.9</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample10.xml" href="#">EPCIS Guideline A.10</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample11.xml" href="#">EPCIS Guideline A.11</a></li>
 							<li class="dropdown-header"></li>
 							<li><a id="./exampleXML/gs1example6(Object-Erroneous).xml"
 								href="#">Error Declaration Example - Erroneous Event</a></li>

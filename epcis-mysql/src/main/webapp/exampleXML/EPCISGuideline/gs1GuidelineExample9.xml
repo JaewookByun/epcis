@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+	schemaVersion="1.1" creationDate="2015-04-14T11:14:25.411-04:00">
+	<EPCISBody>
+		<EventList>
+			<extension>
+				<TransformationEvent>
+					<eventTime>2015-03-15T00:00:00.000-04:00</eventTime>
+					<eventTimeZoneOffset>-04:00</eventTimeZoneOffset>
+					<inputEPCList>
+						<epc>urn:epc:id:sgtin:0614141.011111.10</epc>
+						<epc>urn:epc:id:sgtin:0614141.011111.45</epc>
+						<epc>urn:epc:id:sgtin:0614141.011111.97</epc>
+					</inputEPCList>
+					<inputQuantityList>
+						<quantityElement>
+							<epcClass>urn:epc:class:lgtin:0614141.022222.12</epcClass>
+							<quantity>10.0</quantity>
+							<uom>LTR</uom>
+						</quantityElement>
+						<quantityElement>
+							<epcClass>urn:epc:idpat:sgtin:0614141.033333.*</epcClass>
+							<quantity>100</quantity>
+						</quantityElement>
+					</inputQuantityList>
+					<outputQuantityList>
+						<quantityElement>
+							<epcClass>urn:epc:class:lgtin:0614141.044444.999</epcClass>
+							<quantity>100</quantity>
+						</quantityElement>
+					</outputQuantityList>
+					<bizStep>urn:epcglobal:cbv:bizstep:creating_class_instance</bizStep>
+					<disposition>urn:epcglobal:cbv:disp:active</disposition>
+					<readPoint>
+						<id>urn:epc:id:sgln:0614141.00000.100</id>
+					</readPoint>
+					<bizLocation>
+						<id>urn:epc:id:sgln:0614141.00000.0</id>
+					</bizLocation>
+				</TransformationEvent>
+			</extension>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>

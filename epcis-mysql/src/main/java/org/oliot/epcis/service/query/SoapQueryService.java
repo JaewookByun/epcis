@@ -9,7 +9,6 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.bind.JAXB;
 
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.DuplicateSubscriptionException;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
@@ -63,42 +62,24 @@ public class SoapQueryService implements CoreQueryService {
 			return;
 		}
 
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mqs = new MongoQueryService();
-			mqs.subscribe(subscribe.getQueryName(), subscribe.getParams(), destURI, subscribe.getControls(),
-					subscribe.getSubscriptionID());
-		} else if (Configuration.backend.equals("Cassandra")) {
+		MongoQueryService mqs = new MongoQueryService();
+		mqs.subscribe(subscribe.getQueryName(), subscribe.getParams(), destURI, subscribe.getControls(),
+				subscribe.getSubscriptionID());
 
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
 	}
 
 	@Override
 	public void unsubscribe(Unsubscribe unsubscribe)
 			throws NoSuchSubscriptionException, ValidationException, ImplementationException {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mqs = new MongoQueryService();
-			mqs.unsubscribe(unsubscribe.getSubscriptionID());
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
+		MongoQueryService mqs = new MongoQueryService();
+		mqs.unsubscribe(unsubscribe.getSubscriptionID());
 	}
 
 	@Override
 	public List<String> getSubscriptionIDs(GetSubscriptionIDs getSubscriptionIDs)
 			throws NoSuchNameException, SecurityException, ValidationException, ImplementationException {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mqs = new MongoQueryService();
-			return mqs.getSubscriptionIDs(getSubscriptionIDs.getQueryName());
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
-		}
-		return null;
+		MongoQueryService mqs = new MongoQueryService();
+		return mqs.getSubscriptionIDs(getSubscriptionIDs.getQueryName());
 	}
 
 	@Override
@@ -123,24 +104,17 @@ public class SoapQueryService implements CoreQueryService {
 	public QueryResults poll(Poll poll)
 			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
 			SecurityException, ValidationException, ImplementationException {
-		if (Configuration.backend.equals("MongoDB")) {
-			MongoQueryService mqs = new MongoQueryService();
-			String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
-			// QueryResults Cannot Contains Error Message if according to SPEC
-			EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(queryResultString),
-					EPCISQueryDocumentType.class);
-			if (resultXML != null && resultXML.getEPCISBody() != null
-					&& resultXML.getEPCISBody().getQueryResults() != null
-					&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
-				QueryResults queryResults = new QueryResults();
-				queryResults.setQueryName(poll.getQueryName());
-				queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
-				return queryResults;
-			}
-		} else if (Configuration.backend.equals("Cassandra")) {
-
-		} else if (Configuration.backend.equals("MySQL")) {
-
+		MongoQueryService mqs = new MongoQueryService();
+		String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
+		// QueryResults Cannot Contains Error Message if according to SPEC
+		EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(queryResultString),
+				EPCISQueryDocumentType.class);
+		if (resultXML != null && resultXML.getEPCISBody() != null && resultXML.getEPCISBody().getQueryResults() != null
+				&& resultXML.getEPCISBody().getQueryResults().getResultsBody() != null) {
+			QueryResults queryResults = new QueryResults();
+			queryResults.setQueryName(poll.getQueryName());
+			queryResults.setResultsBody(resultXML.getEPCISBody().getQueryResults().getResultsBody());
+			return queryResults;
 		}
 		return null;
 	}
