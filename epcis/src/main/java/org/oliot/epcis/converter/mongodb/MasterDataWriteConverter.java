@@ -27,7 +27,7 @@ import com.mongodb.client.MongoCollection;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -122,17 +122,19 @@ public class MasterDataWriteConverter {
 									Element element = (Element) value;
 									String qname = element.getNodeName();
 									String[] checkArr = qname.split(":");
-									
-									if(checkArr.length != 2)
+
+									if (checkArr.length != 2)
 										continue;
-									
+
 									String prefix = checkArr[0];
 									String localName = checkArr[1];
-									String namespaceURI = MongoWriterUtil.encodeMongoObjectKey(element.getNamespaceURI());
-									String qnameKey = MongoWriterUtil.encodeMongoObjectKey(namespaceURI+"#"+localName);
-									
-									complexAttr.put("@"+ namespaceURI, new BsonString(prefix));
-									
+									String namespaceURI = MongoWriterUtil
+											.encodeMongoObjectKey(element.getNamespaceURI());
+									String qnameKey = MongoWriterUtil
+											.encodeMongoObjectKey(namespaceURI + "#" + localName);
+
+									complexAttr.put("@" + namespaceURI, new BsonString(prefix));
+
 									NodeList childNodeList = element.getChildNodes();
 									for (int n = 0; n < childNodeList.getLength(); n++) {
 										Node childNode = childNodeList.item(n);

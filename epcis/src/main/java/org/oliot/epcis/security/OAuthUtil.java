@@ -18,7 +18,7 @@ import com.restfb.types.User;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -59,7 +59,7 @@ public class OAuthUtil {
 	// For MongoDB Document
 	public static boolean isAccessible(String userID, List<String> friendList, BsonDocument doc) {
 
-		if(!doc.containsKey("accessModifier") || !doc.containsKey("userID"))
+		if (!doc.containsKey("accessModifier") || !doc.containsKey("userID"))
 			return true;
 		String am = doc.get("accessModifier").asString().getValue();
 		String providerID = doc.get("userID").asString().getValue();
@@ -85,7 +85,7 @@ public class OAuthUtil {
 
 		return false;
 	}
-	
+
 	public static boolean isAdministratable(String userID, List<String> friendList) {
 		String am = Configuration.adminScope;
 		String providerID = Configuration.adminID;

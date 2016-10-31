@@ -14,7 +14,7 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -23,12 +23,13 @@ import org.oliot.model.epcis.EPCISMasterDataDocumentType;
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
 
-@WebService(targetNamespace="urn:epcglobal:epcis-query:xsd:1")
+@WebService(targetNamespace = "urn:epcglobal:epcis-query:xsd:1")
 public interface CoreCaptureService {
 
 	@WebMethod(operationName = "EventCapture")
 	public void capture(@WebParam(name = "epcisDocument") EPCISDocumentType epcisDocument);
 
 	@WebMethod(operationName = "VocabularyCapture")
-	public void capture(@WebParam(name = "epcisMasterDataDocument") EPCISMasterDataDocumentType epcisMasterDataDocument);
+	public void capture(
+			@WebParam(name = "epcisMasterDataDocument") EPCISMasterDataDocumentType epcisMasterDataDocument);
 }

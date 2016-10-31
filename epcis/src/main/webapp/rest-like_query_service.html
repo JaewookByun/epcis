@@ -38,6 +38,15 @@
 		$('#getStandardVersionURL').val("http://"+location.host+"/epcis/Service/GetStandardVersion");
 		$('#getVendorVersionURL').val("http://"+location.host+"/epcis/Service/GetVendorVersion");
 		$('#getQueryNamesURL').val("http://"+location.host+"/epcis/Service/GetQueryNames");
+		
+		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
+		$.ajax({
+			type : "GET",
+			url : systemInfoURL
+		}).done(function(result) {
+			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
+		});
+		
 	});
 	
 	
@@ -148,6 +157,8 @@
 			<div class="row">
 				<div class="col-sm-4">
 					<h4>EPCIS Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
+					<input id="sysInfoResp" type="text" class="form-control" disabled
+						placeholder="System Information...">
 					<input id="pollBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
 						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">

@@ -1,5 +1,21 @@
 package org.oliot.epcis.service.subscription;
 
+/**
+ * Copyright (C) 2014-2016 Jaewook Byun
+ *
+ * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
+ * v1.2.x is Java Web Service complying with Electronic Product Code Information
+ * Service (EPCIS) v1.2.
+ *
+ * @author Jaewook Byun, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ */
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -110,7 +126,8 @@ public class TriggerEngine {
 								|| sub.getPollParameters().getFormat().equals("XML")) {
 							EPCISQueryDocumentType epcisQueryDocumentType = null;
 							MongoQueryService qs = new MongoQueryService();
-							epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery", sub.getSubscriptionID());
+							epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery",
+									sub.getSubscriptionID());
 							List<Object> eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults()
 									.getResultsBody().getEventList().getObjectEventOrAggregationEventOrQuantityEvent();
 							if (eventType.equals("AggregationEvent")) {
@@ -145,18 +162,19 @@ public class TriggerEngine {
 						} else {
 							sendPost(new URL(sub.getDest()), bsonDocument.toJson().getBytes());
 						}
-					}else{
+					} else {
 						// failed to pass
-						if( sub.getReportIfEmpty() == true ){
+						if (sub.getReportIfEmpty() == true) {
 							if (sub.getPollParameters().getFormat() == null
 									|| sub.getPollParameters().getFormat().equals("XML")) {
 								EPCISQueryDocumentType epcisQueryDocumentType = null;
 								MongoQueryService qs = new MongoQueryService();
-								epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery",sub.getSubscriptionID());
+								epcisQueryDocumentType = qs.makeBaseResultDocument("SimpleEventQuery",
+										sub.getSubscriptionID());
 								StringWriter sw = new StringWriter();
 								JAXB.marshal(epcisQueryDocumentType, sw);
 								sendPost(new URL(sub.getDest()), sw.toString().getBytes());
-							}else{
+							} else {
 								sendPost(new URL(sub.getDest()), new BsonDocument().toJson().getBytes());
 							}
 						}

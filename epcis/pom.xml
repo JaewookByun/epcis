@@ -4,7 +4,7 @@
 	<groupId>org.oliot</groupId>
 	<artifactId>epcis</artifactId>
 	<packaging>war</packaging>
-	<version>1.2.3</version>
+	<version>1.2.4</version>
 	<name>epcis Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<properties>
