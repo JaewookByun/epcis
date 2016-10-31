@@ -76,7 +76,7 @@
 					Query Client</a> <a href="./rest-like_query_service2.html"
 					class="list-group-item">EPCIS Query Client (Subscription)</a>
 					<a href="./accessControlManager.jsp"
-					class="list-group-item">Sign Up or Sign In via Facebook</a>
+					class="list-group-item">[Admin Only] Sign Up or Sign In via Facebook</a>
 			</div>
 		</div>
 	</div>
