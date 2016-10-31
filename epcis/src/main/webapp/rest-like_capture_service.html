@@ -87,8 +87,8 @@
 				data : valXMLString,
 				contentType : "application/xml; charset=utf-8"
 			}).done(function(result) {
-				createValidationResultMessage(result);
-				$("#docValResp").val(result).hide().fadeIn('slow');
+				var msg =  createValidationResultMessage(result);
+				$("#docValResp").val(msg).hide().fadeIn('slow');
 			}).error(function(result) {
 				createValidationResultMessage(result);
 				$("#docValResp").val(result.responseText).hide().fadeIn('slow');
@@ -100,8 +100,8 @@
 				data : valXMLString,
 				contentType : "application/xml; charset=utf-8"
 			}).done(function(result) {
-				createValidationResultMessage(result);
-				$("#masterDocValResp").val(result).hide().fadeIn('slow');
+				var msg = createValidationResultMessage(result);
+				$("#masterDocValResp").val(msg).hide().fadeIn('slow');
 			}).error(function(result) {
 				createValidationResultMessage(result);
 				$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
