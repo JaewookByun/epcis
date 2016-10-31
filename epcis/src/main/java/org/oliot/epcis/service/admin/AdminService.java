@@ -1,4 +1,4 @@
-package org.oliot.epcis.service.query;
+package org.oliot.epcis.service.admin;
 
 import java.util.ArrayList;
 import java.util.List;
