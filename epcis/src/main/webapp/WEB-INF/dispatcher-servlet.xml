@@ -13,7 +13,8 @@
 	<bean id="eventValidation" class="org.oliot.epcis.service.validation.DocumentValidator"></bean>
 
 	<bean id="query" class="org.oliot.epcis.service.query.RESTLikeQueryService"></bean>
-	<bean id="adminService" class="org.oliot.epcis.service.query.AdminService"></bean>
+	<bean id="adminService" class="org.oliot.epcis.service.admin.AdminService"></bean>
+	<bean id="namedQueryService" class="org.oliot.epcis.service.admin.NamedQueryService"></bean>
 
 	<!-- SOAP/HTTP Test Class, describing how to consume SOAP services -->
 	<!-- <bean id="soaptest" class="org.oliot.epcis.service.capture.SoapTest"></bean> -->
