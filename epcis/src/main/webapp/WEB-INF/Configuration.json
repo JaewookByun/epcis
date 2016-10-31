@@ -1,4 +1,7 @@
 {	
+	"_backend_database_name" : "mongodb database name to be used",
+	"backend_database_name" : "epcis",
+	
 	"_backend_ip" : "ip address for mongodb",
 	"backend_ip" : "localhost",
 	

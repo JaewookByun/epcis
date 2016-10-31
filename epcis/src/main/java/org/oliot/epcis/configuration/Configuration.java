@@ -24,7 +24,7 @@ import com.mongodb.client.MongoDatabase;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -46,6 +46,10 @@ public class Configuration implements ServletContextListener {
 	public static boolean isTriggerSupported;
 	public static MongoClient mongoClient;
 	public static MongoDatabase mongoDatabase;
+	public static String backend_ip;
+	public static int backend_port;
+	public static String databaseName;
+	public static JSONObject json;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -86,7 +90,7 @@ public class Configuration implements ServletContextListener {
 				data += line;
 			}
 			reader.close();
-			JSONObject json = new JSONObject(data);
+			json = new JSONObject(data);
 
 			Configuration.webInfoPath = context.getRealPath("/WEB-INF");
 			Configuration.wsdlPath = context.getRealPath("/wsdl");
@@ -167,20 +171,23 @@ public class Configuration implements ServletContextListener {
 	}
 
 	private void setMongoDB(JSONObject json) {
-		String backend_ip;
 		if (json.isNull("backend_ip")) {
 			backend_ip = "localhost";
 		} else {
 			backend_ip = json.getString("backend_ip");
 		}
-		int backend_port;
 		if (json.isNull("backend_port")) {
 			backend_port = 27017;
 		} else {
 			backend_port = json.getInt("backend_port");
 		}
+		if (json.isNull("backend_database_name")){
+			databaseName = "epcis";
+		} else {
+			databaseName = json.getString("backend_database_name");
+		}
 		mongoClient = new MongoClient(backend_ip, backend_port);
-		mongoDatabase = mongoClient.getDatabase("epcis");
+		mongoDatabase = mongoClient.getDatabase(databaseName);
 	}
 
 	private void loadExistingSubscription() {

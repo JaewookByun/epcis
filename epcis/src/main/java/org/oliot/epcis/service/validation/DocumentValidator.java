@@ -30,7 +30,7 @@ import org.springframework.web.context.ServletContextAware;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -126,12 +126,13 @@ public class DocumentValidator implements ServletContextAware {
 			return new ResponseEntity<>(retJSON.toString(1), responseHeaders, HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	public int getNumberOfVocabularyElements(List<VocabularyType> vList){
+
+	public int getNumberOfVocabularyElements(List<VocabularyType> vList) {
 		int cnt = 0;
-		for(VocabularyType vocabulary: vList){
-			if( vocabulary.getVocabularyElementList() != null && vocabulary.getVocabularyElementList().getVocabularyElement() != null){
-				cnt += vocabulary.getVocabularyElementList().getVocabularyElement().size();				
+		for (VocabularyType vocabulary : vList) {
+			if (vocabulary.getVocabularyElementList() != null
+					&& vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
+				cnt += vocabulary.getVocabularyElementList().getVocabularyElement().size();
 			}
 		}
 		return cnt;
