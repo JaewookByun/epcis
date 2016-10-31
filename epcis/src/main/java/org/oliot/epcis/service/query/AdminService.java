@@ -31,7 +31,7 @@ import com.restfb.types.User;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -99,5 +99,18 @@ public class AdminService implements ServletContextAware {
 		}
 		Configuration.logger.log(Level.INFO, " Repository Initialized ");
 		return new ResponseEntity<>(new String("All Event/Master Data removed"), responseHeaders, HttpStatus.OK);
+	}
+
+	/**
+	 * Removes a previously registered subscription having the specified
+	 * subscriptionID.
+	 */
+	@RequestMapping(value = "/Admin/SystemInformation", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getSystemInformation() {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		String confString = Configuration.json.toString(1); 
+		return new ResponseEntity<>(confString, responseHeaders, HttpStatus.OK);
 	}
 }

@@ -25,7 +25,7 @@ import org.springframework.web.context.ServletContextAware;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -54,7 +54,7 @@ public class VocabularyCapture implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
-		
+
 		String errorMessage = null;
 		if (Configuration.isCaptureVerfificationOn == true) {
 			InputStream validateStream = CaptureUtil.getXMLDocumentInputStream(inputString);
@@ -82,9 +82,9 @@ public class VocabularyCapture implements ServletContextAware {
 			errorMessage = cs.capture(epcisMasterDataDocument, gcpLength);
 			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		}
-		if( errorMessage == null )
+		if (errorMessage == null)
 			return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);
 		else
-			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);	
+			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
 	}
 }

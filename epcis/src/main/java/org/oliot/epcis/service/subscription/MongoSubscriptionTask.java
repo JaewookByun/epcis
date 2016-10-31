@@ -37,11 +37,9 @@ import com.mongodb.client.MongoCollection;
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
  *
- * This project is part of Oliot (oliot.org), pursuing the implementation of
- * Electronic Product Code Information Service(EPCIS) v1.1 specification in
- * EPCglobal.
- * [http://www.gs1.org/gsmp/kc/epcglobal/epcis/epcis_1_1-standard-20140520.pdf]
- * 
+ * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
+ * v1.2.x is Java Web Service complying with Electronic Product Code Information
+ * Service (EPCIS) v1.2.
  *
  * @author Jaewook Byun, Ph.D student
  * 
@@ -144,7 +142,7 @@ public class MongoSubscriptionTask implements Job {
 			conn.disconnect();
 		} catch (QueryParameterException e1) {
 			Configuration.logger.log(Level.ERROR, e1.toString());
-		}catch (MalformedURLException e) {
+		} catch (MalformedURLException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());
 		} catch (IOException e) {
 			Configuration.logger.log(Level.ERROR, e.toString());

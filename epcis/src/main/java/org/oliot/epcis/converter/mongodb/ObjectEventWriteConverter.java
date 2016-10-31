@@ -27,7 +27,7 @@ import org.oliot.model.epcis.ReadPointType;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -43,7 +43,8 @@ public class ObjectEventWriteConverter {
 		dbo.put("eventType", new BsonString("ObjectEvent"));
 		// Event Time
 		if (objectEventType.getEventTime() != null)
-			dbo.put("eventTime", new BsonDateTime(objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+			dbo.put("eventTime",
+					new BsonDateTime(objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
 		// Event Time Zone
 		if (objectEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset", new BsonString(objectEventType.getEventTimeZoneOffset()));

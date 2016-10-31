@@ -37,6 +37,15 @@
 		$('#pollBaseURL').val("http://"+location.host+"/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?");
 		$('#unsubscribeURL').val("http://"+location.host+"/epcis/Service/Unsubscribe/{subscriptionID}");
 		$('#getSubscriptionIDsURL').val("http://"+location.host+"/epcis/Service/GetSubscriptionIDs/SimpleEventQuery");
+
+		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
+		$.ajax({
+			type : "GET",
+			url : systemInfoURL
+		}).done(function(result) {
+			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
+		});
+		
 	});
 
 	function subscribe() {
@@ -134,6 +143,8 @@
 			<div class="row">
 				<div class="col-sm-4">
 					<h4>EPCIS Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
+					<input id="sysInfoResp" type="text" class="form-control" disabled
+						placeholder="System Information...">
 					<input id="pollBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?"
 						placeholder="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}">

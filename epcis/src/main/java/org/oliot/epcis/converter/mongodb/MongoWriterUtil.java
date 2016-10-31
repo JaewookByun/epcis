@@ -59,7 +59,7 @@ import org.w3c.dom.Text;
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
  * Service (EPCIS) v1.2.
  *
- * @author Jaewook Jack Byun, Ph.D student
+ * @author Jaewook Byun, Ph.D student
  * 
  *         Korea Advanced Institute of Science and Technology (KAIST)
  * 
@@ -636,7 +636,7 @@ public class MongoWriterUtil {
 
 								String childPrefix = childCheckArr[0];
 								String childNamespaceURI = encodeMongoObjectKey(childNode.getNamespaceURI());
-								
+
 								sub2Save.put("@" + childNamespaceURI, new BsonString(childPrefix));
 
 								map2Save.put(qnameKey, getAnyMap(childNode, sub2Save));
@@ -810,7 +810,7 @@ public class MongoWriterUtil {
 		// Never Happened
 		return null;
 	}
-	
+
 	static public String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
