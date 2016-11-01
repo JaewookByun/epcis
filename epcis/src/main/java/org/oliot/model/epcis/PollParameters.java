@@ -212,7 +212,7 @@ public class PollParameters {
 		if (p.getParams() != null && p.getParams().isEmpty() == false) {
 			BsonDocument paramMap = new BsonDocument();
 			for (String key : p.getParams().keySet()) {
-				if( key.equals("description" ))
+				if( key.equals("description") || key.equals("userID") || key.equals("accessToken"))
 					continue;
 				String value = p.getParams().get(key).toString();
 				paramMap.put(key, new BsonString(value));
