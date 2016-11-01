@@ -10,7 +10,10 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.json.JSONArray;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.DuplicateSubscriptionException;
@@ -39,6 +42,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+import com.mongodb.client.MongoCollection;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.User;
@@ -380,6 +384,52 @@ public class RESTLikeQueryService implements ServletContextAware {
 				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
 				orderDirection, eventCountLimit, maxEventCount, vocabularyName, includeAttributes, includeChildren,
 				attributeNames, EQ_name, WD_name, HASATTR, maxElementCount, format, params);
+
+		MongoQueryService mongoQueryService = new MongoQueryService();
+		String result = mongoQueryService.poll(pollParams, userID, friendList, null);
+		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/Poll/NamedEventQuery/{name}", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> poll(@PathVariable String name, @RequestParam(required = false) String userID,
+			@RequestParam(required = false) String accessToken)
+			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
+			SecurityException, ValidationException, ImplementationException {
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
+				BsonDocument.class);
+		BsonDocument namedEventQuery = collection.find(new BsonDocument("name", new BsonString(name))).first();
+		PollParameters pollParams = new PollParameters(namedEventQuery);
+		
+		if (pollParams.getFormat() != null && pollParams.getFormat().equals("JSON")) {
+			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		} else {
+			responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
+		}
+		
+		// Access Control is not mandatory
+		// However, if fid and accessToken provided, more information provided
+		FacebookClient fc = null;
+		List<String> friendList = null;
+		
+		if (userID != null) {
+			// Check accessToken
+			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+			if (fc == null) {
+				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+			}
+			friendList = new ArrayList<String>();
+
+			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+			for (List<User> friends : friendConnection) {
+				for (User friend : friends) {
+					friendList.add(friend.getId());
+				}
+			}
+		}
 
 		MongoQueryService mongoQueryService = new MongoQueryService();
 		String result = mongoQueryService.poll(pollParams, userID, friendList, null);

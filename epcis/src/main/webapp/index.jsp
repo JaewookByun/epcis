@@ -75,6 +75,8 @@
 					href="./rest-like_query_service.html" class="list-group-item">EPCIS
 					Query Client</a> <a href="./rest-like_query_service2.html"
 					class="list-group-item">EPCIS Query Client (Subscription)</a>
+					<a href="./namedEventQueryManagement.html"
+					class="list-group-item">[Admin Only] Named Event Query Management </a>
 					<a href="./accessControlManager.jsp"
 					class="list-group-item">[Admin Only] Sign Up or Sign In via Facebook</a>
 			</div>
