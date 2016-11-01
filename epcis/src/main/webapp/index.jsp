@@ -27,7 +27,7 @@
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
-			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.4</h3>
+			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.5</h3>
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
