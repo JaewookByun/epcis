@@ -714,7 +714,7 @@ public class MongoQueryService {
 		return true;
 	}
 
-	private String checkConstraintSimpleEventQuery(PollParameters p) throws QueryParameterException {
+	public String checkConstraintSimpleEventQuery(PollParameters p) throws QueryParameterException {
 
 		// M27
 		try {
