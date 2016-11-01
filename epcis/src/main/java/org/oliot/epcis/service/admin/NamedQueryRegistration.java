@@ -1,5 +1,7 @@
 package org.oliot.epcis.service.admin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -11,6 +13,7 @@ import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.PollParameters;
 import org.oliot.model.epcis.QueryParameterException;
@@ -28,6 +31,9 @@ import org.springframework.web.context.ServletContextAware;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.restfb.Connection;
+import com.restfb.FacebookClient;
+import com.restfb.types.User;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -66,7 +72,7 @@ public class NamedQueryRegistration implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Admin/NamedEventQuery", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getNamedEventQuery() {
+	public ResponseEntity<?> getNamedEventQueries() {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
@@ -75,12 +81,12 @@ public class NamedQueryRegistration implements ServletContextAware {
 
 		MongoCursor<BsonDocument> cursor = collection.find().iterator();
 		JSONArray jarray = new JSONArray();
-		while(cursor.hasNext()){
+		while (cursor.hasNext()) {
 			BsonDocument doc = cursor.next();
 			JSONObject json = new JSONObject(doc.toJson());
 			jarray.put(json);
 		}
-	
+
 		return new ResponseEntity<>(jarray.toString(1), responseHeaders, HttpStatus.OK);
 	}
 
@@ -89,13 +95,13 @@ public class NamedQueryRegistration implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Admin/NamedEventQuery/{name}", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> putNamedEventQuery(@PathVariable String name,
-			@RequestParam String description, @RequestParam(required = false) String eventType,
-			@RequestParam(required = false) String GE_eventTime, @RequestParam(required = false) String LT_eventTime,
-			@RequestParam(required = false) String GE_recordTime, @RequestParam(required = false) String LT_recordTime,
-			@RequestParam(required = false) String EQ_action, @RequestParam(required = false) String EQ_bizStep,
-			@RequestParam(required = false) String EQ_disposition, @RequestParam(required = false) String EQ_readPoint,
-			@RequestParam(required = false) String WD_readPoint, @RequestParam(required = false) String EQ_bizLocation,
+	public ResponseEntity<?> putNamedEventQuery(@PathVariable String name, @RequestParam String description,
+			@RequestParam(required = false) String eventType, @RequestParam(required = false) String GE_eventTime,
+			@RequestParam(required = false) String LT_eventTime, @RequestParam(required = false) String GE_recordTime,
+			@RequestParam(required = false) String LT_recordTime, @RequestParam(required = false) String EQ_action,
+			@RequestParam(required = false) String EQ_bizStep, @RequestParam(required = false) String EQ_disposition,
+			@RequestParam(required = false) String EQ_readPoint, @RequestParam(required = false) String WD_readPoint,
+			@RequestParam(required = false) String EQ_bizLocation,
 			@RequestParam(required = false) String WD_bizLocation,
 			@RequestParam(required = false) String EQ_transformationID,
 			@RequestParam(required = false) String MATCH_epc, @RequestParam(required = false) String MATCH_parentID,
@@ -127,12 +133,38 @@ public class NamedQueryRegistration implements ServletContextAware {
 			@RequestParam(required = false) String WD_name, @RequestParam(required = false) String HASATTR,
 			@RequestParam(required = false) Integer maxElementCount,
 
-			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
-			@RequestParam(required = false) String accessToken,
+			@RequestParam(required = false) String format, @RequestParam String userID,
+			@RequestParam String accessToken,
 
 			@RequestParam Map<String, String> params) {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
+
+		// Access Control is not mandatory
+		// However, if fid and accessToken provided, more information provided
+		FacebookClient fc = null;
+		List<String> friendList = null;
+		if (userID != null) {
+			// Check accessToken
+			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+			if (fc == null) {
+				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+			}
+			friendList = new ArrayList<String>();
+
+			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+			for (User friend : friendConnection.getData()) {
+				friendList.add(friend.getId());
+			}
+		}
+
+		// OAuth Fails
+		if (!OAuthUtil.isAdministratable(userID, friendList)) {
+			Configuration.logger.log(Level.INFO, " No right to administration ");
+			return new ResponseEntity<>(new String("No right to administration"), responseHeaders,
+					HttpStatus.BAD_REQUEST);
+
+		}
 
 		try {
 			PollParameters p = new PollParameters("SimpleEventQuery", eventType, GE_eventTime, LT_eventTime,
@@ -151,8 +183,9 @@ public class NamedQueryRegistration implements ServletContextAware {
 				return new ResponseEntity<>(reason, responseHeaders, HttpStatus.BAD_REQUEST);
 
 			boolean isSuccess = addNamedEventQueryToDB(name, description, p);
-			if( isSuccess == false ){
-				return new ResponseEntity<>(new String("Existing NamedEventQuery, Use another name"), responseHeaders, HttpStatus.BAD_REQUEST);
+			if (isSuccess == false) {
+				return new ResponseEntity<>(new String("Existing NamedEventQuery, Use another name"), responseHeaders,
+						HttpStatus.BAD_REQUEST);
 			}
 
 		} catch (QueryParameterException e) {
@@ -168,33 +201,61 @@ public class NamedQueryRegistration implements ServletContextAware {
 	 */
 	@RequestMapping(value = "/Admin/NamedEventQuery/{name}", method = RequestMethod.DELETE)
 	@ResponseBody
-	public ResponseEntity<?> deleteNamedEventQuery(@PathVariable String name) {
+	public ResponseEntity<?> deleteNamedEventQuery(@PathVariable String name, @RequestParam String userID,
+			@RequestParam String accessToken) {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
-		if( deleteNamedEventQueryFromDB(name)) {
+		// Access Control is not mandatory
+		// However, if fid and accessToken provided, more information provided
+		FacebookClient fc = null;
+		List<String> friendList = null;
+		if (userID != null) {
+			// Check accessToken
+			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+			if (fc == null) {
+				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+			}
+			friendList = new ArrayList<String>();
+
+			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+			for (User friend : friendConnection.getData()) {
+				friendList.add(friend.getId());
+			}
+		}
+
+		// OAuth Fails
+		if (!OAuthUtil.isAdministratable(userID, friendList)) {
+			Configuration.logger.log(Level.INFO, " No right to administration ");
+			return new ResponseEntity<>(new String("No right to administration"), responseHeaders,
+					HttpStatus.BAD_REQUEST);
+
+		}
+
+		if (deleteNamedEventQueryFromDB(name)) {
 			Configuration.logger.log(Level.INFO, "NamedEventQuery: " + name + " is removed");
-			return new ResponseEntity<>(new String("NamedEventQuery: " + name + " is removed"), responseHeaders, HttpStatus.OK);
-		}else{
+			return new ResponseEntity<>(new String("NamedEventQuery: " + name + " is removed"), responseHeaders,
+					HttpStatus.OK);
+		} else {
 			Configuration.logger.log(Level.INFO, "NamedEventQuery: " + name + " does not exist");
-			return new ResponseEntity<>(new String("NamedEventQuery: " + name + " does not exist"), responseHeaders, HttpStatus.OK);
+			return new ResponseEntity<>(new String("NamedEventQuery: " + name + " does not exist"), responseHeaders,
+					HttpStatus.OK);
 		}
 	}
 
-	private boolean deleteNamedEventQueryFromDB(String name){
+	private boolean deleteNamedEventQueryFromDB(String name) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
 				BsonDocument.class);
 
-		BsonDocument s = collection
-				.findOneAndDelete(new BsonDocument("name", new BsonString(name)));
-		
-		if( s == null ){
+		BsonDocument s = collection.findOneAndDelete(new BsonDocument("name", new BsonString(name)));
+
+		if (s == null) {
 			return false;
-		}else{
+		} else {
 			return true;
 		}
 	}
-	
+
 	private boolean addNamedEventQueryToDB(String name, String description, PollParameters p) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
 				BsonDocument.class);

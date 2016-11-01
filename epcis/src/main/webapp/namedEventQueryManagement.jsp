@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<%@ page import="org.oliot.epcis.configuration.Configuration"%>
 <html>
 <head>
 <script>
@@ -25,18 +26,113 @@
 	media="screen">
 <title>EPCIS REST-Like Web Service</title>
 </head>
-
+<%
+	String facebookAppID = Configuration.facebookAppID;
+%>
 <script src="./js/jquery.min.js"></script>
 <script src="./js/bootstrap.min.js"></script>
 <script src="./js/bootstrap-switch.min.js"></script>
 <script src="./js/bootstrap-select.js"></script>
+
+<!-- For Facebook Integration -->
+<script>
+		// This is called with the results from from FB.getLoginStatus().
+		function statusChangeCallback(response) {
+			console.log('statusChangeCallback');
+			console.log(response);
+			// The response object is returned with a status field that lets the
+			// app know the current login status of the person.
+			// Full docs on the response object can be found in the documentation
+			// for FB.getLoginStatus().
+			if (response.status === 'connected') {
+				// Logged into your app and Facebook.
+				getFacebookInformation();
+				$('#fAccessToken').val(response.authResponse.accessToken).hide().fadeIn('slow');
+				$("#scButton").prop("disabled", false);
+				$('#consoleMsg').val("Login Success").hide().fadeIn('slow');
+			} else if (response.status === 'not_authorized') {
+				// The person is logged into Facebook, but not your app.
+				console.log("Please Log into this App");
+				$("#scButton").prop("disabled", true);
+				$('#consoleMsg').val("Need Facebook Login").hide().fadeIn('slow');
+			} else {
+				// The person is not logged into Facebook, so we're not sure if
+				// they are logged into this app or not.
+				console.log("Please Log into this App");
+				$("#scButton").prop("disabled", true);
+				$('#consoleMsg').val("Need Facebook Login").hide().fadeIn('slow');
+			}
+		}
+
+		// This function is called when someone finishes with the Login
+		// Button.  See the onlogin handler attached to it in the sample
+		// code below.
+		function checkLoginState() {
+			FB.getLoginStatus(function(response) {
+				statusChangeCallback(response);
+			});
+		}
+
+		window.fbAsyncInit = function() {
+			FB.init({
+				appId : "<%=facebookAppID%>",
+			cookie : true, // enable cookies to allow the server to access 
+			// the session
+			xfbml : true, // parse social plugins on this page
+			version : 'v2.5' // use version 2.2
+		});
+
+		// Now that we've initialized the JavaScript SDK, we call 
+		// FB.getLoginStatus().  This function gets the state of the
+		// person visiting this page and can return one of three states to
+		// the callback you provide.  They can be:
+		//
+		// 1. Logged into your app ('connected')
+		// 2. Logged into Facebook, but not your app ('not_authorized')
+		// 3. Not logged into Facebook and can't tell if they are logged into
+		//    your app or not.
+		//
+		// These three cases are handled in the callback function.
+
+		FB.getLoginStatus(function(response) {
+			statusChangeCallback(response);
+		});
+
+	};
+
+	// Load the SDK asynchronously
+	(function(d, s, id) {
+		var js, fjs = d.getElementsByTagName(s)[0];
+		if (d.getElementById(id))
+			return;
+		js = d.createElement(s);
+		js.id = id;
+		js.src = "//connect.facebook.net/en_US/sdk.js";
+		fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+
+	// Here we run a very simple test of the Graph API after login is
+	// successful.  See statusChangeCallback() for when this call is made.
+	function getFacebookInformation() {
+		console.log('Welcome!  Fetching your information.... ');
+		FB.api('/me?fields=name,id,email', function(response) {
+			console.log('Successful login for: ' + response.name);
+			$('#fid').val(response.id).hide().fadeIn('slow');
+		});
+		var facebookAppID = "<%=facebookAppID%>";
+		FB.api('/'+facebookAppID, function(response) {
+			$('#consoleMsg').val('Welcome to '+response.name).hide().fadeIn('slow');
+		});
+	}
+</script>
+
 
 <script>
 
 	$(document).ready(function() {
 		$('#addBaseURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery/{name}?");
 		$('#getURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery");
-		$('#deleteURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery/{name}");
+		$('#deleteURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery/{name}?");
 		
 		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
 		$.ajax({
@@ -54,7 +150,10 @@
 		var baseURL = $("#addBaseURL").val();
 		var params = $("#pollParam").val();
 		var desc = $("#description").val();
-		var url = baseURL + params + "&description="+desc;
+		var fid = $("#fid").val();
+		var fAccessToken = $("#fAccessToken").val();
+		
+		var url = baseURL + params + "&description="+desc + "&userID="+fid + "&accessToken="+fAccessToken;
 		$.get(
 				url,
 				function(ret) {
@@ -66,8 +165,8 @@
 						$("#xmlTextArea").val(ret).hide().fadeIn();
 					}
 				}).fail(function(e) {
-			$("#xmlTextArea").val(e.responseText).hide().fadeIn();
-		});
+					$("#xmlTextArea").val(e.responseText).hide().fadeIn();
+				});
 	}
 
 	function getNamedEventQueries() {
@@ -79,14 +178,17 @@
 		});
 	}
 	function deleteNamedEventQuery() {
-		var u = $("#deleteURL").val();
+		var base = $("#deleteURL").val();
+		var fid = $("#fid").val();
+		var fAccessToken = $("#fAccessToken").val();
+		var u = base + "&userID="+fid + "&accessToken="+fAccessToken;
 		
 		$.ajax({
 			type : "DELETE",
 			url : u
 		}).done(function(ret) {
 			$("#xmlTextArea").val(ret);
-		}).error(function(result) {
+		}).error(function(e) {
 			$("#xmlTextArea").val(e.responseText).hide().fadeIn();
 		});
 	}
@@ -131,8 +233,6 @@
 
 <body>
 
-
-
 	<div class="panel panel-info">
 		<div class="navbar-header">
 			<button type="button" class="navbar-toggle collapsed"
@@ -150,6 +250,17 @@
 					onclick="movePage('index.jsp')">Back</button>
 			</form>
 		</div>
+
+		<fb:login-button
+						data-scope="public_profile,user_friends,user_about_me,user_events,user_likes,user_location,user_posts,user_relationships,user_relationship_details,email"
+						onlogin="checkLoginState();" auto_logout_link="true"
+						class="panel-body">
+					</fb:login-button>
+					<input id="consoleMsg" type="text" class="form-control" disabled placeholder="Message from Facebook">
+					<input id="fid" type="hidden" class="form-control"
+						placeholder="ID will be shown here" > <br>
+					<input id="fAccessToken" type="hidden" class="form-control"
+						placeholder="Access Token will be shown here">
 
 		<div class="panel-body">
 			<div class="row">
@@ -197,8 +308,7 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>
-						
+						<td>						
 						getNamedEventQueries
 						</td>
 						<td>
@@ -207,6 +317,7 @@
 								<li class="list-group-item"><code>HTTP.GET</code><br> URL:
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery</li>
 								<li class="list-group-item">Return Type: application/json</li>
+								<li class="list-group-item">No Access Control Needed</li>
 							</ul>
 						</td>
 					</tr>
@@ -220,6 +331,7 @@
 								<li class="list-group-item"><code>HTTP.DELETE</code><br>URL:
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
 								<li class="list-group-item">Return Type: application/text</li>
+								<li class="list-group-item">Administrator method</li>
 							</ul>
 						</td>
 					</tr>
@@ -232,6 +344,7 @@
 								<li class="list-group-item">Register NamedEventQuery</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>URL:
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
+								<li class="list-group-item">Administrator method</li>
 								<li class="list-group-item">Parameters: <br>
 									<code>List of characters should be encoded: + -> %2B , # -> %23</code><br>
 									
