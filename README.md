@@ -15,7 +15,7 @@ Copyright (C) 2014-2016 Jaewook Byun
 - Jaewook Byun, Daeyoung Kim, "EPC Graph Information Service: Enhanced object traceability on unified and linked EPCIS events," The 16th International Conference on Web Information System Engineering (WISE 2015), Miami, Florida, USA, November 1-3, 2015. [URL]
 (http://link.springer.com/chapter/10.1007/978-3-319-26190-4_16)
 
-### Temporary Server for EPCIS v1.2 prototyping ###
+### Temporary Server for Oliot EPCIS ###
 > [Server](http://143.248.56.100:8080/epcis)
 
 ### Specification ###
