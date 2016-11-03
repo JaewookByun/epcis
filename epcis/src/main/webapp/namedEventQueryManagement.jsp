@@ -2,6 +2,7 @@
 <%@ page import="org.oliot.epcis.configuration.Configuration"%>
 <html>
 <head>
+<link rel="icon" href="image/autoid_logo.png">
 <script>
 	(function(i, s, o, g, r, a, m) {
 		i['GoogleAnalyticsObject'] = r;
@@ -814,7 +815,7 @@
 		</div>
 	</div>
 	<footer>
-		<code style="font-size: 12pt">&copy; Auto-ID Labs. Korea 2016</code>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2016</code>
 	</footer>
 </body>
 </html>
