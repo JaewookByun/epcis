@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" href="image/autoid_logo.png">
 <title>Oliot EPCIS v1.2 Capture Server</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,8 +42,9 @@
 
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
-					href="#" class="list-group-item">EPCIS v1.2 compliance<br>Web Application Server, Tomcat v8<br>Java v8, Servlet v3.1<br>Maven<br>Spring
-					Framework<br>MongoDB v3.2
+					href="#" class="list-group-item">EPCIS v1.2 compliance<br>
+					Java Web Service (Java v8, Tomcat v8, Servlet v3.1)<br>
+					MongoDB v3.2<br>Maven, Spring Framework
 				</a>
 			</div>
 			<div class="list-group">
@@ -75,6 +77,8 @@
 					href="./rest-like_query_service.html" class="list-group-item">EPCIS
 					Query Client</a> <a href="./rest-like_query_service2.html"
 					class="list-group-item">EPCIS Query Client (Subscription)</a>
+					<a href="./rest-like_query_service3.html"
+					class="list-group-item">EPCIS Query Client (NamedEventQuery)</a>
 					<a href="./namedEventQueryManagement.jsp"
 					class="list-group-item">[Admin Only] Named Event Query Management </a>
 					<a href="./accessControlManager.jsp"
