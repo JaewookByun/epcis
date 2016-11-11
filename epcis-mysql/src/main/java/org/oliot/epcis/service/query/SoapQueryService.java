@@ -9,7 +9,8 @@ import java.util.List;
 import javax.jws.WebService;
 import javax.xml.bind.JAXB;
 
-import org.oliot.epcis.service.query.mongodb.MongoQueryService;
+import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.query.mysql.MysqlQueryService;
 import org.oliot.model.epcis.DuplicateSubscriptionException;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.GetSubscriptionIDs;
@@ -62,23 +63,27 @@ public class SoapQueryService implements CoreQueryService {
 			return;
 		}
 
-		MongoQueryService mqs = new MongoQueryService();
+		//MongoQueryService mqs = new MongoQueryService();
+		MysqlQueryService mqs=new MysqlQueryService();
 		mqs.subscribe(subscribe.getQueryName(), subscribe.getParams(), destURI, subscribe.getControls(),
 				subscribe.getSubscriptionID());
-
+		
+		
 	}
 
 	@Override
 	public void unsubscribe(Unsubscribe unsubscribe)
 			throws NoSuchSubscriptionException, ValidationException, ImplementationException {
-		MongoQueryService mqs = new MongoQueryService();
+		MysqlQueryService mqs=new MysqlQueryService();
+		//MongoQueryService mqs = new MongoQueryService();
 		mqs.unsubscribe(unsubscribe.getSubscriptionID());
 	}
 
 	@Override
 	public List<String> getSubscriptionIDs(GetSubscriptionIDs getSubscriptionIDs)
 			throws NoSuchNameException, SecurityException, ValidationException, ImplementationException {
-		MongoQueryService mqs = new MongoQueryService();
+		MysqlQueryService mqs=new MysqlQueryService();
+		//MongoQueryService mqs = new MongoQueryService();
 		return mqs.getSubscriptionIDs(getSubscriptionIDs.getQueryName());
 	}
 
@@ -104,8 +109,13 @@ public class SoapQueryService implements CoreQueryService {
 	public QueryResults poll(Poll poll)
 			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
 			SecurityException, ValidationException, ImplementationException {
-		MongoQueryService mqs = new MongoQueryService();
+		// ----- Saop update started from here
+		//MongoQueryService mqs = new MongoQueryService();
+		//String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
+		Configuration.logger.info("Saop poll with mysql started");
+		MysqlQueryService mqs=new MysqlQueryService();
 		String queryResultString = mqs.poll(poll.getQueryName(), poll.getParams());
+		
 		// QueryResults Cannot Contains Error Message if according to SPEC
 		EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(queryResultString),
 				EPCISQueryDocumentType.class);

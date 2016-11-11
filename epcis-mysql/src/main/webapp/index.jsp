@@ -42,7 +42,7 @@
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
 					href="#" class="list-group-item">EPCIS v1.2 compliance<br>Web Application Server, Tomcat v8<br>Java v8, Servlet v3.1<br>Maven<br>Spring
-					Framework<br>MongoDB v3.2
+					Framework<br>MySQL v5.7.15
 				</a>
 			</div>
 			<div class="list-group">
@@ -51,7 +51,13 @@
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
 					Real-time and Embedded Systems Laboratory(RESL)<br>
 					bjw0829@kaist.ac.kr<br> GitHub:
-					https://github.com/JaewookByun/epcis
+					https://github.com/JaewookByun/epcis<br><br>
+					
+					Yalew Kidane, Ph.D student<br>
+					Korea Advanced Institute of Science and Technology (KAIST)<br>
+					Real-time and Embedded Systems Laboratory(RESL)<br>
+					yalewkidane@gmail.com/@kaist.ac.kr<br> GitHub:
+					https://github.com/yalewkidane
 				</a>
 			</div>
 		</div>

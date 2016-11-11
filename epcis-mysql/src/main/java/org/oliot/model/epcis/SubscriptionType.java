@@ -14,6 +14,9 @@ public class SubscriptionType {
 	private Boolean reportIfEmpty;
 	private PollParameters pollParameters;
 
+	public SubscriptionType(){
+		
+	}
 	public SubscriptionType(BsonDocument doc) {
 
 		if (doc.containsKey("subscriptionID")) {
