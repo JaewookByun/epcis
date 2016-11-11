@@ -3,6 +3,7 @@ package org.oliot.epcis.configuration;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -12,10 +13,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
-import org.oliot.epcis.service.subscription.MongoSubscription;
+import org.oliot.epcis.service.subscription.MysqlSubscription;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoDatabase;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -31,6 +30,14 @@ import com.mongodb.client.MongoDatabase;
  *         Real-time Embedded System Laboratory(RESL)
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
+ *         
+ * @author Yalew kidane, Ph.D student
+ * 
+ *         Korea Advanced Institute of Science and Technology (KAIST)
+ * 
+ *         Real-time Embedded System Laboratory(RESL)
+ * 
+ *         yalewkidane@gmail.com/@kaist.ac.kr
  */
 
 public class Configuration implements ServletContextListener {
@@ -44,8 +51,9 @@ public class Configuration implements ServletContextListener {
 	public static String adminScope;
 	public static boolean isQueryAccessControlOn;
 	public static boolean isTriggerSupported;
-	public static MongoClient mongoClient;
-	public static MongoDatabase mongoDatabase;
+	public static String DB;
+	//public static MongoClient mongoClient;
+	//public static MongoDatabase mongoDatabase;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -63,6 +71,7 @@ public class Configuration implements ServletContextListener {
 
 		// load existing subscription
 		loadExistingSubscription();
+		
 	}
 
 	private void setLogger() {
@@ -151,8 +160,9 @@ public class Configuration implements ServletContextListener {
 			}
 			adminScope = aScope.trim();
 
-			setMongoDB(json);
-
+			 //set database
+			String backendDB = json.getString("backend_DB");
+			setDB(backendDB);
 			// Trigger Support
 			String triggerSupport = json.getString("trigger_support");
 			if (triggerSupport == null || triggerSupport.trim().equals("on")) {
@@ -166,25 +176,24 @@ public class Configuration implements ServletContextListener {
 		}
 	}
 
-	private void setMongoDB(JSONObject json) {
-		String backend_ip;
-		if (json.isNull("backend_ip")) {
-			backend_ip = "localhost";
-		} else {
-			backend_ip = json.getString("backend_ip");
-		}
-		int backend_port;
-		if (json.isNull("backend_port")) {
-			backend_port = 27017;
-		} else {
-			backend_port = json.getInt("backend_port");
-		}
-		mongoClient = new MongoClient(backend_ip, backend_port);
-		mongoDatabase = mongoClient.getDatabase("epcis");
-	}
 
+	private void setDB(String backendDB){
+		if(backendDB.equals("MySQL")){
+			Configuration.logger.info("Backend is MySQL");
+			DB="MysqlConfig.xml";
+			
+		}else if(backendDB.equals("PostgreSQL")){
+			Configuration.logger.info("Backend is PostgreSQL");
+			DB="PostgreSQLConfig.xml";
+		}else if(backendDB.equals("MariaDB")){
+			Configuration.logger.info("Backend is MariaDB");
+			DB="MariaDBConfig.xml";
+		}
+	
+	}
 	private void loadExistingSubscription() {
-		MongoSubscription ms = new MongoSubscription();
+				
+		MysqlSubscription ms = new MysqlSubscription();
 		ms.init();
 	}
 }
