@@ -39,6 +39,13 @@ import javax.xml.bind.annotation.XmlValue;
 @XmlType(name = "EPC", namespace = "urn:epcglobal:xsd:1", propOrder = { "value" })
 public class EPC {
 
+	public EPC(){
+		
+	}
+	
+	public EPC(String value){
+		this.value = value;
+	}
 	@XmlValue
 	protected String value;
 

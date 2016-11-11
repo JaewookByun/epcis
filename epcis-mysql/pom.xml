@@ -127,6 +127,65 @@
 			<artifactId>httpcore</artifactId>
 			<version>4.4.4</version>
 		</dependency>
+		
+		<!-- MySQL START -->
+		
+		<!-- Added for handling hibernate -->
+		<dependency> 
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			  <version>3.6.10.Final</version> 
+			<!--<version>4.1.4.Final</version>-->
+		</dependency>
+		
+		<!-- Added for handling dbcp-jdbc -->
+		<dependency> 
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+		
+		<!-- Added for handling mysql -->
+		<dependency>
+			<groupId>org.springframework.data</groupId> 
+  		  	<artifactId>spring-data-jdbc-core</artifactId>
+ 		  	 <version>1.0.0.RELEASE</version>
+		</dependency>
+		
+		<!-- Added for handling mysql -->
+		<dependency>  
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.9</version>
+        </dependency>
+        
+        <dependency>
+   			<groupId>org.springframework</groupId>
+   			<artifactId>spring-orm</artifactId>
+    		<version>3.1.1.RELEASE</version>
+		</dependency>
+		
+		<dependency>
+    		<groupId>javassist</groupId>
+    		<artifactId>javassist</artifactId>
+    		<version>3.12.1.GA</version>
+		</dependency>
+		<!-- MySQL END -->
+		<!-- Postgresql -->
+		<dependency>
+                  <groupId>org.postgresql</groupId>
+                  <artifactId>postgresql</artifactId>
+                  <version>9.3-1102-jdbc41</version>
+         </dependency>
+        <!-- Postgresql -->
+		<!--  Temp Start -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+			<version>1.8.0.RELEASE</version>
+		</dependency>
+		<!--  Temp End -->
+		
 	</dependencies>
 	<build>
 		<finalName>epcis</finalName>

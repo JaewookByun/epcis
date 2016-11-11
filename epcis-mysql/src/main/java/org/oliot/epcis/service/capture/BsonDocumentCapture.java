@@ -67,9 +67,9 @@ public class BsonDocumentCapture implements ServletContextAware {
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public String post(@RequestBody byte[] inputByteArray) {
-		Configuration.logger.info(" EPCIS Bson Document Capture Started.... ");
+		Configuration.logger.info(" EPCIS Bson Document Capture Not yet Implemented.... ");
 
-		try {
+/*		try {
 			ByteArrayInputStream is = new ByteArrayInputStream(inputByteArray);
 			ObjectInput oi = new ObjectInputStream(is);
 			BsonDocument inputDocument = (BsonDocument) oi.readObject();
@@ -128,7 +128,7 @@ public class BsonDocumentCapture implements ServletContextAware {
 		} catch (ClassNotFoundException e) {
 			Configuration.logger.error(e);
 		}
-
+*/
 		return "EPCIS Document : Captured ";
 
 	}

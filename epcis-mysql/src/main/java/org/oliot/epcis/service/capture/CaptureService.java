@@ -17,7 +17,8 @@ import java.util.List;
 import javax.xml.bind.JAXBElement;
 
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
+//import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
+import org.oliot.epcis.service.capture.mysql.MysqlCaptureUtil;
 import org.oliot.gcp.core.SimplePureIdentityFilter;
 import org.oliot.model.epcis.ActionType;
 import org.oliot.model.epcis.AggregationEventType;
@@ -83,8 +84,12 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(event, userID, accessModifier, gcpLength);
+		
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(event);
+		return null;
 	}
 
 	public String capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -96,8 +101,12 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return "[Error] Req. M7 Error";
 		}
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		Configuration.logger.info("Objec event capturing started");
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(event, userID, accessModifier, gcpLength);
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(event);
+		return null;
 	}
 
 	public String capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -110,8 +119,12 @@ public class CaptureService implements CoreCaptureService {
 			return "[Error] Req. M7 Error";
 		}
 
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(event, userID, accessModifier, gcpLength);
+		Configuration.logger.info("Quantity event capturing started");
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(event);
+		return null;
 	}
 
 	public String capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -134,8 +147,13 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(event, userID, accessModifier, gcpLength);
+		
+		Configuration.logger.info("Transaction event capturing started");
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(event);
+		return null;
 	}
 
 	public String capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
@@ -146,18 +164,30 @@ public class CaptureService implements CoreCaptureService {
 			Configuration.logger.error("Req. M7 Error");
 			return "[Error]Req. M7 Error";
 		}
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(event, userID, accessModifier, gcpLength);
+		
+		Configuration.logger.info("Transformation event capturing started");
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(event);
+		return null;
 	}
 
 	public String capture(VocabularyType vocabulary, Integer gcpLength) {
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(vocabulary, null, null, gcpLength);
+		// mysql updata here ------   
+		//MongoCaptureUtil m = new MongoCaptureUtil();
+		//return m.capture(vocabulary, null, null, gcpLength);
+		
+		Configuration.logger.info("Vocabulary capturing started");
+		MysqlCaptureUtil m = new MysqlCaptureUtil();
+		m.capture(vocabulary);
+		return null;
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void capture(EPCISDocumentType epcisDocument) {
+		Configuration.logger.info("Implimenting: capture(EPCISDocumentType epcisDocument --- mysql) ");
 		if (epcisDocument.getEPCISBody() == null) {
 			Configuration.logger.info(" There is no DocumentBody ");
 			return;
@@ -196,6 +226,7 @@ public class CaptureService implements CoreCaptureService {
 	@SuppressWarnings("rawtypes")
 	// Return null -> Succeed, not null --> error message
 	public String capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
+		Configuration.logger.info("Implimenting: capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength ---mysql");
 		String errorMessage = null;
 		if (epcisDocument.getEPCISBody() == null) {
 			Configuration.logger.info(" There is no DocumentBody ");
@@ -351,6 +382,7 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	public String capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
+		Configuration.logger.info("Implimenting: capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength)");
 		String errorMessage = null;
 		if (epcisMasterDataDocument.getEPCISBody() == null) {
 			Configuration.logger.info(" There is no DocumentBody ");
