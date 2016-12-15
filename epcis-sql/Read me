@@ -1,0 +1,12 @@
+
+Oliot EPCIS 1.2 supports  MySQL/Postgresql/MariaDB
+
+To start epcis:
+
+Install MySQL/Postgresql/MariaDB
+
+Put the war file in {apache-tomcat-8.0.x}/webapps
+
+start apache-tomcat
+
+
