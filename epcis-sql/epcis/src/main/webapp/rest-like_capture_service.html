@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+	(function(i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function() {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script',
+			'https://www.google-analytics.com/analytics.js', 'ga');
+
+	ga('create', 'UA-64257932-1', 'auto');
+	ga('send', 'pageview');
+</script>
+<link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="./css/bootstrap-switch.min.css" rel="stylesheet"
+	media="screen">
+<link href="./css/bootstrap-select.min.css" rel="stylesheet"
+	media="screen">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPCIS REST-Like Web Service</title>
+
+</head>
+<script src="./js/jquery.min.js"></script>
+<script src="./js/bootstrap.min.js"></script>
+<script src="./js/bootstrap-switch.min.js"></script>
+<script src="./js/bootstrap-select.js"></script>
+
+<script>
+
+	function createValidationResultMessage(result){
+		if(result.isValidated == false)
+			return null;
+		return "EventData: " + result.eventDataCount + " , Vocabularies: " + result.vocabularyCount + " , VocabularyElements: " + result.vocabularyElementCount;
+	}
+
+	$(document).ready(function() {
+		// Loading a selected example to the text area
+		$(".dropdown-menu").on("click", "li a", function(event) {
+			$("#xmlTextArea").load($(this)[0].id, function(){
+				var docValURL = $("#docValURL").val();
+				var masterDocValURL = $("#masterDocValURL").val();
+				var valXMLString = $("#xmlTextArea").val();
+				
+				$.ajax({
+					type : "POST",
+					url : docValURL,
+					data : valXMLString,
+					contentType : "application/xml; charset=utf-8"
+				}).done(function(result) {
+					var msg = createValidationResultMessage(result);
+					$("#docValResp").val(msg).hide().fadeIn('slow');
+				}).error(function(result) {
+					$("#docValResp").val(result.responseText).hide().fadeIn('slow');
+				});
+				
+				$.ajax({
+					type : "POST",
+					url : masterDocValURL,
+					data : valXMLString,
+					contentType : "application/xml; charset=utf-8"
+				}).done(function(result) {
+					var msg = createValidationResultMessage(result);
+					$("#masterDocValResp").val(msg).hide().fadeIn('slow');
+				}).error(function(result) {
+					$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
+				});
+			});		
+		})
+		$('#captureURL').val('http://'+location.host+'/epcis/Service/EventCapture');
+		$('#docValURL').val('http://'+location.host+'/epcis/Service/EPCISDocumentValidation');
+		$('#masterDocValURL').val('http://'+location.host+'/epcis/Service/EPCISMasterDataDocumentValidation');
+		
+		$('#xmlTextArea').on('paste', function(d){
+			var docValURL = $("#docValURL").val();
+			var masterDocValURL = $("#masterDocValURL").val();
+			var valXMLString = d.originalEvent.clipboardData.getData('text');
+			
+			$.ajax({
+				type : "POST",
+				url : docValURL,
+				data : valXMLString,
+				contentType : "application/xml; charset=utf-8"
+			}).done(function(result) {
+				createValidationResultMessage(result);
+				$("#docValResp").val(result).hide().fadeIn('slow');
+			}).error(function(result) {
+				createValidationResultMessage(result);
+				$("#docValResp").val(result.responseText).hide().fadeIn('slow');
+			});
+			
+			$.ajax({
+				type : "POST",
+				url : masterDocValURL,
+				data : valXMLString,
+				contentType : "application/xml; charset=utf-8"
+			}).done(function(result) {
+				createValidationResultMessage(result);
+				$("#masterDocValResp").val(result).hide().fadeIn('slow');
+			}).error(function(result) {
+				createValidationResultMessage(result);
+				$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
+			});
+		});
+	});
+
+	function capture() {
+		var captureURL = $("#captureURL").val();
+		var captureXMLString = $("#xmlTextArea").val();
+
+		$.ajax({
+			type : "POST",
+			url : captureURL,
+			data : captureXMLString,
+			contentType : "application/xml; charset=utf-8"
+		}).done(function(result) {
+			$("#resp").val(result).hide().fadeIn('slow');
+		}).error(function(result) {
+			$("#resp").val(result.responseText).hide().fadeIn('slow');
+		});
+	}
+
+	function replaceURL(type) {
+		if (type == "event") {
+			var str = $("#captureURL").val();
+			str = str.replace("Vocabulary", "Event");
+			$("#captureURL").val(str);
+		} else if (type == "vocabulary") {
+			var str = $("#captureURL").val();
+			str = str.replace("Event", "Vocabulary");
+			$("#captureURL").val(str);
+		}
+	}
+
+	function movePage(page) {
+		document.location.href = page;
+	}
+</script>
+<body>
+	<div class="panel panel-info">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed"
+				data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+				aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span> <span
+					class="icon-bar"></span> <span class="icon-bar"></span> <span
+					class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="#">EPCIS Capture Client</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<form class="navbar-form navbar-right">
+				<button type="button" class="btn btn-success"
+					onclick="movePage('index.jsp')">Back</button>
+			</form>
+		</div>
+		<div class="panel-body">
+			<div class="row">
+				<div class="col-sm-4">
+					<h4>EPCIS Capture URL (Change IP or Domain if needed)</h4>
+					<input id="captureURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/EventCapture"
+						placeholder="http://localhost:8080/epcis/Service/EventCapture">
+					<h4>Event/Vocabulary Capture</h4>
+					<button type="button" class="btn btn-success" onclick="capture()">Capture</button>
+					<input id="resp" type="text" class="form-control" disabled
+						placeholder="Capture Server Response">
+					<h4>Validation Service</h4>
+					<input id="docValURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/EPCISDocumentValidation"
+						placeholder="http://localhost:8080/epcis/Service/EPCISDocumentValidation">
+					<input id="docValResp" type="text" class="form-control" disabled
+						placeholder="Validation result against EPCISDocument schema">
+					<input id="masterDocValURL" type="text" class="form-control"
+						value="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation"
+						placeholder="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation">
+					<input id="masterDocValResp" type="text" class="form-control" disabled
+						placeholder="Validation result against EPCISMasterDataDocument schema">
+				</div>
+				<div class="col-sm-8">
+					<h4>HTTP.POST Body</h4>
+
+					<div class="dropdown">
+						
+						<button class="btn btn-default dropdown-toggle" type="button"
+							id="dropData" data-toggle="dropdown" aria-haspopup="true"
+							aria-expanded="true">
+							Loading an example<span class="caret"></span>
+						</button>
+						<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+							<li class="dropdown-header">Event Data Examples</li>
+							<li><a id="./exampleXML/gs1example1(Object).xml" href="#">GS1
+									Example 1 [EPCIS v1.2 section 9.6.1]</a></li>
+							<li><a id="./exampleXML/gs1example2(Object).xml" href="#">GS1
+									Example 2 [EPCIS v1.2 section 9.6.2]</a></li>
+							<li><a id="./exampleXML/gs1example3(Aggregation).xml"
+								href="#">GS1 Example 3 [EPCIS v1.2 section 9.6.3]</a></li>
+							<li><a id="./exampleXML/gs1example4(Transformation).xml"
+								href="#">GS1 Example 4 [EPCIS v1.2 section 9.6.4]</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample1.xml" href="#">EPCIS Guideline A.1</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample2.xml" href="#">EPCIS Guideline A.2</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample3.xml" href="#">EPCIS Guideline A.3</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample4.xml" href="#">EPCIS Guideline A.4</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample5.xml" href="#">EPCIS Guideline A.5</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample6.xml" href="#">EPCIS Guideline A.6</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample7.xml" href="#">EPCIS Guideline A.7</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample8.xml" href="#">EPCIS Guideline A.8</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample9.xml" href="#">EPCIS Guideline A.9</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample10.xml" href="#">EPCIS Guideline A.10</a></li>
+							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample11.xml" href="#">EPCIS Guideline A.11</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/gs1example6(Object-Erroneous).xml"
+								href="#">Error Declaration Example - Erroneous Event</a></li>
+							<li><a id="./exampleXML/gs1example6(Object-Revised).xml"
+								href="#">Error Declaration Example - Revised Event</a></li>
+							<li><a id="./exampleXML/gs1example6(Object-Correction).xml"
+								href="#">Error Declaration Example - Error Declaration</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/gs1example7(Master-head).xml"
+								href="#">MasterData Capture as EPCISDocument header</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/gs1example8(Object-hex).xml"
+								href="#">Hierarchical Extension Field in ObjectEvent</a></li>
+							<li class="dropdown-header"></li>
+							<li><a id="./exampleXML/allExample(Aggregation).xml"
+								href="#">Aggregation Event Full Example</a></li>
+							<li><a id="./exampleXML/allExample(Object).xml" href="#">Object
+									Event Full Example</a></li>
+							<li><a id="./exampleXML/allExample(Quantity).xml" href="#">Quantity
+									Event Full Example</a></li>
+							<li><a id="./exampleXML/allExample(Transaction).xml"
+								href="#">Transaction Event Full Example</a></li>
+							<li><a id="./exampleXML/allExample(Transformation).xml"
+								href="#">Transformation Event Full Example</a></li>
+							<li class="dropdown-header"></li>
+							<li><a
+								id="./exampleXML/gs1GermanyExample1(ErrorDeclaration1).xml"
+								href="#">Error Declaration Event Example 1 from GS1 Germany</a></li>
+							<li><a
+								id="./exampleXML/gs1GermanyExample2(ErrorDeclaration2).xml"
+								href="#">Error Declaration Event Example 2 from GS1 Germany</a></li>
+							<li class="dropdown-header">Master Data Examples</li>
+							<li><a id="./exampleXML/gs1example5(Master).xml" href="#">GS1
+									Example 5 [EPCIS v1.2 section 9.8]</a></li>
+							<li><a
+								id="./CoreBusinessVocabulary/CoreBusinessVocabulary.xml"
+								href="#">Electronic CBV</a></li>
+						</ul>
+					</div>
+					<textarea id="xmlTextArea" class="form-control auto-text-area"
+						rows="14"></textarea>
+				</div>
+			</div>
+		</div>
+		<div class="panel-body">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<td>Method Name</td>
+						<td>Description</td>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><button type="button" class="btn btn-info"
+								onclick="replaceURL('event')">Event Capture</button></td>
+						<td>
+							<ul class="list-group">
+								<li class="list-group-item">This service allows you to
+									store your EPCIS Document into your backend storage</li>
+								<li class="list-group-item">Method: post</li>
+								<li class="list-group-item">Contents: application/xml,
+									complying with <a href="./wsdl/EPCglobal-epcis-1_2.xsd">EPCIS
+										v1.2 XML Schema</a>
+								</li>
+								<li class="list-group-item">URL Format: <br>
+									http://{base-url}:{base-port}/epcis/Service/EventCapture <br>
+								</li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<td><button type="button" class="btn btn-info"
+								onclick="replaceURL('vocabulary')">Vocabulary Capture</button></td>
+						<td>
+							<ul class="list-group">
+								<li class="list-group-item">This service allows you to
+									store your EPCIS Master Data Document into your backend storage
+								</li>
+								<li class="list-group-item">Method: post</li>
+								<li class="list-group-item">Contents: application/xml,
+									complying with <a href="./wsdl/EPCglobal-epcis-1_2.xsd">EPCIS
+										v1.2 XML Schema</a>
+								</li>
+								<li class="list-group-item">URL Format: <br>
+									http://{base-url}:{base-port}/epcis/Service/VocabularyCapture <br>
+								</li>
+							</ul>
+						</td>
+					</tr>
+
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<footer>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs. Korea 2016</code>
+	</footer>
+</body>
+</html>
