@@ -1,0 +1,818 @@
+CREATE TABLE epc (
+  id number(10) NOT NULL,
+  value varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE epcisevent (
+  id number(10) NOT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE attribute (
+  id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL,
+  value varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE aggregationeventepcs (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE aggregationeventepcs_epc (
+  AggregationEventEPCs_id number(10) NOT NULL,
+  epc_id number(10) NOT NULL,
+  CONSTRAINT epc_id UNIQUE  (epc_id),
+  CONSTRAINT FKFFA6BE2C9C7C6021 FOREIGN KEY (epc_id) REFERENCES epc (id),
+  CONSTRAINT FKFFA6BE2CA0D04323 FOREIGN KEY (AggregationEventEPCs_id) REFERENCES aggregationeventepcs (id)
+) ;
+CREATE INDEX FKFFA6BE2C9C7C6021 ON aggregationeventepcs_epc (epc_id);
+CREATE INDEX FKFFA6BE2CA0D04323 ON aggregationeventepcs_epc (AggregationEventEPCs_id);
+
+CREATE TABLE aggregationeventextension2 (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE businesslocationextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE businesslocation (
+  id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL,
+  extension_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK5CB747B581BB109C FOREIGN KEY (extension_id) REFERENCES businesslocationextension (id)
+) ;
+CREATE INDEX FK5CB747B581BB109C ON businesslocation (extension_id);
+
+CREATE TABLE businesstransaction (
+  id number(10) NOT NULL,
+  type varchar2(255) DEFAULT NULL,
+  value varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE businesstransactionlist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE correctiveeventid (
+  id number(10) NOT NULL,
+  correctiveEventID varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE correctiveeventids (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE correctiveids_correctiveid (
+  CorrectiveEventIDs_id number(10) NOT NULL,
+  correctiveEventID_id number(10) NOT NULL,
+  CONSTRAINT correctiveEventID_id UNIQUE  (correctiveEventID_id)
+ ,
+  CONSTRAINT FK7EF9F03E598E2AE3 FOREIGN KEY (CorrectiveEventIDs_id) REFERENCES correctiveeventids (id),
+  CONSTRAINT FK7EF9F03E6E3E1A91 FOREIGN KEY (correctiveEventID_id) REFERENCES correctiveeventid (id)
+) ;
+
+CREATE INDEX FK7EF9F03E6E3E1A91 ON correctiveids_correctiveid (correctiveEventID_id);
+CREATE INDEX FK7EF9F03E598E2AE3 ON correctiveids_correctiveid (CorrectiveEventIDs_id);
+
+CREATE TABLE sourcedest (
+  id number(10) NOT NULL,
+  type varchar2(255) DEFAULT NULL,
+  value varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE sourcelist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE sourcelist_sourcedest (
+  SourceList_id number(10) NOT NULL,
+  source_id number(10) NOT NULL,
+  CONSTRAINT source_id UNIQUE  (source_id)
+ ,
+  CONSTRAINT FKA4B5EE03DB339AA5 FOREIGN KEY (source_id) REFERENCES sourcedest (id),
+  CONSTRAINT FKA4B5EE03EDB5E4C3 FOREIGN KEY (SourceList_id) REFERENCES sourcelist (id)
+) ;
+
+CREATE INDEX FKA4B5EE03EDB5E4C3 ON sourcelist_sourcedest (SourceList_id);
+CREATE INDEX FKA4B5EE03DB339AA5 ON sourcelist_sourcedest (source_id);
+
+CREATE TABLE destinationlist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE destinationlist_sourcedest (
+  DestinationList_id number(10) NOT NULL,
+  destination_id number(10) NOT NULL,
+  CONSTRAINT destination_id UNIQUE  (destination_id)
+ ,
+  CONSTRAINT FKF21899F076DA55D2 FOREIGN KEY (destination_id) REFERENCES sourcedest (id),
+  CONSTRAINT FKF21899F0CDFF0E71 FOREIGN KEY (DestinationList_id) REFERENCES destinationlist (id)
+) ;
+
+CREATE INDEX FKF21899F0CDFF0E71 ON destinationlist_sourcedest (DestinationList_id);
+CREATE INDEX FKF21899F076DA55D2 ON destinationlist_sourcedest (destination_id);
+
+CREATE TABLE epciseventextension2 (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE epclist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE epclist_epc (
+  EPCList_id number(10) NOT NULL,
+  epc_id number(10) NOT NULL,
+  CONSTRAINT epclist_epc_id UNIQUE  (epc_id)
+ ,
+  CONSTRAINT FK9A9466EF9C7C6021 FOREIGN KEY (epc_id) REFERENCES epc (id),
+  CONSTRAINT FK9A9466EFD4F09D31 FOREIGN KEY (EPCList_id) REFERENCES epclist (id)
+) ;
+
+CREATE INDEX FK9A9466EF9C7C6021 ON epclist_epc (epc_id);
+CREATE INDEX FK9A9466EFD4F09D31 ON epclist_epc (EPCList_id);
+
+CREATE TABLE errordeclarationextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+CREATE TABLE extensionmap (
+  id number(10) NOT NULL,
+  boleanValue number(10) DEFAULT NULL,
+  dataType varchar2(255) DEFAULT NULL,
+  floatValue binary_double NOT NULL,
+  innerValue number(10) DEFAULT NULL,
+  intValue number(10) NOT NULL,
+  leftNodeNumber number(10) NOT NULL,
+  prefixValue varchar2(255) DEFAULT NULL,
+  qName varchar2(255) DEFAULT NULL,
+  rightNodeNumber number(10) NOT NULL,
+  stringValue varchar2(255) DEFAULT NULL,
+  timeValue timestamp(0) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE extensionmaps (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE extensionmaps_extensionmap (
+  ExtensionMaps_id number(10) NOT NULL,
+  extensionMapList_id number(10) NOT NULL,
+  CONSTRAINT extensionMapList_id UNIQUE  (extensionMapList_id)
+ ,
+  CONSTRAINT FK3A3D7F0669164FF1 FOREIGN KEY (ExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK3A3D7F068AEB74E5 FOREIGN KEY (extensionMapList_id) REFERENCES extensionmap (id)
+) ;
+
+CREATE INDEX FK3A3D7F0669164FF1 ON extensionmaps_extensionmap (ExtensionMaps_id);
+CREATE INDEX FK3A3D7F068AEB74E5 ON extensionmaps_extensionmap (extensionMapList_id);
+
+CREATE TABLE idlist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+
+CREATE TABLE idlist_sid (
+  IDList_id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL
+ ,
+  CONSTRAINT FK5F333C0815070123 FOREIGN KEY (IDList_id) REFERENCES idlist (id)
+) ;
+
+CREATE INDEX FK5F333C0815070123 ON idlist_sid (IDList_id);
+
+
+CREATE TABLE errordeclaration (
+  id number(10) NOT NULL,
+  declarationTime timestamp(0) DEFAULT NULL,
+  reason varchar2(255) DEFAULT NULL,
+  correctiveEventIDs_id number(10) DEFAULT NULL,
+  ErrorDeclarationExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK27367A72232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK27367A72598E2AE3 FOREIGN KEY (correctiveEventIDs_id) REFERENCES correctiveeventids (id),
+  CONSTRAINT FK27367A72D66915F1 FOREIGN KEY (ErrorDeclarationExtension_id) REFERENCES errordeclarationextension (id)
+) ;
+CREATE INDEX FK27367A72232694C2 ON errordeclaration (baseExtensionMaps_id);
+CREATE INDEX FK27367A72D66915F1 ON errordeclaration (ErrorDeclarationExtension_id);
+CREATE INDEX FK27367A72598E2AE3 ON errordeclaration (correctiveEventIDs_id);
+CREATE TABLE ilmdextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE ilmd (
+  id number(10) NOT NULL,
+  iLMD_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK2255FA232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK2255FA81669ADC FOREIGN KEY (iLMD_id) REFERENCES ilmdextension (id)
+) ;
+
+CREATE INDEX FK2255FA232694C2 ON ilmd (baseExtensionMaps_id);
+CREATE INDEX FK2255FA81669ADC ON ilmd (iLMD_id);
+
+CREATE TABLE objecteventepcs (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE objecteventepcs_epc (
+  ObjectEventEPCs_id number(10) NOT NULL,
+  epc_id number(10) NOT NULL,
+  CONSTRAINT objecteventepc_id UNIQUE  (epc_id)
+ ,
+  CONSTRAINT FKEF2024AF9C7C6021 FOREIGN KEY (epc_id) REFERENCES epc (id),
+  CONSTRAINT FKEF2024AFB3D0F211 FOREIGN KEY (ObjectEventEPCs_id) REFERENCES objecteventepcs (id)
+) ;
+
+CREATE INDEX FKEF2024AF9C7C6021 ON objecteventepcs_epc (epc_id);
+CREATE INDEX FKEF2024AFB3D0F211 ON objecteventepcs_epc (ObjectEventEPCs_id);
+
+CREATE TABLE objecteventextension2 (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE pollparameters (
+  id number(10) NOT NULL,
+  EQ_action varchar2(255) DEFAULT NULL,
+  EQ_bizLocation varchar2(255) DEFAULT NULL,
+  EQ_bizStep varchar2(255) DEFAULT NULL,
+  EQ_correctiveEventID varchar2(255) DEFAULT NULL,
+  EQ_disposition varchar2(255) DEFAULT NULL,
+  EQ_errorReason varchar2(255) DEFAULT NULL,
+  EQ_eventID varchar2(255) DEFAULT NULL,
+  EQ_name varchar2(255) DEFAULT NULL,
+  EQ_quantity number(10) DEFAULT NULL,
+  EQ_readPoint varchar2(255) DEFAULT NULL,
+  EQ_transformationID varchar2(255) DEFAULT NULL,
+  EXISTS_errorDeclaration raw(1) DEFAULT NULL,
+  GE_errorDeclarationTime varchar2(255) DEFAULT NULL,
+  GE_eventTime varchar2(255) DEFAULT NULL,
+  GE_quantity number(10) DEFAULT NULL,
+  GE_recordTime varchar2(255) DEFAULT NULL,
+  GT_quantity number(10) DEFAULT NULL,
+  HASATTR varchar2(255) DEFAULT NULL,
+  LE_quantity number(10) DEFAULT NULL,
+  LT_errorDeclarationTime varchar2(255) DEFAULT NULL,
+  LT_eventTime varchar2(255) DEFAULT NULL,
+  LT_quantity number(10) DEFAULT NULL,
+  LT_recordTime varchar2(255) DEFAULT NULL,
+  MATCH_anyEPC varchar2(255) DEFAULT NULL,
+  MATCH_anyEPCClass varchar2(255) DEFAULT NULL,
+  MATCH_epc varchar2(255) DEFAULT NULL,
+  MATCH_epcClass varchar2(255) DEFAULT NULL,
+  MATCH_inputEPC varchar2(255) DEFAULT NULL,
+  MATCH_inputEPCClass varchar2(255) DEFAULT NULL,
+  MATCH_outputEPC varchar2(255) DEFAULT NULL,
+  MATCH_outputEPCClass varchar2(255) DEFAULT NULL,
+  MATCH_parentID varchar2(255) DEFAULT NULL,
+  WD_bizLocation varchar2(255) DEFAULT NULL,
+  WD_name varchar2(255) DEFAULT NULL,
+  WD_readPoint varchar2(255) DEFAULT NULL,
+  attributeNames varchar2(255) DEFAULT NULL,
+  eventCountLimit number(10) DEFAULT NULL,
+  eventType varchar2(255) DEFAULT NULL,
+  format varchar2(255) DEFAULT NULL,
+  includeAttributes raw(1) DEFAULT NULL,
+  includeChildren raw(1) DEFAULT NULL,
+  maxElementCount number(10) DEFAULT NULL,
+  maxEventCount number(10) DEFAULT NULL,
+  orderBy varchar2(255) DEFAULT NULL,
+  orderDirection varchar2(255) DEFAULT NULL,
+  queryName varchar2(255) DEFAULT NULL,
+  vocabularyName varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE BusTranList_BusTran (
+  BusinessTransactionList_id number(10) NOT NULL,
+  bizTransaction_id number(10) NOT NULL,
+  CONSTRAINT bizTransaction_id UNIQUE  (bizTransaction_id)
+ ,
+  CONSTRAINT FKF5F0F2A835CA551 FOREIGN KEY (BusinessTransactionList_id) REFERENCES businesstransactionlist (id),
+  CONSTRAINT FKF5F0F2A8BAA78184 FOREIGN KEY (bizTransaction_id) REFERENCES businesstransaction (id)
+) ;
+
+CREATE INDEX FKF5F0F2A835CA551 ON BusTranList_BusTran (BusinessTransactionList_id);
+CREATE INDEX FKF5F0F2A8BAA78184 ON BusTranList_BusTran (bizTransaction_id);
+
+
+CREATE TABLE quantityelement (
+  id number(10) NOT NULL,
+  epcClass varchar2(255) DEFAULT NULL,
+  quantity binary_double NOT NULL,
+  uom varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE quantitylist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE qelementlist_qelement (
+  QuantityList_id number(10) NOT NULL,
+  quantityElement_id number(10) NOT NULL,
+  CONSTRAINT quantityElement_id UNIQUE  (quantityElement_id)
+ ,
+  CONSTRAINT FK76A1684149BDDC11 FOREIGN KEY (quantityElement_id) REFERENCES quantityelement (id),
+  CONSTRAINT FK76A1684184AB1083 FOREIGN KEY (QuantityList_id) REFERENCES quantitylist (id)
+) ;
+
+CREATE INDEX FK76A1684149BDDC11 ON qelementlist_qelement (quantityElement_id);
+CREATE INDEX FK76A1684184AB1083 ON qelementlist_qelement (QuantityList_id);
+
+CREATE TABLE quantityeventextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE readpointextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE readpoint (
+  id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL,
+  readPointExtension_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK343EB97AD6F56823 FOREIGN KEY (readPointExtension_id) REFERENCES readpointextension (id)
+) ;
+
+CREATE INDEX FK343EB97AD6F56823 ON readpoint (readPointExtension_id);
+
+CREATE TABLE sensingelement (
+  id number(10) NOT NULL,
+  type varchar2(255) DEFAULT NULL,
+  uom varchar2(255) DEFAULT NULL,
+  value varchar2(255) DEFAULT NULL,
+  epc_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK38E727B19C7C6021 FOREIGN KEY (epc_id) REFERENCES epc (id)
+) ;
+CREATE TABLE sensinglist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE sensinglist_sensingelement (
+  SensingList_id number(10) NOT NULL,
+  sensingElement_id number(10) NOT NULL,
+  CONSTRAINT sensingElement_id UNIQUE  (sensingElement_id)
+ ,
+  CONSTRAINT FKD84D76A76A9DB8D1 FOREIGN KEY (SensingList_id) REFERENCES sensinglist (id),
+  CONSTRAINT FKD84D76A7930DA903 FOREIGN KEY (sensingElement_id) REFERENCES sensingelement (id)
+) ;
+
+CREATE INDEX FKD84D76A7930DA903 ON sensinglist_sensingelement (sensingElement_id);
+CREATE INDEX FKD84D76A76A9DB8D1 ON sensinglist_sensingelement (SensingList_id);
+
+
+CREATE TABLE sensoreventextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE objecteventextension (
+  id number(10) NOT NULL,
+  destinationList_id number(10) DEFAULT NULL,
+  objectEventExtension2_id number(10) DEFAULT NULL,
+  ilmd_id number(10) DEFAULT NULL,
+  quantityList_id number(10) DEFAULT NULL,
+  sourceList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK3929A0045AB48BA3 FOREIGN KEY (ilmd_id) REFERENCES ilmd (id),
+  CONSTRAINT FK3929A00484AB1083 FOREIGN KEY (quantityList_id) REFERENCES quantitylist (id),
+  CONSTRAINT FK3929A004CDFF0E71 FOREIGN KEY (destinationList_id) REFERENCES destinationlist (id),
+  CONSTRAINT FK3929A004EDB5E4C3 FOREIGN KEY (sourceList_id) REFERENCES sourcelist (id),
+  CONSTRAINT FK3929A004F92295D1 FOREIGN KEY (objectEventExtension2_id) REFERENCES objecteventextension2 (id)
+) ;
+CREATE INDEX FK3929A004CDFF0E71 ON objecteventextension (destinationList_id);
+CREATE INDEX FK3929A004EDB5E4C3 ON objecteventextension (sourceList_id);
+CREATE INDEX FK3929A004F92295D1 ON objecteventextension (objectEventExtension2_id);
+CREATE INDEX FK3929A0045AB48BA3 ON objecteventextension (ilmd_id);
+CREATE INDEX FK3929A00484AB1083 ON objecteventextension (quantityList_id);
+
+CREATE TABLE epciseventextension (
+  id number(10) NOT NULL,
+  eventID varchar2(255) DEFAULT NULL,
+  errorDeclaration_id number(10) DEFAULT NULL,
+  EPCISEventExtension2_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK4671B787140C1723 FOREIGN KEY (errorDeclaration_id) REFERENCES errordeclaration (id),
+  CONSTRAINT FK4671B787E45D7023 FOREIGN KEY (EPCISEventExtension2_id) REFERENCES epciseventextension2 (id)
+) ;
+
+CREATE INDEX FK4671B787140C1723 ON epciseventextension (errorDeclaration_id);
+CREATE INDEX FK4671B787E45D7023 ON epciseventextension (EPCISEventExtension2_id);
+
+
+
+
+CREATE TABLE aggregationeventextension (
+  id number(10) NOT NULL,
+  childQuantityList_id number(10) DEFAULT NULL,
+  destinationList_id number(10) DEFAULT NULL,
+  AggregationEventExtension2_id number(10) DEFAULT NULL,
+  sourceList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK3976362769F2BFE7 FOREIGN KEY (childQuantityList_id) REFERENCES quantitylist (id),
+  CONSTRAINT FK397636277BD15163 FOREIGN KEY (AggregationEventExtension2_id) REFERENCES aggregationeventextension2 (id),
+  CONSTRAINT FK39763627CDFF0E71 FOREIGN KEY (destinationList_id) REFERENCES destinationlist (id),
+  CONSTRAINT FK39763627EDB5E4C3 FOREIGN KEY (sourceList_id) REFERENCES sourcelist (id)
+) ;
+
+CREATE INDEX FK39763627CDFF0E71 ON aggregationeventextension (destinationList_id);
+CREATE INDEX FK39763627EDB5E4C3 ON aggregationeventextension (sourceList_id);
+CREATE INDEX FK3976362769F2BFE7 ON aggregationeventextension (childQuantityList_id);
+CREATE INDEX FK397636277BD15163 ON aggregationeventextension (AggregationEventExtension2_id);
+
+
+CREATE TABLE subscription (
+  id number(10) NOT NULL,
+  dest varchar2(255) DEFAULT NULL,
+  initialRecordTime varchar2(255) DEFAULT NULL,
+  reportIfEmpty raw(1) DEFAULT NULL,
+  schedule varchar2(255) DEFAULT NULL,
+  subscriptionID varchar2(255) DEFAULT NULL,
+  triggerSub varchar2(255) DEFAULT NULL,
+  pollParametrs_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK1E21AD3DB59F24AE FOREIGN KEY (pollParametrs_id) REFERENCES pollparameters (id)
+) ;
+
+CREATE INDEX FK1E21AD3DB59F24AE ON subscription (pollParametrs_id);
+
+CREATE TABLE transactioneventepcs (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE transactioneventextension2 (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE transactioneventextension (
+  id number(10) NOT NULL,
+  destinationList_id number(10) DEFAULT NULL,
+  transactionEventExtension2_id number(10) DEFAULT NULL,
+  quantityList_id number(10) DEFAULT NULL,
+  sourceList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FKE3C3B92384AB1083 FOREIGN KEY (quantityList_id) REFERENCES quantitylist (id),
+  CONSTRAINT FKE3C3B923CCFD2E3 FOREIGN KEY (transactionEventExtension2_id) REFERENCES transactioneventextension2 (id),
+  CONSTRAINT FKE3C3B923CDFF0E71 FOREIGN KEY (destinationList_id) REFERENCES destinationlist (id),
+  CONSTRAINT FKE3C3B923EDB5E4C3 FOREIGN KEY (sourceList_id) REFERENCES sourcelist (id)
+) ;
+
+CREATE INDEX FKE3C3B923CDFF0E71 ON transactioneventextension (destinationList_id);
+CREATE INDEX FKE3C3B923EDB5E4C3 ON transactioneventextension (sourceList_id);
+CREATE INDEX FKE3C3B923CCFD2E3 ON transactioneventextension (transactionEventExtension2_id);
+CREATE INDEX FKE3C3B92384AB1083 ON transactioneventextension (quantityList_id);
+
+CREATE TABLE transformationeventextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE vocabularyelementextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE vocabularyelement (
+  id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL,
+  children_id number(10) DEFAULT NULL,
+  vocabularyElementExtension_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK8EDEF71686F4CA3 FOREIGN KEY (vocabularyElementExtension_id) REFERENCES vocabularyelementextension (id),
+  CONSTRAINT FK8EDEF7168DB93D9D FOREIGN KEY (children_id) REFERENCES idlist (id)
+) ;
+CREATE INDEX FK8EDEF7168DB93D9D ON vocabularyelement (children_id);
+CREATE INDEX FK8EDEF71686F4CA3 ON vocabularyelement (vocabularyElementExtension_id);
+
+CREATE TABLE vocabularyelement_attribute (
+  VocabularyElement_id number(10) NOT NULL,
+  attribute_id number(10) NOT NULL,
+  CONSTRAINT attribute_id UNIQUE  (attribute_id)
+ ,
+  CONSTRAINT FKA4F858933D563031 FOREIGN KEY (VocabularyElement_id) REFERENCES vocabularyelement (id),
+  CONSTRAINT FKA4F858936D90D191 FOREIGN KEY (attribute_id) REFERENCES attribute (id)
+) ;
+
+CREATE INDEX FKA4F858936D90D191 ON vocabularyelement_attribute (attribute_id);
+CREATE INDEX FKA4F858933D563031 ON vocabularyelement_attribute (VocabularyElement_id);
+
+CREATE TABLE vocabularyelementlist (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE vocabularyextension (
+  id number(10) NOT NULL,
+  PRIMARY KEY (id)
+) ;
+
+CREATE TABLE vocelementlist_vocelement (
+  VocabularyElementList_id number(10) NOT NULL,
+  vocabularyElement_id number(10) NOT NULL,
+  CONSTRAINT vocabularyElement_id UNIQUE  (vocabularyElement_id)
+ ,
+  CONSTRAINT FKB8DEBE13D563031 FOREIGN KEY (vocabularyElement_id) REFERENCES vocabularyelement (id),
+  CONSTRAINT FKB8DEBE1FA4F6411 FOREIGN KEY (VocabularyElementList_id) REFERENCES vocabularyelementlist (id)
+) ;
+
+CREATE INDEX FKB8DEBE13D563031 ON vocelementlist_vocelement (vocabularyElement_id);
+CREATE INDEX FKB8DEBE1FA4F6411 ON vocelementlist_vocelement (VocabularyElementList_id);
+
+CREATE TABLE vocabulary (
+  id number(10) NOT NULL,
+  type varchar2(255) DEFAULT NULL,
+  vocabularyExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  vocabularyElementList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK3F872D06232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK3F872D0671DB6391 FOREIGN KEY (vocabularyExtension_id) REFERENCES vocabularyextension (id),
+  CONSTRAINT FK3F872D06FA4F6411 FOREIGN KEY (vocabularyElementList_id) REFERENCES vocabularyelementlist (id)
+) ;
+
+CREATE INDEX FK3F872D0671DB6391 ON vocabulary (vocabularyExtension_id);
+CREATE INDEX FK3F872D06232694C2 ON vocabulary (baseExtensionMaps_id);
+CREATE INDEX FK3F872D06FA4F6411 ON vocabulary (vocabularyElementList_id);
+CREATE TABLE aggregationevent (
+  id number(10) NOT NULL,
+  action varchar2(255) DEFAULT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  parentID varchar2(255) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  baseExtension_id number(10) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  childEPCs_id number(10) DEFAULT NULL,
+  extension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK7EBE1CF8232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK7EBE1CF827DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FK7EBE1CF8320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FK7EBE1CF850CC76B9 FOREIGN KEY (extension_id) REFERENCES aggregationeventextension (id),
+  CONSTRAINT FK7EBE1CF8CC45C5D0 FOREIGN KEY (childEPCs_id) REFERENCES epclist (id),
+  CONSTRAINT FK7EBE1CF8D3C1F2AA FOREIGN KEY (baseExtension_id) REFERENCES epciseventextension (id),
+  CONSTRAINT FK7EBE1CF8E121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id)
+) ;
+CREATE INDEX FK7EBE1CF850CC76B9 ON aggregationevent (extension_id);
+CREATE INDEX FK7EBE1CF8D3C1F2AA ON aggregationevent (baseExtension_id);
+CREATE INDEX FK7EBE1CF8232694C2 ON aggregationevent (baseExtensionMaps_id);
+CREATE INDEX FK7EBE1CF8320C5150 ON aggregationevent (bizLocation_id);
+CREATE INDEX FK7EBE1CF8E121D3E4 ON aggregationevent (bizTransactionList_id);
+CREATE INDEX FK7EBE1CF827DB24B1 ON aggregationevent (readPoint_id);
+CREATE INDEX FK7EBE1CF8CC45C5D0 ON aggregationevent (childEPCs_id);
+
+
+CREATE TABLE transformationevent (
+  id number(10) NOT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  transformationID varchar2(255) DEFAULT NULL,
+  baseExtension_id number(10) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  destinationList_id number(10) DEFAULT NULL,
+  TransformationExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  ilmd_id number(10) DEFAULT NULL,
+  inputEPCList_id number(10) DEFAULT NULL,
+  inputQuantityList_id number(10) DEFAULT NULL,
+  outputEPCList_id number(10) DEFAULT NULL,
+  outputQuantityList_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  sourceList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK24E1B4F11260407B FOREIGN KEY (inputEPCList_id) REFERENCES epclist (id),
+  CONSTRAINT FK24E1B4F11CB6B562 FOREIGN KEY (outputQuantityList_id) REFERENCES quantitylist (id),
+  CONSTRAINT FK24E1B4F1232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK24E1B4F127DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FK24E1B4F1320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FK24E1B4F15AB48BA3 FOREIGN KEY (ilmd_id) REFERENCES ilmd (id),
+  CONSTRAINT FK24E1B4F1621B28F2 FOREIGN KEY (outputEPCList_id) REFERENCES epclist (id),
+  CONSTRAINT FK24E1B4F16D0A8C43 FOREIGN KEY (TransformationExtension_id) REFERENCES transformationeventextension (id),
+  CONSTRAINT FK24E1B4F1CDFF0E71 FOREIGN KEY (destinationList_id) REFERENCES destinationlist (id),
+  CONSTRAINT FK24E1B4F1D3C1F2AA FOREIGN KEY (baseExtension_id) REFERENCES epciseventextension (id),
+  CONSTRAINT FK24E1B4F1E121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id),
+  CONSTRAINT FK24E1B4F1EDB5E4C3 FOREIGN KEY (sourceList_id) REFERENCES sourcelist (id),
+  CONSTRAINT FK24E1B4F1F8CFEB79 FOREIGN KEY (inputQuantityList_id) REFERENCES quantitylist (id)
+) ;
+
+CREATE INDEX FK24E1B4F1CDFF0E71 ON transformationevent (destinationList_id);
+CREATE INDEX FK24E1B4F1EDB5E4C3 ON transformationevent (sourceList_id);
+CREATE INDEX FK24E1B4F1D3C1F2AA ON transformationevent (baseExtension_id);
+CREATE INDEX FK24E1B4F1621B28F2 ON transformationevent (outputEPCList_id);
+CREATE INDEX FK24E1B4F1232694C2 ON transformationevent (baseExtensionMaps_id);
+CREATE INDEX FK24E1B4F15AB48BA3 ON transformationevent (ilmd_id);
+CREATE INDEX FK24E1B4F11260407B ON transformationevent (inputEPCList_id);
+CREATE INDEX FK24E1B4F1320C5150 ON transformationevent (bizLocation_id);
+CREATE INDEX FK24E1B4F127DB24B1 ON transformationevent (readPoint_id);
+CREATE INDEX FK24E1B4F16D0A8C43 ON transformationevent (TransformationExtension_id);
+CREATE INDEX FK24E1B4F11CB6B562 ON transformationevent (outputQuantityList_id);
+CREATE INDEX FK24E1B4F1F8CFEB79 ON transformationevent (inputQuantityList_id);
+CREATE INDEX FK24E1B4F1E121D3E4 ON transformationevent (bizTransactionList_id);
+
+
+CREATE TABLE objectevent (
+  id number(10) NOT NULL,
+  action varchar2(255) DEFAULT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  baseExtension_id number(10) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  epcList_id number(10) DEFAULT NULL,
+  objectEventExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  ilmd_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK15DBB67B232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FK15DBB67B27DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FK15DBB67B320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FK15DBB67B5AB48BA3 FOREIGN KEY (ilmd_id) REFERENCES ilmd (id),
+  CONSTRAINT FK15DBB67B83E90183 FOREIGN KEY (objectEventExtension_id) REFERENCES objecteventextension (id),
+  CONSTRAINT FK15DBB67BD3C1F2AA FOREIGN KEY (baseExtension_id) REFERENCES epciseventextension (id),
+  CONSTRAINT FK15DBB67BD4F09D31 FOREIGN KEY (epcList_id) REFERENCES epclist (id),
+  CONSTRAINT FK15DBB67BE121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id)
+) ;
+
+CREATE INDEX FK15DBB67BD4F09D31 ON objectevent (epcList_id);
+CREATE INDEX FK15DBB67BD3C1F2AA ON objectevent (baseExtension_id);
+CREATE INDEX FK15DBB67B232694C2 ON objectevent (baseExtensionMaps_id);
+CREATE INDEX FK15DBB67B5AB48BA3 ON objectevent (ilmd_id);
+CREATE INDEX FK15DBB67B320C5150 ON objectevent (bizLocation_id);
+CREATE INDEX FK15DBB67BE121D3E4 ON objectevent (bizTransactionList_id);
+CREATE INDEX FK15DBB67B27DB24B1 ON objectevent (readPoint_id);
+CREATE INDEX FK15DBB67B83E90183 ON objectevent (objectEventExtension_id);
+
+CREATE TABLE sensorevent (
+  id number(10) NOT NULL,
+  action varchar2(255) DEFAULT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  finishTime timestamp(0) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  targetArea varchar2(255) DEFAULT NULL,
+  targetObject varchar2(255) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  extension_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  sensingList_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FKBD0E1AE027DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FKBD0E1AE0320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FKBD0E1AE06A9DB8D1 FOREIGN KEY (sensingList_id) REFERENCES sensinglist (id),
+  CONSTRAINT FKBD0E1AE0A5C30083 FOREIGN KEY (extension_id) REFERENCES sensoreventextension (id),
+  CONSTRAINT FKBD0E1AE0E121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id)
+) ;
+
+CREATE INDEX FKBD0E1AE0A5C30083 ON sensorevent (extension_id);
+CREATE INDEX FKBD0E1AE0320C5150 ON sensorevent (bizLocation_id);
+CREATE INDEX FKBD0E1AE0E121D3E4 ON sensorevent (bizTransactionList_id);
+CREATE INDEX FKBD0E1AE06A9DB8D1 ON sensorevent (sensingList_id);
+CREATE INDEX FKBD0E1AE027DB24B1 ON sensorevent (readPoint_id);
+
+CREATE TABLE quantityevent (
+  id number(10) NOT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  epcClass varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  quantity number(10) NOT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  baseExtension_id number(10) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  quantityEventExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FKF30A6CAF232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FKF30A6CAF27DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FKF30A6CAF320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FKF30A6CAFD3C1F2AA FOREIGN KEY (baseExtension_id) REFERENCES epciseventextension (id),
+  CONSTRAINT FKF30A6CAFE0319FC3 FOREIGN KEY (quantityEventExtension_id) REFERENCES quantityeventextension (id),
+  CONSTRAINT FKF30A6CAFE121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id)
+) ;
+
+CREATE INDEX FKF30A6CAFE0319FC3 ON quantityevent (quantityEventExtension_id);
+CREATE INDEX FKF30A6CAFD3C1F2AA ON quantityevent (baseExtension_id);
+CREATE INDEX FKF30A6CAF232694C2 ON quantityevent (baseExtensionMaps_id);
+CREATE INDEX FKF30A6CAF320C5150 ON quantityevent (bizLocation_id);
+CREATE INDEX FKF30A6CAFE121D3E4 ON quantityevent (bizTransactionList_id);
+CREATE INDEX FKF30A6CAF27DB24B1 ON quantityevent (readPoint_id);
+
+CREATE TABLE transactionevent (
+  id number(10) NOT NULL,
+  action varchar2(255) DEFAULT NULL,
+  bizStep varchar2(255) DEFAULT NULL,
+  disposition varchar2(255) DEFAULT NULL,
+  eventTime timestamp(0) DEFAULT NULL,
+  eventTimeZoneOffset varchar2(255) DEFAULT NULL,
+  parentID varchar2(255) DEFAULT NULL,
+  recordTime timestamp(0) DEFAULT NULL,
+  baseExtension_id number(10) DEFAULT NULL,
+  bizLocation_id number(10) DEFAULT NULL,
+  bizTransactionList_id number(10) DEFAULT NULL,
+  transactionEventEPCList_id number(10) DEFAULT NULL,
+  transactionEventExtension_id number(10) DEFAULT NULL,
+  baseExtensionMaps_id number(10) DEFAULT NULL,
+  readPoint_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FKEAAE0E7C232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
+  CONSTRAINT FKEAAE0E7C27DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
+  CONSTRAINT FKEAAE0E7C31F6DA31 FOREIGN KEY (transactionEventExtension_id) REFERENCES transactioneventextension (id),
+  CONSTRAINT FKEAAE0E7C320C5150 FOREIGN KEY (bizLocation_id) REFERENCES businesslocation (id),
+  CONSTRAINT FKEAAE0E7CD3C1F2AA FOREIGN KEY (baseExtension_id) REFERENCES epciseventextension (id),
+  CONSTRAINT FKEAAE0E7CD5436CAD FOREIGN KEY (transactionEventEPCList_id) REFERENCES epclist (id),
+  CONSTRAINT FKEAAE0E7CE121D3E4 FOREIGN KEY (bizTransactionList_id) REFERENCES businesstransactionlist (id)
+) ;
+
+CREATE INDEX FKEAAE0E7CD3C1F2AA ON transactionevent (baseExtension_id);
+CREATE INDEX FKEAAE0E7C232694C2 ON transactionevent (baseExtensionMaps_id);
+CREATE INDEX FKEAAE0E7CD5436CAD ON transactionevent (transactionEventEPCList_id);
+CREATE INDEX FKEAAE0E7C320C5150 ON transactionevent (bizLocation_id);
+CREATE INDEX FKEAAE0E7CE121D3E4 ON transactionevent (bizTransactionList_id);
+CREATE INDEX FKEAAE0E7C27DB24B1 ON transactionevent (readPoint_id);
+CREATE INDEX FKEAAE0E7C31F6DA31 ON transactionevent (transactionEventExtension_id);
+
+
+CREATE TABLE transactioneventepcs_epc (
+  TransactionEventEPCs_id number(10) NOT NULL,
+  epc_id number(10) NOT NULL,
+  CONSTRAINT transactioneventepc_id UNIQUE  (epc_id)
+ ,
+  CONSTRAINT FKEC5EEBB06D2DE4A3 FOREIGN KEY (TransactionEventEPCs_id) REFERENCES transactioneventepcs (id),
+  CONSTRAINT FKEC5EEBB09C7C6021 FOREIGN KEY (epc_id) REFERENCES epc (id)
+) ;
+
+CREATE INDEX FKEC5EEBB09C7C6021 ON transactioneventepcs_epc (epc_id);
+CREATE INDEX FKEC5EEBB06D2DE4A3 ON transactioneventepcs_epc (TransactionEventEPCs_id);
