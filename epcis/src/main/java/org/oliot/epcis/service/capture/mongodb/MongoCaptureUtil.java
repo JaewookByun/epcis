@@ -1,5 +1,8 @@
 package org.oliot.epcis.service.capture.mongodb;
 
+import java.util.HashMap;
+import java.util.List;
+
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -12,12 +15,14 @@ import org.oliot.epcis.converter.mongodb.TransactionEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.TransformationEventWriteConverter;
 import org.oliot.epcis.service.subscription.TriggerEngine;
 import org.oliot.model.epcis.AggregationEventType;
+import org.oliot.model.epcis.EPCISEventListExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyType;
 
+import com.mongodb.MongoBulkWriteException;
 import com.mongodb.client.MongoCollection;
 
 /**
@@ -37,6 +42,59 @@ import com.mongodb.client.MongoCollection;
  */
 
 public class MongoCaptureUtil {
+
+	public HashMap<String, Object> capture(List<BsonDocument> bsonDocumentList) {
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
+				BsonDocument.class);
+		try {
+			collection.insertMany(bsonDocumentList);
+		} catch (MongoBulkWriteException e) {
+			retMsg.put("error", e.getMessage());
+			return retMsg;
+		}
+		retMsg.put("eventCaptured", bsonDocumentList.size());
+		return retMsg;
+	}
+
+	public BsonDocument convert(Object event, String userID, String accessModifier, Integer gcpLength) {
+		BsonDocument object2Save = null;
+		String type = null;
+		if (event instanceof AggregationEventType) {
+			type = "AggregationEvent";
+			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
+			object2Save = wc.convert((AggregationEventType) event, gcpLength);
+		} else if (event instanceof ObjectEventType) {
+			type = "ObjectEvent";
+			ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
+			object2Save = wc.convert((ObjectEventType) event, gcpLength);
+		} else if (event instanceof QuantityEventType) {
+			type = "QuantityEvent";
+			QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
+			object2Save = wc.convert((QuantityEventType) event, gcpLength);
+		} else if (event instanceof TransactionEventType) {
+			type = "TransactionEvent";
+			TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
+			object2Save = wc.convert((TransactionEventType) event, gcpLength);
+		} else if (event instanceof EPCISEventListExtensionType) {
+			type = "TransformationEvent";
+			TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
+			object2Save = wc.convert(((EPCISEventListExtensionType) event).getTransformationEvent(), gcpLength);
+		}
+
+		if (object2Save == null)
+			return null;
+
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire(type, object2Save);
+		}
+
+		if (userID != null && accessModifier != null) {
+			object2Save.put("userID", new BsonString(userID));
+			object2Save.put("accessModifier", new BsonString(accessModifier));
+		}
+		return object2Save;
+	}
 
 	public String capture(Object event, String userID, String accessModifier, Integer gcpLength) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",

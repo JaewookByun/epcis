@@ -5,6 +5,7 @@ import java.io.InputStream;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
+import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class VocabularyCapture implements ServletContextAware {
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
 
-		String errorMessage = null;
+		JSONObject retMsg = new JSONObject();
 		if (Configuration.isCaptureVerfificationOn == true) {
 			InputStream validateStream = CaptureUtil.getXMLDocumentInputStream(inputString);
 			// Parsing and Validating data
@@ -65,26 +66,18 @@ public class VocabularyCapture implements ServletContextAware {
 				return new ResponseEntity<>(new String("Error: EPCIS Masterdata Document is not validated"),
 						HttpStatus.BAD_REQUEST);
 			}
-
-			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
-			Configuration.logger.info(" EPCIS Masterdata Document : Validated ");
-			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
-					EPCISMasterDataDocumentType.class);
-
-			CaptureService cs = new CaptureService();
-			errorMessage = cs.capture(epcisMasterDataDocument, gcpLength);
-			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
-		} else {
-			InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
-			EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
-					EPCISMasterDataDocumentType.class);
-			CaptureService cs = new CaptureService();
-			errorMessage = cs.capture(epcisMasterDataDocument, gcpLength);
-			Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 		}
-		if (errorMessage == null)
-			return new ResponseEntity<>(new String("EPCIS Masterdata Document : Captured"), HttpStatus.OK);
+
+		InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
+		EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
+				EPCISMasterDataDocumentType.class);
+		CaptureService cs = new CaptureService();
+		retMsg = cs.capture(epcisMasterDataDocument, gcpLength);
+		Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
+
+		if (retMsg.isNull("error") == true)
+			return new ResponseEntity<>(retMsg.toString(), HttpStatus.OK);
 		else
-			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(retMsg.toString(), HttpStatus.BAD_REQUEST);
 	}
 }

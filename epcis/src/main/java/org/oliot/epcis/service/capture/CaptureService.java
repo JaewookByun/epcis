@@ -1,23 +1,22 @@
 package org.oliot.epcis.service.capture;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBElement;
 
+import org.bson.BsonDocument;
+import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
-import org.oliot.gcp.core.SimplePureIdentityFilter;
-import org.oliot.model.epcis.ActionType;
-import org.oliot.model.epcis.AggregationEventType;
+
 import org.oliot.model.epcis.EPCISDocumentType;
-import org.oliot.model.epcis.EPCISEventListExtensionType;
+
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.oliot.model.epcis.EventListType;
-import org.oliot.model.epcis.ObjectEventType;
-import org.oliot.model.epcis.QuantityEventType;
-import org.oliot.model.epcis.TransactionEventType;
-import org.oliot.model.epcis.TransformationEventType;
+
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
@@ -40,161 +39,73 @@ import org.oliot.model.epcis.VocabularyType;
 
 public class CaptureService implements CoreCaptureService {
 
-	public String capture(AggregationEventType event, String userID, String accessModifier, Integer gcpLength) {
+	// Return null -> Succeed, not null --> error message
+	public JSONObject capture(EPCISDocumentType epcisDocument, String userID, String accessModifier,
+			Integer gcpLength) {
 
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return "[Error] Req. M7 Error";
-		}
+		// Minor EPCIS Document Checking
+		HashMap<String, Object> retMsg = minorCheckDocument(epcisDocument);
+		if (retMsg.isEmpty() == false)
+			return new JSONObject(retMsg);
 
-		// Mandatory Field: Action
-		if (event.getAction() == null) {
-			Configuration.logger.error("Aggregation Event should have 'Action' field ");
-			return "[Error] Aggregation Event should have 'Action' field ";
-		}
-		// M13
-		if (event.getAction() == ActionType.ADD || event.getAction() == ActionType.DELETE) {
-			if (event.getParentID() == null) {
-				Configuration.logger.error("Req. M13 Error");
-				return "[Error] Req. M13 Error";
-			}
-		}
-		// M10
-		String parentID = event.getParentID();
-		if (parentID != null) {
+		retMsg = new HashMap<String, Object>();
 
-			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
-				Configuration.logger.error("Req. M10 Error");
-				return "[Error] Req. M10 Error";
-			}
-		}
+		// Capture EPCIS Events
+		retMsg.putAll(captureEvents(epcisDocument, userID, accessModifier, gcpLength));
+		// Capture EPCIS Vocabularies
+		retMsg.putAll(captureVocabularies(epcisDocument, userID, accessModifier, gcpLength));
 
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
+		return new JSONObject(retMsg);
 	}
 
-	public String capture(ObjectEventType event, String userID, String accessModifier, Integer gcpLength) {
+	public JSONObject capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
 
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return "[Error] Req. M7 Error";
-		}
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
-	}
+		// Minor EPCIS Document Checking
+		HashMap<String, Object> retMsg = minorCheckDocument(epcisMasterDataDocument);
+		if (retMsg.isEmpty() == false)
+			return new JSONObject(retMsg);
 
-	public String capture(QuantityEventType event, String userID, String accessModifier, Integer gcpLength) {
+		retMsg = new HashMap<String, Object>();
 
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return "[Error] Req. M7 Error";
-		}
+		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
 
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
-	}
+		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
 
-	public String capture(TransactionEventType event, String userID, String accessModifier, Integer gcpLength) {
+		retMsg.putAll(captureVocabularies(vocabularyTypeList, gcpLength));
 
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return "[Error]Req. M7 Error";
-		}
-
-		// M14
-		String parentID = event.getParentID();
-		if (parentID != null) {
-
-			if (SimplePureIdentityFilter.isPureIdentity(parentID) == false) {
-				Configuration.logger.error("Req. M14 Error");
-				return "Req. M14 Error";
-			}
-		}
-
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
-	}
-
-	public String capture(TransformationEventType event, String userID, String accessModifier, Integer gcpLength) {
-		// General Exception Handling
-		// M7
-		String timeZone = event.getEventTimeZoneOffset();
-		if (!CaptureUtil.isCorrectTimeZone(timeZone)) {
-			Configuration.logger.error("Req. M7 Error");
-			return "[Error]Req. M7 Error";
-		}
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(event, userID, accessModifier, gcpLength);
-	}
-
-	public String capture(VocabularyType vocabulary, Integer gcpLength) {
-		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(vocabulary, null, null, gcpLength);
+		return new JSONObject(retMsg);
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Override
-	public void capture(EPCISDocumentType epcisDocument) {
-		if (epcisDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			return;
-		}
-		if (epcisDocument.getEPCISBody().getEventList() == null) {
-			Configuration.logger.info(" There is no EventList ");
-			return;
-		}
+	private BsonDocument prepareEvent(Object jaxbEvent, String userID, String accessModifier, Integer gcpLength) {
+		JAXBElement eventElement = (JAXBElement) jaxbEvent;
+		Object event = eventElement.getValue();
+
+		CaptureUtil.isCorrectEvent(event);
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		BsonDocument doc = m.convert(event, userID, accessModifier, gcpLength);
+		return doc;
+	}
+
+	private HashMap<String, Object> captureEvents(EPCISDocumentType epcisDocument, String userID, String accessModifier,
+			Integer gcpLength) {
 		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
 		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
 
-		/*
-		 * JAXBElement<EPCISEventListExtensionType>
-		 * JAXBElement<TransactionEventType> Object
-		 * JAXBElement<QuantityEventType> JAXBElement<ObjectEventType>
-		 * JAXBElement<AggregationEventType> Element
-		 */
+		List<BsonDocument> bsonDocumentList = eventList.parallelStream().parallel()
+				.map(jaxbEvent -> prepareEvent(jaxbEvent, userID, accessModifier, gcpLength)).filter(doc -> doc != null)
+				.collect(Collectors.toList());
 
-		for (int i = 0; i < eventList.size(); i++) {
-			JAXBElement eventElement = (JAXBElement) eventList.get(i);
-			Object event = eventElement.getValue();
-			if (event instanceof ObjectEventType) {
-				capture((ObjectEventType) event, null, null, null);
-			} else if (event instanceof AggregationEventType) {
-				capture((AggregationEventType) event, null, null, null);
-			} else if (event instanceof TransactionEventType) {
-				capture((TransactionEventType) event, null, null, null);
-			} else if (event instanceof TransformationEventType) {
-				capture((TransformationEventType) event, null, null, null);
-			} else if (event instanceof QuantityEventType) {
-				capture((QuantityEventType) event, null, null, null);
-			}
-		}
+		MongoCaptureUtil util = new MongoCaptureUtil();
+		if (bsonDocumentList != null && bsonDocumentList.size() != 0)
+			return util.capture(bsonDocumentList);
+		return new HashMap<String, Object>();
 	}
 
-	@SuppressWarnings("rawtypes")
-	// Return null -> Succeed, not null --> error message
-	public String capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
-		String errorMessage = null;
-		if (epcisDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			return "[ERROR] There is no DocumentBody ";
-		}
-		if (epcisDocument.getEPCISBody().getEventList() == null) {
-			Configuration.logger.info(" There is no EventList ");
-			return null;
-		}
+	private HashMap<String, Object> captureVocabularies(EPCISDocumentType epcisDocument, String userID,
+			String accessModifier, Integer gcpLength) {
 
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 		// Master Data in the document
 		if (epcisDocument.getEPCISHeader() != null && epcisDocument.getEPCISHeader().getExtension() != null
 				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData() != null
@@ -204,157 +115,17 @@ public class CaptureService implements CoreCaptureService {
 			List<VocabularyType> vocabularyTypeList = epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData()
 					.getVocabularyList().getVocabulary();
 
-			for (int i = 0; i < vocabularyTypeList.size(); i++) {
-				VocabularyType vocabulary = vocabularyTypeList.get(i);
-				if (vocabulary.getVocabularyElementList() != null) {
-					if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
-						List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList()
-								.getVocabularyElement();
-						List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
-						for (int j = 0; j < vetList.size(); j++) {
-							VocabularyElementType vet = vetList.get(j);
-							VocabularyElementType vetTemp = new VocabularyElementType();
-							vetTemp = vet;
-							vetTempList.add(vetTemp);
-						}
-						for (int j = 0; j < vetTempList.size(); j++) {
-							vocabulary.getVocabularyElementList().getVocabularyElement().clear();
-							vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
-							String message = capture(vocabulary, gcpLength);
-							if (message != null) {
-								if (errorMessage == null)
-									errorMessage = message + "\n";
-								else
-									errorMessage = errorMessage + message + "\n";
-							}
-						}
-					}
-				}
-			}
+			retMsg = captureVocabularies(vocabularyTypeList, gcpLength);
 		}
-
-		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
-		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
-
-		/*
-		 * JAXBElement<EPCISEventListExtensionType>
-		 * JAXBElement<TransactionEventType> Object
-		 * JAXBElement<QuantityEventType> JAXBElement<ObjectEventType>
-		 * JAXBElement<AggregationEventType> Element
-		 */
-
-		for (int i = 0; i < eventList.size(); i++) {
-			JAXBElement eventElement = (JAXBElement) eventList.get(i);
-			Object event = eventElement.getValue();
-			if (event instanceof ObjectEventType) {
-				String message = capture((ObjectEventType) event, userID, accessModifier, gcpLength);
-				if (message != null) {
-					if (errorMessage == null)
-						errorMessage = message + "\n";
-					else
-						errorMessage = errorMessage + message + "\n";
-				}
-			} else if (event instanceof AggregationEventType) {
-				String message = capture((AggregationEventType) event, userID, accessModifier, gcpLength);
-				if (message != null) {
-					if (errorMessage == null)
-						errorMessage = message + "\n";
-					else
-						errorMessage = errorMessage + message + "\n";
-				}
-			} else if (event instanceof TransactionEventType) {
-				String message = capture((TransactionEventType) event, userID, accessModifier, gcpLength);
-				if (message != null) {
-					if (errorMessage == null)
-						errorMessage = message + "\n";
-					else
-						errorMessage = errorMessage + message + "\n";
-				}
-			} /*
-				 * else if (event instanceof TransformationEventType) {
-				 * capture((TransformationEventType) event, userID,
-				 * accessModifier, gcpLength); }
-				 */
-			else if (event instanceof QuantityEventType) {
-				String message = capture((QuantityEventType) event, userID, accessModifier, gcpLength);
-				if (message != null) {
-					if (errorMessage == null)
-						errorMessage = message + "\n";
-					else
-						errorMessage = errorMessage + message + "\n";
-				}
-			} else if (event instanceof EPCISEventListExtensionType) {
-				// TransformationEvent is now included as
-				// EPCISEventListExtensionType
-				String message = capture(((EPCISEventListExtensionType) event).getTransformationEvent(), userID,
-						accessModifier, gcpLength);
-				if (message != null) {
-					if (errorMessage == null)
-						errorMessage = message + "\n";
-					else
-						errorMessage = errorMessage + message + "\n";
-				}
-			}
-		}
-		return errorMessage;
+		return retMsg;
 	}
 
-	@Override
-	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
+	private HashMap<String, Object> captureVocabularies(List<VocabularyType> vocabularyTypeList, Integer gcpLength) {
 
-		if (epcisMasterDataDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			return;
-		}
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 
-		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
-			Configuration.logger.info(" There is no Vocabulary List ");
-			return;
-		}
-
-		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
-
-		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
-
-		for (int i = 0; i < vocabularyTypeList.size(); i++) {
-			VocabularyType vocabulary = vocabularyTypeList.get(i);
-			if (vocabulary.getVocabularyElementList() != null) {
-				if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
-					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
-					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
-					for (int j = 0; j < vetList.size(); j++) {
-						VocabularyElementType vet = vetList.get(j);
-						VocabularyElementType vetTemp = new VocabularyElementType();
-						vetTemp = vet;
-						vetTempList.add(vetTemp);
-					}
-					for (int j = 0; j < vetTempList.size(); j++) {
-						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
-						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
-						capture(vocabulary, null);
-					}
-				}
-			}
-
-		}
-	}
-
-	public String capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
-		String errorMessage = null;
-		if (epcisMasterDataDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			return "[ERROR] There is no DocumentBody ";
-		}
-
-		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
-			Configuration.logger.info(" There is no Vocabulary List ");
-			return "[ERROR] There is no Vocabulary List ";
-		}
-
-		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
-
-		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
-
+		int cntVoc = 0;
+		
 		for (int i = 0; i < vocabularyTypeList.size(); i++) {
 			VocabularyType vocabulary = vocabularyTypeList.get(i);
 			if (vocabulary.getVocabularyElementList() != null) {
@@ -372,15 +143,65 @@ public class CaptureService implements CoreCaptureService {
 						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
 						String message = capture(vocabulary, gcpLength);
 						if (message != null) {
-							if (errorMessage == null)
-								errorMessage = message + "\n";
-							else
-								errorMessage = errorMessage + message + "\n";
+							retMsg.put("error", message);
+						}else{
+							cntVoc++;
 						}
 					}
 				}
 			}
 		}
-		return errorMessage;
+
+		retMsg.put("vocabularyCaptured", cntVoc);
+		
+		return retMsg;
+	}
+	
+	
+
+	private String capture(VocabularyType vocabulary, Integer gcpLength) {
+		MongoCaptureUtil m = new MongoCaptureUtil();
+		return m.capture(vocabulary, null, null, gcpLength);
+	}
+
+	private HashMap<String, Object> minorCheckDocument(EPCISDocumentType epcisDocument) {
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
+		if (epcisDocument.getEPCISBody() == null) {
+			Configuration.logger.info(" There is no DocumentBody ");
+			retMsg.put("error", "There is no DocumentBody");
+			return retMsg;
+		}
+		if (epcisDocument.getEPCISBody().getEventList() == null) {
+			Configuration.logger.info(" There is no EventList ");
+			retMsg.put("error", "There is no EventList");
+			return retMsg;
+		}
+		return retMsg;
+	}
+
+	private HashMap<String, Object> minorCheckDocument(EPCISMasterDataDocumentType epcisMasterDataDocument) {
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
+		if (epcisMasterDataDocument.getEPCISBody() == null) {
+			Configuration.logger.info(" There is no DocumentBody ");
+			retMsg.put("error", "There is no DocumentBody ");
+			return retMsg;
+		}
+
+		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
+			Configuration.logger.info(" There is no Vocabulary List ");
+			retMsg.put("error", "There is no Vocabulary List ");
+			return retMsg;
+		}
+		return retMsg;
+	}
+
+	@Override
+	public void capture(EPCISDocumentType epcisDocument) {
+		capture(epcisDocument, null, null, null);
+	}
+
+	@Override
+	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
+		capture(epcisMasterDataDocument, null);
 	}
 }
