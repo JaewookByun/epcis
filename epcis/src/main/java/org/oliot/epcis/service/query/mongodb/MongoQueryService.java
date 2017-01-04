@@ -390,6 +390,7 @@ public class MongoQueryService {
 		JSONArray retArray = new JSONArray();
 
 		MongoCursor<BsonDocument> slCursor = cursor.iterator();
+
 		while (slCursor.hasNext()) {
 			BsonDocument dbObject = slCursor.next();
 
