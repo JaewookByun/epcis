@@ -345,7 +345,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken,
-
+			@RequestParam(required = false) String accessMode,
 			@RequestParam Map<String, String> params)
 			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
 			SecurityException, ValidationException, ImplementationException {
@@ -360,22 +360,34 @@ public class RESTLikeQueryService implements ServletContextAware {
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
 		List<String> friendList = null;
-		if (userID != null) {
-			// Check accessToken
-			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
-			if (fc == null) {
-				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
-			}
-			friendList = new ArrayList<String>();
+		if(accessMode.equals("facebook")){
+			if (userID != null) {
+				// Check accessToken
+				fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+				if (fc == null) {
+					return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+				}
+				friendList = new ArrayList<String>();
 
-			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
-			for (List<User> friends : friendConnection) {
-				for (User friend : friends) {
-					friendList.add(friend.getId());
+				Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+				for (List<User> friends : friendConnection) {
+					for (User friend : friends) {
+						friendList.add(friend.getId());
+					}
 				}
 			}
 		}
-
+		else if(accessMode.equals("custom")){
+			//1. first check the subscribing authorization
+			
+			//2. if pass the subscribing test, then get all event owner list
+			friendList = new ArrayList<String>();
+			friendList.add("user1");
+			
+			//3. and then make restricted query_list
+		}
+		
+			
 		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
