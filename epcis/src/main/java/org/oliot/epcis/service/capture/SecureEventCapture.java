@@ -69,6 +69,8 @@ public class SecureEventCapture implements ServletContextAware {
 		JSONObject retMsg = new JSONObject();
 
 //=============================================================================================
+		/* jaeheeHa1 AC_capture service (check repository) */
+		
 		// Access Token Validation
 		if (accessToken == null) {
 			return new ResponseEntity<>(new String("put accessToken for CaptureService"), HttpStatus.BAD_REQUEST);

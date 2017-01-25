@@ -378,6 +378,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 			}
 		}
 		else if(accessMode.equals("custom")){
+			/* jaeheeHa2 AC_query service (check repo/friend/query) */
+			
 			//1. first check the subscribing authorization
 			
 			//2. if pass the subscribing test, then get all event owner list
