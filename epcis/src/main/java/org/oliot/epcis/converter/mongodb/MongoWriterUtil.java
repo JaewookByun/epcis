@@ -731,7 +731,7 @@ public class MongoWriterUtil {
 		return targetValue;
 	}
 
-	static BsonValue converseType(String value) {
+	public static BsonValue converseType(String value) {
 		String[] valArr = value.split("\\^");
 		if (valArr.length != 2) {
 			return new BsonString(value);
