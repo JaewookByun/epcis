@@ -85,13 +85,14 @@ public class SecureEventCapture implements ServletContextAware {
 		Random generator = new Random();
 		
 		//url of ac_api server
-		String quri = "http://143.248.55.139:3001/user/"+userID+"/possess";
+		//String quri = "http://143.248.55.139:3001/user/"+userID+"/possess";
+		String quri = "http://127.0.0.1:3001/user/"+userID+"/possess";
 		
 		//query to ac_api server
 		String qurlParameters = "epcisname=this_epcis"+(generator.nextInt(1000)+1)+"&epcisurl=127.0.0.1:"+(generator.nextInt(1000)+1);
 		String query_result = query_access_relation(quri, accessToken, qurlParameters);
 
-		//for debug, erase after implmenting.
+		//for debug, erase after implementing.
 		Configuration.logger.info(query_result);
 		
 		/* end of example for querying ac_api*/
@@ -140,7 +141,8 @@ public class SecureEventCapture implements ServletContextAware {
 		String result = null;
 		
 		try {
-		String url = quri; //"http://143.248.55.139:3001/oauth/token";
+		//String url = quri; //"http://143.248.55.139:3001/oauth/token";
+		String url = quri; //"http://127.0.0.1:3001/oauth/token";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
