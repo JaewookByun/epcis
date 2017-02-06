@@ -75,7 +75,8 @@ public class GetClientToken implements ServletContextAware {
 		
 		
 		try {
-		String url = "http://143.248.55.139:3001/oauth/token";
+		//String url = "http://143.248.55.139:3001/oauth/token";
+		String url = "http://127.0.0.1:3001/oauth/token";
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
