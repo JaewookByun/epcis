@@ -1,5 +1,10 @@
 package org.oliot.epcis.service.query;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -345,7 +350,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 
 			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken,
-
+			@RequestParam(required = false) String accessMode,
 			@RequestParam Map<String, String> params)
 			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
 			SecurityException, ValidationException, ImplementationException {
@@ -360,22 +365,53 @@ public class RESTLikeQueryService implements ServletContextAware {
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
 		List<String> friendList = null;
-		if (userID != null) {
-			// Check accessToken
-			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
-			if (fc == null) {
-				return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
-			}
-			friendList = new ArrayList<String>();
+		if(accessMode.equals("facebook")){
+			if (userID != null) {
+				// Check accessToken
+				fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
+				if (fc == null) {
+					return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+				}
+				friendList = new ArrayList<String>();
 
-			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
-			for (List<User> friends : friendConnection) {
-				for (User friend : friends) {
-					friendList.add(friend.getId());
+				Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
+				for (List<User> friends : friendConnection) {
+					for (User friend : friends) {
+						friendList.add(friend.getId());
+					}
 				}
 			}
 		}
+		else if(accessMode.equals("custom")){
+			/* jaeheeHa2 AC_query service*/
+			
+			//1. first check the subscribing authorization
+			//url of ac_api server
+			String quri = "http://143.248.57.72:3001/user/"+userID+"/access";
+			
+			//query to ac_api server
+			String qurlParameters = "";		
+			String query_result = query_access_relation(quri, accessToken, qurlParameters);
 
+			//for debug, erase after implementing.
+			Configuration.logger.info(query_result);
+			
+			query_result = query_result.replaceAll("[\"{}\\[\\] ]","").split(":")[1];
+			String[] accessusers = query_result.split(",");
+			
+			
+			//2. if pass the subscribing test, then get all event owner list
+			friendList = new ArrayList<String>();
+			for (String accessuser : accessusers){
+				Configuration.logger.info("Friends:"+accessuser);
+				friendList.add(accessuser);
+			}
+			
+			
+			//3. and then make restricted query_list
+		}
+		
+			
 		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
@@ -434,5 +470,63 @@ public class RESTLikeQueryService implements ServletContextAware {
 		MongoQueryService mongoQueryService = new MongoQueryService();
 		String result = mongoQueryService.poll(pollParams, userID, friendList, null);
 		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
+	}
+	
+	public String query_access_relation(String quri, String qtoken, String qurlParameters){
+		Configuration.logger.info(" Client Token retrieve");
+		StringBuffer response = null;
+		String result = null;
+		
+		try {
+		//String url = quri; //"http://143.248.55.139:3001/oauth/token";
+		String url = quri; //"http://143.248.57.72:3001/oauth/token";
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		//add reuqest header
+		con.setRequestMethod("GET");
+		con.setRequestProperty("Authorization", "Bearer "+qtoken);
+		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
+		
+
+		String urlParameters = qurlParameters;
+
+		// Send post request
+		//con.setDoOutput(true);
+		//DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+		//wr.writeBytes(urlParameters);
+		
+		// Send get request		
+		System.out.println(con.getRequestMethod());
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + url);
+		//System.out.println("Post parameters : " + urlParameters);
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in;
+			in = new BufferedReader(
+			        new InputStreamReader(con.getInputStream()));
+		
+		String inputLine;
+		response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//print result
+		
+		if(response!=null){
+			result=response.toString();
+		}
+		
+		return result;
 	}
 }

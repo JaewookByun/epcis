@@ -189,8 +189,20 @@ public class Configuration implements ServletContextListener {
 		mongoClient = new MongoClient(backend_ip, backend_port);
 		mongoDatabase = mongoClient.getDatabase(databaseName);
 	}
+	
+	/**
+	 * dropMongoDB
+	 * Jaehee created
+	 * lovesm135@kaist.ac.kr
+	 * 2016.11.04
+	 * @param dbname
+	 */
+	public static void dropMongoDB() {
+		mongoClient.dropDatabase(databaseName);
+	}
 
 	private void loadExistingSubscription() {
+		
 		MongoSubscription ms = new MongoSubscription();
 		ms.init();
 	}
