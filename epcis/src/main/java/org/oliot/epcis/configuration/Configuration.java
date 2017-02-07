@@ -173,10 +173,10 @@ public class Configuration implements ServletContextListener {
 			
 			// Set IP Address of Access Control API 
 			
-			String address = json.getString("ac_api_ip");
+			String address = json.getString("ac_api_address");
 			if (address == null) {
 				Configuration.logger.error(
-						"ac_api_ip is null, please make sure Configuration.json is correct, and restart.");
+						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
 			}
 			ac_api_address = address.trim();
 
