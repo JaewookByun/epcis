@@ -3,6 +3,11 @@ package org.oliot.epcis.configuration;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -50,6 +55,7 @@ public class Configuration implements ServletContextListener {
 	public static int backend_port;
 	public static String databaseName;
 	public static JSONObject json;
+	public static String ac_api_address;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -164,6 +170,15 @@ public class Configuration implements ServletContextListener {
 			} else {
 				isTriggerSupported = false;
 			}
+			
+			// Set IP Address of Access Control API 
+			
+			String address = json.getString("ac_api_address");
+			if (address == null) {
+				Configuration.logger.error(
+						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+			}
+			ac_api_address = address.trim();
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
@@ -205,5 +220,64 @@ public class Configuration implements ServletContextListener {
 		
 		MongoSubscription ms = new MongoSubscription();
 		ms.init();
+	}
+	
+	/**
+	 * query_access_relation
+	 * created
+	 * 2017.02.07
+	 * @param quri
+	 * @param qtoken
+	 * @param qurlParameters
+	 * @return result
+	 */
+	public static String query_access_relation(String quri, String qtoken, String qurlParameters){
+		Configuration.logger.info(" Client Token retrieve");
+		StringBuffer response = null;
+		String result = null;
+		
+		try {
+		String url = quri; 
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		//add request header
+		con.setRequestMethod("GET");
+		con.setRequestProperty("Authorization", "Bearer "+qtoken);
+		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
+		
+		String urlParameters = qurlParameters;
+		
+		// Send get request		
+		System.out.println(con.getRequestMethod());
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + url);
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in;
+			in = new BufferedReader(
+			        new InputStreamReader(con.getInputStream()));
+		
+		String inputLine;
+		response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//print result
+		
+		if(response!=null){
+			result=response.toString();
+		}
+		
+		return result;
 	}
 }
