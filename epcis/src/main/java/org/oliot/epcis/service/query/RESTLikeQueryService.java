@@ -387,11 +387,11 @@ public class RESTLikeQueryService implements ServletContextAware {
 			
 			//1. first check the subscribing authorization
 			//url of ac_api server
-			String quri = "http://143.248.57.72:3001/user/"+userID+"/access";
+			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/access";
 			
 			//query to ac_api server
 			String qurlParameters = "";		
-			String query_result = query_access_relation(quri, accessToken, qurlParameters);
+			String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
 			//for debug, erase after implementing.
 			Configuration.logger.info(query_result);
@@ -470,63 +470,5 @@ public class RESTLikeQueryService implements ServletContextAware {
 		MongoQueryService mongoQueryService = new MongoQueryService();
 		String result = mongoQueryService.poll(pollParams, userID, friendList, null);
 		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
-	}
-	
-	public String query_access_relation(String quri, String qtoken, String qurlParameters){
-		Configuration.logger.info(" Client Token retrieve");
-		StringBuffer response = null;
-		String result = null;
-		
-		try {
-		//String url = quri; //"http://143.248.55.139:3001/oauth/token";
-		String url = quri; //"http://143.248.57.72:3001/oauth/token";
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		//add reuqest header
-		con.setRequestMethod("GET");
-		con.setRequestProperty("Authorization", "Bearer "+qtoken);
-		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
-		
-
-		String urlParameters = qurlParameters;
-
-		// Send post request
-		//con.setDoOutput(true);
-		//DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		//wr.writeBytes(urlParameters);
-		
-		// Send get request		
-		System.out.println(con.getRequestMethod());
-
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		//System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
-
-		BufferedReader in;
-			in = new BufferedReader(
-			        new InputStreamReader(con.getInputStream()));
-		
-		String inputLine;
-		response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//print result
-		
-		if(response!=null){
-			result=response.toString();
-		}
-		
-		return result;
 	}
 }
