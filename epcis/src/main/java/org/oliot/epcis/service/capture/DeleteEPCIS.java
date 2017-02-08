@@ -8,9 +8,11 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.Random;
 
 import javax.servlet.ServletContext;
+import javax.websocket.server.ServerContainer;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
@@ -55,21 +57,34 @@ public class DeleteEPCIS implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
-	public ResponseEntity<?> asyncPost(String inputString) {
-		ResponseEntity<?> result = post(inputString, null, null, null);
+	public ResponseEntity<?> asyncDelete(String inputString) {
+		ResponseEntity<?> result = del(inputString, null);
 		return result;
 	}
 
-	@RequestMapping(method = RequestMethod.POST)
+	
+	/**
+	 * del
+	 * @creator Jaehee Ha 
+	 * lovesm135@kaist.ac.kr
+	 * created
+	 * 2017/02/07
+	 * @param inputString
+	 * @param gcpLength
+	 * @return ResponseEntity<?>
+	 */
+	@RequestMapping(method = RequestMethod.DELETE)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString, 
-			@RequestParam(required = true) String userID,
-			@RequestParam(required = true) String accessToken,
+	public ResponseEntity<?> del(@RequestBody String inputString, 
 			@RequestParam(required = false) Integer gcpLength) {
 		JSONObject retMsg = new JSONObject();
 
 //=============================================================================================
 		/* jaeheeHa3 AC_delete repository */
+		// This method must be conducted by Access Control Web GUI. 
+		// This method must not be conducted by URL based Get request.
+		
+		Configuration.dropMongoDB();
 		
 		Configuration.logger.info(" EPCIS Repository : Deleted ");
 
@@ -77,94 +92,6 @@ public class DeleteEPCIS implements ServletContextAware {
 			return new ResponseEntity<>(retMsg.toString(), HttpStatus.OK);
 		else
 			return new ResponseEntity<>(retMsg.toString(), HttpStatus.BAD_REQUEST);
-	}
-	
-	/**
-	 * del
-	 * @creator Jaehee Ha 
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2016/11/05
-	 * @param inputString
-	 * @param gcpLength
-	 * @return ResponseEntity<?>
-	 */
-	@RequestMapping(method = RequestMethod.DELETE)
-	@ResponseBody
-	public ResponseEntity<?> del(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
-		String errorMessage = null;
-
-		//Implement RBAC Access control for Capture Service Here.
-		//String EPCISName = "";
-		Configuration.logger.info(" EPCIS Drop Started.... ");
-
-		Configuration.dropMongoDB();
-		
-		Configuration.logger.info(" EPCIS : Dropped ");
-
-		if( errorMessage == null )
-		{
-			return new ResponseEntity<>(new String("{\"EPCIS Document\" : \"Dropped\"} "), HttpStatus.OK);
-		}
-		else
-			return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
-	}
-	
-	
-	public String query_access_relation(String quri, String qtoken, String qurlParameters){
-		Configuration.logger.info(" Client Token retrieve");
-		StringBuffer response = null;
-		String result = null;
-		
-		try {
-		String url = quri; //"http://143.248.55.139:3001/oauth/token";
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-
-		//add reuqest header
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Authorization", "Bearer "+qtoken);
-		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
-		
-
-		String urlParameters = qurlParameters;
-
-		// Send post request
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
-		wr.flush();
-		wr.close();
-
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
-
-		BufferedReader in;
-			in = new BufferedReader(
-			        new InputStreamReader(con.getInputStream()));
-		
-		String inputLine;
-		response = new StringBuffer();
-
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//print result
-		
-		if(response!=null){
-			result=response.toString();
-		}
-		
-		return result;
 	}
 
 }

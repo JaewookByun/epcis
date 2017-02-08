@@ -24,5 +24,8 @@
 	"admin_scope" : "Friend",
 	
 	"_trigger_support" : "(on|off)",
-	"trigger_support" : "on"
+	"trigger_support" : "on",
+	
+	"_ac_api_address" : "IP Address and port number of Access Control API",
+	"ac_api_address" : "127.0.0.1:3001"
 }
