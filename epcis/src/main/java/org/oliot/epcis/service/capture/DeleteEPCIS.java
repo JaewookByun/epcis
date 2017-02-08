@@ -12,7 +12,7 @@ import java.util.Enumeration;
 import java.util.Random;
 
 import javax.servlet.ServletContext;
-import javax.websocket.server.ServerContainer;
+//import javax.websocket.server.ServerContainer;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
@@ -58,7 +58,7 @@ public class DeleteEPCIS implements ServletContextAware {
 	}
 
 	public ResponseEntity<?> asyncDelete(String inputString) {
-		ResponseEntity<?> result = del(inputString, null);
+		ResponseEntity<?> result = del(inputString, null,null,null);
 		return result;
 	}
 
@@ -76,13 +76,33 @@ public class DeleteEPCIS implements ServletContextAware {
 	@RequestMapping(method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<?> del(@RequestBody String inputString, 
-			@RequestParam(required = false) Integer gcpLength) {
+			@RequestParam(required = false) Integer gcpLength,
+			@RequestParam(required = false) String userID,
+			@RequestParam(required = false) String accessToken) {
 		JSONObject retMsg = new JSONObject();
 
 //=============================================================================================
 		/* jaeheeHa3 AC_delete repository */
 		// This method must be conducted by Access Control Web GUI. 
 		// This method must not be conducted by URL based Get request.
+		
+		
+		//url of ac_api server
+		String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+"bar1_epcis"+"/possess";
+		
+		//query to ac_api server
+		String qurlParameters = "";		
+		String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
+
+		//for debug, erase after implementing.
+		Configuration.logger.info(query_result);
+		query_result = query_result.replaceAll("[\"{} ]","").split(":")[1];
+		
+		boolean pass = (query_result.equals("yes"))?true:false;
+		
+		if(!pass){
+			return new ResponseEntity<>("No!", HttpStatus.BAD_REQUEST);
+		}
 		
 		Configuration.dropMongoDB();
 		

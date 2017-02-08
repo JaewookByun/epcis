@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -387,11 +388,40 @@ public class RESTLikeQueryService implements ServletContextAware {
 			
 			//1. first check the subscribing authorization
 			//url of ac_api server
-			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/access";
+			
+			// Checking subscribe authorization
+			
+			//If there is no subscription right
+			//pop up this . return new ResponseEntity<>("No accessRight", HttpStatus.BAD_REQUEST);
+			
+			/* this is query example for querying ac_api*/
+			Random generator = new Random();
+			
+			//url of ac_api server
+			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+"bar1_epcis"+"/subscribe";
 			
 			//query to ac_api server
 			String qurlParameters = "";		
 			String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
+
+			//for debug, erase after implementing.
+			Configuration.logger.info(query_result);
+			query_result = query_result.replaceAll("[\"{} ]","").split(":")[1];
+			
+			boolean pass = (query_result.equals("yes"))?true:false;
+			
+			
+			if(!pass){
+				return new ResponseEntity<>(new String("no subscribe auth"), HttpStatus.BAD_REQUEST);
+			}
+			/* end of example for querying ac_api*/
+			
+			
+			quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/access";
+			
+			//query to ac_api server
+			qurlParameters = "";		
+			query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
 			//for debug, erase after implementing.
 			Configuration.logger.info(query_result);
@@ -410,7 +440,9 @@ public class RESTLikeQueryService implements ServletContextAware {
 			
 			//3. and then make restricted query_list
 		}
-		
+		else{
+			
+		}
 			
 		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
