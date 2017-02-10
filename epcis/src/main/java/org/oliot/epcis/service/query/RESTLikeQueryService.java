@@ -366,7 +366,11 @@ public class RESTLikeQueryService implements ServletContextAware {
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
 		List<String> friendList = null;
-		if(accessMode.equals("facebook")){
+		
+		if(accessMode==null){
+			
+		}
+		else if(accessMode.equals("facebook")){
 			if (userID != null) {
 				// Check accessToken
 				fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
