@@ -56,6 +56,7 @@ public class Configuration implements ServletContextListener {
 	public static String databaseName;
 	public static JSONObject json;
 	public static String ac_api_address;
+	public static String epcis_id;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -178,7 +179,17 @@ public class Configuration implements ServletContextListener {
 				Configuration.logger.error(
 						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
 			}
+			
 			ac_api_address = address.trim();
+			
+			String id = json.getString("epcis_id");
+			if (id == null) {
+				Configuration.logger.error(
+						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+			}
+			
+			epcis_id = id.trim();
+
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
