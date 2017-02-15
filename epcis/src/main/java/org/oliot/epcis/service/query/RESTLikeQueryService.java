@@ -402,7 +402,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			Random generator = new Random();
 			
 			//url of ac_api server
-			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+"bar1_epcis"+"/subscribe";
+			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+Configuration.epcis_id+"/subscribe";
 			
 			//query to ac_api server
 			String qurlParameters = "";		

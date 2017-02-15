@@ -69,9 +69,10 @@ public class SecureEventCapture implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString, 
 			@RequestParam(required = true) String userID,
-			@RequestParam(required = true) String epcisname,
 			@RequestParam(required = true) String accessToken,
-			@RequestParam(required = false) Integer gcpLength) {
+			@RequestParam(required = false) Integer gcpLength,
+			@RequestParam(required = false) String accessModifier
+			) {
 		JSONObject retMsg = new JSONObject();
 
 //=============================================================================================
@@ -91,7 +92,7 @@ public class SecureEventCapture implements ServletContextAware {
 		Random generator = new Random();
 		
 		//url of ac_api server
-		String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+epcisname+"/furnish";
+		String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+Configuration.epcis_id+"/furnish";
 		
 		//query to ac_api server
 		String qurlParameters = "";		
@@ -132,9 +133,17 @@ public class SecureEventCapture implements ServletContextAware {
 				if (error != null)
 					return error;
 			}
+			
+			String accessModifierString;
+	         if(accessModifier!=null){
+	            accessModifierString=accessModifier;
+	         }else{
+	            accessModifierString="friend";
+	         }
+			
 
 			CaptureService cs = new CaptureService();
-			retMsg = cs.capture(epcisDocument, userID, "Friend", gcpLength);
+			retMsg = cs.capture(epcisDocument, userID, accessModifierString, gcpLength);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		} else {
 			retMsg.put("Authorized", "no");
