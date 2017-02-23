@@ -54,6 +54,7 @@ import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.EventListType;
 import org.oliot.model.epcis.InvalidURIException;
 import org.oliot.model.epcis.ObjectEventType;
+import org.oliot.model.epcis.PollParameters;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.QueryParam;
 import org.oliot.model.epcis.QueryParameterException;
@@ -70,9 +71,7 @@ import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
 import org.oliot.model.oliot.AggregationEvent;
-import org.oliot.model.oliot.Attribute;
 import org.oliot.model.oliot.ObjectEvent;
-import org.oliot.model.oliot.PollParameters;
 import org.oliot.model.oliot.QuantityElement;
 import org.oliot.model.oliot.QuantityEvent;
 import org.oliot.model.oliot.Subscription;
@@ -511,7 +510,7 @@ public class MysqlQueryService {
 	if (s.getPollParametrs().getQueryName().equals("SimpleEventQuery")) {
 		//retString = subscribeEventQuery(s, userID, friendList);
 		
-		PollParameters p=s.getPollParametrs();
+		org.oliot.model.oliot.PollParameters p=s.getPollParametrs();
 		retString =subscribe(p.getQueryName(), s.getSubscriptionID(), s.getDest(), "cronExpression",s.getReportIfEmpty(), 
 				s.getInitialRecordTime(), p.getEventType(), p.getGE_eventTime(), 
 				p.getLT_eventTime(), p.getGE_recordTime(), p.getLT_recordTime(), 
@@ -618,38 +617,16 @@ public class MysqlQueryService {
 	}
 	
 
-	@SuppressWarnings({ "unchecked", "rawtypes"})
-	
-	public String pollEventQuery(String queryName, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_eventID, Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime,
-			String LT_errorDeclarationTime,String EQ_errorReason,String EQ_correctiveEventID,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount, Map<String, String> paramMap) {
-
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID)
+			throws QueryParameterException, QueryTooLargeException {
+		
 		// M27 - query params' constraint
 		// M39 - query params' constraint
-		String reason = checkConstraintSimpleEventQuery(queryName, eventType,
-				GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-				EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-				WD_readPoint, EQ_bizLocation, WD_bizLocation,
-				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
-				MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,LE_quantity, 
-				EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-				LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-				orderBy, orderDirection, eventCountLimit,
-				maxEventCount, paramMap);
+		
+		String reason = checkConstraintSimpleEventQuery(p);
+		
+		
 		
 		if (reason != null) {
 			return makeErrorResult(reason, QueryParameterException.class);
@@ -659,13 +636,13 @@ public class MysqlQueryService {
 		
 		int countLimit=0;
 		int eventCount=0;
-		if(eventCountLimit!=null){
-			countLimit=Integer.parseInt(eventCountLimit);
+		if(p.getEventCountLimit()!=null){
+			countLimit=p.getEventCountLimit();
 		}else{
 			countLimit=Integer.MAX_VALUE;
 		}
 		// Make Base Result Document
-		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
+		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
 
 		//ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
 		//QueryOprationBackend mysqlOperationdao=ctx.getBean
@@ -693,16 +670,16 @@ public class MysqlQueryService {
 		 * the name of an extension event type. If omitted, all event types will
 		 * be considered for inclusion in the result.
 		 */
-		Configuration.logger.info("eventType"+ eventType);
+		Configuration.logger.info("eventType"+ p.getEventType());
 		
-		if (eventType != null) {
+		if (p.getEventType() != null) {
 			toGetAggregationEvent = false;
 			toGetObjectEvent = false;
 			toGetQuantityEvent = false;
 			toGetTransactionEvent = false;
 			toGetTransformationEvent = false;
 
-			String[] eventTypeArray = eventType.split(",");
+			String[] eventTypeArray = p.getEventType().split(",");
 
 			for (int i = 0; i < eventTypeArray.length; i++) {
 				String eventTypeString = eventTypeArray[i];
@@ -726,22 +703,9 @@ public class MysqlQueryService {
 		if (toGetAggregationEvent == true) {
 		// Aggregation Event Collection
 		//	DBCollection collection = mongoOperation.getCollection("AggregationEvent");
-			
-			 
-			 Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria("AggregationEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, 
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);
-			
+			p.setEventType("AggregationEvent");
+			Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria(p, userID, friendList,subscriptionID);
+					
 			//Configuration.logger.info("AggregationEvent after criteria list");
 			List<AggregationEvent> aggregationEventList=criteria.list();
 			EventToEventTypeConverter conv=new EventToEventTypeConverter();
@@ -758,21 +722,8 @@ public class MysqlQueryService {
 		if (toGetObjectEvent == true) {
 		// Aggregation Event Collection
 		//	DBCollection collection = mongoOperation.getCollection("AggregationEvent");
-			
-			 
-			 Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria("ObjectEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, 
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);
+			p.setEventType("ObjectEvent");
+			Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria(p, userID, friendList,subscriptionID);
 			
 			//Configuration.logger.info("ObjectEvent after criteria list");
 			// Configuration.logger.info("Before Criteria listed propoerly");
@@ -789,49 +740,13 @@ public class MysqlQueryService {
 				eventObjects.add(element);
 			}
 		}
-		/*
-		if (toGetObjectEvent == true) {
-
-			 Criteria criteria=mysqlOperationdao.makeQueryCriteria("ObjectEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);
-			
-			List<ObjectEvent> objectEventList=criteria.list();
-			EventToEventTypeConverter conv=new EventToEventTypeConverter();
-			for(int i=0;i<objectEventList.size()&&(eventCount<countLimit);i++,eventCount++){
-				System.out.println("in object count= "+ eventCount);
-				System.out.println("--------------------------------------------------------");
-				ObjectEvent objectEvent=objectEventList.get(i);
-				JAXBElement element = new JAXBElement(new QName(
-						"ObjectEvent"), ObjectEventType.class,
-						conv.convert(objectEvent));
-				eventObjects.add(element);
-			}
-		}
-		*/
 		
 		if (toGetQuantityEvent == true) {
 			
+			p.setEventType("QuantityEvent");
+			Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria(p, userID, friendList,subscriptionID);
 			 
-			 Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria("QuantityEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, 
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection,eventCountLimit, maxEventCount, paramMap);	
+				
 			
 			List<QuantityEvent> quantityEventList=criteria.list();
 			EventToEventTypeConverter conv=new EventToEventTypeConverter();
@@ -848,20 +763,10 @@ public class MysqlQueryService {
 			// Aggregation Event Collection
 			//DBCollection collection = mongoOperation.getCollection("TransactionEvent");
 			
+			p.setEventType("TransactionEvent");
+			Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria(p, userID, friendList,subscriptionID);
 			 
-			 Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria("TransactionEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, 
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);	
+				
 			
 			List<TransactionEvent> transactionEventList=criteria.list();
 			EventToEventTypeConverter conv=new EventToEventTypeConverter();
@@ -879,20 +784,10 @@ public class MysqlQueryService {
 			// Aggregation Event Collection
 			//DBCollection collection = mongoOperation.getCollection("TransformationEvent");
 			
+			p.setEventType("TransformationEvent");
+			Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria(p, userID, friendList,subscriptionID);
 			 
-			 Criteria criteria=Configuration.mysqlOperationdaoQr.makeQueryCriteria("TransformationEvent",
-					GE_eventTime, LT_eventTime, GE_recordTime, LT_recordTime,
-					EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint,
-					WD_readPoint, EQ_bizLocation, WD_bizLocation,
-					EQ_transformationID, MATCH_epc, MATCH_parentID,
-					MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC,
-					MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass,
-					MATCH_anyEPCClass, EQ_quantity, GT_quantity, GE_quantity,
-					LT_quantity, LE_quantity, 
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection,
-					eventCountLimit, maxEventCount, paramMap);	
+			
 			
 			
 			List<TransformationEvent> transformationEventList=criteria.list();
@@ -908,8 +803,8 @@ public class MysqlQueryService {
 		}
 
 		// M44
-		if (maxEventCount != null) {
-			if (eventObjects.size() > Integer.parseInt(maxEventCount)) {
+		if (p.getMaxEventCount() != null) {
+			if (eventObjects.size() > p.getMaxEventCount()) {
 				//((AbstractApplicationContext) ctx).close();
 				return makeErrorResult("Violate maxEventCount",
 						QueryTooLargeException.class);
@@ -920,342 +815,242 @@ public class MysqlQueryService {
 		StringWriter sw = new StringWriter();
 		JAXB.marshal(epcisQueryDocumentType, sw);
 		return sw.toString();
+		
 	}
+	
 
-	@SuppressWarnings({  "unchecked" })
-	public String pollMasterDataQuery(String queryName, String vocabularyName,
-			boolean includeAttributes, boolean includeChildren,
-			String attributeNames, String eQ_name, String wD_name,
-			String hASATTR, String maxElementCount,Map<String, String> paramMap) {
 
+	public String pollMasterDataQuery(PollParameters p, String userID, List<String> friendList)
+			throws QueryTooLargeException, QueryParameterException {
+		// Required Field Check
+		if (p.getIncludeAttributes() == null || p.getIncludeChildren() == null) {
+			throw new QueryParameterException();
+			// return makeErrorResult("SimpleMasterDataQuery's Required Field:
+			// includeAttributes, includeChildren",
+			// QueryTooLargeException.class);
+		}
+		
 		// Make Base Result Document
-		EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(queryName);
-		
-//		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-//		QueryOprationBackend mysqlOperationdao=ctx.getBean
-//				("queryOprationBackend", QueryOprationBackend.class);
+				EPCISQueryDocumentType epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName());
+				
+//				ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
+//				QueryOprationBackend mysqlOperationdao=ctx.getBean
+//						("queryOprationBackend", QueryOprationBackend.class);
 
-		
-		 
-		 Criteria criteria=Configuration.mysqlOperationdaoQr.makeVocQueryCriteria(vocabularyName,
-					includeAttributes, includeChildren, attributeNames, eQ_name,
-					wD_name, hASATTR, maxElementCount,paramMap);
-		 
-		 
+				
+				Criteria criteria=Configuration.mysqlOperationdaoQr.makeVocQueryCriteria(p);
+				 
+				 
 
-		 List<Vocabulary> vocabularyList=criteria.list();
-		 /**
-		  * If true, the results will include
-		  * attribute names and values for
-		  * matching vocabulary elements. If
-		  * false, attribute names and values
-		  * will not be included in the result.
-		  */
-		 List<Attribute> attribute=new ArrayList<Attribute>();
-		 if(!includeAttributes){
-			 for(int i=0; i<vocabularyList.size(); i++){
-					for(int j=0;j<vocabularyList.get(i).getVocabularyElementList().getVocabularyElement().size();j++){
-						vocabularyList.get(0).getVocabularyElementList().getVocabularyElement().get(0).setAttribute(attribute);
+				 @SuppressWarnings("unchecked")
+				List<Vocabulary> vocabularyList=criteria.list();
+				 /**
+				  * If true, the results will include
+				  * attribute names and values for
+				  * matching vocabulary elements. If
+				  * false, attribute names and values
+				  * will not be included in the result.
+				  */
+				 
+				 if(!p.getIncludeAttributes()){
+					 if(vocabularyList.size()>0){
+						 for(int i1=0; i1<vocabularyList.size(); i1++){
+							 if(vocabularyList.get(i1).getVocabularyElementList()!=null){
+								 if(vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement()!=null){
+									 if(vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().size()>0){
+										for(int i2=0; i2<vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().size(); i2++){
+											vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().get(i2).setAttribute(null);
+										}
+									 }
+								 }
+
+							 }
+							 
+						 }
+					 }
+				 }
+				  
+				 /**
+				  * If true, the results will include the
+				  * children list for matching 
+				  * vocabulary elements. If false,
+				  * children lists will not be included in the result.
+				  */
+				 if(!p.getIncludeChildren()){
+					 if(vocabularyList.size()>0){
+						 for(int i1=0; i1<vocabularyList.size(); i1++){
+							 if(vocabularyList.get(i1).getVocabularyElementList()!=null){
+								 if(vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement()!=null){
+									 if(vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().size()>0){
+										for(int i2=0; i2<vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().size(); i2++){
+											vocabularyList.get(i1).getVocabularyElementList().getVocabularyElement().get(i2).setChildren(null);
+										}
+									 }
+								 }
+
+							 }
+							 
+						 }
+					 }
+				 }
+				QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
+						.getQueryResults().getResultsBody();
+				List<VocabularyType> vocabularyTypeList=new ArrayList<VocabularyType>();
+				EventToEventTypeConverter conv=new EventToEventTypeConverter();
+				for(int i=0;i<vocabularyList.size();i++){
+					vocabularyTypeList.add(conv.convert(vocabularyList.get(i)));
+				}
+				VocabularyListType vlt = new VocabularyListType();
+				vlt.setVocabulary(vocabularyTypeList);
+				qbt.setVocabularyList(vlt);
+
+//				((AbstractApplicationContext) ctx).close();
+
+				// M47
+				if (p.getMaxElementCount() != null) {
+					try {
+						int maxElement = p.getMaxElementCount();
+						if (vocabularyTypeList.size() > maxElement) {
+							return makeErrorResult("Too Large Master Data result",
+									QueryTooLargeException.class);
+						}
+					} catch (NumberFormatException e) {
+
 					}
 				}
-		 }
-		 /**
-		  * If true, the results will include the
-		  * children list for matching 
-		  * vocabulary elements. If false,
-		  * children lists will not be included in the result.
-		  */
-		 if(!includeChildren){
-			 for(int i=0; i<vocabularyList.size(); i++){
-					for(int j=0;j<vocabularyList.get(i).getVocabularyElementList().getVocabularyElement().size();j++){
-						vocabularyList.get(0).getVocabularyElementList().getVocabularyElement().get(0).setChildren(null);
-					}
-				}
-		 }
-		 
-		QueryResultsBody qbt = epcisQueryDocumentType.getEPCISBody()
-				.getQueryResults().getResultsBody();
-		List<VocabularyType> vocabularyTypeList=new ArrayList<VocabularyType>();
-		EventToEventTypeConverter conv=new EventToEventTypeConverter();
-		for(int i=0;i<vocabularyList.size();i++){
-			vocabularyTypeList.add(conv.convert(vocabularyList.get(i)));
-		}
-		VocabularyListType vlt = new VocabularyListType();
-		vlt.setVocabulary(vocabularyTypeList);
-		qbt.setVocabularyList(vlt);
 
-//		((AbstractApplicationContext) ctx).close();
-
-		// M47
-		if (maxElementCount != null) {
-			try {
-				int maxElement = Integer.parseInt(maxElementCount);
-				if (vocabularyTypeList.size() > maxElement) {
-					return makeErrorResult("Too Large Master Data result",
-							QueryTooLargeException.class);
-				}
-			} catch (NumberFormatException e) {
-
-			}
-		}
-
-		StringWriter sw = new StringWriter();
-		JAXB.marshal(epcisQueryDocumentType, sw);
-		return sw.toString();
+				StringWriter sw = new StringWriter();
+				JAXB.marshal(epcisQueryDocumentType, sw);
+				return sw.toString();
 	}
+	
 
-	
-	
+
 	// Soap Service Adaptor
-	public String poll(String queryName, QueryParams queryParams) {
-		List<QueryParam> queryParamList = queryParams.getParam();
-
-	System.out.println(" poll(String queryName, QueryParams queryParams)  started...");	
-		String eventType = null;
-		String GE_eventTime = null;
-		String LT_eventTime = null;
-		String GE_recordTime = null;
-		String LT_recordTime = null;
-		String EQ_action = null;
-		String EQ_bizStep = null;
-		String EQ_disposition = null;
-		String EQ_readPoint = null;
-		String WD_readPoint = null;
-		String EQ_bizLocation = null;
-		String WD_bizLocation = null;
-		String EQ_transformationID = null;
-		String MATCH_epc = null;
-		String MATCH_parentID = null;
-		String MATCH_inputEPC = null;
-		String MATCH_outputEPC = null;
-		String MATCH_anyEPC = null;
-		String MATCH_epcClass = null;
-		String MATCH_inputEPCClass = null;
-		String MATCH_outputEPCClass = null;
-		String MATCH_anyEPCClass = null;
-		String EQ_quantity = null;
-		String GT_quantity = null;
-		String GE_quantity = null;
-		String LT_quantity = null;
-		String LE_quantity = null;
-		String EQ_eventID = null; 
-		Boolean EXISTS_errorDeclaration = null;
-		String GE_errorDeclarationTime = null;
-		String LT_errorDeclarationTime = null;
-		String EQ_errorReason = null;
-		String EQ_correctiveEventID = null;
-		String orderBy = null;
-		String orderDirection = null;
-		String eventCountLimit = null;
-		String maxEventCount = null;
-		String vocabularyName = null;
-		boolean includeAttributes = false;
-		boolean includeChildren = false;
-		String attributeNames = null;
-		String EQ_name = null;
-		String WD_name = null;
-		String HASATTR = null;
-		String maxElementCount = null;
-		Map<String, String> extMap = new HashMap<String, String>();
-		for (int i = 0; i < queryParamList.size(); i++) {
-
-			QueryParam qp = queryParamList.get(i);
-			String name = qp.getName();
-			String value = (String) qp.getValue();
-
-			if (name.equals("eventType")) {
-				eventType = value;
-				continue;
-			} else if (name.equals("GE_eventTime")) {
-				GE_eventTime = value;
-				continue;
-			} else if (name.equals("LT_eventTime")) {
-				LT_eventTime = value;
-				continue;
-			} else if (name.equals("GE_recordTime")) {
-				GE_recordTime = value;
-				continue;
-			} else if (name.equals("LT_recordTime")) {
-				LT_recordTime = value;
-				continue;
-			} else if (name.equals("EQ_action")) {
-				EQ_action = value;
-				continue;
-			} else if (name.equals("EQ_bizStep")) {
-				EQ_bizStep = value;
-				continue;
-			} else if (name.equals("EQ_disposition")) {
-				EQ_disposition = value;
-				continue;
-			} else if (name.equals("EQ_readPoint")) {
-				EQ_readPoint = value;
-				continue;
-			} else if (name.equals("WD_readPoint")) {
-				WD_readPoint = value;
-				continue;
-			} else if (name.equals("EQ_bizLocation")) {
-				EQ_bizLocation = value;
-				continue;
-			} else if (name.equals("WD_bizLocation")) {
-				WD_bizLocation = value;
-				continue;
-			} else if (name.equals("EQ_transformationID")) {
-				EQ_transformationID = value;
-				continue;
-			} else if (name.equals("MATCH_epc")) {
-				MATCH_epc = value;
-				continue;
-			} else if (name.equals("MATCH_parentID")) {
-				MATCH_parentID = value;
-				continue;
-			} else if (name.equals("MATCH_inputEPC")) {
-				MATCH_inputEPC = value;
-				continue;
-			} else if (name.equals("MATCH_outputEPC")) {
-				MATCH_outputEPC = value;
-				continue;
-			} else if (name.equals("MATCH_anyEPC")) {
-				MATCH_anyEPC = value;
-				continue;
-			} else if (name.equals("MATCH_epcClass")) {
-				MATCH_epcClass = value;
-				continue;
-			} else if (name.equals("MATCH_inputEPCClass")) {
-				MATCH_inputEPCClass = value;
-				continue;
-			} else if (name.equals("MATCH_outputEPCClass")) {
-				MATCH_outputEPCClass = value;
-				continue;
-			} else if (name.equals("MATCH_anyEPCClass")) {
-				MATCH_anyEPCClass = value;
-				continue;
-			} else if (name.equals("EQ_quantity")) {
-				EQ_quantity = value;
-				continue;
-			} else if (name.equals("GT_quantity")) {
-				GT_quantity = value;
-				continue;
-			} else if (name.equals("GE_quantity")) {
-				GE_quantity = value;
-				continue;
-			} else if (name.equals("LT_quantity")) {
-				LT_quantity = value;
-				continue;
-			} else if (name.equals("LE_quantity")) {
-				LE_quantity = value;
-				continue;
-			} else if (name.equals("orderBy")) {
-				orderBy = value;
-				continue;
-			} else if (name.equals("orderDirection")) {
-				orderDirection = value;
-				continue;
-			} else if (name.equals("eventCountLimit")) {
-				eventCountLimit = value;
-				continue;
-			} else if (name.equals("maxEventCount")) {
-				maxEventCount = value;
-				continue;
-			} else if (name.equals("vocabularyName")) {
-				vocabularyName = value;
-				continue;
-			} else if (name.equals("includeAttributes")) {
-				if (value.equals("true"))
-					includeAttributes = true;
-				else
-					includeAttributes = false;
-				continue;
-			} else if (name.equals("includeChildren")) {
-				if (value.equals("true"))
-					includeChildren = true;
-				else
-					includeChildren = false;
-				continue;
-			} else if (name.equals("attributeNames")) {
-				attributeNames = value;
-				continue;
-			} else if (name.equals("EQ_name")) {
-				EQ_name = value;
-				continue;
-			} else if (name.equals("WD_name")) {
-				WD_name = value;
-				continue;
-			} else if (name.equals("HASATTR")) {
-				HASATTR = value;
-				continue;
-			} else if (name.equals("maxElementCount")) {
-				maxElementCount = value;
-				continue;
-			} else {
-				extMap.put(name, value);
-			}
-		}
-
-		return poll(queryName, eventType, GE_eventTime, LT_eventTime,
-				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep,
-				EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
-				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID,
-				MATCH_inputEPC, MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,
-				MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass,
-				EQ_quantity, GT_quantity, GE_quantity, LT_quantity,LE_quantity,
-				EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-				LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-				orderBy, orderDirection, eventCountLimit,
-				maxEventCount, vocabularyName, includeAttributes,
-				includeChildren, attributeNames, EQ_name, WD_name, HASATTR,
-				maxElementCount, extMap);
+	public String poll(String queryName, QueryParams queryParams)
+			throws QueryParameterException, QueryTooLargeException {
+		PollParameters p = new PollParameters(queryName, queryParams);
+		return poll(p, null, null, null);
 	}
-
-	public String poll(@PathVariable String queryName, String eventType,
-			String GE_eventTime, String LT_eventTime, String GE_recordTime,
-			String LT_recordTime, String EQ_action, String EQ_bizStep,
-			String EQ_disposition, String EQ_readPoint, String WD_readPoint,
-			String EQ_bizLocation, String WD_bizLocation,
-			String EQ_transformationID, String MATCH_epc,
-			String MATCH_parentID, String MATCH_inputEPC,
-			String MATCH_outputEPC, String MATCH_anyEPC, String MATCH_epcClass,
-			String MATCH_inputEPCClass, String MATCH_outputEPCClass,
-			String MATCH_anyEPCClass, String EQ_quantity, String GT_quantity,
-			String GE_quantity, String LT_quantity, String LE_quantity,
-			String EQ_eventID, Boolean EXISTS_errorDeclaration, String GE_errorDeclarationTime,
-			String LT_errorDeclarationTime,String EQ_errorReason,String EQ_correctiveEventID,
-			String orderBy, String orderDirection, String eventCountLimit,
-			String maxEventCount,
-
-			String vocabularyName, boolean includeAttributes,
-			boolean includeChildren, String attributeNames, String EQ_name,
-			String WD_name, String HASATTR, String maxElementCount,
-			Map<String, String> paramMap) {
-
+	
+	
+	public String poll(PollParameters p, String userID, List<String> friendList, String subscriptionID)
+			throws QueryParameterException, QueryTooLargeException {
+		
 		// M24
-		if (queryName == null) {
+		if (p.getQueryName() == null) {
 			// It is not possible, automatically filtered by URI param
-			return makeErrorResult(
-					"queryName is mandatory field in poll method",
-					QueryParameterException.class);
+			throw new QueryParameterException();
+			// return makeErrorResult("queryName is mandatory field in poll
+			// method", QueryParameterException.class);
 		}
-
-		if (queryName.equals("SimpleEventQuery"))
-			return pollEventQuery(queryName, eventType, GE_eventTime,
-					LT_eventTime, GE_recordTime, LT_recordTime, EQ_action,
-					EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-					EQ_bizLocation, WD_bizLocation, EQ_transformationID,
-					MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
-					MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass,
-					MATCH_outputEPCClass, MATCH_anyEPCClass, EQ_quantity,
-					GT_quantity, GE_quantity, LT_quantity, LE_quantity,
-					EQ_eventID, EXISTS_errorDeclaration,GE_errorDeclarationTime,
-					LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID,
-					orderBy, orderDirection, eventCountLimit, maxEventCount,
-					paramMap);
-
-		if (queryName.equals("SimpleMasterDataQuery"))
-			return pollMasterDataQuery(queryName, vocabularyName,
-					includeAttributes, includeChildren, attributeNames,
-					EQ_name, WD_name, HASATTR, maxElementCount,paramMap);
+		
+		if (p.getQueryName().equals("SimpleEventQuery"))
+			return pollEventQuery(p, userID, friendList, subscriptionID);
+			
+		
+		if (p.getQueryName().equals("SimpleMasterDataQuery"))
+			
+			return pollMasterDataQuery(p,userID, friendList);
+		
 		return "";
 	}
 
+	
+	
+	
+
+	private String checkConstraintSimpleEventQuery(PollParameters p)throws QueryParameterException{
+		// M27
+				try {
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+					if (p.getGE_eventTime() != null)
+						sdf.parse(p.getGE_eventTime());
+					if (p.getLT_eventTime() != null)
+						sdf.parse(p.getLT_eventTime());
+					if (p.getGE_recordTime() != null)
+						sdf.parse(p.getGE_recordTime());
+					if (p.getLT_recordTime() != null)
+						sdf.parse(p.getLT_recordTime());
+				} catch (ParseException e) {
+					try {
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+						if (p.getGE_eventTime() != null)
+							sdf.parse(p.getGE_eventTime());
+						if (p.getLT_eventTime() != null)
+							sdf.parse(p.getLT_eventTime());
+						if (p.getGE_recordTime() != null)
+							sdf.parse(p.getGE_recordTime());
+						if (p.getLT_recordTime() != null)
+							sdf.parse(p.getLT_recordTime());
+					} catch (ParseException e1) {
+						throw new QueryParameterException();
+						// return makeErrorResult(e.toString(),
+						// QueryParameterException.class);
+					}
+				}
+
+				// M27
+				if (p.getOrderBy() != null) {
+					/*
+					 * if (!orderBy.equals("eventTime") &&
+					 * !orderBy.equals("recordTime")) { return makeErrorResult(
+					 * "orderBy should be eventTime or recordTime",
+					 * QueryParameterException.class); }
+					 */
+					if (p.getOrderDirection() != null) {
+						if (!p.getOrderDirection().equals("ASC") && !p.getOrderDirection().equals("DESC")) {
+							throw new QueryParameterException();
+							// return makeErrorResult("orderDirection should be ASC or
+							// DESC", QueryParameterException.class);
+						}
+					}
+				}
+
+				// M27
+				if (p.getEventCountLimit() != null) {
+					if (p.getEventCountLimit() <= 0) {
+						throw new QueryParameterException();
+						// return makeErrorResult("eventCount should be natural number",
+						// QueryParameterException.class);
+					}
+				}
+
+				// M27
+				if (p.getMaxEventCount() != null) {
+					if (p.getMaxEventCount() <= 0) {
+						throw new QueryParameterException();
+						// return makeErrorResult("maxEventCount should be natural
+						// number", QueryParameterException.class);
+					}
+				}
+
+				// M39
+				if (p.getEQ_action() != null) {
+
+					String[] actionArr = p.getEQ_action().split(",");
+					for (String action : actionArr) {
+						action = action.trim();
+						if (action.equals(""))
+							continue;
+						if (!action.equals("ADD") && !action.equals("OBSERVE") && !action.equals("DELETE")) {
+							throw new QueryParameterException();
+							// return makeErrorResult("EQ_action: ADD | OBSERVE |
+							// DELETE", QueryParameterException.class);
+						}
+					}
+				}
+
+				// M42
+				if (p.getEventCountLimit() != null && p.getMaxEventCount() != null) {
+					throw new QueryParameterException();
+					// return makeErrorResult("One of eventCountLimit and maxEventCount
+					// should be omitted", QueryParameterException.class);
+				}
+				return null;
+	}
+	
+	// To be deleted
 	private String checkConstraintSimpleEventQuery(String queryName,
 			String eventType, String GE_eventTime, String LT_eventTime,
 			String GE_recordTime, String LT_recordTime, String EQ_action,
@@ -1658,7 +1453,7 @@ public class MysqlQueryService {
 			String maxEventCount, Map<String, String> paramMap) {
 		
 		
-		PollParameters pollparam= new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime,
+		org.oliot.model.oliot.PollParameters pollparam= new org.oliot.model.oliot.PollParameters(queryName, eventType, GE_eventTime, LT_eventTime,
 				GE_recordTime, LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition,
 				EQ_readPoint, WD_readPoint, EQ_bizLocation, WD_bizLocation,
 				EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC,
@@ -1671,7 +1466,7 @@ public class MysqlQueryService {
 				false,  "",  "",  "",  "",
 				1200,  "", paramMap);
 				
-	
+
 		
 		Subscription st = new Subscription();
 		st.setDest(dest);
@@ -1722,10 +1517,10 @@ public class MysqlQueryService {
 //		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
 //		QueryOprationBackend mysqlOperationdao=ctx.getBean
 //				("queryOprationBackend", QueryOprationBackend.class);
-		List<String> ids=Configuration.mysqlOperationdaoQr.findVocabilaryChildren("urn:epcglobal:epcis:vtype:BusinessLocation","urn:epc:id:sgln:0037000.%");//00729.0");
+		//List<String> ids=Configuration.mysqlOperationdaoQr.findVocabilaryChildren("urn:epcglobal:epcis:vtype:BusinessLocation","urn:epc:id:sgln:0037000.%");//00729.0");
 		
 		
-		return ids;//epc1
+		return null;// ids;//epc1
 	}
 	
 	public List<String> checking3(){

@@ -6,8 +6,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -75,7 +78,12 @@ public class Configuration implements ServletContextListener {
 	public static boolean isQueryAccessControlOn;
 	public static boolean isTriggerSupported;
 	
+	public static String ac_api_address;
+	public static String epcis_ID;
+	
 	public static String DBxml;
+	
+	public static int transactionNuumber=0;
 	
 	
 	
@@ -207,6 +215,24 @@ public class Configuration implements ServletContextListener {
 				isTriggerSupported = false;
 			}
 			
+			
+			// Set IP Address of Access Control API 
+			
+			String address = json.getString("ac_api_address");
+			if (address == null) {
+				Configuration.logger.error(
+						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+			}
+			ac_api_address = address.trim();
+			
+			
+			String epcis_Name = json.getString("epcis_ID");
+			if (epcis_Name == null) {
+				Configuration.logger.error(
+						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+			}
+			epcis_ID = epcis_Name.trim();
+						
 			//window will pop up for connection 
 			dbLogin();
 			while(!connect){
@@ -240,8 +266,8 @@ public class Configuration implements ServletContextListener {
 						("queryOprationBackend", QueryOprationBackend.class);
 			}
 					
-			
-			frame.setVisible(false);
+			if(frameStatus)
+				frame.setVisible(false);
 			
 		    if (Desktop.isDesktopSupported()) {
 		        Desktop desktop = Desktop.getDesktop();
@@ -293,16 +319,23 @@ public class Configuration implements ServletContextListener {
 	
 	
 	private void dbLogin(){
-		frame = new JFrame("Database Configuration");
-		frame.setSize(600, 300);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		try{
+			frame = new JFrame("Database Configuration");
+			frame.setSize(600, 300);
+			frame.setLocationRelativeTo(null);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		JPanel panel = new JPanel();
-		frame.add(panel);
-		placeComponents(panel);
+			JPanel panel = new JPanel();
+			frame.add(panel);
+			placeComponents(panel);
 
-		frame.setVisible(true);
+			frame.setVisible(true);
+			frameStatus=true;
+		}catch(Exception e){
+			
+			frameStatus=false;
+		}
+
 	}
 	public static JFrame frame;
 	public static JLabel dbNameLabelConfig;
@@ -316,6 +349,7 @@ public class Configuration implements ServletContextListener {
 	public static JLabel passwordLabelConfig;
 	public static JPasswordField passwordTextConfig;
 	public static JButton loginButtonConfig;
+	public static boolean frameStatus;
 	
 	private static void placeComponents(JPanel panel) {
 		
@@ -390,4 +424,64 @@ public class Configuration implements ServletContextListener {
 		ActionListener myButtonListener = new LoginListener();
 		loginButtonConfig.addActionListener(myButtonListener);
 	}
+	
+	/**
+	 * query_access_relation
+	 * created
+	 * 2017.02.07
+	 * @param quri
+	 * @param qtoken
+	 * @param qurlParameters
+	 * @return result
+	 */
+	public static String query_access_relation(String quri, String qtoken, String qurlParameters){
+		Configuration.logger.info(" Client Token retrieve");
+		StringBuffer response = null;
+		String result = null;
+		
+		try {
+		String url = quri; 
+		URL obj = new URL(url);
+		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+
+		//add request header
+		con.setRequestMethod("GET");
+		con.setRequestProperty("Authorization", "Bearer "+qtoken);
+		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
+		
+		//String urlParameters = qurlParameters;
+		
+		// Send get request		
+		System.out.println(con.getRequestMethod());
+
+		int responseCode = con.getResponseCode();
+		System.out.println("\nSending 'GET' request to URL : " + url);
+		System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in;
+			in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		
+		String inputLine;
+		response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//print result
+		
+		if(response!=null){
+			result=response.toString();
+		}
+		
+		return result;
+	}
+	
+	
 }

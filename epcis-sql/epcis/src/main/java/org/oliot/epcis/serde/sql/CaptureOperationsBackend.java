@@ -1,25 +1,17 @@
 package org.oliot.epcis.serde.sql;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -42,6 +34,7 @@ import org.oliot.model.oliot.BusinessLocation;
 import org.oliot.model.oliot.BusinessLocationExtension;
 import org.oliot.model.oliot.BusinessTransaction;
 import org.oliot.model.oliot.BusinessTransactionList;
+import org.oliot.model.oliot.ChildID;
 import org.oliot.model.oliot.CorrectiveEventID;
 import org.oliot.model.oliot.CorrectiveEventIDs;
 import org.oliot.model.oliot.DestinationList;
@@ -58,17 +51,12 @@ import org.oliot.model.oliot.ILMD;
 import org.oliot.model.oliot.ILMDExtension;
 import org.oliot.model.oliot.ObjectEvent;
 import org.oliot.model.oliot.ObjectEventExtension;
-import org.oliot.model.oliot.ObjectEventExtension2;
 import org.oliot.model.oliot.QuantityElement;
 import org.oliot.model.oliot.QuantityEvent;
 import org.oliot.model.oliot.QuantityEventExtension;
 import org.oliot.model.oliot.QuantityList;
 import org.oliot.model.oliot.ReadPoint;
 import org.oliot.model.oliot.ReadPointExtension;
-import org.oliot.model.oliot.SensingElement;
-import org.oliot.model.oliot.SensingList;
-import org.oliot.model.oliot.SensorEvent;
-import org.oliot.model.oliot.SensorEventExtension;
 import org.oliot.model.oliot.SourceDest;
 import org.oliot.model.oliot.SourceList;
 import org.oliot.model.oliot.TransactionEvent;
@@ -85,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
+import org.w3c.dom.NodeList;
 
 /**
  * Copyright (C) 2015 Jaewook Byun, Yalew Kidane
@@ -117,8 +105,10 @@ public class CaptureOperationsBackend {
 	public void setSessionFactory(SessionFactory sessionFactory) {
 		this.sessionFactory = sessionFactory;
 	}
-	@SuppressWarnings("rawtypes")
-	public void save(AggregationEventType aggregationEventType) {
+	
+//==========ObjectEvent==================================================================================================================
+	
+	public void save(AggregationEventType aggregationEventType, String userID, String accessModifier) {
 		System.out.println("Aggregation Event capture operation");
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
@@ -139,6 +129,18 @@ public class CaptureOperationsBackend {
 		DestinationList destinationListH;
 		QuantityElement quantityElement;
 		SourceDest sourceDestS, sourceDestD;
+		
+		
+		//userID
+		if ((userID!=null)&&(!userID.equals(""))){
+			aggregationEvent.setUserID(userID);
+		}
+		//accessModifier
+		if(accessModifier!=null){
+			aggregationEvent.setAccessModifier(accessModifier);
+		}
+		
+		
 		// Event Time
 		if (aggregationEventType.getEventTime() != null) {
 			aggregationEvent.setEventTime(aggregationEventType.getEventTime()
@@ -442,34 +444,46 @@ public class CaptureOperationsBackend {
 		session.close();
 
 	}
-//============================================================================================================================
+//==========ObjectEvent==================================================================================================================
 	
-	@SuppressWarnings("rawtypes")
-	public void save(ObjectEventType objectEventType) {
+	public void save(ObjectEventType objectEventType, String userID, String accessModifier) {
 
 		System.out.println("Object Event capture operation");
-		Session session = getSessionFactory().openSession();
-		Transaction tx = session.beginTransaction();
+		Session session;
+		Transaction tx;
+		session = getSessionFactory().openSession();
+		tx = session.beginTransaction();
+		
 
 		ObjectEvent objectEvent = new ObjectEvent();
-		//ObjectEventEPCs objectEventEPCs = new ObjectEventEPCs();
-		EPCISEventExtension baseExtension;
+		
 		EPCList objectEventEPCs=new EPCList();
 
 		ReadPoint readpointH;
 		ReadPointExtension readPointExtensionH;
 		BusinessTransactionList businessTransactionList;
 		BusinessTransaction businessTransaction;
-		BusinessLocation businessLocationH;
-		BusinessLocationExtension businessLocationExtensionH;
+		
+		
 
 		ObjectEventExtension objectEventExtensionH;
 
-		QuantityList childQuantityListH;
+		
 		SourceList sourceListH;
 		DestinationList destinationListH;
 		QuantityElement quantityElement;
 		SourceDest sourceDestS, sourceDestD;
+		
+		//userID
+		if ((userID!=null)&&(!userID.equals(""))){
+			objectEvent.setUserID(userID);
+		}
+		//accessModifier
+		if(accessModifier!=null){
+			objectEvent.setAccessModifier(accessModifier);
+		}
+		
+		
 		// Event Time
 		if (objectEventType.getEventTime() != null) {
 			objectEvent.setEventTime(objectEventType.getEventTime()
@@ -604,35 +618,36 @@ public class CaptureOperationsBackend {
 
 		// Business location
 		if (objectEventType.getBizLocation() != null) {
+			BusinessLocation businessLocationH;
 			businessLocationH = new BusinessLocation(objectEventType
-					.getBizLocation().getId());
-			objectEvent.setBizLocation(businessLocationH);
-			session.save(businessLocationH);
-			
-			  if(objectEventType.getBizLocation() !=null){
-			  businessLocationExtensionH=new BusinessLocationExtension();
+					.getBizLocation().getId());			
+			  if(objectEventType.getBizLocation().getExtension() !=null){
+			BusinessLocationExtension businessLocationExtensionH
+								= new BusinessLocationExtension();
 			  
 			  session.save(businessLocationExtensionH); 
 			 
 			  }
-
+			  session.save(businessLocationH);
+			  objectEvent.setBizLocation(businessLocationH);
 		}
 		
-		
-//		if (objectEventType.getIlmd() != null) {
-//			ILMD iLMD = new ILMD();
-//			
-//			if (objectEventType.getIlmd().getExtension() != null) {
-//				ILMDExtension iLMDExtension = new ILMDExtension();
-//				
-//				session.save(iLMDExtension);
-//				iLMD.setExtension(iLMDExtension);
-//
-//			}
-//			objectEvent.setIlmd(iLMD);
-//			session.save(iLMD);
-//		}
+//  Depreciated after EPCIS1.2	
+		/*
+		if (objectEventType.getIlmd() != null) {
+			ILMD iLMD = new ILMD();
+			
+			if (objectEventType.getIlmd().getExtension() != null) {
+				ILMDExtension iLMDExtension = new ILMDExtension();
+				
+				session.save(iLMDExtension);
+				iLMD.setExtension(iLMDExtension);
 
+			}
+			objectEvent.setIlmd(iLMD);
+			session.save(iLMD);
+		}
+	 */
 		
 
 		// objectEventType Event Extension
@@ -640,6 +655,7 @@ public class CaptureOperationsBackend {
 			objectEventExtensionH = new ObjectEventExtension();
 			
 			if (objectEventType.getExtension().getQuantityList() != null){
+				QuantityList childQuantityListH;
 				List<QuantityElementType> quantityList = objectEventType
 						.getExtension().getQuantityList().getQuantityElement();
 				childQuantityListH = new QuantityList();
@@ -705,58 +721,7 @@ public class CaptureOperationsBackend {
 				}
 				
 				
-//				List<Object> objectList=objectEventType.getAny();
-//				
-//				List<ExtensionMap> extensionMapList=new ArrayList<>();
-//				
-//				WriteUtility.getAnyObject(objectList,extensionMapList);
-//				ExtensionMaps extensionMaps= new ExtensionMaps();
-//				extensionMaps.setExtensionMapList(extensionMapList);
-//				ExtensionMap extensionMap;
-//				for(int i=0;i<extensionMapList.size();i++){
-//					extensionMap=new ExtensionMap();
-//					extensionMap=extensionMapList.get(i);
-//					session.save(extensionMap);
-//				}
-//				objectEvent.setExtensionMaps(extensionMaps);
-//				session.save(extensionMaps);
-				
-//				 if(objectEventType.getIlmd().getOtherAttributes() != null){
-//					 Map<QName, String> otherAtfrom=objectEventType.getIlmd().getOtherAttributes();
-//					 List<MapExt> mapExtList=new ArrayList<MapExt>();
-//						Set<QName> setKeyAll=otherAtfrom.keySet();
-//						Iterator iteratorAll=setKeyAll.iterator();
-//						 
-//						while(iteratorAll.hasNext()){
-//							MapExt mapExt= new MapExt();
-//							QName keyname=(QName) iteratorAll.next();
-//							mapExt.setType(keyname.getNamespaceURI());
-//							String value=otherAtfrom.get(keyname);
-//							mapExt.setValue(otherAtfrom.get(keyname));
-//							float f=0;
-//							
-//							try{
-//							 f=Float.parseFloat(otherAtfrom.get(keyname)); 
-//							}
-//							catch(NumberFormatException e){	
-//							}
-//							try{
-//								DateFormat format=new SimpleDateFormat("MMMM d, yyyy");
-//								Date date= format.parse(value);
-//								mapExt.setTimeValue(date);
-//							}
-//							catch (ParseException e) {
-//								
-//							}
-//							mapExt.setFloatValue(f);
-//							
-//							
-//							mapExtList.add(mapExt);
-//							session.save(mapExt);
-//						}
-//						iLMD.setMapExt(mapExtList);
-//				 }
-				
+
 				if (objectEventType.getExtension().getIlmd().getExtension() != null) {
 					ILMDExtension iLMDExtension = new ILMDExtension();
 					
@@ -767,54 +732,6 @@ public class CaptureOperationsBackend {
 				objectEventExtensionH.setIlmd(iLMD);
 				session.save(iLMD);
 			}
-
-			//objectEventExtensionH.setObjectEvent(objectEvent);
-			
-			/*
-			  if(objectEventType.getExtension().getExtension() != null){
-			  ObjectEventExtension2 objectEventExtension2= 
-					  new  ObjectEventExtension2();
-				
-				 if(objectEventType.getExtension().getExtension().getOtherAttributes() != null){
-					 Map<QName, String> otherAtfrom=objectEventType.getExtension().getExtension().getOtherAttributes();
-					 List<MapExt> mapExtList=new ArrayList<MapExt>();
-						Set<QName> setKeyAll=otherAtfrom.keySet();
-						Iterator iteratorAll=setKeyAll.iterator();
-						 
-						while(iteratorAll.hasNext()){
-							MapExt mapExt= new MapExt();
-							QName keyname=(QName) iteratorAll.next();
-							mapExt.setType(keyname.getNamespaceURI());
-							String value=otherAtfrom.get(keyname);
-							mapExt.setValue(otherAtfrom.get(keyname));
-							float f=0;
-							
-							try{
-							 f=Float.parseFloat(otherAtfrom.get(keyname)); 
-							}
-							catch(NumberFormatException e){	
-							}
-							try{
-								DateFormat format=new SimpleDateFormat("MMMM d, yyyy");
-								Date date= format.parse(value);
-								mapExt.setTimeValue(date);
-							}
-							catch (ParseException e) {
-								
-							}
-							mapExt.setFloatValue(f);
-							
-							
-							mapExtList.add(mapExt);
-							session.save(mapExt);
-						}
-						objectEventExtension2.setMapExt(mapExtList);
-				 }
-			  
-			  session.save(objectEventExtension2);
-			  objectEventExtensionH.setExtension(objectEventExtension2);
-			  
-			  }*/
 			  
 			  session.save(objectEventExtensionH);
 			  objectEvent.setExtension(objectEventExtensionH);
@@ -857,14 +774,16 @@ public class CaptureOperationsBackend {
 		}
 		
 		session.save(objectEvent);
+
 		tx.commit();
 		session.close();
+		
 
 	}
 	
-//================================================================================================================================
-	@SuppressWarnings("rawtypes")
-	public void save(QuantityEventType quantityEventType) {
+//=======QuantityEventType=========================================================================================================================
+	
+	public void save(QuantityEventType quantityEventType, String userID, String accessModifier) {
 		System.out.println("Quantity Event capture operation");
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
@@ -883,6 +802,16 @@ public class CaptureOperationsBackend {
 					.toGregorianCalendar().getTime());
 		}
 
+		//User ID
+		if ((userID!=null)&&(!userID.equals(""))){
+			quantityEvent.setUserID(userID);
+		}
+		
+		//accessModifier
+		if(accessModifier!=null){
+			quantityEvent.setAccessModifier(accessModifier);
+		}
+		
 		// Record Time
 		GregorianCalendar gRecordTime = new GregorianCalendar();
 		XMLGregorianCalendar recordTime;
@@ -1030,65 +959,30 @@ public class CaptureOperationsBackend {
 			}
 
 		// quantity Event Extension
-				if (quantityEventType.getExtension() != null) {
-					QuantityEventExtension quantityEventExtension = new QuantityEventExtension();
-//					 if(quantityEventType.getExtension().getOtherAttributes() != null){
-//						 Map<QName, String> otherAtfrom=quantityEventType.getExtension().getOtherAttributes();
-//						 List<MapExt> mapExtList=new ArrayList<MapExt>();
-//							Set<QName> setKeyAll=otherAtfrom.keySet();
-//							Iterator iteratorAll=setKeyAll.iterator();
-//							 
-//							while(iteratorAll.hasNext()){
-//								MapExt mapExt= new MapExt();
-//								QName keyname=(QName) iteratorAll.next();
-//								mapExt.setType(keyname.getNamespaceURI());
-//								String value=otherAtfrom.get(keyname);
-//								mapExt.setValue(otherAtfrom.get(keyname));
-//								float f=0;
-//								
-//								try{
-//								 f=Float.parseFloat(otherAtfrom.get(keyname)); 
-//								}
-//								catch(NumberFormatException e){	
-//								}
-//								try{
-//									DateFormat format=new SimpleDateFormat("MMMM d, yyyy");
-//									Date date= format.parse(value);
-//									mapExt.setTimeValue(date);
-//								}
-//								catch (ParseException e) {
-//									
-//								}
-//								mapExt.setFloatValue(f);
-//								
-//								
-//								mapExtList.add(mapExt);
-//								session.save(mapExt);
-//							}
-//							quantityEventExtension.setMapExt(mapExtList);
-//					 }
-					session.save(quantityEventExtension);
-					quantityEvent.setExtension(quantityEventExtension);
-				}
+		if (quantityEventType.getExtension() != null) {
+			QuantityEventExtension quantityEventExtension = new QuantityEventExtension();
+			session.save(quantityEventExtension);
+			quantityEvent.setExtension(quantityEventExtension);
+		}
 
-				
-				if(quantityEventType.getAny()!=null){
-					List<Object> objectList=quantityEventType.getAny();
-					
-					List<ExtensionMap> extensionMapList=new ArrayList<>();
-					
-					WriteUtility.getAnyObject(objectList,extensionMapList);
-					ExtensionMaps extensionMaps= new ExtensionMaps();
-					extensionMaps.setExtensionMapList(extensionMapList);
-					ExtensionMap extensionMap;
-					for(int i=0;i<extensionMapList.size();i++){
-						extensionMap=new ExtensionMap();
-						extensionMap=extensionMapList.get(i);
-						session.save(extensionMap);
-					}
-					quantityEvent.setExtensionMaps(extensionMaps);
-					session.save(extensionMaps);
-				}
+		// quantity Event Extension
+		if(quantityEventType.getAny()!=null){
+			List<Object> objectList=quantityEventType.getAny();
+			
+			List<ExtensionMap> extensionMapList=new ArrayList<>();
+			
+			WriteUtility.getAnyObject(objectList,extensionMapList);
+			ExtensionMaps extensionMaps= new ExtensionMaps();
+			extensionMaps.setExtensionMapList(extensionMapList);
+			ExtensionMap extensionMap;
+			for(int i=0;i<extensionMapList.size();i++){
+				extensionMap=new ExtensionMap();
+				extensionMap=extensionMapList.get(i);
+				session.save(extensionMap);
+			}
+			quantityEvent.setExtensionMaps(extensionMaps);
+			session.save(extensionMaps);
+		}
 				
 		session.save(quantityEvent);
 		tx.commit();
@@ -1096,9 +990,9 @@ public class CaptureOperationsBackend {
 
 	}
 	
-//=======================================================================================================================	
-	@SuppressWarnings("rawtypes")
-	public void save(TransactionEventType transactionEventType) {
+//========TransactionEventType=====================================================================================================	
+	
+	public void save(TransactionEventType transactionEventType, String userID, String accessModifier) {
 		System.out.println("Transaction Event capture operation");
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
@@ -1127,6 +1021,14 @@ public class CaptureOperationsBackend {
 					.toGregorianCalendar().getTime());
 		}
 
+		//User ID
+		if ((userID!=null)&&(!userID.equals(""))){
+			transactionEvent.setUserID(userID);
+		}
+		//accessModifier
+		if(accessModifier!=null){
+			transactionEvent.setAccessModifier(accessModifier);
+		}
 		// Record Time
 		GregorianCalendar gRecordTime = new GregorianCalendar();
 		XMLGregorianCalendar recordTime;
@@ -1423,9 +1325,9 @@ public class CaptureOperationsBackend {
 
 	}
 
-//=================================================================================================================================	
-	@SuppressWarnings("rawtypes")
-	public void save(TransformationEventType transformationEventType) {
+//========TransformationEventType=========================================================================================================================	
+	
+	public void save(TransformationEventType transformationEventType, String userID, String accessModifier) {
 		System.out.println("Transformation Event capture operation");
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
@@ -1446,6 +1348,15 @@ public class CaptureOperationsBackend {
 					.getEventTime().toGregorianCalendar().getTime());
 		}
 
+		//User ID
+		if ((userID!=null)&&(!userID.equals(""))){
+			transformationEvent.setUserID(userID);
+		}
+		//accessModifier
+		if(accessModifier!=null){
+			transformationEvent.setAccessModifier(accessModifier);
+		}	
+		
 		// Record Time
 		GregorianCalendar gRecordTime = new GregorianCalendar();
 		XMLGregorianCalendar recordTime;
@@ -1829,99 +1740,153 @@ public class CaptureOperationsBackend {
 	}
 	
 
-//=============================================================================================================	
-	@SuppressWarnings("rawtypes")
+//========VocabularyType=====================================================================================================	
 	public void save(VocabularyType VocabularyType) {
 		System.out.println("Vocabulary capture operation");
 		Session session = getSessionFactory().openSession();
 		Transaction tx = session.beginTransaction();
 		Vocabulary vocabulary = new Vocabulary();
-		vocabulary.setType(VocabularyType.getType());
-		if (VocabularyType.getVocabularyElementList().getVocabularyElement() != null) {
-			List<VocabularyElementType> VocabularyElementListType = VocabularyType
-					.getVocabularyElementList().getVocabularyElement();
-			VocabularyElementList VocabularyElementList = new VocabularyElementList();
-			VocabularyElement vocabularyElement;
-			VocabularyElementExtension vocabularyElementExtension;
-			for (int i = 0; i < VocabularyElementListType.size(); i++) {
-
-				vocabularyElement = new VocabularyElement(
-						VocabularyElementListType.get(i).getId());
-				if (VocabularyElementListType.get(i).getAttribute() != null) {
-					List<AttributeType> attributeType = VocabularyElementListType
-							.get(i).getAttribute();
-					Attribute attribute;
-//					for (int j = 0; j < attributeType.size(); j++) {
-//						attribute = new Attribute(attributeType.get(j)
-//								.getValue(), attributeType.get(j).getId());
-//						vocabularyElement.getAttribute().add(attribute);
-//						session.save(attribute);
-//					}
-				}
-				if (VocabularyElementListType.get(i).getChildren() != null) {
-					// IDListType IDListType
-					List<String> sIdType = VocabularyElementListType.get(i)
-							.getChildren().getId();
-					IDList iDList = new IDList();
-					for (int k = 0; k < sIdType.size(); k++) {
-						iDList.getId().add(sIdType.get(k));
-					}
-					vocabularyElement.setChildren(iDList);
-					session.save(iDList);
-				}
-				VocabularyElementList.getVocabularyElement().add(
-						vocabularyElement);
-				
-				if (VocabularyElementListType.get(i).getExtension() != null) {
-					vocabularyElementExtension = new VocabularyElementExtension();
-//					 if(VocabularyElementListType.get(i).getExtension().getOtherAttributes() != null){
-//						 Map<QName, String> otherAtfrom=VocabularyElementListType.get(i).getExtension().getOtherAttributes();
-//						 List<MapExt> mapExtList=new ArrayList<MapExt>();
-//							Set<QName> setKeyAll=otherAtfrom.keySet();
-//							Iterator iteratorAll=setKeyAll.iterator();
-//							 
-//							while(iteratorAll.hasNext()){
-//								MapExt mapExt= new MapExt();
-//								QName keyname=(QName) iteratorAll.next();
-//								mapExt.setType(keyname.getNamespaceURI());
-//								String value=otherAtfrom.get(keyname);
-//								mapExt.setValue(otherAtfrom.get(keyname));
-//								float f=0;
-//								
-//								try{
-//								 f=Float.parseFloat(otherAtfrom.get(keyname)); 
-//								}
-//								catch(NumberFormatException e){	
-//								}
-//								try{
-//									DateFormat format=new SimpleDateFormat("MMMM d, yyyy");
-//									Date date= format.parse(value);
-//									mapExt.setTimeValue(date);
-//								}
-//								catch (ParseException e) {
-//									
-//								}
-//								mapExt.setFloatValue(f);
-//								
-//								
-//								mapExtList.add(mapExt);
-//								session.save(mapExt);
-//							}
-//							vocabularyElementExtension.setMapExt(mapExtList);
-//					 }
-					session.save(vocabularyElementExtension);
-					vocabularyElement.setExtension(vocabularyElementExtension);
-				}
-				session.save(vocabularyElement);
-
-			}
-
-			vocabulary.setVocabularyElementList(VocabularyElementList);
-			session.save(VocabularyElementList);
+		//Type
+		if(VocabularyType.getType()!=null){
+			vocabulary.setType(VocabularyType.getType());
 		}
+		
+		if (VocabularyType.getVocabularyElementList()!=null){
+			if (VocabularyType.getVocabularyElementList().getVocabularyElement() != null) {
+				List<VocabularyElementType> VocabularyElementListType = VocabularyType
+						.getVocabularyElementList().getVocabularyElement();
+				VocabularyElementList VocabularyElementList = new VocabularyElementList();
+				List<VocabularyElement> ListVocabularyElement= new ArrayList<>();
+				VocabularyElement vocabularyElement;
+				VocabularyElementExtension vocabularyElementExtension;
+				for (int i = 0; i < VocabularyElementListType.size(); i++) {
 
+					vocabularyElement = new VocabularyElement(
+							VocabularyElementListType.get(i).getId());
+					if (VocabularyElementListType.get(i).getAttribute() != null) {
+						List<AttributeType> attributeType = VocabularyElementListType
+								.get(i).getAttribute();
+						Attribute attribute;
+						for (int j = 0; j < attributeType.size(); j++) {
+//							attribute = new Attribute(attributeType.get(j)
+//									.getValue(), attributeType.get(j).getId());
+							attribute = new Attribute();
+							attribute.setsId(attributeType.get(j).getId());
+							if(attributeType.get(j).getContent()!=null){
+								List<Object> contentList=attributeType.get(j).getContent();
+								if (contentList.size() == 1 && contentList.get(0) instanceof String) {
+									ExtensionMaps extensionMaps= new ExtensionMaps();
+									ExtensionMap extensionMap=new ExtensionMap();
+									extensionMap.setBoleanValue(1);
+									String value = contentList.get(0).toString();
+									extensionMap.setStringValue(value);
+									extensionMap.setPrefixValue(attributeType.get(j).getId());
+									List<ExtensionMap> extensionMapList=new ArrayList<>();
+									extensionMapList.add(extensionMap);
+									extensionMaps.setExtensionMapList(extensionMapList);
+									
+									session.save(extensionMap);
+									attribute.setVocExtensionMaps(extensionMaps);
+									session.save(extensionMaps);
+									
+								}else{
+									for (Object value : contentList) {
+										if (value instanceof Element) {
+											Element element = (Element) value;
+											String qname = element.getNodeName();
+										//	String[] checkArr = qname.split(":");
+
+//											if (checkArr.length != 2)
+//												continue;
+											String qnameParent=element.getNamespaceURI()+"#"+qname;
+											NodeList childNodeList = element.getChildNodes();
+											ExtensionMaps extensionMaps= new ExtensionMaps();
+											List<ExtensionMap> extensionMapList=new ArrayList<>();
+											ExtensionMap extensionMap;
+											for (int n = 0; n < childNodeList.getLength(); n++) {
+												Node childNode = childNodeList.item(n);
+												String cname = childNode.getLocalName();
+												String cval = childNode.getTextContent();
+												
+												if(cname!=null){
+													extensionMap=new ExtensionMap();
+													extensionMap.setBoleanValue(0);
+													extensionMap.setPrefixValue(qnameParent);
+													extensionMap.setqName(cname);
+													extensionMap.setStringValue(cval);
+													extensionMapList.add(extensionMap);
+													session.save(extensionMap);
+												}
+											}
+											extensionMaps.setExtensionMapList(extensionMapList);
+											attribute.setVocExtensionMaps(extensionMaps);
+											session.save(extensionMaps);
+										}
+									}
+//									List<ExtensionMap> extensionMapList=new ArrayList<>();
+//									
+//									WriteUtility.getAnyObject(contentList,extensionMapList);
+//									ExtensionMaps extensionMaps= new ExtensionMaps();
+//									extensionMaps.setExtensionMapList(extensionMapList);
+//									ExtensionMap extensionMap;
+//									for(int k=0;k<extensionMapList.size();k++){
+//										extensionMap=new ExtensionMap();
+//										extensionMap=extensionMapList.get(k);
+//										session.save(extensionMap);
+//									}
+//									attribute.setVocExtensionMaps(extensionMaps);
+//									session.save(extensionMaps);
+								}
+								
+							}
+						//	List<Object> cont
+							//attribute.setId(attributeType.get(j).get);
+							vocabularyElement.getAttribute().add(attribute);
+							session.save(attribute);
+						}
+					}
+					if (VocabularyElementListType.get(i).getChildren() != null) {
+						// IDListType IDListType
+						List<String> sIdType = VocabularyElementListType.get(i)
+								.getChildren().getId();
+						IDList iDList = new IDList();
+						ChildID childID;
+						List<ChildID> childIDList=new ArrayList<>();
+						for (int k = 0; k < sIdType.size(); k++) {
+							childID=new ChildID();
+							childID.setsID(sIdType.get(k));
+							childIDList.add(childID);
+							session.save(childID);
+							//iDList.getId().add(sIdType.get(k));
+						}
+						iDList.setChildID(childIDList);
+						vocabularyElement.setChildren(iDList);
+						session.save(iDList);
+					}
+					
+					
+					if (VocabularyElementListType.get(i).getExtension() != null) {
+						vocabularyElementExtension = new VocabularyElementExtension();
+						session.save(vocabularyElementExtension);
+						vocabularyElement.setExtension(vocabularyElementExtension);
+					}
+					session.save(vocabularyElement);
+					ListVocabularyElement.add(vocabularyElement);
+//					VocabularyElementList.getVocabularyElement().add(
+//							vocabularyElement);
+				}
+				
+				VocabularyElementList.setVocabularyElement(ListVocabularyElement);
+				
+				vocabulary.setVocabularyElementList(VocabularyElementList);
+				session.save(VocabularyElementList);
+			}
+		}
 		
 
+
+		
+		//Vocabulary extension
 		if (VocabularyType.getExtension() != null) {
 			VocabularyExtension vocabularyExtension = new VocabularyExtension();
 			

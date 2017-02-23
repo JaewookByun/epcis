@@ -42,6 +42,7 @@ public class DBConfig {
 		    "</props>\n"+
 		   " </property>\n"+
 		       " <!--   <property name=\"hibernate.hbm2ddl.auto\" value=\"update\"/>\n"+
+		       " <property name=\"connection.autocommit\">true</property>"+
 		       " <property name=\"hibernate.show_sql\" value=\"true\"/>\n"+
 		        "<property name=\"hibernate.format_sql\" value=\"false\"/>-->\n"+
 		 "</bean>\n"+
@@ -116,7 +117,8 @@ public class DBConfig {
         "<property name=\"hibernate.connection.username\">"+username+"</property>\n"+
         "<property name=\"hibernate.connection.password\">"+password+"</property>\n"+
        "<property name=\"hibernate.dialect\">org.hibernate.dialect.Oracle10gDialect</property>\n"+
-  		
+      
+       " <property name=\"connection.autocommit\">true</property>"+
   		"<property name=\"show_sql\">true</property>\n"+
   		"<property name=\"format_sql\">true</property>\n"+
   		
@@ -134,6 +136,7 @@ public class DBConfig {
 			"<mapping class=\"org.oliot.model.oliot.BusinessService\" />\n"+
 			"<mapping class=\"org.oliot.model.oliot.BusinessTransaction\" />\n"+
 			"<mapping class=\"org.oliot.model.oliot.BusinessTransactionList\" />\n"+
+			"<mapping class=\"org.oliot.model.oliot.ChildID\" />\n"+
 			"<mapping class=\"org.oliot.model.oliot.ContactInformation\" />\n"+
 			"<mapping class=\"org.oliot.model.oliot.CorrectiveEventID\" />\n"+
 			"<mapping class=\"org.oliot.model.oliot.CorrectiveEventIDs\" />\n"+

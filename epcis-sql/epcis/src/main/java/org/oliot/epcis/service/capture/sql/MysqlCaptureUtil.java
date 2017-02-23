@@ -1,16 +1,12 @@
 package org.oliot.epcis.service.capture.sql;
 
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.epcis.serde.sql.CaptureOperationsBackend;
 import org.oliot.model.epcis.AggregationEventType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.TransactionEventType;
 import org.oliot.model.epcis.TransformationEventType;
 import org.oliot.model.epcis.VocabularyType;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Copyright (C) 2015 Yalew Kidane
@@ -33,69 +29,29 @@ public class MysqlCaptureUtil {
 	
 	
 
-	public void capture(AggregationEventType event)
+	public void capture(AggregationEventType event, String userID, String accessModifier)
 	{
-//		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-//		
-//		CaptureOperationsBackend mysqlOperationdao=ctx.getBean
-//				("captureOperationsBackend", CaptureOperationsBackend.class);
-//		
-//		mysqlOperationdao.save(event);
-//		Configuration.logger.info(" Event Saved ");
-//		((AbstractApplicationContext) ctx).close();
-		Configuration.mysqlOperationdao.save(event);
+		Configuration.mysqlOperationdao.save(event, userID, accessModifier);
 	}
 	
-	public void capture(ObjectEventType event)
+	public void capture(ObjectEventType event,String userID,String accessModifier)
 	{
-//		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-//		
-//		CaptureOperationsBackend mysqlOperationdao=ctx.getBean
-//				("captureOperationsBackend", CaptureOperationsBackend.class);
-//		
-//		mysqlOperationdao.save(event);
-//		Configuration.logger.info(" Event Saved ");
-//		((AbstractApplicationContext) ctx).close();
-		Configuration.mysqlOperationdao.save(event);
+		Configuration.mysqlOperationdao.save(event, userID, accessModifier);
 	}
 	
-	public void capture(QuantityEventType event)
+	public void capture(QuantityEventType event, String userID,String accessModifier)
 	{
-		//ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-	
-		//CaptureOperationsBackend mysqlOperationdao=ctx.getBean
-		//		("captureOperationsBackend", CaptureOperationsBackend.class);
-		
-		//mysqlOperationdao.save(event);
-		//Configuration.logger.info(" Event Saved ");
-		//((AbstractApplicationContext) ctx).close();
-		Configuration.mysqlOperationdao.save(event);
+		Configuration.mysqlOperationdao.save(event, userID, accessModifier);
 		
 	}
 	
-	public void capture(TransactionEventType event)
+	public void capture(TransactionEventType event, String userID,String accessModifier)
 	{
-//		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-//		
-//		CaptureOperationsBackend mysqlOperationdao=ctx.getBean
-//				("captureOperationsBackend", CaptureOperationsBackend.class);
-//		
-//		mysqlOperationdao.save(event);
-//		Configuration.logger.info(" Event Saved ");
-//		((AbstractApplicationContext) ctx).close();
-		Configuration.mysqlOperationdao.save(event);
+		Configuration.mysqlOperationdao.save(event, userID, accessModifier);
 	}
-	public void capture(TransformationEventType event)
+	public void capture(TransformationEventType event, String userID,String accessModifier)
 	{
-//		ApplicationContext ctx=new ClassPathXmlApplicationContext(Configuration.DB);
-//		
-//		CaptureOperationsBackend mysqlOperationdao=ctx.getBean
-//				("captureOperationsBackend", CaptureOperationsBackend.class);
-//		
-//		mysqlOperationdao.save(event);
-//		Configuration.logger.info(" Event Saved ");
-//		((AbstractApplicationContext) ctx).close();
-		Configuration.mysqlOperationdao.save(event);
+		Configuration.mysqlOperationdao.save(event, userID, accessModifier);
 	}
 	
 	

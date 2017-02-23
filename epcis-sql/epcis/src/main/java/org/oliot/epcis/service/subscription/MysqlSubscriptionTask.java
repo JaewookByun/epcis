@@ -16,13 +16,14 @@ import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.sql.MysqlQueryService;
 import org.oliot.model.epcis.EPCISQueryDocumentType;
 import org.oliot.model.epcis.ImplementationException;
+import org.oliot.model.epcis.PollParameters;
+import org.oliot.model.epcis.QueryParameterException;
 import org.oliot.model.epcis.QueryResults;
 import org.oliot.model.epcis.QueryTooLargeException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Copyright (C) 2014 KAIST RESL
@@ -97,14 +98,26 @@ public class MysqlSubscriptionTask implements Job {
 				.get("paramMap");
 
 		MysqlQueryService queryService = new MysqlQueryService();
-		String pollResult =queryService.poll(queryName,eventType, GE_eventTime, LT_eventTime, GE_recordTime,
-				 LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint,
-				 EQ_bizLocation, WD_bizLocation, EQ_transformationID,  MATCH_epc, MATCH_parentID,  MATCH_inputEPC,
-				 MATCH_outputEPC, MATCH_anyEPC, MATCH_epcClass,	MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, 
-				 EQ_quantity, GT_quantity,	GE_quantity,  LT_quantity, LE_quantity, EQ_eventID, Boolean.parseBoolean(EXISTS_errorDeclaration), 
-				 GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,  orderDirection, 
-				 eventCountLimit, maxEventCount, null, false,	 false,  null,  null, null, null, null, paramMap);
-	
+		
+		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
+				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
+				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
+				MATCH_anyEPC, MATCH_epcClass, MATCH_inputEPCClass, MATCH_outputEPCClass, MATCH_anyEPCClass, Integer.parseInt(EQ_quantity),
+				Integer.parseInt(GT_quantity), Integer.parseInt(GE_quantity), Integer.parseInt(LT_quantity), Integer.parseInt(LE_quantity), EQ_eventID, Boolean.parseBoolean(EXISTS_errorDeclaration),
+				GE_errorDeclarationTime, LT_errorDeclarationTime, EQ_errorReason, EQ_correctiveEventID, orderBy,
+				orderDirection, Integer.parseInt(eventCountLimit), Integer.parseInt(maxEventCount), null, false, false,
+				null, null, null, null, null, null, paramMap);
+		String pollResult="";
+		try {
+			pollResult = queryService.poll(pollParams, null,null,null);
+		} catch (QueryParameterException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (QueryTooLargeException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 
 
 		EPCISQueryDocumentType resultXML = JAXB.unmarshal(new StringReader(

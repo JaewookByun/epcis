@@ -14,6 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -57,6 +59,12 @@ public class Attribute {
 	protected String value;
 	@XmlAttribute(name = "sId", required = true)
 	protected String sId;
+	
+	
+    @OneToOne
+    @JoinColumn(name="VocExtensionMaps_id")
+    protected ExtensionMaps VocExtensionMaps;
+	//
 	
 	
 	@Transient 
@@ -143,6 +151,18 @@ public class Attribute {
 
 	public Attribute() {
 		super();
+	}
+
+	public ExtensionMaps getVocExtensionMaps() {
+		return VocExtensionMaps;
+	}
+
+	public void setVocExtensionMaps(ExtensionMaps vocExtensionMaps) {
+		VocExtensionMaps = vocExtensionMaps;
+	}
+
+	public void setId(int id) {
+		this.id = id;
 	}
 
 }

@@ -20,7 +20,7 @@ public class ReaderUtility {
 	
 	
 
-static Element putAny(Map<Integer, ExtensionMap> map, int left,int[] level, Element element, List<Object> elementList,Document doc) throws ParserConfigurationException{ //, Element element, Boolean parent
+static Element putAny(Map<Integer, ExtensionMap> map, int left,int[] level, Element element, List<Object> elementList,Document doc, Edge edge) throws ParserConfigurationException{ //, Element element, Boolean parent
 		
 		
 		
@@ -28,8 +28,11 @@ static Element putAny(Map<Integer, ExtensionMap> map, int left,int[] level, Elem
 		if(map.get(left).getRightNodeNumber()==map.get(left).getLeftNodeNumber()+1){
 			String leafQname=map.get(left).getqName();
 			//Configuration.logger.info(leafQname);
-			WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
-			WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+			//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+			//WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+			edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+			edge.setLeftNodeNumber(edge.getRightNodeNumber());
+			
 			String leafnamespaceURI="";
 			String leafLocalName="";
 			if(leafQname.split("#").length>0)
@@ -86,15 +89,20 @@ static Element putAny(Map<Integer, ExtensionMap> map, int left,int[] level, Elem
 				if(level[0]==0 && !map.get(left).getqName().equals("parent")){
 					level[0]++;
 				}
-				WriteUtility.leftNodeNumber++;
-				int next=WriteUtility.leftNodeNumber;
-				putAny( map, next,level,parentElement,elementList,doc);
-			}while(WriteUtility.leftNodeNumber+1<node);
+				//WriteUtility.leftNodeNumber++;
+				//int next=WriteUtility.leftNodeNumber;
+				edge.setLeftNodeNumber(edge.getLeftNodeNumber()+1);
+				int next=edge.getLeftNodeNumber();
+				putAny( map, next,level,parentElement,elementList,doc, edge);
+				//while(WriteUtility.leftNodeNumber+1<node);
+			}while(edge.getLeftNodeNumber()+1<node);
 			
 			//Configuration.logger.info("After the sequence"+map.get(left).getqName());
 			//Configuration.logger.info("int value"+ level[0]);
-			WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
-			WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+			//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+			//WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+			edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+			edge.setLeftNodeNumber(edge.getRightNodeNumber());
 			
 			if(level[0]==0 && !map.get(left).getqName().equals("parent")){
 				//Configuration.logger.info(map.get(left).getqName()+ "  added to object List");

@@ -52,6 +52,7 @@ import com.mongodb.client.MongoDatabase;
  *         woosungpil@kaist.ac.kr, woosungpil7@gmail.com
  */
 
+@SuppressWarnings("unused")
 @Controller
 @RequestMapping("/BsonDocumentCapture")
 public class BsonDocumentCapture implements ServletContextAware {
