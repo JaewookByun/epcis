@@ -1,6 +1,6 @@
 package org.oliot.epcis.db;
 
-import java.awt.Desktop;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -10,10 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -299,9 +295,11 @@ public class LoginListener implements ActionListener{
 				//Session session = getSessionFactory().openSession();
 				String hql=" from Subscription ";
 				Query query=session.createQuery(hql);
+				@SuppressWarnings("unchecked")
 				List<Subscription> subscriptionList=query.list();
 				session.close();
 				
+				@SuppressWarnings("unused")
 				List<SubscriptionType> retList = new ArrayList<SubscriptionType>();
 				for (int i = 0; i < subscriptionList.size(); i++) {
 					//retList.add(convertToSubscriptionType(subscriptionList.get(i)));
@@ -315,8 +313,9 @@ public class LoginListener implements ActionListener{
 			}
 		}
 	}
-	
+	@SuppressWarnings("unused")
 	private static void createDbUserTable() throws SQLException {
+		
 		
 		String DB_DRIVER = "oracle.jdbc.driver.OracleDriver";
 		String DB_CONNECTION = "jdbc:oracle:thin:@"+DBConfig.url+":1521:"+DBConfig.databaseName;

@@ -7,7 +7,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.apache.log4j.Level;
-import org.bson.BsonDateTime;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.oliot.ExtensionMap;
 import org.w3c.dom.Element;
@@ -17,29 +16,59 @@ import org.w3c.dom.Text;
 public class WriteUtility {
 	
 
+//	static void getAnyAttributeObject(List<Object> objectList,List<ExtensionMap> extensionMapList){
+//		Edge edge=new Edge();
+//		ExtensionMap parentExtensionMap=new ExtensionMap();
+//		parentExtensionMap.setqName("parent");
+//		//parentExtensionMap.setLeftNodeNumber(WriteUtility.leftNodeNumber);
+//		parentExtensionMap.setLeftNodeNumber(edge.getLeftNodeNumber());
+//		for(int i=0; i<objectList.size();i++){
+//			Object object=objectList.get(i);
+//			if(object instanceof Element){
+//				
+//				Element element=(Element)object;
+//				//int[] level= new int[1];
+//				//level[0]=0;
+//				WriteUtility.getAnyMap(element, extensionMapList,1,true, edge);
+//				
+//			}else if(object instanceof String){
+//				
+//			}
+//			
+//		}
+//		//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+//		edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+//		//parentExtensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+//		parentExtensionMap.setRightNodeNumber(edge.getRightNodeNumber());
+//		extensionMapList.add(parentExtensionMap);
+//	}
 	static void getAnyObject(List<Object> objectList,List<ExtensionMap> extensionMapList){
-		WriteUtility.leftNodeNumber=1;
-		WriteUtility.rightNodeNumber=1;
+		//WriteUtility.leftNodeNumber=1;
+		//WriteUtility.rightNodeNumber=1;
+		Edge edge=new Edge();
 		ExtensionMap parentExtensionMap=new ExtensionMap();
 		parentExtensionMap.setqName("parent");
-		parentExtensionMap.setLeftNodeNumber(WriteUtility.leftNodeNumber);
+		//parentExtensionMap.setLeftNodeNumber(WriteUtility.leftNodeNumber);
+		parentExtensionMap.setLeftNodeNumber(edge.getLeftNodeNumber());
 		for(int i=0; i<objectList.size();i++){
 			Object object=objectList.get(i);
 			if(object instanceof Element){
 				
 				Element element=(Element)object;
-				int[] level= new int[1];
+				//int[] level= new int[1];
 				//level[0]=0;
-				WriteUtility.getAnyMap(element, extensionMapList,1,true);
+				WriteUtility.getAnyMap(element, extensionMapList,1,true, edge);
 				
 			}
 			
 		}
-		WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
-		parentExtensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+		//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+		edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+		//parentExtensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+		parentExtensionMap.setRightNodeNumber(edge.getRightNodeNumber());
 		extensionMapList.add(parentExtensionMap);
 	}
-	static Boolean getAnyMap(Element element, List<ExtensionMap> extensionMaps, int level, Boolean parent){
+	static Boolean getAnyMap(Element element, List<ExtensionMap> extensionMaps, int level, Boolean parent,Edge edge){
 		Boolean hirarch=false; 
 		
 		ExtensionMap extensionMap=new ExtensionMap();
@@ -48,11 +77,15 @@ public class WriteUtility {
 		if(checkArrParent.length!=2)
 			return null;
 		String qnameParent=element.getNamespaceURI()+"#"+checkArrParent[1];
-		WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber+1;
-		WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber;
+		//WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber+1;
+		//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber;
+		edge.setLeftNodeNumber(edge.getRightNodeNumber()+1);
+		edge.setRightNodeNumber(edge.getLeftNodeNumber());
+		
 		extensionMap.setqName(qnameParent);
 		extensionMap.setPrefixValue(checkArrParent[0]);
-		extensionMap.setLeftNodeNumber(WriteUtility.leftNodeNumber);
+		//extensionMap.setLeftNodeNumber(WriteUtility.leftNodeNumber);
+		extensionMap.setLeftNodeNumber(edge.getLeftNodeNumber());
 		
 
 				
@@ -61,8 +94,10 @@ public class WriteUtility {
 			if(firstChild instanceof Text){
 				
 								
-				WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
-				WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+				//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+				//WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+				edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+				edge.setLeftNodeNumber(edge.getRightNodeNumber());
 				
 				String[] data=new String[2];
 				String value=firstChild.getTextContent();
@@ -80,7 +115,8 @@ public class WriteUtility {
 					extensionMap.setInnerValue(1);
 				}
 				
-				extensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+				//extensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+				extensionMap.setRightNodeNumber(edge.getRightNodeNumber());
 				extensionMaps.add(extensionMap);
 				
 			}else if(firstChild instanceof Element){
@@ -88,12 +124,12 @@ public class WriteUtility {
 				Element childNode=null;
 				do{
 					
-					Configuration.logger.info("Do i");
+					//Configuration.logger.info("Do i");
 					if(firstChild instanceof Element){
 						childNode=(Element)firstChild;
 						
 						
-						getAnyMap(childNode,extensionMaps,0,false);
+						getAnyMap(childNode,extensionMaps,0,false, edge);
 						
 
 
@@ -102,10 +138,13 @@ public class WriteUtility {
 					
 				}while((firstChild=firstChild.getNextSibling())!=null);
 				
-				WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
-				WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+				//WriteUtility.rightNodeNumber=WriteUtility.leftNodeNumber+1;
+				//WriteUtility.leftNodeNumber=WriteUtility.rightNodeNumber;
+				edge.setRightNodeNumber(edge.getLeftNodeNumber()+1);
+				edge.setLeftNodeNumber(edge.getRightNodeNumber());
 				
-				extensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+				//extensionMap.setRightNodeNumber(WriteUtility.rightNodeNumber);
+				extensionMap.setRightNodeNumber(edge.getRightNodeNumber());
 				if(level==1){
 					//Configuration.logger.info("Top Level :- "+ qnameParent);
 					//extensionMap.setInnerValue(false);

@@ -87,7 +87,7 @@ public class CaptureService implements CoreCaptureService {
 		//return m.capture(event, userID, accessModifier, gcpLength);
 		
 		MysqlCaptureUtil m = new MysqlCaptureUtil();
-		m.capture(event);
+		m.capture(event,userID, accessModifier);
 		return null;
 	}
 
@@ -104,7 +104,7 @@ public class CaptureService implements CoreCaptureService {
 		//MongoCaptureUtil m = new MongoCaptureUtil();
 		//return m.capture(event, userID, accessModifier, gcpLength);
 		MysqlCaptureUtil m = new MysqlCaptureUtil();
-		m.capture(event);
+		m.capture(event,userID,accessModifier);
 		return null;
 	}
 
@@ -122,7 +122,7 @@ public class CaptureService implements CoreCaptureService {
 		//return m.capture(event, userID, accessModifier, gcpLength);
 		Configuration.logger.info("Quantity event capturing started");
 		MysqlCaptureUtil m = new MysqlCaptureUtil();
-		m.capture(event);
+		m.capture(event,userID,accessModifier);
 		return null;
 	}
 
@@ -151,7 +151,7 @@ public class CaptureService implements CoreCaptureService {
 		
 		Configuration.logger.info("Transaction event capturing started");
 		MysqlCaptureUtil m = new MysqlCaptureUtil();
-		m.capture(event);
+		m.capture(event,userID,accessModifier);
 		return null;
 	}
 
@@ -168,12 +168,11 @@ public class CaptureService implements CoreCaptureService {
 		
 		Configuration.logger.info("Transformation event capturing started");
 		MysqlCaptureUtil m = new MysqlCaptureUtil();
-		m.capture(event);
+		m.capture(event, userID,accessModifier);
 		return null;
 	}
 
-	public String capture(VocabularyType vocabulary, Integer gcpLength) {
-		// mysql updata here ------   
+	public String capture(VocabularyType vocabulary, Integer gcpLength) {   
 		//MongoCaptureUtil m = new MongoCaptureUtil();
 		//return m.capture(vocabulary, null, null, gcpLength);
 		
@@ -221,22 +220,9 @@ public class CaptureService implements CoreCaptureService {
 			}
 		}
 	}
-
-	@SuppressWarnings("rawtypes")
-	// Return null -> Succeed, not null --> error message
-	public String capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
-		Configuration.logger.info("Implimenting: capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength ---mysql");
+	
+	public String captureVocabulary(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength){
 		String errorMessage = null;
-		if (epcisDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			return "[ERROR] There is no DocumentBody ";
-		}
-		if (epcisDocument.getEPCISBody().getEventList() == null) {
-			Configuration.logger.info(" There is no EventList ");
-			return null;
-		}
-
-		// Master Data in the document
 		if (epcisDocument.getEPCISHeader() != null && epcisDocument.getEPCISHeader().getExtension() != null
 				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData() != null
 				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData().getVocabularyList() != null
@@ -244,7 +230,23 @@ public class CaptureService implements CoreCaptureService {
 						.getVocabulary() != null) {
 			List<VocabularyType> vocabularyTypeList = epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData()
 					.getVocabularyList().getVocabulary();
-
+			
+			
+			
+	/*		
+			
+			for (int i = 0; i < vocabularyTypeList.size(); i++) {
+				String message = capture(vocabularyTypeList.get(i), gcpLength);
+				if (message != null) {
+					if (errorMessage == null)
+						errorMessage = message + "\n";
+					else
+						errorMessage = errorMessage + message + "\n";
+				}
+			}
+		*/	
+			//This captures each vocabularyElement lists to a single vocabulary 
+//----------------------
 			for (int i = 0; i < vocabularyTypeList.size(); i++) {
 				VocabularyType vocabulary = vocabularyTypeList.get(i);
 				if (vocabulary.getVocabularyElementList() != null) {
@@ -272,7 +274,16 @@ public class CaptureService implements CoreCaptureService {
 					}
 				}
 			}
+			
+	//-------------------
 		}
+		
+		return errorMessage;
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public String captureEventList(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength){
+		String errorMessage = null;
 
 		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
 		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
@@ -285,6 +296,7 @@ public class CaptureService implements CoreCaptureService {
 		 */
 
 		for (int i = 0; i < eventList.size(); i++) {
+			
 			JAXBElement eventElement = (JAXBElement) eventList.get(i);
 			Object event = eventElement.getValue();
 			if (event instanceof ObjectEventType) {
@@ -337,6 +349,30 @@ public class CaptureService implements CoreCaptureService {
 				}
 			}
 		}
+		return errorMessage;
+	}
+
+	
+	// Return null -> Succeed, not null --> error message
+	//This captures normal EPCIS Document 
+	public String capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength) {
+		//Configuration.logger.info("Implimenting: capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength ---mysql");
+		String errorMessage = null;
+		if (epcisDocument.getEPCISBody() == null) {
+			Configuration.logger.info(" There is no DocumentBody ");
+			return "[ERROR] There is no DocumentBody ";
+		}
+		if (epcisDocument.getEPCISBody().getEventList() == null) {
+			Configuration.logger.info(" There is no EventList ");
+			return null;
+		}
+
+		// Master Data in epcisDocument
+		errorMessage=captureVocabulary(epcisDocument, userID, accessModifier, gcpLength);
+		
+		// Event Capture in epcisDocument
+		errorMessage=captureEventList(epcisDocument, userID, accessModifier, gcpLength);
+		
 		return errorMessage;
 	}
 

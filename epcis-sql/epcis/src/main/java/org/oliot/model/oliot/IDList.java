@@ -7,24 +7,19 @@
 
 package org.oliot.model.oliot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 
@@ -59,11 +54,13 @@ public class IDList {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int id;
-	@ElementCollection
-	@CollectionTable(name="IDList_sId" , joinColumns=@JoinColumn(name="IDList_id"))
-	@Column(name="sId")
-	@XmlSchemaType(name = "anyURI")
-	protected List<String> sId;
+	//@ElementCollection
+	//@CollectionTable(name="IDList_sId" , joinColumns=@JoinColumn(name="IDList_id"))
+	//@Column(name="sId")
+	//@XmlSchemaType(name = "anyURI")
+	@OneToMany
+	//protected List<String> sId;
+	protected List<ChildID> childID;
 	 @Transient
 	@XmlAnyAttribute
 	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
@@ -90,19 +87,26 @@ public class IDList {
 	 * 
 	 * 
 	 */
-	public List<String> getId() {
-		if (sId == null) {
-			sId = new ArrayList<String>();
-		}
-		return this.sId;
-	}
 
-	public void setId(List<String> id) {
-		this.sId = id;
-	}
 
 	public void setOtherAttributes(Map<QName, String> otherAttributes) {
 		this.otherAttributes = otherAttributes;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public List<ChildID> getChildID() {
+		return childID;
+	}
+
+	public void setChildID(List<ChildID> childID) {
+		this.childID = childID;
 	}
 
 	/**

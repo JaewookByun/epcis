@@ -39,6 +39,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  *         bjw0829@kaist.ac.kr
  */
+@SuppressWarnings("unused")
 public class MysqlSubscription {
 
 	public static SchedulerFactory schedFact;
