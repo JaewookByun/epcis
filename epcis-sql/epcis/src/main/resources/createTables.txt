@@ -1,3 +1,9 @@
+CREATE TABLE DBUSER (
+  USER_ID number(10) NOT NULL,
+  USERNAME VARCHAR2(20)  DEFAULT NULL, 
+  CREATED_BY    VARCHAR2 (20)  DEFAULT NULL, 
+  CREATED_DATE  DATE DEFAULT NULL);
+  
 CREATE TABLE epc (
   id number(10) NOT NULL,
   value varchar2(255) DEFAULT NULL,
@@ -12,12 +18,12 @@ CREATE TABLE epcisevent (
   PRIMARY KEY (id)
 ) ;
 
-CREATE TABLE attribute (
-  id number(10) NOT NULL,
-  sId varchar2(255) DEFAULT NULL,
-  value varchar2(255) DEFAULT NULL,
-  PRIMARY KEY (id)
-) ;
+-- CREATE TABLE attribute (
+--   id number(10) NOT NULL,
+--   sId varchar2(255) DEFAULT NULL,
+--   value varchar2(255) DEFAULT NULL,
+--   PRIMARY KEY (id)
+-- ) ;
 
 CREATE TABLE aggregationeventepcs (
   id number(10) NOT NULL,
@@ -195,15 +201,45 @@ CREATE TABLE idlist (
 ) ;
 
 
-CREATE TABLE idlist_sid (
+-- CREATE TABLE idlist_sid (
+--   IDList_id number(10) NOT NULL,
+--   sId varchar2(255) DEFAULT NULL
+--  ,
+--   CONSTRAINT FK5F333C0815070123 FOREIGN KEY (IDList_id) REFERENCES idlist (id)
+-- ) ;
+
+-- CREATE INDEX FK5F333C0815070123 ON idlist_sid (IDList_id);
+
+-- Added new 
+CREATE TABLE childid (
+  id number(10) NOT NULL,
+  sID varchar2(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+)  ;
+
+-- Added new 
+CREATE TABLE idlist_childid (
   IDList_id number(10) NOT NULL,
-  sId varchar2(255) DEFAULT NULL
+  childID_id number(10) NOT NULL,
+  CONSTRAINT childID_id UNIQUE  (childID_id)
  ,
-  CONSTRAINT FK5F333C0815070123 FOREIGN KEY (IDList_id) REFERENCES idlist (id)
+  CONSTRAINT FK25DA253115070123 FOREIGN KEY (IDList_id) REFERENCES idlist (id),
+  CONSTRAINT FK25DA253171B2AD71 FOREIGN KEY (childID_id) REFERENCES childid (id)
 ) ;
+CREATE INDEX FK25DA253171B2AD71 ON idlist_childid (childID_id);
+CREATE INDEX FK25DA253115070123 ON idlist_childid (IDList_id);
 
-CREATE INDEX FK5F333C0815070123 ON idlist_sid (IDList_id);
 
+-- Added new 
+CREATE TABLE attribute (
+  id number(10) NOT NULL,
+  sId varchar2(255) DEFAULT NULL,
+  value varchar2(255) DEFAULT NULL,
+  VocExtensionMaps_id number(10) DEFAULT NULL,
+  PRIMARY KEY (id)
+ ,
+  CONSTRAINT FK7839CA7CA29144BB FOREIGN KEY (VocExtensionMaps_id) REFERENCES extensionmaps (id)
+)  ;
 
 CREATE TABLE errordeclaration (
   id number(10) NOT NULL,
@@ -581,6 +617,7 @@ CREATE TABLE vocabulary (
 CREATE INDEX FK3F872D0671DB6391 ON vocabulary (vocabularyExtension_id);
 CREATE INDEX FK3F872D06232694C2 ON vocabulary (baseExtensionMaps_id);
 CREATE INDEX FK3F872D06FA4F6411 ON vocabulary (vocabularyElementList_id);
+
 CREATE TABLE aggregationevent (
   id number(10) NOT NULL,
   action varchar2(255) DEFAULT NULL,
@@ -597,6 +634,8 @@ CREATE TABLE aggregationevent (
   extension_id number(10) DEFAULT NULL,
   baseExtensionMaps_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FK7EBE1CF8232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
@@ -637,6 +676,8 @@ CREATE TABLE transformationevent (
   outputQuantityList_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
   sourceList_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FK24E1B4F11260407B FOREIGN KEY (inputEPCList_id) REFERENCES epclist (id),
@@ -672,6 +713,7 @@ CREATE INDEX FK24E1B4F1E121D3E4 ON transformationevent (bizTransactionList_id);
 CREATE TABLE objectevent (
   id number(10) NOT NULL,
   action varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   bizStep varchar2(255) DEFAULT NULL,
   disposition varchar2(255) DEFAULT NULL,
   eventTime timestamp(0) DEFAULT NULL,
@@ -685,6 +727,7 @@ CREATE TABLE objectevent (
   baseExtensionMaps_id number(10) DEFAULT NULL,
   ilmd_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FK15DBB67B232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
@@ -722,6 +765,8 @@ CREATE TABLE sensorevent (
   extension_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
   sensingList_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FKBD0E1AE027DB24B1 FOREIGN KEY (readPoint_id) REFERENCES readpoint (id),
@@ -752,6 +797,8 @@ CREATE TABLE quantityevent (
   quantityEventExtension_id number(10) DEFAULT NULL,
   baseExtensionMaps_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FKF30A6CAF232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),
@@ -785,6 +832,8 @@ CREATE TABLE transactionevent (
   transactionEventExtension_id number(10) DEFAULT NULL,
   baseExtensionMaps_id number(10) DEFAULT NULL,
   readPoint_id number(10) DEFAULT NULL,
+  userID varchar2(255) DEFAULT NULL,
+  accessModifier varchar2(255) DEFAULT NULL,
   PRIMARY KEY (id)
  ,
   CONSTRAINT FKEAAE0E7C232694C2 FOREIGN KEY (baseExtensionMaps_id) REFERENCES extensionmaps (id),

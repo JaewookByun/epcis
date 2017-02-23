@@ -1,7 +1,6 @@
 package org.oliot.epcis.serde.sql;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Map;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,10 +55,10 @@ import org.oliot.model.epcis.VocabularyElementListType;
 import org.oliot.model.epcis.VocabularyElementType;
 import org.oliot.model.epcis.VocabularyExtensionType;
 import org.oliot.model.epcis.VocabularyType;
-import org.oliot.model.oliot.Action;
 import org.oliot.model.oliot.AggregationEvent;
 import org.oliot.model.oliot.Attribute;
 import org.oliot.model.oliot.BusinessTransaction;
+import org.oliot.model.oliot.ChildID;
 import org.oliot.model.oliot.CorrectiveEventID;
 import org.oliot.model.oliot.EPCList;
 import org.oliot.model.oliot.EPCN;
@@ -69,8 +67,6 @@ import org.oliot.model.oliot.ExtensionMap;
 import org.oliot.model.oliot.ObjectEvent;
 import org.oliot.model.oliot.QuantityElement;
 import org.oliot.model.oliot.QuantityEvent;
-import org.oliot.model.oliot.SensingElement;
-import org.oliot.model.oliot.SensorEvent;
 import org.oliot.model.oliot.SourceDest;
 import org.oliot.model.oliot.TransactionEvent;
 import org.oliot.model.oliot.TransformationEvent;
@@ -78,7 +74,6 @@ import org.oliot.model.oliot.Vocabulary;
 import org.oliot.model.oliot.VocabularyElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 /**
  * Copyright (C) 2015 Yalew Kidane
  *
@@ -193,12 +188,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							errorDeclarationType.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -383,12 +379,13 @@ public class EventToEventTypeConverter {
 						map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 					}
 				//	Configuration.logger.info("-----------------------------");
-					WriteUtility.leftNodeNumber=1;
-					WriteUtility.rightNodeNumber=1;
+					//WriteUtility.leftNodeNumber=1;
+					//WriteUtility.rightNodeNumber=1;
+					Edge edge=new Edge();
 					int[] level=new int[1];
 					level[0]=0;
 					if(map.size()>1)
-						ReaderUtility.putAny(map,1,level,null,elementList,doc);
+						ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 					aggregationEventType.setAny(elementList);
 				} catch (ParserConfigurationException e){
 					Configuration.logger.log(Level.ERROR, e.toString());
@@ -479,12 +476,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							errorDeclarationType.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -645,12 +643,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							iLMD.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -786,12 +785,13 @@ public class EventToEventTypeConverter {
 						map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 					}
 				//	Configuration.logger.info("-----------------------------");
-					WriteUtility.leftNodeNumber=1;
-					WriteUtility.rightNodeNumber=1;
+					//WriteUtility.leftNodeNumber=1;
+					//WriteUtility.rightNodeNumber=1;
+					Edge edge=new Edge();
 					int[] level=new int[1];
 					level[0]=0;
 					if(map.size()>1)
-						ReaderUtility.putAny(map,1,level,null,elementList,doc);
+						ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 					objectEventType.setAny(elementList);
 				} catch (ParserConfigurationException e){
 					Configuration.logger.log(Level.ERROR, e.toString());
@@ -886,12 +886,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							errorDeclarationType.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -1002,12 +1003,13 @@ public class EventToEventTypeConverter {
 						map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 					}
 				//	Configuration.logger.info("-----------------------------");
-					WriteUtility.leftNodeNumber=1;
-					WriteUtility.rightNodeNumber=1;
+					//WriteUtility.leftNodeNumber=1;
+					//WriteUtility.rightNodeNumber=1;
+					Edge edge=new Edge();
 					int[] level=new int[1];
 					level[0]=0;
 					if(map.size()>1)
-						ReaderUtility.putAny(map,1,level,null,elementList,doc);
+						ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 					quantityEventType.setAny(elementList);
 				} catch (ParserConfigurationException e){
 					Configuration.logger.log(Level.ERROR, e.toString());
@@ -1100,12 +1102,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							errorDeclarationType.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -1311,12 +1314,13 @@ public class EventToEventTypeConverter {
 						map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 					}
 				//	Configuration.logger.info("-----------------------------");
-					WriteUtility.leftNodeNumber=1;
-					WriteUtility.rightNodeNumber=1;
+					//WriteUtility.leftNodeNumber=1;
+					//WriteUtility.rightNodeNumber=1;
+					Edge edge=new Edge();
 					int[] level=new int[1];
 					level[0]=0;
 					if(map.size()>1)
-						ReaderUtility.putAny(map,1,level,null,elementList,doc);
+						ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 					transactionEventType.setAny(elementList);
 				} catch (ParserConfigurationException e){
 					Configuration.logger.log(Level.ERROR, e.toString());
@@ -1408,12 +1412,13 @@ public class EventToEventTypeConverter {
 							for(int i=0;i<extensionMaps.size();i++){
 								map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 							}
-							WriteUtility.leftNodeNumber=1;
-							WriteUtility.rightNodeNumber=1;
+							//WriteUtility.leftNodeNumber=1;
+							//WriteUtility.rightNodeNumber=1;
+							Edge edge=new Edge();
 							int[] level=new int[1];
 							level[0]=0;
 							if(map.size()>1)
-								ReaderUtility.putAny(map,1,level,null,elementList,doc);
+								ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 							errorDeclarationType.setAny(elementList);
 						} catch (ParserConfigurationException e){
 							Configuration.logger.log(Level.ERROR, e.toString());
@@ -1588,12 +1593,13 @@ public class EventToEventTypeConverter {
 						for(int i=0;i<extensionMaps.size();i++){
 							map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 						}
-						WriteUtility.leftNodeNumber=1;
-						WriteUtility.rightNodeNumber=1;
+						//WriteUtility.leftNodeNumber=1;
+						//WriteUtility.rightNodeNumber=1;
+						Edge edge=new Edge();
 						int[] level=new int[1];
 						level[0]=0;
 						if(map.size()>1)
-							ReaderUtility.putAny(map,1,level,null,elementList,doc);
+							ReaderUtility.putAny(map,1,level,null,elementList,doc,edge);
 						iLMD.setAny(elementList);
 					} catch (ParserConfigurationException e){
 						Configuration.logger.log(Level.ERROR, e.toString());
@@ -1674,12 +1680,13 @@ public class EventToEventTypeConverter {
 						map.put(extensionMaps.get(i).getLeftNodeNumber(), extensionMaps.get(i));
 					}
 				//	Configuration.logger.info("-----------------------------");
-					WriteUtility.leftNodeNumber=1;
-					WriteUtility.rightNodeNumber=1;
+					//WriteUtility.leftNodeNumber=1;
+					//WriteUtility.rightNodeNumber=1;
+					Edge edge=new Edge();
 					int[] level=new int[1];
 					level[0]=0;
 					if(map.size()>1)
-						ReaderUtility.putAny(map,1,level,null,elementList,doc);
+						ReaderUtility.putAny(map,1,level,null,elementList,doc, edge);
 					transformationEventType.setAny(elementList);
 				} catch (ParserConfigurationException e){
 					Configuration.logger.log(Level.ERROR, e.toString());
@@ -1701,7 +1708,10 @@ public class EventToEventTypeConverter {
 	public VocabularyType convert(Vocabulary vocabulary) {
 	
 		VocabularyType vocabularyType = new VocabularyType();
-		vocabulary.setType(vocabulary.getType());
+		if(vocabulary.getType()!=null){
+			vocabularyType.setType(vocabulary.getType());
+		}
+		
 		if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
 			List<VocabularyElement> vocabularyElementList = vocabulary
 					.getVocabularyElementList().getVocabularyElement();
@@ -1719,19 +1729,76 @@ public class EventToEventTypeConverter {
 					for (int j = 0; j < attributeList.size(); j++) {
 						attribute = new AttributeType();
 						attribute.setId(attributeList.get(j).getsId());
+						if(attributeList.get(j).getVocExtensionMaps()!=null){
+							List<ExtensionMap> extensionMaps=attributeList.get(j)
+									.getVocExtensionMaps().getExtensionMapList();
+							List<Object> elementList=new ArrayList<Object>();
+							if(extensionMaps.size()==1){
+								if(extensionMaps.get(0)!=null){
+									String valueStr=extensionMaps.get(0).getStringValue();
+									elementList.add(valueStr);
+								}
+							}else{
+								Document doc;
+								DocumentBuilderFactory dbf= DocumentBuilderFactory.newInstance();
+								DocumentBuilder builder;
+								try {
+									builder = dbf.newDocumentBuilder();
+									doc=builder.newDocument();
+									Element element;
+									if(extensionMaps.get(0)!=null){
+										String valueStr=extensionMaps.get(0).getPrefixValue();
+										System.out.println(valueStr);
+										
+										String[] checkArr = valueStr.split("#");
+										if (checkArr.length != 2)
+											continue;
+										
+										System.out.println(valueStr.split("#")[0]);
+										element=doc.createElement(checkArr[1]);
+										
+										String[] checkArr2 = checkArr[1].split(":");
+										if (checkArr2.length != 2)
+											continue;
+										
+										element.setAttribute("xmlns:"+checkArr2[0], checkArr[0]);
+										Element element1;
+										for(ExtensionMap extensionMap : extensionMaps){
+											element1=doc.createElement(extensionMap.getqName());
+											element1.setTextContent(extensionMap.getStringValue());
+											
+											element.appendChild(element1);
+										}
+										elementList.add(element);
+									}
+									System.out.println("more than one extenstion maps");
+								} catch (ParserConfigurationException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								
+							}
+							attribute.setContent(elementList);
+
+						}
 						// attribute.setValue(attributeList.get(j).getValue()); // *********************************
 						vocabularyElement.getAttribute().add(attribute);
 						
 					}
 				}
 				if (vocabularyElementList.get(i).getChildren() != null) {
-					// IDListType IDListType
-					List<String> idType = vocabularyElementList.get(i)
-							.getChildren().getId();
+					
+					List<ChildID> childIDList=vocabularyElementList.get(i).getChildren().getChildID();
 					IDListType iDList = new IDListType();
-					for (int k = 0; k < idType.size(); k++) {
-						iDList.getId().add(idType.get(k));
+					for (int k = 0; k < childIDList.size(); k++) {
+						iDList.getId().add(childIDList.get(k).getsID());
 					}
+//					List<String> idType = vocabularyElementList.get(i)
+//							.getChildren().getId();
+//					IDListType iDList = new IDListType();
+//					for (int k = 0; k < idType.size(); k++) {
+//						iDList.getId().add(idType.get(k));
+//					}
 					vocabularyElement.setChildren(iDList);
 					
 				}
@@ -1739,17 +1806,6 @@ public class EventToEventTypeConverter {
 				
 				if (vocabularyElementList.get(i).getExtension() != null) {
 					vocabularyElementExtension = new VocabularyElementExtensionType();
-//					if(vocabularyElementList.get(i).getExtension().getMapExt() != null){
-//						 List<MapExt> mapExtList=vocabularyElementList.get(i).getExtension().getMapExt();
-//						 			 
-//						 Map<QName, String> otherAttribute=new HashMap<QName, String>();
-////							for(int j=0;i<mapExtList.size();j++){
-////									QName name=new QName(mapExtList.get(j).getType(),"","");
-////									otherAttribute.put(name,mapExtList.get(j).getValue());	
-////							}
-//							
-//						//	vocabularyElementExtension.setOtherAttributes(otherAttribute); // *********************************
-//					 }
 					
 					vocabularyElement.setExtension(vocabularyElementExtension);
 				}

@@ -56,7 +56,13 @@
 					Yalew Kidane, Ph.D student<br>
 					Korea Advanced Institute of Science and Technology (KAIST)<br>
 					Real-time and Embedded Systems Laboratory(RESL)<br>
-					yalewkidane@gmail.com/@kaist.ac.kr<br> GitHub:
+					yalewkidane at gmail.com/kaist.ac.kr<br> GitHub:
+					https://github.com/yalewkidane<br><br>
+					
+					Sungpil Woo, Ph.D student<br>
+					Korea Advanced Institute of Science and Technology (KAIST)<br>
+					Real-time and Embedded Systems Laboratory(RESL)<br>
+					woosungpil at kaist.ac.kr<br> GitHub:
 					https://github.com/yalewkidane
 				</a>
 			</div>

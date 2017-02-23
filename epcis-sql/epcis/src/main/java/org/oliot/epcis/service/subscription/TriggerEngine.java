@@ -3,8 +3,6 @@ package org.oliot.epcis.service.subscription;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.text.ParseException;
@@ -13,13 +11,10 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
+
 
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpEntity;
@@ -51,15 +46,8 @@ import org.bson.BsonString;
 import org.bson.BsonType;
 import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.epcis.service.query.sql.MysqlQueryService;
-import org.oliot.model.epcis.AggregationEventType;
-import org.oliot.model.epcis.EPCISQueryDocumentType;
-import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.PollParameters;
-import org.oliot.model.epcis.QuantityEventType;
 import org.oliot.model.epcis.SubscriptionType;
-import org.oliot.model.epcis.TransactionEventType;
-import org.oliot.model.epcis.TransformationEventType;
 
 public class TriggerEngine {
 	private static Map<String, SubscriptionType> triggerSubscriptionMap = new HashMap<String, SubscriptionType>();
@@ -674,6 +662,7 @@ public class TriggerEngine {
 	 * @param message
 	 * @throws IOException
 	 */
+	@SuppressWarnings("unused")
 	private static void sendPost(URL captureURL, byte[] bytes) {
 		HttpProcessor httpproc = HttpProcessorBuilder.create().add(new RequestContent()).add(new RequestTargetHost())
 				.add(new RequestConnControl()).add(new RequestUserAgent("Test/1.1"))

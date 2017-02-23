@@ -3,8 +3,7 @@
 
 package org.oliot.model.oliot;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,10 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.namespace.QName;
 
 
 @Entity

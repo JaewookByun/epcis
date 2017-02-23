@@ -8,9 +8,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.Transient;
-
-import org.springframework.data.mongodb.core.mapping.Document;
 @Entity
 //@Document(collection = "Subscription")
 public class Subscription {

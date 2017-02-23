@@ -37,6 +37,9 @@ public class TransactionEvent{//    extends EPCISEvent{
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int id;
 	
+	protected String userID;
+	protected String accessModifier;
+	
     @XmlElement(required = true)
     @XmlSchemaType(name = "dateTime")
     protected Date eventTime;
@@ -99,6 +102,25 @@ public class TransactionEvent{//    extends EPCISEvent{
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	
+	
+	public String getUserID() {
+		return userID;
+	}
+
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	
+	public String getAccessModifier() {
+		return accessModifier;
+	}
+
+	public void setAccessModifier(String accessModifier) {
+		this.accessModifier = accessModifier;
 	}
 
 	public Date getEventTime() {

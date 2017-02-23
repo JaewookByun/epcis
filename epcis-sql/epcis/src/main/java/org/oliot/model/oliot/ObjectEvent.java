@@ -19,7 +19,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.persistence.SequenceGenerator;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
@@ -38,6 +37,9 @@ public class ObjectEvent{// extends EPCISEvent {
 	//@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="TAB_CUSTOMER_SEQ")
 	//@SequenceGenerator(name="TAB_CUSTOMER_SEQ", sequenceName="TAB_CUSTOMER_SEQ", allocationSize=1)
 	private int id;
+	
+	protected String userID;
+	protected String accessModifier;
 	
     @XmlElement(required = true)
     @XmlSchemaType(name = "dateTime")
@@ -101,6 +103,24 @@ public class ObjectEvent{// extends EPCISEvent {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	
+	
+	public String getUserID() {
+		return userID;
+	}
+
+	public void setUserID(String userID) {
+		this.userID = userID;
+	}
+
+	public String getAccessModifier() {
+		return accessModifier;
+	}
+
+	public void setAccessModifier(String accessModifier) {
+		this.accessModifier = accessModifier;
 	}
 
 	public Date getEventTime() {

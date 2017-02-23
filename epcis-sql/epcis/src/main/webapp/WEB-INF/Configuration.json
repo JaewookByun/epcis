@@ -1,11 +1,6 @@
 {	
 	"_backend_DB" : "MySQL|MariaDB|PostgreSQL|Oracle",
 	"backend_DB" : "Oracle",
-	"_backend_ip" : "ip address for mongodb",
-	"backend_ip" : "localhost",
-	
-	"_backend_port" : "port for mongodb",
-	"backend_port" : 27017,
 	
 	"_capture_verification" : "(on|off)",
 	"capture_verification" : "on",
@@ -23,5 +18,11 @@
 	"admin_scope" : "Friend",
 	
 	"_trigger_support" : "(on|off)",
-	"trigger_support" : "on"
+	"trigger_support" : "on",
+	
+	"_ac_api_address" : "IP Address and port number of Access Control API",
+	"ac_api_address" : "127.0.0.1:3001",
+	
+	"_epcis_ID" : "ID of epcis",
+	"epcis_ID" : "epcis"
 }
