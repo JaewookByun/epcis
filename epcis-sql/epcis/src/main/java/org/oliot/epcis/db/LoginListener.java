@@ -278,7 +278,8 @@ public class LoginListener implements ActionListener{
 			
 		}else if(backendDB.equals("Oracle")){
 			try{				
-				System.out.println("Maven + Hibernate + Oracle");
+				
+				Configuration.logger.info("Oracle system checking");
 				Session session = HibernateUtil.getSessionFactory().openSession();
 
 				session.beginTransaction();
@@ -452,7 +453,7 @@ public class LoginListener implements ActionListener{
                         // execute the SQL stetement
 			statement.execute(createTableSQL);
 
-			System.out.println("Table \"dbuser\" is created!");
+			System.out.println("The statment executed properly!");
 
 		} catch (SQLException e) {
 
