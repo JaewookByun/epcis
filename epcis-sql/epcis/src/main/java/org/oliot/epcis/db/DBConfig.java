@@ -119,8 +119,8 @@ public class DBConfig {
        "<property name=\"hibernate.dialect\">org.hibernate.dialect.Oracle10gDialect</property>\n"+
       
        " <property name=\"connection.autocommit\">true</property>"+
-  		"<property name=\"show_sql\">true</property>\n"+
-  		"<property name=\"format_sql\">true</property>\n"+
+  		"<property name=\"show_sql\">false</property>\n"+
+  		"<property name=\"format_sql\">false</property>\n"+
   		
        "<!-- <mapping class=\"org.oliot.model.oliot.DBUser\"></mapping> -->\n"+
         "<mapping class=\"org.oliot.model.oliot.Action\" />\n"+
