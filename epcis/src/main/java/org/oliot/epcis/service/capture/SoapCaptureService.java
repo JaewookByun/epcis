@@ -6,7 +6,7 @@ import org.oliot.model.epcis.EPCISDocumentType;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 
 /**
- * Copyright (C) 2014-2016 Jaewook Byun
+ * Copyright (C) 2014-2017 Jaewook Byun
  *
  * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
  * v1.2.x is Java Web Service complying with Electronic Product Code Information

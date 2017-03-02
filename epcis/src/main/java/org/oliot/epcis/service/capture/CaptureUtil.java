@@ -120,7 +120,7 @@ public class CaptureUtil {
 		return isMatch;
 	}
 
-	public static ResponseEntity<?> minorCheckDocumentHeader(EPCISDocumentType epcisDocument) {
+	public static ResponseEntity<?> checkDocumentHeader(EPCISDocumentType epcisDocument) {
 		// M50, M63
 		if (epcisDocument.getEPCISHeader() != null) {
 			if (epcisDocument.getEPCISHeader().getStandardBusinessDocumentHeader() != null) {

@@ -95,7 +95,7 @@ public class SoapQueryService implements CoreQueryService {
 
 	@Override
 	public String getVendorVersion() throws SecurityException, ValidationException, ImplementationException {
-		return "org.oliot.epcis-1.2.5";
+		return "org.oliot.epcis-1.2.7";
 	}
 
 	@Override

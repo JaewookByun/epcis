@@ -1,6 +1,4 @@
-package org.oliot.epcis.service.capture;
-
-
+package org.oliot.epcis.service.capture.secured;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -10,10 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Base64;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.servlet.ServletContext;
 
-import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -65,62 +61,59 @@ public class GetClientToken implements ServletContextAware {
 
 		/* jaeheeHa0 AC_token reference */
 		Configuration.logger.info(" Client Token retrieve");
-		String pass = password;
+
 		String token_string = "";
-		String secret = userID+":"+password;
+		String secret = userID + ":" + password;
 		String auth_secret = Base64.getEncoder().encodeToString(secret.getBytes());
 		String auth = "Basic " + auth_secret;
-		
+
 		StringBuffer response = null;
-		
-		
+
 		try {
-		String url = "http://"+Configuration.ac_api_address+"/oauth/token";
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			String url = "http://" + Configuration.ac_api_address + "/oauth/token";
+			URL obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-		//add reuqest header
-		con.setRequestMethod("POST");
-		con.setRequestProperty("Authorization", auth);
-		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
+			// add reuqest header
+			con.setRequestMethod("POST");
+			con.setRequestProperty("Authorization", auth);
+			con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
 
-		String urlParameters = "grant_type=password&username="+userID+"&password="+password;
+			String urlParameters = "grant_type=password&username=" + userID + "&password=" + password;
 
-		// Send post request
-		con.setDoOutput(true);
-		DataOutputStream wr = new DataOutputStream(con.getOutputStream());
-		wr.writeBytes(urlParameters);
-		wr.flush();
-		wr.close();
+			// Send post request
+			con.setDoOutput(true);
+			DataOutputStream wr = new DataOutputStream(con.getOutputStream());
+			wr.writeBytes(urlParameters);
+			wr.flush();
+			wr.close();
 
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'POST' request to URL : " + url);
-		System.out.println("Post parameters : " + urlParameters);
-		System.out.println("Response Code : " + responseCode);
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'POST' request to URL : " + url);
+			System.out.println("Post parameters : " + urlParameters);
+			System.out.println("Response Code : " + responseCode);
 
-		BufferedReader in;
-			in = new BufferedReader(
-			        new InputStreamReader(con.getInputStream()));
-		
-		String inputLine;
-		response = new StringBuffer();
+			BufferedReader in;
+			in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
+			String inputLine;
+			response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//print result
-		
-		if(response!=null){
-			token_string=response.toString();
+
+		// print result
+
+		if (response != null) {
+			token_string = response.toString();
 		}
-		
+
 		Configuration.logger.info(" Token :" + token_string);
 
 		return new ResponseEntity<>(token_string, HttpStatus.OK);

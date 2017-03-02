@@ -1,23 +1,9 @@
-package org.oliot.epcis.service.capture;
-
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Random;
+package org.oliot.epcis.service.capture.secured;
 
 import javax.servlet.ServletContext;
-//import javax.websocket.server.ServerContainer;
-import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,54 +44,49 @@ public class DeleteEPCIS implements ServletContextAware {
 	}
 
 	public ResponseEntity<?> asyncDelete(String inputString) {
-		ResponseEntity<?> result = del(inputString, null,null,null);
+		ResponseEntity<?> result = del(inputString, null, null, null);
 		return result;
 	}
 
-	
 	/**
 	 * del
-	 * @creator Jaehee Ha 
-	 * lovesm135@kaist.ac.kr
-	 * created
-	 * 2017/02/07
+	 * 
+	 * @creator Jaehee Ha lovesm135@kaist.ac.kr created 2017/02/07
 	 * @param inputString
 	 * @param gcpLength
 	 * @return ResponseEntity<?>
 	 */
 	@RequestMapping(method = RequestMethod.DELETE)
 	@ResponseBody
-	public ResponseEntity<?> del(@RequestBody String inputString, 
-			@RequestParam(required = false) Integer gcpLength,
-			@RequestParam(required = false) String userID,
-			@RequestParam(required = false) String accessToken) {
+	public ResponseEntity<?> del(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength,
+			@RequestParam(required = false) String userID, @RequestParam(required = false) String accessToken) {
 		JSONObject retMsg = new JSONObject();
 
-//=============================================================================================
+		// =============================================================================================
 		/* jaeheeHa3 AC_delete repository */
-		// This method must be conducted by Access Control Web GUI. 
+		// This method must be conducted by Access Control Web GUI.
 		// This method must not be conducted by URL based Get request.
-		
-		
-		//url of ac_api server
-		String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+"bar1_epcis"+"/possess";
-		
-		//query to ac_api server
-		String qurlParameters = "";		
+
+		// url of ac_api server
+		String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/" + "bar1_epcis"
+				+ "/possess";
+
+		// query to ac_api server
+		String qurlParameters = "";
 		String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-		//for debug, erase after implementing.
+		// for debug, erase after implementing.
 		Configuration.logger.info(query_result);
-		query_result = query_result.replaceAll("[\"{} ]","").split(":")[1];
-		
-		boolean pass = (query_result.equals("yes"))?true:false;
-		
-		if(!pass){
+		query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
+
+		boolean pass = (query_result.equals("yes")) ? true : false;
+
+		if (!pass) {
 			return new ResponseEntity<>("No!", HttpStatus.BAD_REQUEST);
 		}
-		
+
 		Configuration.dropMongoDB();
-		
+
 		Configuration.logger.info(" EPCIS Repository : Deleted ");
 
 		if (retMsg.isNull("error") == true)
