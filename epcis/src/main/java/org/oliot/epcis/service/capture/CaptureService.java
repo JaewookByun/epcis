@@ -1,28 +1,25 @@
 package org.oliot.epcis.service.capture;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBElement;
 
 import org.bson.BsonDocument;
 import org.json.JSONObject;
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 
 import org.oliot.model.epcis.EPCISDocumentType;
 
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
-import org.oliot.model.epcis.EventListType;
 
 import org.oliot.model.epcis.VocabularyElementType;
-import org.oliot.model.epcis.VocabularyListType;
 import org.oliot.model.epcis.VocabularyType;
 
 /**
- * Copyright (C) 2014-2016 Jaewook Byun
+ * Copyright (C) 2014-2017 Jaewook Byun
  *
  * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
@@ -42,37 +39,24 @@ public class CaptureService implements CoreCaptureService {
 	// Return null -> Succeed, not null --> error message
 	public JSONObject capture(EPCISDocumentType epcisDocument, String userID, String accessModifier,
 			Integer gcpLength) {
-
-		// Minor EPCIS Document Checking
-		HashMap<String, Object> retMsg = minorCheckDocument(epcisDocument);
-		if (retMsg.isEmpty() == false)
-			return new JSONObject(retMsg);
-
-		retMsg = new HashMap<String, Object>();
-
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 		// Capture EPCIS Events
 		retMsg.putAll(captureEvents(epcisDocument, userID, accessModifier, gcpLength));
 		// Capture EPCIS Vocabularies
 		retMsg.putAll(captureVocabularies(epcisDocument, userID, accessModifier, gcpLength));
-
 		return new JSONObject(retMsg);
 	}
 
 	public JSONObject capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
 
-		// Minor EPCIS Document Checking
-		HashMap<String, Object> retMsg = minorCheckDocument(epcisMasterDataDocument);
-		if (retMsg.isEmpty() == false)
-			return new JSONObject(retMsg);
+		HashMap<String, Object> retMsg = new HashMap<String, Object>();
+		try {
+			List<VocabularyType> vocabularyTypeList = epcisMasterDataDocument.getEPCISBody().getVocabularyList()
+					.getVocabulary();
+			retMsg.putAll(captureVocabularies(vocabularyTypeList, gcpLength));
+		} catch (NullPointerException ex) {
 
-		retMsg = new HashMap<String, Object>();
-
-		VocabularyListType vocabularyListType = epcisMasterDataDocument.getEPCISBody().getVocabularyList();
-
-		List<VocabularyType> vocabularyTypeList = vocabularyListType.getVocabulary();
-
-		retMsg.putAll(captureVocabularies(vocabularyTypeList, gcpLength));
-
+		}
 		return new JSONObject(retMsg);
 	}
 
@@ -80,7 +64,6 @@ public class CaptureService implements CoreCaptureService {
 	private BsonDocument prepareEvent(Object jaxbEvent, String userID, String accessModifier, Integer gcpLength) {
 		JAXBElement eventElement = (JAXBElement) jaxbEvent;
 		Object event = eventElement.getValue();
-
 		CaptureUtil.isCorrectEvent(event);
 		MongoCaptureUtil m = new MongoCaptureUtil();
 		BsonDocument doc = m.convert(event, userID, accessModifier, gcpLength);
@@ -89,33 +72,31 @@ public class CaptureService implements CoreCaptureService {
 
 	private HashMap<String, Object> captureEvents(EPCISDocumentType epcisDocument, String userID, String accessModifier,
 			Integer gcpLength) {
-		EventListType eventListType = epcisDocument.getEPCISBody().getEventList();
-		List<Object> eventList = eventListType.getObjectEventOrAggregationEventOrQuantityEvent();
-
-		List<BsonDocument> bsonDocumentList = eventList.parallelStream().parallel()
-				.map(jaxbEvent -> prepareEvent(jaxbEvent, userID, accessModifier, gcpLength)).filter(doc -> doc != null)
-				.collect(Collectors.toList());
-
-		MongoCaptureUtil util = new MongoCaptureUtil();
-		if (bsonDocumentList != null && bsonDocumentList.size() != 0)
-			return util.capture(bsonDocumentList);
+		try {
+			List<Object> eventList = epcisDocument.getEPCISBody().getEventList()
+					.getObjectEventOrAggregationEventOrQuantityEvent();
+			List<BsonDocument> bsonDocumentList = eventList.parallelStream().parallel()
+					.map(jaxbEvent -> prepareEvent(jaxbEvent, userID, accessModifier, gcpLength))
+					.filter(doc -> doc != null).collect(Collectors.toList());
+			MongoCaptureUtil util = new MongoCaptureUtil();
+			if (bsonDocumentList != null && bsonDocumentList.size() != 0)
+				return util.capture(bsonDocumentList);
+		} catch (NullPointerException ex) {
+			// No Event
+		}
 		return new HashMap<String, Object>();
 	}
 
 	private HashMap<String, Object> captureVocabularies(EPCISDocumentType epcisDocument, String userID,
 			String accessModifier, Integer gcpLength) {
-
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
-		// Master Data in the document
-		if (epcisDocument.getEPCISHeader() != null && epcisDocument.getEPCISHeader().getExtension() != null
-				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData() != null
-				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData().getVocabularyList() != null
-				&& epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData().getVocabularyList()
-						.getVocabulary() != null) {
+		try {
+			// Master Data in the document
 			List<VocabularyType> vocabularyTypeList = epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData()
 					.getVocabularyList().getVocabulary();
-
 			retMsg = captureVocabularies(vocabularyTypeList, gcpLength);
+		} catch (NullPointerException ex) {
+			// No vocabulary in the document
 		}
 		return retMsg;
 	}
@@ -124,75 +105,35 @@ public class CaptureService implements CoreCaptureService {
 
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 
-		int cntVoc = 0;
-		
-		for (int i = 0; i < vocabularyTypeList.size(); i++) {
-			VocabularyType vocabulary = vocabularyTypeList.get(i);
-			if (vocabulary.getVocabularyElementList() != null) {
-				if (vocabulary.getVocabularyElementList().getVocabularyElement() != null) {
-					List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
-					List<VocabularyElementType> vetTempList = new ArrayList<VocabularyElementType>();
-					for (int j = 0; j < vetList.size(); j++) {
-						VocabularyElementType vet = vetList.get(j);
-						VocabularyElementType vetTemp = new VocabularyElementType();
-						vetTemp = vet;
-						vetTempList.add(vetTemp);
-					}
-					for (int j = 0; j < vetTempList.size(); j++) {
-						vocabulary.getVocabularyElementList().getVocabularyElement().clear();
-						vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
-						String message = capture(vocabulary, gcpLength);
-						if (message != null) {
-							retMsg.put("error", message);
-						}else{
-							cntVoc++;
-						}
+		AtomicInteger cntVoc = new AtomicInteger(0);
+
+		vocabularyTypeList.parallelStream().forEach(vocabulary -> {
+			try {
+				List<VocabularyElementType> vetList = vocabulary.getVocabularyElementList().getVocabularyElement();
+				List<VocabularyElementType> vetTempList = vetList.parallelStream().collect(Collectors.toList());
+
+				for (int j = 0; j < vetTempList.size(); j++) {
+					vocabulary.getVocabularyElementList().getVocabularyElement().clear();
+					vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
+					String message = capture(vocabulary, gcpLength);
+					if (message != null) {
+						retMsg.put("error", message);
+					} else {
+						cntVoc.incrementAndGet();
 					}
 				}
+			} catch (NullPointerException ex) {
+
 			}
-		}
+		});
 
 		retMsg.put("vocabularyCaptured", cntVoc);
-		
 		return retMsg;
 	}
-	
-	
 
 	private String capture(VocabularyType vocabulary, Integer gcpLength) {
 		MongoCaptureUtil m = new MongoCaptureUtil();
 		return m.capture(vocabulary, null, null, gcpLength);
-	}
-
-	private HashMap<String, Object> minorCheckDocument(EPCISDocumentType epcisDocument) {
-		HashMap<String, Object> retMsg = new HashMap<String, Object>();
-		if (epcisDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			retMsg.put("error", "There is no DocumentBody");
-			return retMsg;
-		}
-		if (epcisDocument.getEPCISBody().getEventList() == null) {
-			Configuration.logger.info(" There is no EventList ");
-			retMsg.put("error", "There is no EventList");
-			return retMsg;
-		}
-		return retMsg;
-	}
-
-	private HashMap<String, Object> minorCheckDocument(EPCISMasterDataDocumentType epcisMasterDataDocument) {
-		HashMap<String, Object> retMsg = new HashMap<String, Object>();
-		if (epcisMasterDataDocument.getEPCISBody() == null) {
-			Configuration.logger.info(" There is no DocumentBody ");
-			retMsg.put("error", "There is no DocumentBody ");
-			return retMsg;
-		}
-
-		if (epcisMasterDataDocument.getEPCISBody().getVocabularyList() == null) {
-			Configuration.logger.info(" There is no Vocabulary List ");
-			retMsg.put("error", "There is no Vocabulary List ");
-			return retMsg;
-		}
-		return retMsg;
 	}
 
 	@Override

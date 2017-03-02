@@ -171,25 +171,24 @@ public class Configuration implements ServletContextListener {
 			} else {
 				isTriggerSupported = false;
 			}
-			
-			// Set IP Address of Access Control API 
-			
+
+			// Set IP Address of Access Control API
+
 			String address = json.getString("ac_api_address");
 			if (address == null) {
-				Configuration.logger.error(
-						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger
+						.error("ac_api_address is null, please make sure Configuration.json is correct, and restart.");
 			}
-			
+
 			ac_api_address = address.trim();
-			
+
 			String id = json.getString("epcis_id");
 			if (id == null) {
-				Configuration.logger.error(
-						"ac_api_address is null, please make sure Configuration.json is correct, and restart.");
+				Configuration.logger
+						.error("ac_api_address is null, please make sure Configuration.json is correct, and restart.");
 			}
-			
-			epcis_id = id.trim();
 
+			epcis_id = id.trim();
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
@@ -207,7 +206,7 @@ public class Configuration implements ServletContextListener {
 		} else {
 			backend_port = json.getInt("backend_port");
 		}
-		if (json.isNull("backend_database_name")){
+		if (json.isNull("backend_database_name")) {
 			databaseName = "epcis";
 		} else {
 			databaseName = json.getString("backend_database_name");
@@ -215,12 +214,10 @@ public class Configuration implements ServletContextListener {
 		mongoClient = new MongoClient(backend_ip, backend_port);
 		mongoDatabase = mongoClient.getDatabase(databaseName);
 	}
-	
+
 	/**
-	 * dropMongoDB
-	 * Jaehee created
-	 * lovesm135@kaist.ac.kr
-	 * 2016.11.04
+	 * dropMongoDB Jaehee created lovesm135@kaist.ac.kr 2016.11.04
+	 * 
 	 * @param dbname
 	 */
 	public static void dropMongoDB() {
@@ -228,67 +225,62 @@ public class Configuration implements ServletContextListener {
 	}
 
 	private void loadExistingSubscription() {
-		
+
 		MongoSubscription ms = new MongoSubscription();
 		ms.init();
 	}
-	
+
 	/**
-	 * query_access_relation
-	 * created
-	 * 2017.02.07
+	 * query_access_relation created 2017.02.07
+	 * 
 	 * @param quri
 	 * @param qtoken
 	 * @param qurlParameters
 	 * @return result
 	 */
-	public static String query_access_relation(String quri, String qtoken, String qurlParameters){
+	public static String query_access_relation(String quri, String qtoken, String qurlParameters) {
 		Configuration.logger.info(" Client Token retrieve");
 		StringBuffer response = null;
 		String result = null;
-		
+
 		try {
-		String url = quri; 
-		URL obj = new URL(url);
-		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+			String url = quri;
+			URL obj = new URL(url);
+			HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-		//add request header
-		con.setRequestMethod("GET");
-		con.setRequestProperty("Authorization", "Bearer "+qtoken);
-		con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
-		
-		String urlParameters = qurlParameters;
-		
-		// Send get request		
-		System.out.println(con.getRequestMethod());
+			// add request header
+			con.setRequestMethod("GET");
+			con.setRequestProperty("Authorization", "Bearer " + qtoken);
+			con.setRequestProperty("Content-type", "application/x-www-form-urlencoded");
 
-		int responseCode = con.getResponseCode();
-		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " + responseCode);
+			// Send get request
+			System.out.println(con.getRequestMethod());
 
-		BufferedReader in;
-			in = new BufferedReader(
-			        new InputStreamReader(con.getInputStream()));
-		
-		String inputLine;
-		response = new StringBuffer();
+			int responseCode = con.getResponseCode();
+			System.out.println("\nSending 'GET' request to URL : " + url);
+			System.out.println("Response Code : " + responseCode);
 
-		while ((inputLine = in.readLine()) != null) {
-			response.append(inputLine);
-		}
-		in.close();
+			BufferedReader in;
+			in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+
+			String inputLine;
+			response = new StringBuffer();
+
+			while ((inputLine = in.readLine()) != null) {
+				response.append(inputLine);
+			}
+			in.close();
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//print result
-		
-		if(response!=null){
-			result=response.toString();
+
+		// print result
+
+		if (response != null) {
+			result = response.toString();
 		}
-		
+
 		return result;
 	}
 }

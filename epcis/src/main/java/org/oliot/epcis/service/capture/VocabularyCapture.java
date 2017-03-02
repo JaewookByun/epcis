@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * Copyright (C) 2014-2016 Jaewook Byun
+ * Copyright (C) 2014-2017 Jaewook Byun
  *
  * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
  * v1.2.x is Java Web Service complying with Electronic Product Code Information

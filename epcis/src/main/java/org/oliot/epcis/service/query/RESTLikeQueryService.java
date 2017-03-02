@@ -1,10 +1,5 @@
 package org.oliot.epcis.service.query;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -307,9 +302,10 @@ public class RESTLikeQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
-		return new ResponseEntity<>(new String("org.oliot.epcis-1.2.5"), responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(new String("org.oliot.epcis-1.2.7"), responseHeaders, HttpStatus.OK);
 	}
 
+	@SuppressWarnings("unused")
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> poll(@PathVariable String queryName, @RequestParam(required = false) String eventType,
