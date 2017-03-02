@@ -1,16 +1,7 @@
-package org.oliot.epcis.service.capture;
+package org.oliot.epcis.service.capture.secured;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.Charset;
+
 import java.util.Random;
 
 import javax.servlet.ServletContext;
@@ -18,6 +9,8 @@ import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.service.capture.CaptureService;
+import org.oliot.epcis.service.capture.CaptureUtil;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -29,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
-
-import com.mongodb.util.JSONParseException;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -65,49 +56,49 @@ public class SecureEventCapture implements ServletContextAware {
 		return result;
 	}
 
+	@SuppressWarnings("unused")
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString, 
-			@RequestParam(required = true) String userID,
-			@RequestParam(required = true) String accessToken,
-			@RequestParam(required = false) Integer gcpLength,
-			@RequestParam(required = false) String accessModifier
-			) {
+	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = true) String userID,
+			@RequestParam(required = true) String accessToken, @RequestParam(required = false) Integer gcpLength,
+			@RequestParam(required = false) String accessModifier) {
 		JSONObject retMsg = new JSONObject();
 
-//=============================================================================================
+		// =============================================================================================
 		/* jaeheeHa1 AC_capture service (check repository) */
-		
+
 		// Access Token Validation
 		if (accessToken == null) {
 			return new ResponseEntity<>(new String("put accessToken for CaptureService"), HttpStatus.BAD_REQUEST);
 		}
-		
+
 		// Checking subscribe authorization
-		
-		//If there is no subscription right
-		//pop up this . return new ResponseEntity<>("No accessRight", HttpStatus.BAD_REQUEST);
-		
-		/* this is query example for querying ac_api*/
+
+		// If there is no subscription right
+		// pop up this . return new ResponseEntity<>("No accessRight",
+		// HttpStatus.BAD_REQUEST);
+
+		/* this is query example for querying ac_api */
 		Random generator = new Random();
-		
-		//url of ac_api server
-		String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+Configuration.epcis_id+"/furnish";
-		
-		//query to ac_api server
-		String qurlParameters = "";		
+
+		// url of ac_api server
+		String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/" + Configuration.epcis_id
+				+ "/furnish";
+
+		// query to ac_api server
+		String qurlParameters = "";
 		String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-		//for debug, erase after implementing.
+		// for debug, erase after implementing.
 		Configuration.logger.info(query_result);
-		query_result = query_result.replaceAll("[\"{} ]","").split(":")[1];
-		
-		boolean pass = (query_result.equals("yes"))?true:false;
-		
-		/* end of example for querying ac_api*/
-		
-//=============================================================================================		
-		
+		query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
+
+		boolean pass = (query_result.equals("yes")) ? true : false;
+
+		/* end of example for querying ac_api */
+
+		// =============================================================================================
+
 		if (pass) {
 			Configuration.logger.info(" EPCIS Document Capture Started.... ");
 
@@ -129,18 +120,17 @@ public class SecureEventCapture implements ServletContextAware {
 			EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
 
 			if (Configuration.isCaptureVerfificationOn == true) {
-				ResponseEntity<?> error = CaptureUtil.minorCheckDocumentHeader(epcisDocument);
+				ResponseEntity<?> error = CaptureUtil.checkDocumentHeader(epcisDocument);
 				if (error != null)
 					return error;
 			}
-			
+
 			String accessModifierString;
-	         if(accessModifier!=null){
-	            accessModifierString=accessModifier;
-	         }else{
-	            accessModifierString="friend";
-	         }
-			
+			if (accessModifier != null) {
+				accessModifierString = accessModifier;
+			} else {
+				accessModifierString = "friend";
+			}
 
 			CaptureService cs = new CaptureService();
 			retMsg = cs.capture(epcisDocument, userID, accessModifierString, gcpLength);
@@ -148,7 +138,6 @@ public class SecureEventCapture implements ServletContextAware {
 		} else {
 			retMsg.put("Authorized", "no");
 		}
-		
 
 		if (retMsg.isNull("error") == true && pass)
 			return new ResponseEntity<>(retMsg.toString(), HttpStatus.OK);

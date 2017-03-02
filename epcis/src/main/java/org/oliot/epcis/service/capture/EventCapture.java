@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
 /**
- * Copyright (C) 2014-2016 Jaewook Byun
+ * Copyright (C) 2014-2017 Jaewook Byun
  *
  * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
  * v1.2.x is Java Web Service complying with Electronic Product Code Information
@@ -59,7 +59,7 @@ public class EventCapture implements ServletContextAware {
 			@RequestParam(required = false) Integer gcpLength) {
 		JSONObject retMsg = new JSONObject();
 
-		// Access Token Validation
+		// Facebook Auth.: Access Token Validation
 		if (userID != null) {
 			ResponseEntity<?> isError = CaptureUtil.checkAccessToken(userID, accessToken, accessModifier);
 			if (isError != null)
@@ -74,8 +74,9 @@ public class EventCapture implements ServletContextAware {
 			boolean isValidated = CaptureUtil.validate(validateStream,
 					Configuration.wsdlPath + "/EPCglobal-epcis-1_2.xsd");
 			if (isValidated == false) {
-				// M63
-				return new ResponseEntity<>(new String("Error M63"), HttpStatus.BAD_REQUEST);
+				return new ResponseEntity<>(
+						new String("[Error] Input EPCIS Document does not comply the standard schema"),
+						HttpStatus.BAD_REQUEST);
 			}
 			Configuration.logger.info(" EPCIS Document : Validated ");
 
@@ -85,7 +86,7 @@ public class EventCapture implements ServletContextAware {
 		EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
 
 		if (Configuration.isCaptureVerfificationOn == true) {
-			ResponseEntity<?> error = CaptureUtil.minorCheckDocumentHeader(epcisDocument);
+			ResponseEntity<?> error = CaptureUtil.checkDocumentHeader(epcisDocument);
 			if (error != null)
 				return error;
 		}
