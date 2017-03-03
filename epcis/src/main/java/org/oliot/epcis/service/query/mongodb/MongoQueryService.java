@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -369,7 +370,6 @@ public class MongoQueryService {
 				BsonDocument.class);
 		// Queries
 		BsonArray queryList = makeQueryObjects(p, userID, friendList);
-
 		// Merge All the queries with $and
 		BsonDocument baseQuery = new BsonDocument();
 		FindIterable<BsonDocument> cursor;
@@ -385,7 +385,8 @@ public class MongoQueryService {
 			cursor = collection.find();
 		}
 		// Sort and Limit
-		cursor = makeSortedLimitedCursor(cursor, p.getOrderBy(), p.getOrderDirection(), p.getEventCountLimit());
+		cursor = makeProjectSortedLimitedCursor(cursor, p.getParams(), p.getOrderBy(), p.getOrderDirection(),
+				p.getEventCountLimit());
 
 		JSONArray retArray = new JSONArray();
 
@@ -886,8 +887,20 @@ public class MongoQueryService {
 		return null;
 	}
 
-	private FindIterable<BsonDocument> makeSortedLimitedCursor(FindIterable<BsonDocument> cursor, String orderBy,
-			String orderDirection, Integer eventCountLimit) {
+	private FindIterable<BsonDocument> makeProjectSortedLimitedCursor(FindIterable<BsonDocument> cursor,
+			Map<String, String> extParams, String orderBy, String orderDirection, Integer eventCountLimit) {
+
+		// TODO: Projection
+		Iterator<Entry<String, String>> extParamIter = extParams.entrySet().iterator();
+		while (extParamIter.hasNext()) {
+			Entry<String, String> entry = extParamIter.next();
+			String paramKey = entry.getKey();
+			String paramValue = entry.getValue();
+			if (paramKey.startsWith("PROJECTION_")) {
+
+			}
+		}
+
 		/**
 		 * orderBy : If specified, names a single field that will be used to
 		 * order the results. The orderDirection field specifies whether the
