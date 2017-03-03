@@ -33,92 +33,212 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
-
-	function createValidationResultMessage(result){
-		if(result.isValidated == false)
+	function createValidationResultMessage(result) {
+		if (result.isValidated == false)
 			return null;
-		return "EventData: " + result.eventDataCount + " , Vocabularies: " + result.vocabularyCount + " , VocabularyElements: " + result.vocabularyElementCount;
+		return "EventData: " + result.eventDataCount + " , Vocabularies: "
+				+ result.vocabularyCount + " , VocabularyElements: "
+				+ result.vocabularyElementCount;
 	}
 
-	$(document).ready(function() {
-		// Loading a selected example to the text area
-		$(".dropdown-menu").on("click", "li a", function(event) {
-			$("#xmlTextArea").load($(this)[0].id, function(){
-				var docValURL = $("#docValURL").val();
-				var masterDocValURL = $("#masterDocValURL").val();
-				var valXMLString = $("#xmlTextArea").val();
-				
-				$.ajax({
-					type : "POST",
-					url : docValURL,
-					data : valXMLString,
-					contentType : "application/xml; charset=utf-8"
-				}).done(function(result) {
-					var msg = createValidationResultMessage(result);
-					$("#docValResp").val(msg).hide().fadeIn('slow');
-				}).error(function(result) {
-					$("#docValResp").val(result.responseText).hide().fadeIn('slow');
-				});
-				
-				$.ajax({
-					type : "POST",
-					url : masterDocValURL,
-					data : valXMLString,
-					contentType : "application/xml; charset=utf-8"
-				}).done(function(result) {
-					var msg = createValidationResultMessage(result);
-					$("#masterDocValResp").val(msg).hide().fadeIn('slow');
-				}).error(function(result) {
-					$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
-				});
-			});		
-		})
-		$('#captureURL').val('http://'+location.host+'/epcis/Service/EventCapture');
-		$('#docValURL').val('http://'+location.host+'/epcis/Service/EPCISDocumentValidation');
-		$('#masterDocValURL').val('http://'+location.host+'/epcis/Service/EPCISMasterDataDocumentValidation');
-		
-		$('#xmlTextArea').on('paste', function(d){
-			var docValURL = $("#docValURL").val();
-			var masterDocValURL = $("#masterDocValURL").val();
-			var valXMLString = d.originalEvent.clipboardData.getData('text');
-			
-			$.ajax({
-				type : "POST",
-				url : docValURL,
-				data : valXMLString,
-				contentType : "application/xml; charset=utf-8"
-			}).done(function(result) {
-				var msg =  createValidationResultMessage(result);
-				$("#docValResp").val(msg).hide().fadeIn('slow');
-			}).error(function(result) {
-				createValidationResultMessage(result);
-				$("#docValResp").val(result.responseText).hide().fadeIn('slow');
-			});
-			
-			$.ajax({
-				type : "POST",
-				url : masterDocValURL,
-				data : valXMLString,
-				contentType : "application/xml; charset=utf-8"
-			}).done(function(result) {
-				var msg = createValidationResultMessage(result);
-				$("#masterDocValResp").val(msg).hide().fadeIn('slow');
-			}).error(function(result) {
-				createValidationResultMessage(result);
-				$("#masterDocValResp").val(result.responseText).hide().fadeIn('slow');
-			});
-		});
-		
-		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
-		$.ajax({
-			type : "GET",
-			url : systemInfoURL
-		}).done(function(result) {
-			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
-		});
-		
-		
-	});
+	$(document)
+			.ready(
+					function() {
+						// Loading a selected example to the text area
+						$(".dropdown-menu")
+								.on(
+										"click",
+										"li a",
+										function(event) {
+											$("#xmlTextArea")
+													.load(
+															$(this)[0].id,
+															function() {
+																var docValURL = $(
+																		"#docValURL")
+																		.val();
+																var masterDocValURL = $(
+																		"#masterDocValURL")
+																		.val();
+																var valXMLString = $(
+																		"#xmlTextArea")
+																		.val();
+
+																$
+																		.ajax(
+																				{
+																					type : "POST",
+																					url : docValURL,
+																					data : valXMLString,
+																					contentType : "application/xml; charset=utf-8"
+																				})
+																		.done(
+																				function(
+																						result) {
+																					var msg = createValidationResultMessage(result);
+																					$(
+																							"#docValResp")
+																							.val(
+																									msg)
+																							.hide()
+																							.fadeIn(
+																									'slow');
+																				})
+																		.error(
+																				function(
+																						result) {
+																					$(
+																							"#docValResp")
+																							.val(
+																									result.responseText)
+																							.hide()
+																							.fadeIn(
+																									'slow');
+																				});
+
+																$
+																		.ajax(
+																				{
+																					type : "POST",
+																					url : masterDocValURL,
+																					data : valXMLString,
+																					contentType : "application/xml; charset=utf-8"
+																				})
+																		.done(
+																				function(
+																						result) {
+																					var msg = createValidationResultMessage(result);
+																					$(
+																							"#masterDocValResp")
+																							.val(
+																									msg)
+																							.hide()
+																							.fadeIn(
+																									'slow');
+																				})
+																		.error(
+																				function(
+																						result) {
+																					$(
+																							"#masterDocValResp")
+																							.val(
+																									result.responseText)
+																							.hide()
+																							.fadeIn(
+																									'slow');
+																				});
+															});
+										})
+						$('#captureURL').val(
+								'http://' + location.host
+										+ '/epcis/Service/EventCapture');
+						$('#docValURL')
+								.val(
+										'http://'
+												+ location.host
+												+ '/epcis/Service/EPCISDocumentValidation');
+						$('#masterDocValURL')
+								.val(
+										'http://'
+												+ location.host
+												+ '/epcis/Service/EPCISMasterDataDocumentValidation');
+
+						$('#xmlTextArea')
+								.on(
+										'paste',
+										function(d) {
+											var docValURL = $("#docValURL")
+													.val();
+											var masterDocValURL = $(
+													"#masterDocValURL").val();
+											var valXMLString = d.originalEvent.clipboardData
+													.getData('text');
+
+											$
+													.ajax(
+															{
+																type : "POST",
+																url : docValURL,
+																data : valXMLString,
+																contentType : "application/xml; charset=utf-8"
+															})
+													.done(
+															function(result) {
+																var msg = createValidationResultMessage(result);
+																$("#docValResp")
+																		.val(
+																				msg)
+																		.hide()
+																		.fadeIn(
+																				'slow');
+															})
+													.error(
+															function(result) {
+																createValidationResultMessage(result);
+																$("#docValResp")
+																		.val(
+																				result.responseText)
+																		.hide()
+																		.fadeIn(
+																				'slow');
+															});
+
+											$
+													.ajax(
+															{
+																type : "POST",
+																url : masterDocValURL,
+																data : valXMLString,
+																contentType : "application/xml; charset=utf-8"
+															})
+													.done(
+															function(result) {
+																var msg = createValidationResultMessage(result);
+																$(
+																		"#masterDocValResp")
+																		.val(
+																				msg)
+																		.hide()
+																		.fadeIn(
+																				'slow');
+															})
+													.error(
+															function(result) {
+																createValidationResultMessage(result);
+																$(
+																		"#masterDocValResp")
+																		.val(
+																				result.responseText)
+																		.hide()
+																		.fadeIn(
+																				'slow');
+															});
+										});
+
+						systemInfoURL = 'http://' + location.host
+								+ '/epcis/Service/Admin/SystemInformation';
+						$
+								.ajax({
+									type : "GET",
+									url : systemInfoURL
+								})
+								.done(
+										function(result) {
+											$("#sysInfoResp")
+													.val(
+															"[EPCIS] "
+																	+ location.host
+																	+ "/epcis"
+																	+ " -> "
+																	+ "[MongoDB] "
+																	+ result.backend_database_name
+																	+ " database in "
+																	+ result.backend_ip
+																	+ ":"
+																	+ result.backend_port);
+										});
+
+					});
 
 	function capture() {
 		var captureURL = $("#captureURL").val();
@@ -140,10 +260,17 @@
 		if (type == "event") {
 			var str = $("#captureURL").val();
 			str = str.replace("Vocabulary", "Event");
+			str = str.replace("ECReport", "Event");
 			$("#captureURL").val(str);
 		} else if (type == "vocabulary") {
 			var str = $("#captureURL").val();
 			str = str.replace("Event", "Vocabulary");
+			str = str.replace("ECReport", "Vocabulary");
+			$("#captureURL").val(str);
+		} else if (type == "ecreport"){
+			var str = $("#captureURL").val();
+			str = str.replace("Event", "ECReport");
+			str = str.replace("Vocabulary", "ECReport");
 			$("#captureURL").val(str);
 		}
 	}
@@ -175,8 +302,8 @@
 				<div class="col-sm-4">
 					<h4>EPCIS Capture URL (Change IP or Domain if needed)</h4>
 					<input id="sysInfoResp" type="text" class="form-control" disabled
-						placeholder="System Information...">
-					<input id="captureURL" type="text" class="form-control"
+						placeholder="System Information..."> <input
+						id="captureURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/EventCapture"
 						placeholder="http://localhost:8080/epcis/Service/EventCapture">
 					<h4>Event/Vocabulary Capture</h4>
@@ -192,14 +319,15 @@
 					<input id="masterDocValURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation"
 						placeholder="http://localhost:8080/epcis/Service/EPCISMasterDataDocumentValidation">
-					<input id="masterDocValResp" type="text" class="form-control" disabled
+					<input id="masterDocValResp" type="text" class="form-control"
+						disabled
 						placeholder="Validation result against EPCISMasterDataDocument schema">
 				</div>
 				<div class="col-sm-8">
 					<h4>HTTP.POST Body</h4>
 
 					<div class="dropdown">
-						
+
 						<button class="btn btn-default dropdown-toggle" type="button"
 							id="dropData" data-toggle="dropdown" aria-haspopup="true"
 							aria-expanded="true">
@@ -216,17 +344,39 @@
 							<li><a id="./exampleXML/gs1example4(Transformation).xml"
 								href="#">GS1 Example 4 [EPCIS v1.2 section 9.6.4]</a></li>
 							<li class="dropdown-header"></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample1.xml" href="#">EPCIS Guideline A.1</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample2.xml" href="#">EPCIS Guideline A.2</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample3.xml" href="#">EPCIS Guideline A.3</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample4.xml" href="#">EPCIS Guideline A.4</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample5.xml" href="#">EPCIS Guideline A.5</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample6.xml" href="#">EPCIS Guideline A.6</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample7.xml" href="#">EPCIS Guideline A.7</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample8.xml" href="#">EPCIS Guideline A.8</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample9.xml" href="#">EPCIS Guideline A.9</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample10.xml" href="#">EPCIS Guideline A.10</a></li>
-							<li><a id="./exampleXML/EPCISGuideline/gs1GuidelineExample11.xml" href="#">EPCIS Guideline A.11</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample1.xml"
+								href="#">EPCIS Guideline A.1</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample2.xml"
+								href="#">EPCIS Guideline A.2</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample3.xml"
+								href="#">EPCIS Guideline A.3</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample4.xml"
+								href="#">EPCIS Guideline A.4</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample5.xml"
+								href="#">EPCIS Guideline A.5</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample6.xml"
+								href="#">EPCIS Guideline A.6</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample7.xml"
+								href="#">EPCIS Guideline A.7</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample8.xml"
+								href="#">EPCIS Guideline A.8</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample9.xml"
+								href="#">EPCIS Guideline A.9</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample10.xml"
+								href="#">EPCIS Guideline A.10</a></li>
+							<li><a
+								id="./exampleXML/EPCISGuideline/gs1GuidelineExample11.xml"
+								href="#">EPCIS Guideline A.11</a></li>
 							<li class="dropdown-header"></li>
 							<li><a id="./exampleXML/gs1example6(Object-Erroneous).xml"
 								href="#">Error Declaration Example - Erroneous Event</a></li>
@@ -264,6 +414,8 @@
 							<li><a
 								id="./CoreBusinessVocabulary/CoreBusinessVocabulary.xml"
 								href="#">Electronic CBV</a></li>
+							<li class="dropdown-header">ECReport Example</li>
+							<li><a id="./exampleXML/ECReportExample1.xml" href="#">ECReport Example 1</a></li>
 						</ul>
 					</div>
 					<textarea id="xmlTextArea" class="form-control auto-text-area"
@@ -309,7 +461,7 @@
 								<li class="list-group-item">Method: post</li>
 								<li class="list-group-item">Contents: application/xml,
 									complying with <a href="./wsdl/EPCglobal-epcis-1_2.xsd">EPCIS
-										v1.2 XML Schema</a>
+										v1.2 Master Data XML Schema</a>
 								</li>
 								<li class="list-group-item">URL Format: <br>
 									http://{base-url}:{base-port}/epcis/Service/VocabularyCapture <br>
@@ -317,13 +469,39 @@
 							</ul>
 						</td>
 					</tr>
-
+					<tr>
+						<td><button type="button" class="btn btn-info"
+								onclick="replaceURL('ecreport')">EC Report Capture</button></td>
+						<td>
+							<ul class="list-group">
+								<li class="list-group-item">This convenient service allows you to
+									store your ECReport (from ALE middleware) into your backend storage
+								</li>
+								<li class="list-group-item">Method: post</li>
+								<li class="list-group-item">Contents: application/xml,
+									complying with <a href="./wsdl/EPCglobal-ale-1_1-ale.xsd">ALE
+										v1.1 XML Schema</a>
+								</li>
+								<li class="list-group-item">URL Format: <br>
+									http://{base-url}:{base-port}/epcis/Service/ECReportCapture <br>
+									<br>
+									Additional Paramters: <br>
+									eventTimeZoneOffset: 'XXX' <br>
+									action: (ADD|OBSERVE|DELETE) <br>
+									bizStep <br>
+									disposition <br>
+									readPoint <br>
+									bizLocation <br>
+								</li>
+							</ul>
+						</td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
 	</div>
 	<footer>
-		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2016</code>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2017</code>
 	</footer>
 </body>
 </html>

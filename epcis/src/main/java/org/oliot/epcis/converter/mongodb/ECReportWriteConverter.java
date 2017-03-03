@@ -7,6 +7,7 @@ import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
+import org.bson.BsonValue;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -26,9 +27,9 @@ import org.bson.BsonString;
 
 public class ECReportWriteConverter {
 
-	public static BsonDocument convert(String epcString, long eventTime, String eventTimeZoneOffset, long recordTimeMillis,
-			String action, String bizStep, String disposition, String readPoint, String bizLocation,
-			Map<String, Object> extMap) {
+	public static BsonDocument convert(String epcString, long eventTime, String eventTimeZoneOffset,
+			long recordTimeMillis, String action, String bizStep, String disposition, String readPoint,
+			String bizLocation, Map<String, BsonValue> extMap) {
 		BsonDocument dbo = new BsonDocument();
 
 		// EPC
@@ -72,10 +73,10 @@ public class ECReportWriteConverter {
 
 			while (keyIterator.hasNext()) {
 				String key = keyIterator.next();
-				Object value = extMap.get(key);
+				BsonValue value = extMap.get(key);
 				String qnameKey = MongoWriterUtil.encodeMongoObjectKey(namespaceURI + "#" + key);
 
-				any.put(qnameKey, MongoWriterUtil.converseType(value.toString()));
+				any.put(qnameKey, value);
 			}
 			dbo.put("any", any);
 		}
