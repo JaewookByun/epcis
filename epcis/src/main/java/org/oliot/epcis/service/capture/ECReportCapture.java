@@ -9,8 +9,14 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
+import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
-
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
+import org.bson.BsonString;
+import org.bson.BsonValue;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 import org.oliot.epcis.converter.mongodb.ECReportWriteConverter;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 
 import org.oliot.epcis.service.subscription.TriggerEngine;
@@ -60,9 +67,23 @@ public class ECReportCapture implements ServletContextAware {
 		this.servletContext = servletContext;
 	}
 
+	/**
+	 * ECReportCapture API is a convenient method to convert ECReport into
+	 * ObjectEvent with the following additional parameters
+	 * 
+	 * @param inputString:
+	 *            ECReport
+	 * @param eventTimeZoneOffset
+	 * @param action
+	 * @param bizStep
+	 * @param disposition
+	 * @param readPoint
+	 * @param bizLocation
+	 * @return
+	 */
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
-	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String eventType,
+	public ResponseEntity<?> post(@RequestBody String inputString,
 			@RequestParam(required = false) String eventTimeZoneOffset, @RequestParam(required = false) String action,
 			@RequestParam(required = false) String bizStep, @RequestParam(required = false) String disposition,
 			@RequestParam(required = false) String readPoint, @RequestParam(required = false) String bizLocation) {
@@ -70,10 +91,6 @@ public class ECReportCapture implements ServletContextAware {
 		Configuration.logger.info(" ECReport Capture Started.... ");
 
 		ECReports ecReports = null;
-
-		// Default Event Type
-		if (eventType == null)
-			eventType = "ObjectEvent";
 
 		if (Configuration.isCaptureVerfificationOn == true) {
 			InputStream validateStream = CaptureUtil.getXMLDocumentInputStream(inputString);
@@ -90,48 +107,52 @@ public class ECReportCapture implements ServletContextAware {
 		InputStream stream = CaptureUtil.getXMLDocumentInputStream(inputString);
 		ecReports = JAXB.unmarshal(stream, ECReports.class);
 
-		String retMsg = "Temporary Message ";
-		boolean result = capture(ecReports, eventTimeZoneOffset, action, bizStep, disposition, readPoint, bizLocation);
+		String msg = capture(ecReports, eventTimeZoneOffset, action, bizStep, disposition, readPoint, bizLocation);
 
-		Configuration.logger.info(result);
+		if (msg == null) {
+			Configuration.logger.info(" ECReport : Captured ");
+			return new ResponseEntity<>(new String(), HttpStatus.OK);
+		} else {
+			Configuration.logger.info(" ECReport : Some errors occurred ");
+			return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
+		}
 
-		return new ResponseEntity<>(retMsg.toString(), HttpStatus.OK);
 	}
 
-	private Map<String, Object> getExtensionMap(List<ECReportMemberField> fields) {
-		Map<String, Object> extMap = new HashMap<String, Object>();
+	private Map<String, BsonValue> getExtensionMap(List<ECReportMemberField> fields) {
+		Map<String, BsonValue> extMap = new HashMap<String, BsonValue>();
 		for (int l = 0; l < fields.size(); l++) {
 			ECReportMemberField field = fields.get(l);
 			String key = field.getName();
 			String value = field.getValue();
 			String[] valArr = value.split("\\^");
 			if (valArr.length != 2) {
-				extMap.put(key, value);
+				extMap.put(key, new BsonString(value));
 				continue;
 			}
 			try {
 				String type = valArr[1];
 				if (type.equals("int")) {
-					extMap.put(key, Integer.parseInt(valArr[0]));
+					extMap.put(key, new BsonInt32(Integer.parseInt(valArr[0])));
 				} else if (type.equals("long")) {
-					extMap.put(key, Long.parseLong(valArr[0]));
-				} else if (type.equals("float")) {
-					extMap.put(key, Float.parseFloat(valArr[0]));
+					extMap.put(key, new BsonInt64(Long.parseLong(valArr[0])));
 				} else if (type.equals("double")) {
-					extMap.put(key, Double.parseDouble(valArr[0]));
+					extMap.put(key, new BsonDouble(Double.parseDouble(valArr[0])));
 				} else if (type.equals("boolean")) {
-					extMap.put(key, Boolean.parseBoolean(valArr[0]));
+					extMap.put(key, new BsonBoolean(Boolean.parseBoolean(valArr[0])));
+				} else if (type.equals("dateTime")) {
+					extMap.put(key, new BsonDateTime(Long.parseLong(valArr[0])));
 				} else {
-					extMap.put(key, valArr[0]);
+					extMap.put(key, new BsonString(valArr[0]));
 				}
 			} catch (NumberFormatException e) {
-				extMap.put(key, valArr[0]);
+				extMap.put(key, new BsonString(valArr[0]));
 			}
 		}
 		return extMap;
 	}
 
-	private boolean capture(ECReports ecReports, String eventTimeZoneOffset, String action, String bizStep,
+	private String capture(ECReports ecReports, String eventTimeZoneOffset, String action, String bizStep,
 			String disposition, String readPoint, String bizLocation) {
 
 		// Event Time in timemillis , type long
@@ -141,56 +162,35 @@ public class ECReportCapture implements ServletContextAware {
 
 		List<ECReport> ecReportList = ecReports.getReports().getReport();
 
-		ecReportList.parallelStream().filter(ecReport -> ecReport.getGroup() != null).forEach(ecReport -> {
-			ecReport.getGroup().parallelStream().filter(ecReportGroup -> ecReportGroup.getGroupList() != null)
-					.forEach(ecReportGroup -> {
-						ecReportGroup.getGroupList().getMember().parallelStream()
-								.filter(member -> (member.getExtension() != null)
-										&& (member.getExtension().getFieldList() != null))
-								.forEach(member -> {
-									String epcString = member.getEpc().getValue();
-									FieldList fieldList = member.getExtension().getFieldList();
-									List<ECReportMemberField> fields = fieldList.getField();
-									Map<String, Object> extMap = getExtensionMap(fields);
+		try {
+			ecReportList.parallelStream().filter(ecReport -> ecReport.getGroup() != null).forEach(ecReport -> {
+				ecReport.getGroup().parallelStream().filter(ecReportGroup -> ecReportGroup.getGroupList() != null)
+						.forEach(ecReportGroup -> {
+							ecReportGroup.getGroupList().getMember().parallelStream()
+									.filter(member -> (member.getExtension() != null)
+											&& (member.getExtension().getFieldList() != null))
+									.forEach(member -> {
+										String epcString = member.getEpc().getValue();
+										FieldList fieldList = member.getExtension().getFieldList();
+										List<ECReportMemberField> fields = fieldList.getField();
+										Map<String, BsonValue> extMap = getExtensionMap(fields);
 
-									BsonDocument dbo = ECReportWriteConverter.convert(epcString, eventTime,
-											eventTimeZoneOffset, recordTimeMillis, action, bizStep, disposition,
-											readPoint, bizLocation, extMap);
+										BsonDocument dbo = ECReportWriteConverter.convert(epcString, eventTime,
+												eventTimeZoneOffset, recordTimeMillis, action, bizStep, disposition,
+												readPoint, bizLocation, extMap);
 
-									MongoCollection<BsonDocument> collection = Configuration.mongoDatabase
-											.getCollection("EventData", BsonDocument.class);
-									if (Configuration.isTriggerSupported == true) {
-										TriggerEngine.examineAndFire("ObjectEvent", dbo);
-									}
-									collection.insertOne(dbo);
-								});
-					});
-		});
-
-		return true;
+										MongoCollection<BsonDocument> collection = Configuration.mongoDatabase
+												.getCollection("EventData", BsonDocument.class);
+										if (Configuration.isTriggerSupported == true) {
+											TriggerEngine.examineAndFire("ObjectEvent", dbo);
+										}
+										collection.insertOne(dbo);
+									});
+						});
+			});
+		} catch (MongoException ex) {
+			return ex.toString();
+		}
+		return null;
 	}
-
-	/*
-	 * static BsonValue converseType(String value) { String[] valArr =
-	 * value.split("\\^"); if (valArr.length != 2) { return new
-	 * BsonString(value); } try { String type = valArr[1]; if
-	 * (type.equals("int")) { return new BsonInt32(Integer.parseInt(valArr[0]));
-	 * } else if (type.equals("long")) { return new
-	 * BsonInt64(Long.parseLong(valArr[0])); } else if (type.equals("double")) {
-	 * return new BsonDouble(Double.parseDouble(valArr[0])); } else if
-	 * (type.equals("boolean")) { return new
-	 * BsonBoolean(Boolean.parseBoolean(valArr[0])); } else if
-	 * (type.equals("float")) { return new
-	 * BsonDouble(Double.parseDouble(valArr[0])); } else if
-	 * (type.equals("dateTime")) { BsonDateTime time =
-	 * getBsonDateTime(valArr[0]); if (time != null) return time; return new
-	 * BsonString(value); } else { return new BsonString(value); } } catch
-	 * (NumberFormatException e) { return new BsonString(value); } }
-	 */
-
-	/*
-	 * static public String encodeMongoObjectKey(String key) { key =
-	 * key.replace(".", "\uff0e"); return key; }
-	 */
-
 }

@@ -7,17 +7,20 @@ import org.bson.BsonDocument;
 
 public abstract class EPCISEvent {
 	private long eventTime;
+	private long recordTime;
 	private String eventTimeZoneOffset;
 
 	public EPCISEvent() {
 		eventTime = System.currentTimeMillis();
 		SimpleDateFormat format = new SimpleDateFormat("XXX");
 		eventTimeZoneOffset = format.format(new Date());
+		recordTime = 0;
 	}
 
 	public EPCISEvent(long eventTime, String eventTimeZoneOffset) {
 		this.eventTime = eventTime;
 		this.eventTimeZoneOffset = eventTimeZoneOffset;
+		recordTime = 0;
 	}
 
 	public long getEventTime() {
@@ -26,6 +29,14 @@ public abstract class EPCISEvent {
 
 	public void setEventTime(long eventTime) {
 		this.eventTime = eventTime;
+	}
+
+	public long getRecordTime() {
+		return recordTime;
+	}
+
+	public void setRecordTime(long recordTime) {
+		this.recordTime = recordTime;
 	}
 
 	public String getEventTimeZoneOffset() {
@@ -49,6 +60,10 @@ public abstract class EPCISEvent {
 		baseEvent = util.putEventTime(baseEvent, eventTime);
 		baseEvent = util.putEventTimeZoneOffset(baseEvent, eventTimeZoneOffset);
 
+		// Optional Fields
+		if (this.recordTime != 0) {
+			baseEvent = util.putRecordTime(baseEvent, recordTime);
+		}
 		return baseEvent;
 	}
 
