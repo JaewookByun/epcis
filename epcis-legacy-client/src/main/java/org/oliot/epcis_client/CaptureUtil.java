@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
-import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonInt32;
@@ -35,7 +34,7 @@ import org.bson.BsonValue;
 public class CaptureUtil {
 
 	public BsonDocument putEventTime(BsonDocument base, Long eventTime) {
-		base.put("eventTime", new BsonDateTime(eventTime));
+		base.put("eventTime", new BsonInt64(eventTime));
 		return base;
 	}
 
@@ -49,6 +48,10 @@ public class CaptureUtil {
 		return base;
 	}
 
+	public BsonDocument putRecordTime(BsonDocument base, Long recordTime) {
+		base.put("recordTime", new BsonInt64(recordTime));
+		return base;
+	}
 
 	public BsonDocument putParentID(BsonDocument base, String parentID) {
 		base.put("parentID", new BsonString(parentID));
