@@ -43,7 +43,7 @@ public class TransactionEvent extends EPCISEvent {
 	private Map<String, List<String>> destinationList;
 	private Map<String, String> namespaces;
 
-	private Map<String, Map<String, Object>> extensions;
+	private BsonDocument extensions;
 
 	public TransactionEvent(Map<String, List<String>> bizTransactionList) {
 		super();
@@ -58,7 +58,7 @@ public class TransactionEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		extensions = new BsonDocument();
 	}
 
 	public TransactionEvent(long eventTime, String eventTimeZoneOffset, String action,
@@ -74,7 +74,7 @@ public class TransactionEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		extensions = new BsonDocument();
 	}
 
 	public String getAction() {
@@ -173,11 +173,11 @@ public class TransactionEvent extends EPCISEvent {
 		this.namespaces = namespaces;
 	}
 
-	public Map<String, Map<String, Object>> getExtensions() {
+	public BsonDocument getExtensions() {
 		return extensions;
 	}
 
-	public void setExtensions(Map<String, Map<String, Object>> extensions) {
+	public void setExtensions(BsonDocument extensions) {
 		this.extensions = extensions;
 	}
 

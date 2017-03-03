@@ -8,7 +8,7 @@ import java.util.Map;
 import org.bson.BsonDocument;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -44,8 +44,8 @@ public class TransformationEvent extends EPCISEvent {
 	private Map<String, List<String>> destinationList;
 
 	private Map<String, String> namespaces;
-	private Map<String, Map<String, Object>> ilmds;
-	private Map<String, Map<String, Object>> extensions;
+	private BsonDocument ilmds;
+	private BsonDocument extensions;
 
 	public TransformationEvent() {
 		super();
@@ -59,8 +59,8 @@ public class TransformationEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		ilmds = new HashMap<String, Map<String, Object>>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		ilmds = new BsonDocument();
+		extensions = new BsonDocument();
 	}
 
 	public TransformationEvent(long eventTime, String eventTimeZoneOffset) {
@@ -75,8 +75,8 @@ public class TransformationEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		ilmds = new HashMap<String, Map<String, Object>>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		ilmds = new BsonDocument();
+		extensions = new BsonDocument();
 	}
 
 	public List<String> getInputEPCList() {
@@ -183,19 +183,19 @@ public class TransformationEvent extends EPCISEvent {
 		this.namespaces = namespaces;
 	}
 
-	public Map<String, Map<String, Object>> getIlmds() {
+	public BsonDocument getIlmds() {
 		return ilmds;
 	}
 
-	public void setIlmds(Map<String, Map<String, Object>> ilmds) {
+	public void setIlmds(BsonDocument ilmds) {
 		this.ilmds = ilmds;
 	}
 
-	public Map<String, Map<String, Object>> getExtensions() {
+	public BsonDocument getExtensions() {
 		return extensions;
 	}
 
-	public void setExtensions(Map<String, Map<String, Object>> extensions) {
+	public void setExtensions(BsonDocument extensions) {
 		this.extensions = extensions;
 	}
 

@@ -8,7 +8,7 @@ import java.util.Map;
 import org.bson.BsonDocument;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -26,7 +26,6 @@ import org.bson.BsonDocument;
  */
 public class MasterData {
 
-	// EventTime, EventTimeZoneOffset,Action required
 	private VocabularyType type;
 	private String id;
 	private Map<String, String> attributes;
