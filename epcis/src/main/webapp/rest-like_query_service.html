@@ -33,25 +33,39 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
+	$(document).ready(
+			function() {
+				$('#pollBaseURL').val(
+						"http://" + location.host
+								+ "/epcis/Service/Poll/SimpleEventQuery?");
+				$('#getStandardVersionURL').val(
+						"http://" + location.host
+								+ "/epcis/Service/GetStandardVersion");
+				$('#getVendorVersionURL').val(
+						"http://" + location.host
+								+ "/epcis/Service/GetVendorVersion");
+				$('#getQueryNamesURL').val(
+						"http://" + location.host
+								+ "/epcis/Service/GetQueryNames");
 
-	$(document).ready(function() {
-		$('#pollBaseURL').val("http://"+location.host+"/epcis/Service/Poll/SimpleEventQuery?");
-		$('#getStandardVersionURL').val("http://"+location.host+"/epcis/Service/GetStandardVersion");
-		$('#getVendorVersionURL').val("http://"+location.host+"/epcis/Service/GetVendorVersion");
-		$('#getQueryNamesURL').val("http://"+location.host+"/epcis/Service/GetQueryNames");
-		
-		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
-		$.ajax({
-			type : "GET",
-			url : systemInfoURL
-		}).done(function(result) {
-			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
-		});
-		
-	});
-	
-	
-	
+				systemInfoURL = 'http://' + location.host
+						+ '/epcis/Service/Admin/SystemInformation';
+				$.ajax({
+					type : "GET",
+					url : systemInfoURL
+				}).done(
+						function(result) {
+							$("#sysInfoResp").val(
+									"[EPCIS] " + location.host + "/epcis"
+											+ " -> " + "[MongoDB] "
+											+ result.backend_database_name
+											+ " database in "
+											+ result.backend_ip + ":"
+											+ result.backend_port);
+						});
+
+			});
+
 	function poll() {
 		var baseURL = $("#pollBaseURL").val();
 		var params = $("#pollParam").val();
@@ -59,10 +73,18 @@
 		$.get(
 				url,
 				function(ret) {
+					console.log(ret);
+
 					if (typeof ret == 'object') {
-						$("#xmlTextArea").val(
-								(new XMLSerializer()).serializeToString(ret))
-								.hide().fadeIn();
+						try {
+							$("#xmlTextArea").val(
+									(new XMLSerializer())
+											.serializeToString(ret)).hide()
+									.fadeIn();
+						} catch (e) {
+							$("#xmlTextArea").val(JSON.stringify(ret,null,'\t')).hide()
+									.fadeIn();
+						}
 					} else {
 						$("#xmlTextArea").val(ret).hide().fadeIn();
 					}
@@ -126,8 +148,8 @@
 	function movePage(page) {
 		document.location.href = page;
 	}
-	
-	function reset(){
+
+	function reset() {
 		$('#pollParam').val('');
 	}
 </script>
@@ -159,15 +181,16 @@
 				<div class="col-sm-4">
 					<h4>EPCIS Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
 					<input id="sysInfoResp" type="text" class="form-control" disabled
-						placeholder="System Information...">
-					<input id="pollBaseURL" type="text" class="form-control"
+						placeholder="System Information..."> <input
+						id="pollBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
 						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">
 					<input id="pollParam" type="text" class="form-control"
 						placeholder="POLL PARAMETERS">
 					<button type="button" class="btn btn-info" onclick="poll()">Poll
 						SimpleEventQuery</button>
-					<button type="reset" class="btn btn-danger" onclick="reset()">Reset Params</button>	
+					<button type="reset" class="btn btn-danger" onclick="reset()">Reset
+						Params</button>
 					<br> <br> <input id="getStandardVersionURL" type="text"
 						class="form-control"
 						value="http://localhost:8080/epcis/Service/GetStandardVersion"
@@ -212,8 +235,8 @@
 									stored in the EPCIS repository in interest immediately</li>
 								<li class="list-group-item">URL:
 									http://{base-url}:{base-port}/epcis/Service/Poll/{queryName}</li>
-								<li class="list-group-item">Parameters: <br>
-									<code>List of characters should be encoded: + -> %2B , # -> %23</code><br>
+								<li class="list-group-item">Parameters: <br> <code>List
+										of characters should be encoded: + -> %2B , # -> %23</code><br>
 									<button type="button" class="btn btn-warning"
 										onclick="replaceURL('event')">{queryName}==SimpleEventQuery</button>
 
