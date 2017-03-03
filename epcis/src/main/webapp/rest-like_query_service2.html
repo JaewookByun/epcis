@@ -57,9 +57,15 @@
 				url,
 				function(ret) {
 					if (typeof ret == 'object') {
-						$("#xmlTextArea").val(
-								(new XMLSerializer()).serializeToString(ret))
-								.hide().fadeIn();
+						try {
+							$("#xmlTextArea").val(
+									(new XMLSerializer())
+											.serializeToString(ret)).hide()
+									.fadeIn();
+						} catch (e) {
+							$("#xmlTextArea").val(JSON.stringify(ret,null,'\t')).hide()
+									.fadeIn();
+						}
 					} else {
 						$("#xmlTextArea").val(ret).hide().fadeIn();
 					}

@@ -346,8 +346,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 			@RequestParam(required = false) Integer maxElementCount,
 
 			@RequestParam(required = false) String format, @RequestParam(required = false) String userID,
-			@RequestParam(required = false) String accessToken,
-			@RequestParam(required = false) String accessMode,
+			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessMode,
 			@RequestParam Map<String, String> params)
 			throws QueryParameterException, QueryTooLargeException, QueryTooComplexException, NoSuchNameException,
 			SecurityException, ValidationException, ImplementationException {
@@ -362,16 +361,14 @@ public class RESTLikeQueryService implements ServletContextAware {
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
 		List<String> friendList = null;
-		
-		if(accessMode==null){
-			
-		}
-		else if(accessMode.equals("facebook")){
+
+		if (accessMode != null && accessMode.equals("facebook")) {
 			if (userID != null) {
 				// Check accessToken
 				fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
 				if (fc == null) {
-					return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders, HttpStatus.UNAUTHORIZED);
+					return new ResponseEntity<>(new String("Unauthorized Token"), responseHeaders,
+							HttpStatus.UNAUTHORIZED);
 				}
 				friendList = new ArrayList<String>();
 
@@ -382,68 +379,64 @@ public class RESTLikeQueryService implements ServletContextAware {
 					}
 				}
 			}
-		}
-		else if(accessMode.equals("custom")){
-			/* jaeheeHa2 AC_query service*/
-			
-			//1. first check the subscribing authorization
-			//url of ac_api server
-			
+		} else if (accessMode != null && accessMode.equals("custom")) {
+			/* jaeheeHa2 AC_query service */
+
+			// 1. first check the subscribing authorization
+			// url of ac_api server
+
 			// Checking subscribe authorization
-			
-			//If there is no subscription right
-			//pop up this . return new ResponseEntity<>("No accessRight", HttpStatus.BAD_REQUEST);
-			
-			/* this is query example for querying ac_api*/
+
+			// If there is no subscription right
+			// pop up this . return new ResponseEntity<>("No accessRight",
+			// HttpStatus.BAD_REQUEST);
+
+			/* this is query example for querying ac_api */
 			Random generator = new Random();
-			
-			//url of ac_api server
-			String quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/epcis/"+Configuration.epcis_id+"/subscribe";
-			
-			//query to ac_api server
-			String qurlParameters = "";		
+
+			// url of ac_api server
+			String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/"
+					+ Configuration.epcis_id + "/subscribe";
+
+			// query to ac_api server
+			String qurlParameters = "";
 			String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-			//for debug, erase after implementing.
+			// for debug, erase after implementing.
 			Configuration.logger.info(query_result);
-			query_result = query_result.replaceAll("[\"{} ]","").split(":")[1];
-			
-			boolean pass = (query_result.equals("yes"))?true:false;
-			
-			
-			if(!pass){
+			query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
+
+			boolean pass = (query_result.equals("yes")) ? true : false;
+
+			if (!pass) {
 				return new ResponseEntity<>(new String("no subscribe auth"), HttpStatus.BAD_REQUEST);
 			}
-			/* end of example for querying ac_api*/
-			
-			
-			quri = "http://"+Configuration.ac_api_address+"/user/"+userID+"/access";
-			
-			//query to ac_api server
-			qurlParameters = "";		
+			/* end of example for querying ac_api */
+
+			quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/access";
+
+			// query to ac_api server
+			qurlParameters = "";
 			query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-			//for debug, erase after implementing.
+			// for debug, erase after implementing.
 			Configuration.logger.info(query_result);
-			
-			query_result = query_result.replaceAll("[\"{}\\[\\] ]","").split(":")[1];
+
+			query_result = query_result.replaceAll("[\"{}\\[\\] ]", "").split(":")[1];
 			String[] accessusers = query_result.split(",");
-			
-			
-			//2. if pass the subscribing test, then get all event owner list
+
+			// 2. if pass the subscribing test, then get all event owner list
 			friendList = new ArrayList<String>();
-			for (String accessuser : accessusers){
-				Configuration.logger.info("Friends:"+accessuser);
+			for (String accessuser : accessusers) {
+				Configuration.logger.info("Friends:" + accessuser);
 				friendList.add(accessuser);
 			}
-			
-			
-			//3. and then make restricted query_list
+
+			// 3. and then make restricted query_list
+		} else {
+
 		}
-		else{
-			
-		}
-			
+
 		PollParameters pollParams = new PollParameters(queryName, eventType, GE_eventTime, LT_eventTime, GE_recordTime,
 				LT_recordTime, EQ_action, EQ_bizStep, EQ_disposition, EQ_readPoint, WD_readPoint, EQ_bizLocation,
 				WD_bizLocation, EQ_transformationID, MATCH_epc, MATCH_parentID, MATCH_inputEPC, MATCH_outputEPC,
@@ -457,7 +450,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 		String result = mongoQueryService.poll(pollParams, userID, friendList, null);
 		return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/Poll/NamedEventQuery/{name}", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> poll(@PathVariable String name, @RequestParam(required = false) String userID,
@@ -466,23 +459,23 @@ public class RESTLikeQueryService implements ServletContextAware {
 			SecurityException, ValidationException, ImplementationException {
 
 		HttpHeaders responseHeaders = new HttpHeaders();
-		
+
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
 				BsonDocument.class);
 		BsonDocument namedEventQuery = collection.find(new BsonDocument("name", new BsonString(name))).first();
 		PollParameters pollParams = new PollParameters(namedEventQuery);
-		
+
 		if (pollParams.getFormat() != null && pollParams.getFormat().equals("JSON")) {
 			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 		} else {
 			responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
 		}
-		
+
 		// Access Control is not mandatory
 		// However, if fid and accessToken provided, more information provided
 		FacebookClient fc = null;
 		List<String> friendList = null;
-		
+
 		if (userID != null) {
 			// Check accessToken
 			fc = OAuthUtil.isValidatedFacebookClient(accessToken, userID);
