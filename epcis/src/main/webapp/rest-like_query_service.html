@@ -82,7 +82,8 @@
 											.serializeToString(ret)).hide()
 									.fadeIn();
 						} catch (e) {
-							$("#xmlTextArea").val(JSON.stringify(ret,null,'\t')).hide()
+							$("#xmlTextArea").val(
+									JSON.stringify(ret, null, '\t')).hide()
 									.fadeIn();
 						}
 					} else {
@@ -240,7 +241,16 @@
 									<button type="button" class="btn btn-warning"
 										onclick="replaceURL('event')">{queryName}==SimpleEventQuery</button>
 
-
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3">format</span>
+										<input id="format" type="text" class="form-control"
+											placeholder="XML or JSON" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('format')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('format')">ADD</button>
+										</span>
+									</div>
 
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">eventType</span>
@@ -801,6 +811,8 @@
 												onclick="addParam('maxElementCount')">ADD</button>
 										</span>
 									</div>
+
+
 								</li>
 							</ul>
 						</td>
