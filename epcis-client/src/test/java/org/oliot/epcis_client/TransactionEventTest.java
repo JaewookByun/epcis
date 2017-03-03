@@ -85,7 +85,7 @@ public class TransactionEventTest{
 			extension.put("emg", new Double(22));
 			extension.put("ecg", new Long(11));
 			extensionMap.put("example", extension);
-			transactionEvent.setExtensions(extensionMap);
+			//transactionEvent.setExtensions(extensionMap);
 			
 			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
 			client.addTransactionEvent(transactionEvent);
