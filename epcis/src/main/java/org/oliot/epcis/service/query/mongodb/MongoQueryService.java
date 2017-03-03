@@ -581,7 +581,7 @@ public class MongoQueryService {
 				if (p.getIncludeChildren() == false) {
 					dbObject.remove("children");
 				}
-				retArray.put(dbObject);
+				retArray.put(new JSONObject(dbObject.toJson()));
 			}
 
 		}
