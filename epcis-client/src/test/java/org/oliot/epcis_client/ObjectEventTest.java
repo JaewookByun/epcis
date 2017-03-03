@@ -1,5 +1,11 @@
 package org.oliot.epcis_client;
 
+import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
+import org.bson.BsonDocument;
+import org.bson.BsonDouble;
+import org.bson.BsonInt32;
+import org.bson.BsonInt64;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
@@ -28,12 +34,11 @@ import java.util.Map;
  */
 public class ObjectEventTest {
 
-	@Test
 	public void baseObjectEventCapture() {
 		try {
 			// Make basic Object Event
 			ObjectEvent objectEvent = new ObjectEvent();
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
 			client.addObjectEvent(objectEvent);
 			client.sendDocument();
 		} catch (MalformedURLException e) {
@@ -45,18 +50,15 @@ public class ObjectEventTest {
 	public void basicObjectEventCapture() {
 		try {
 			// Make basic Object Event
-			ObjectEvent objectEvent = new ObjectEvent();
+			ObjectEvent objectEvent = new ObjectEvent(System.currentTimeMillis(), "-06:00", "OBSERVE");
 
 			List<String> epcList = new ArrayList<String>();
-			epcList.add("urn:epc:id:sgtin:0614141.107346.20182");
+			epcList.add("urn:epc:id:sgtin:0614141.107346.2018");
 			objectEvent.setEpcList(epcList);
 
 			objectEvent.setBizStep("urn:epcglobal:cbv:bizstep:receiving");
-
 			objectEvent.setDisposition("urn:epcglobal:cbv:disp:in_progress");
-
 			objectEvent.setReadPoint("urn:epc:id:sgln:0012345.11111.400");
-
 			objectEvent.setBizLocation("urn:epc:id:sgln:0012345.11111.0");
 
 			Map<String, List<String>> bizTransactionList = new HashMap<String, List<String>>();
@@ -69,19 +71,57 @@ public class ObjectEventTest {
 			objectEvent.setBizTransactionList(bizTransactionList);
 
 			Map<String, String> namespaces = new HashMap<String, String>();
-			namespaces.put("example", "http://ns.example.com/epcis");
+			namespaces.put("http://ns.example.com/epcis0", "example0");
+			namespaces.put("http://ns.example.com/epcis1", "example1");
+			namespaces.put("http://ns.example.com/epcis2", "example2");
 			objectEvent.setNamespaces(namespaces);
 
-			Map<String, Map<String, Object>> extensionMap = new HashMap<String, Map<String, Object>>();
-			Map<String, Object> extension = new HashMap<String, Object>();
-			extension.put("temperature", new Integer(36));
-			extension.put("emg", new Double(22));
-			extension.put("ecg", new Long(11));
-			extensionMap.put("example", extension);
+			BsonDocument extensionMap = new BsonDocument();
+			extensionMap.put("http://ns.example.com/epcis0#a", new BsonInt32(15));
+			BsonDocument b = new BsonDocument();
+			b.put("http://ns.example.com/epcis1#c", new BsonDouble(20.5));
+			extensionMap.put("http://ns.example.com/epcis0#b", b);
+			BsonDocument h = new BsonDocument();
+			h.put("http://ns.example.com/epcis1#d", new BsonBoolean(true));
+			BsonDocument e = new BsonDocument();
+			e.put("http://ns.example.com/epcis2#f", new BsonDateTime(System.currentTimeMillis()));
+			h.put("http://ns.example.com/epcis1#e", e);
+			h.put("http://ns.example.com/epcis1#g", new BsonInt64(50));
+			extensionMap.put("http://ns.example.com/epcis0#h", h);
 			objectEvent.setExtensions(extensionMap);
 
-			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis-capture/Service/BsonDocumentCapture"));
-			client.addObjectEvent(objectEvent);
+			QuantityElement quantity = new QuantityElement();
+			quantity.setEpcClass("urn:epc:class:lgtin:4012345.012345.998877");
+			quantity.setQuantity(200d);
+			quantity.setUom("KGM");
+			List<QuantityElement> quantityList = new ArrayList<QuantityElement>();
+			quantityList.add(quantity);
+			objectEvent.setQuantityList(quantityList);
+
+			Map<String, List<String>> sourceList = new HashMap<String, List<String>>();
+			List<String> source1 = new ArrayList<String>();
+			source1.add("urn:epc:id:sgln:4012345.00001.0");
+			sourceList.put("urn:epcglobal:cbv:sdt:possessing_party", source1);
+			List<String> source2 = new ArrayList<String>();
+			source2.add("urn:epc:id:sgln:4012345.00225.0");
+			sourceList.put("urn:epcglobal:cbv:sdt:location", source2);
+			objectEvent.setBizTransactionList(sourceList);
+
+			Map<String, List<String>> destList = new HashMap<String, List<String>>();
+			List<String> dest1 = new ArrayList<String>();
+			dest1.add("urn:epc:id:sgln:4012345.00001.0");
+			destList.put("urn:epcglobal:cbv:sdt:possessing_party", dest1);
+			List<String> dest2 = new ArrayList<String>();
+			dest2.add("urn:epc:id:sgln:4012345.00225.0");
+			destList.put("urn:epcglobal:cbv:sdt:location", dest2);
+			objectEvent.setBizTransactionList(destList);
+
+			objectEvent.setIlmd(extensionMap);
+
+			EPCISClient client = new EPCISClient(new URL("http://localhost:8080/epcis/Service/BsonDocumentCapture"));
+			for(int i = 0 ; i < 10000 ; i++){
+				client.addObjectEvent(objectEvent);
+			}
 			client.sendDocument();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();

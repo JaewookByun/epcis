@@ -27,10 +27,11 @@ import org.apache.http.protocol.RequestExpectContinue;
 import org.apache.http.protocol.RequestTargetHost;
 import org.apache.http.protocol.RequestUserAgent;
 import org.bson.BsonArray;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -54,27 +55,28 @@ public class EPCISClient {
 	public EPCISClient(URL captureURL) {
 		this.captureURL = captureURL;
 		this.epcisDocument = new BsonDocument();
-		this.epcisDocument.put("AggregationEvent", new BsonArray());
-		this.epcisDocument.put("ObjectEvent", new BsonArray());
-		this.epcisDocument.put("TransactionEvent", new BsonArray());
-		this.epcisDocument.put("TransformationEvent", new BsonArray());
+		this.epcisDocument.put("EventData", new BsonArray());
 		this.epcisDocument.put("MasterData", new BsonArray());
 	}
 
 	public void addAggregationEvent(AggregationEvent event) {
-		epcisDocument.getArray("AggregationEvent").add(event.asBsonDocument());
+		epcisDocument.getArray("EventData")
+				.add(event.asBsonDocument().append("recordTime", new BsonDateTime(System.currentTimeMillis())));
 	}
 
 	public void addObjectEvent(ObjectEvent event) {
-		epcisDocument.getArray("ObjectEvent").add(event.asBsonDocument());
+		epcisDocument.getArray("EventData")
+				.add(event.asBsonDocument().append("recordTime", new BsonDateTime(System.currentTimeMillis())));
 	}
 
 	public void addTransactionEvent(TransactionEvent event) {
-		epcisDocument.getArray("TransactionEvent").add(event.asBsonDocument());
+		epcisDocument.getArray("EventData")
+				.add(event.asBsonDocument().append("recordTime", new BsonDateTime(System.currentTimeMillis())));
 	}
 
 	public void addTransformationEvent(TransformationEvent event) {
-		epcisDocument.getArray("TransformationEvent").add(event.asBsonDocument());
+		epcisDocument.getArray("EventData")
+				.add(event.asBsonDocument().append("recordTime", new BsonDateTime(System.currentTimeMillis())));
 	}
 
 	public void addMasterData(MasterData masterData) {
@@ -83,10 +85,7 @@ public class EPCISClient {
 
 	public void sendDocument() {
 		sendPost(this.captureURL, epcisDocument);
-		this.epcisDocument.put("AggregationEvent", new BsonArray());
-		this.epcisDocument.put("ObjectEvent", new BsonArray());
-		this.epcisDocument.put("TransactionEvent", new BsonArray());
-		this.epcisDocument.put("TransformationEvent", new BsonArray());
+		this.epcisDocument.put("EventData", new BsonArray());
 		this.epcisDocument.put("MasterData", new BsonArray());
 	}
 

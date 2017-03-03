@@ -1,21 +1,17 @@
 package org.oliot.epcis_client;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.bson.BsonArray;
-import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
-import org.bson.BsonInt32;
-import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.bson.BsonValue;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -44,11 +40,15 @@ public class CaptureUtil {
 		return base;
 	}
 
+	public BsonDocument putEventType(BsonDocument base, String eventType) {
+		base.put("eventType", new BsonString(eventType));
+		return base;
+	}
+
 	public BsonDocument putAction(BsonDocument base, String action) {
 		base.put("action", new BsonString(action));
 		return base;
 	}
-
 
 	public BsonDocument putParentID(BsonDocument base, String parentID) {
 		base.put("parentID", new BsonString(parentID));
@@ -128,42 +128,36 @@ public class CaptureUtil {
 		return base;
 	}
 
-	public BsonDocument putILMD(BsonDocument base, Map<String, String> namespaces,
-			Map<String, Map<String, Object>> ilmds) {
-		BsonDocument bsonILMD = new BsonDocument();
-		for (String nsKey : ilmds.keySet()) {
-			if (!namespaces.containsKey(nsKey))
+	private BsonDocument convertToExtensionDocument(Map<String, String> namespaces, BsonDocument extension) {
+		BsonDocument ext = new BsonDocument();
+		for (String key : extension.keySet()) {
+			String[] namespaceAndKey = key.split("#");
+			if (namespaceAndKey.length != 2)
 				continue;
-			bsonILMD.put("@" + nsKey, new BsonString(namespaces.get(nsKey)));
-			Map<String, Object> ilmdElementList = ilmds.get(nsKey);
-			for (String ilmdKey : ilmdElementList.keySet()) {
-				Object ilmdElement = ilmdElementList.get(ilmdKey);
-
-				// Convert element to BSON
-				BsonValue convertedILMDElement = convertToBsonValue(ilmdElement);
-				bsonILMD.put(nsKey + ":" + ilmdKey, convertedILMDElement);
+			String namespace = namespaceAndKey[0];
+			if (!namespaces.containsKey(namespace))
+				continue;
+			ext.put("@" + encodeMongoObjectKey(namespace), new BsonString(namespaces.get(namespace)));
+			BsonValue extValue = extension.get(key);
+			if (extValue instanceof BsonDocument) {
+				ext.put(encodeMongoObjectKey(key), convertToExtensionDocument(namespaces, extValue.asDocument()));
+			} else {
+				ext.put(encodeMongoObjectKey(key), extValue);
 			}
 		}
-		base.put("ilmd", bsonILMD);
+		return ext;
+	}
+
+	public BsonDocument putILMD(BsonDocument base, Map<String, String> namespaces, BsonDocument ilmds) {
+		BsonDocument bsonILMD = convertToExtensionDocument(namespaces, ilmds);
+		BsonDocument any = new BsonDocument();
+		any.put("any", bsonILMD);
+		base.put("ilmd", any);
 		return base;
 	}
 
-	public BsonDocument putExtensions(BsonDocument base, Map<String, String> namespaces,
-			Map<String, Map<String, Object>> extensions) {
-		BsonDocument extension = new BsonDocument();
-		for (String nsKey : extensions.keySet()) {
-			if (!namespaces.containsKey(nsKey))
-				continue;
-			extension.put("@" + nsKey, new BsonString(namespaces.get(nsKey)));
-			Map<String, Object> extensionList = extensions.get(nsKey);
-			for (String extensionKey : extensionList.keySet()) {
-				Object extensionElement = extensionList.get(extensionKey);
-
-				// Convert element to BSON
-				BsonValue convertedExtensionElement = convertToBsonValue(extensionElement);
-				extension.put(nsKey + ":" + extensionKey, convertedExtensionElement);
-			}
-		}
+	public BsonDocument putExtensions(BsonDocument base, Map<String, String> namespaces, BsonDocument extensions) {
+		BsonDocument extension = convertToExtensionDocument(namespaces, extensions);
 		base.put("any", extension);
 		return base;
 	}
@@ -294,33 +288,5 @@ public class CaptureUtil {
 	public String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
-	}
-
-	private BsonValue convertToBsonValue(Object o) {
-		BsonValue value;
-		if (o instanceof Integer) {
-			// Integer
-			value = new BsonInt32((Integer) o);
-		} else if (o instanceof Long) {
-			// Long
-			value = new BsonInt64((Long) o);
-		} else if (o instanceof Double) {
-			// Double
-			value = new BsonDouble((Double) o);
-		} else if (o instanceof Boolean) {
-			// Boolean
-			value = new BsonBoolean((Boolean) o);
-		} else if (o instanceof List<?>) {
-			BsonArray arr = new BsonArray();
-			@SuppressWarnings("unchecked")
-			Iterator<Object> it = ((List<Object>) o).iterator();
-			while (it.hasNext()) {
-				arr.add(convertToBsonValue(it.next()));
-			}
-			value = arr;
-		} else {
-			value = new BsonString(o.toString());
-		}
-		return value;
 	}
 }

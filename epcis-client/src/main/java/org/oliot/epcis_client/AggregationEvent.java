@@ -8,7 +8,7 @@ import java.util.Map;
 import org.bson.BsonDocument;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -42,7 +42,7 @@ public class AggregationEvent extends EPCISEvent {
 	private Map<String, List<String>> destinationList;
 	private Map<String, String> namespaces;
 
-	private Map<String, Map<String, Object>> extensions;
+	private BsonDocument extensions;
 
 	public AggregationEvent() {
 		super();
@@ -54,7 +54,7 @@ public class AggregationEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		extensions = new BsonDocument();
 	}
 
 	public AggregationEvent(long eventTime, String eventTimeZoneOffset, String action) {
@@ -67,7 +67,7 @@ public class AggregationEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		extensions = new BsonDocument();
 	}
 
 	public String getAction() {
@@ -166,11 +166,11 @@ public class AggregationEvent extends EPCISEvent {
 		this.namespaces = namespaces;
 	}
 
-	public Map<String, Map<String, Object>> getExtensions() {
+	public BsonDocument getExtensions() {
 		return extensions;
 	}
 
-	public void setExtensions(Map<String, Map<String, Object>> extensions) {
+	public void setExtensions(BsonDocument extensions) {
 		this.extensions = extensions;
 	}
 

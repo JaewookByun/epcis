@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.bson.BsonDocument;
+import org.bson.BsonValue;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -39,8 +40,8 @@ public class ObjectEvent extends EPCISEvent {
 	private Map<String, List<String>> sourceList;
 	private Map<String, List<String>> destinationList;
 	private Map<String, String> namespaces;
-	private Map<String, Map<String, Object>> ilmds;
-	private Map<String, Map<String, Object>> extensions;
+	private BsonDocument ilmds;
+	private BsonDocument extensions;
 
 	public ObjectEvent() {
 		super();
@@ -52,8 +53,8 @@ public class ObjectEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		ilmds = new HashMap<String, Map<String, Object>>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		ilmds = new BsonDocument();
+		extensions = new BsonDocument();
 	}
 
 	public ObjectEvent(long eventTime, String eventTimeZoneOffset, String action) {
@@ -66,8 +67,8 @@ public class ObjectEvent extends EPCISEvent {
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
-		ilmds = new HashMap<String, Map<String, Object>>();
-		extensions = new HashMap<String, Map<String, Object>>();
+		ilmds = new BsonDocument();
+		extensions = new BsonDocument();
 	}
 
 	public List<String> getEpcList() {
@@ -158,19 +159,19 @@ public class ObjectEvent extends EPCISEvent {
 		this.namespaces = namespaces;
 	}
 
-	public Map<String, Map<String, Object>> getIlmd() {
+	public Map<String, BsonValue> getIlmd() {
 		return ilmds;
 	}
 
-	public void setIlmd(Map<String, Map<String, Object>> ilmds) {
+	public void setIlmd(BsonDocument ilmds) {
 		this.ilmds = ilmds;
 	}
 
-	public Map<String, Map<String, Object>> getExtensions() {
+	public Map<String, BsonValue> getExtensions() {
 		return extensions;
 	}
 
-	public void setExtensions(Map<String, Map<String, Object>> extensions) {
+	public void setExtensions(BsonDocument extensions) {
 		this.extensions = extensions;
 	}
 
@@ -179,6 +180,7 @@ public class ObjectEvent extends EPCISEvent {
 
 		BsonDocument objectEvent = super.asBsonDocument();
 		// Required Fields
+		objectEvent = util.putEventType(objectEvent, "ObjectEvent");
 		objectEvent = util.putAction(objectEvent, action);
 
 		// Optional Fields
@@ -200,9 +202,6 @@ public class ObjectEvent extends EPCISEvent {
 		if (this.bizTransactionList != null && this.bizTransactionList.isEmpty() == false) {
 			objectEvent = util.putBizTransactionList(objectEvent, bizTransactionList);
 		}
-		if (this.ilmds != null && this.ilmds.isEmpty() == false) {
-			objectEvent = util.putILMD(objectEvent, namespaces, ilmds);
-		}
 		if (this.extensions != null && this.extensions.isEmpty() == false) {
 			objectEvent = util.putExtensions(objectEvent, namespaces, extensions);
 		}
@@ -216,6 +215,9 @@ public class ObjectEvent extends EPCISEvent {
 		}
 		if (this.destinationList != null && this.destinationList.isEmpty() == false) {
 			extension = util.putDestinationList(extension, destinationList);
+		}
+		if (this.ilmds != null && this.ilmds.isEmpty() == false) {
+			extension = util.putILMD(extension, namespaces, ilmds);
 		}
 		if (extension.isEmpty() == false)
 			objectEvent.put("extension", extension);

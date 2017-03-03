@@ -4,7 +4,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
@@ -12,7 +13,6 @@ import org.bson.BsonArray;
 import org.bson.BsonDocument;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
-import org.bson.BsonValue;
 
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,65 +70,70 @@ public class BsonDocumentCapture implements ServletContextAware {
 	public String post(@RequestBody byte[] inputByteArray) {
 		Configuration.logger.info(" EPCIS Bson Document Capture Started.... ");
 
+		long pre = System.currentTimeMillis();
 		try {
 			ByteArrayInputStream is = new ByteArrayInputStream(inputByteArray);
 			ObjectInput oi = new ObjectInputStream(is);
 			BsonDocument inputDocument = (BsonDocument) oi.readObject();
 
 			MongoClient dbClient = new MongoClient();
-			MongoDatabase db = dbClient.getDatabase("epcis");
+			MongoDatabase db = dbClient.getDatabase(Configuration.databaseName);
 
-			for (String collectionKey : inputDocument.keySet()) {
-				MongoCollection<BsonDocument> collection = db.getCollection(collectionKey, BsonDocument.class);
-				BsonArray bsonCollection = inputDocument.getArray(collectionKey);
-				Iterator<BsonValue> docIterator = bsonCollection.iterator();
-				while (docIterator.hasNext()) {
-					if (!collectionKey.equals("MasterData")) {
-						BsonDocument docElement = docIterator.next().asDocument();
-						docElement.put("recordTime", new BsonInt64(System.currentTimeMillis()));
-						collection.insertOne(docElement);
-					} else {
-						BsonDocument docElement = docIterator.next().asDocument();
-						BsonString vocID = docElement.get("id").asString();
-						// each id should have one document
-						MongoCursor<BsonDocument> bsonDocumentIterator = collection.find(new BsonDocument("id", vocID))
-								.iterator();
-						if (bsonDocumentIterator.hasNext()) {
-							BsonDocument existingDocument = bsonDocumentIterator.next();
-							BsonDocument existingAttributes = existingDocument.getDocument("attributes");
-							BsonDocument currentAttributes = docElement.getDocument("attributes");
-							for (String key : currentAttributes.keySet()) {
-								BsonString value = currentAttributes.getString(key);
-								existingAttributes.put(key, value);
-							}
-							existingAttributes.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
-							existingDocument.put("attributes", existingAttributes);
-							if (docElement.containsKey("children")
-									&& docElement.getArray("children").isEmpty() == false) {
-								existingDocument.put("children", docElement.getArray("children"));
-							}
-							collection.findOneAndReplace(new BsonDocument("id", vocID), existingDocument);
-						} else {
-							if (!docElement.containsKey("attributes")
-									|| docElement.getDocument("attributes").isEmpty()) {
-								BsonDocument attributes = new BsonDocument("lastUpdated",
-										new BsonInt64(System.currentTimeMillis()));
-								docElement.put("attributes", attributes);
-							} else {
-								docElement.put("attributes", docElement.getDocument("attributes").append("lastUpdated",
-										new BsonInt64(System.currentTimeMillis())));
-							}
-							collection.insertOne(docElement);
-						}
-					}
-				}
+			if (inputDocument.containsKey("EventData")) {
+				BsonArray eventArray = inputDocument.getArray("EventData");
+				List<BsonDocument> eventList = eventArray.parallelStream().map(event -> event.asDocument())
+						.collect(Collectors.toList());
+				MongoCollection<BsonDocument> eventCol = db.getCollection("EventData", BsonDocument.class);
+				eventCol.insertMany(eventList);
 			}
+
+			if (inputDocument.containsKey("MasterData")) {
+
+				BsonArray vocArray = inputDocument.getArray("MasterData");
+				MongoCollection<BsonDocument> vocCol = db.getCollection("MasterData", BsonDocument.class);
+
+				vocArray.parallelStream().forEach(bsonValue -> {
+					BsonDocument docElement = bsonValue.asDocument();
+					BsonString vocID = docElement.get("id").asString();
+					// each id should have one document
+					MongoCursor<BsonDocument> bsonDocumentIterator = vocCol.find(new BsonDocument("id", vocID))
+							.iterator();
+					if (bsonDocumentIterator.hasNext()) {
+						BsonDocument existingDocument = bsonDocumentIterator.next();
+						BsonDocument existingAttributes = existingDocument.getDocument("attributes");
+						BsonDocument currentAttributes = docElement.getDocument("attributes");
+						for (String key : currentAttributes.keySet()) {
+							BsonString value = currentAttributes.getString(key);
+							existingAttributes.put(key, value);
+						}
+						existingAttributes.put("lastUpdated", new BsonInt64(System.currentTimeMillis()));
+						existingDocument.put("attributes", existingAttributes);
+						if (docElement.containsKey("children") && docElement.getArray("children").isEmpty() == false) {
+							existingDocument.put("children", docElement.getArray("children"));
+						}
+						vocCol.findOneAndReplace(new BsonDocument("id", vocID), existingDocument);
+					} else {
+						if (!docElement.containsKey("attributes") || docElement.getDocument("attributes").isEmpty()) {
+							BsonDocument attributes = new BsonDocument("lastUpdated",
+									new BsonInt64(System.currentTimeMillis()));
+							docElement.put("attributes", attributes);
+						} else {
+							docElement.put("attributes", docElement.getDocument("attributes").append("lastUpdated",
+									new BsonInt64(System.currentTimeMillis())));
+						}
+						vocCol.insertOne(docElement);
+					}
+				});
+			}
+
 			dbClient.close();
 		} catch (IOException e) {
 			Configuration.logger.error(e);
 		} catch (ClassNotFoundException e) {
 			Configuration.logger.error(e);
 		}
+		
+		System.out.print("T: " + (System.currentTimeMillis()-pre));
 
 		return "EPCIS Document : Captured ";
 
