@@ -892,14 +892,32 @@ public class MongoQueryService {
 
 		// TODO: Projection
 		Iterator<Entry<String, String>> extParamIter = extParams.entrySet().iterator();
+		BsonDocument projection = new BsonDocument();
+		BsonBoolean projValue = null;
 		while (extParamIter.hasNext()) {
 			Entry<String, String> entry = extParamIter.next();
 			String paramKey = entry.getKey();
 			String paramValue = entry.getValue();
 			if (paramKey.startsWith("PROJECTION_")) {
-
+				if( projValue == null ){
+					if (paramValue != null && (paramValue.equals("true") || paramValue.equals("true^boolean"))) {
+						projValue = BsonBoolean.TRUE;
+					}else{
+						projValue = BsonBoolean.FALSE;
+					}
+				}
+				String projKey = paramKey.substring(11, paramKey.length());
+				// eventType is prohibited for projection
+				if (!projKey.equals("eventType"))
+					projection.put(projKey, projValue);
 			}
 		}
+		if (!projection.isEmpty()){
+			if( projValue.getValue() == true)
+				projection.append("eventType", BsonBoolean.TRUE);
+			cursor.projection(projection);
+		}
+
 
 		/**
 		 * orderBy : If specified, names a single field that will be used to
