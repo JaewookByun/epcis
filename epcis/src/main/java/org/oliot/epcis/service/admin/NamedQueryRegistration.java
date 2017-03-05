@@ -1,6 +1,7 @@
 package org.oliot.epcis.service.admin;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -9,10 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Level;
 import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.BsonString;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.epcis.converter.mongodb.MongoWriterUtil;
 import org.oliot.epcis.security.OAuthUtil;
 import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 import org.oliot.model.epcis.PollParameters;
@@ -31,6 +35,7 @@ import org.springframework.web.context.ServletContextAware;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.IndexOptions;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.User;
@@ -193,7 +198,7 @@ public class NamedQueryRegistration implements ServletContextAware {
 		}
 
 		Configuration.logger.log(Level.INFO, "NamedEventQuery: " + name + " is registered");
-		return new ResponseEntity<>(new String("PUT NamedEventQuery"), responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(new String("NamedEventQuery " + name + " is registered"), responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -251,27 +256,304 @@ public class NamedQueryRegistration implements ServletContextAware {
 
 		if (s == null) {
 			return false;
-		} else {
+		} else {		
+			MongoCollection<BsonDocument> eventDataCollection = Configuration.mongoDatabase.getCollection("EventData",
+					BsonDocument.class);
+			eventDataCollection.dropIndex(name);
 			return true;
 		}
 	}
 
 	private boolean addNamedEventQueryToDB(String name, String description, PollParameters p) {
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
+		MongoCollection<BsonDocument> namedEventQueryCollection = Configuration.mongoDatabase.getCollection("NamedEventQuery",
 				BsonDocument.class);
-
-		BsonDocument existingDoc = collection.find(new BsonDocument("name", new BsonString(name))).first();
+		MongoCollection<BsonDocument> eventDataCollection = Configuration.mongoDatabase.getCollection("EventData",
+				BsonDocument.class);
+		
+		BsonDocument existingDoc = namedEventQueryCollection.find(new BsonDocument("name", new BsonString(name))).first();
 
 		if (existingDoc == null) {
 			BsonDocument bson = PollParameters.asBsonDocument(p);
 			bson.put("name", new BsonString(name));
 			bson.put("description", new BsonString(description));
-			collection.insertOne(bson);
+			namedEventQueryCollection.insertOne(bson);
 		} else {
 			return false;
 		}
 
+		// Create Index with the given NamedEventQuery name and background option
+		IndexOptions indexOptions = new IndexOptions().name(name).background(true);
+		BsonDocument indexDocument = makeIndexObject(p);
+		eventDataCollection.createIndex(indexDocument, indexOptions);
+		
 		Configuration.logger.log(Level.INFO, "NamedEventQuery: " + name + " is added to DB. ");
+		return true;
+	}
+	
+	private BsonDocument makeIndexObject(PollParameters p) {
+
+		BsonDocument indexDocument = new BsonDocument();
+
+		if (p.getEventType() != null) {
+			indexDocument.put("eventType", new BsonInt32(1));
+		}
+
+		if (p.getGE_eventTime() != null) {
+			indexDocument.put("eventTime", new BsonInt32(1));
+		}
+		
+		if (p.getLT_eventTime() != null) {
+			indexDocument.put("eventTime", new BsonInt32(1));
+		}
+		
+		if (p.getGE_recordTime() != null) {
+			indexDocument.put("recordTime", new BsonInt32(1));
+		}
+		
+		if (p.getLT_recordTime() != null) {
+			indexDocument.put("recordTime", new BsonInt32(1));
+		}
+
+		if (p.getGE_errorDeclarationTime() != null) {
+			indexDocument.put("errorDeclaration.declarationTime", new BsonInt32(1));
+		}
+
+		if (p.getLT_errorDeclarationTime() != null) {
+			indexDocument.put("errorDeclaration.declarationTime", new BsonInt32(1));
+		}
+
+		if (p.getEQ_action() != null) {
+			indexDocument.put("action", new BsonInt32(1));
+		}
+		
+		if (p.getEQ_bizStep() != null) {
+			indexDocument.put("bizStep", new BsonInt32(1));
+		}
+		
+		if (p.getEQ_disposition() != null) {
+			indexDocument.put("disposition", new BsonInt32(1));
+		}
+		
+		if (p.getEQ_readPoint() != null) {
+			indexDocument.put("readPoint.id", new BsonInt32(1));
+		}
+
+		if (p.getWD_readPoint() != null) {
+			indexDocument.put("readPoint.id", new BsonInt32(1));
+		}
+
+		if (p.getEQ_bizLocation() != null) {
+			indexDocument.put("bizLocation.id", new BsonInt32(1));
+		}
+
+		if (p.getWD_bizLocation() != null) {
+			indexDocument.put("bizLocation.id", new BsonInt32(1));
+		}
+
+		if (p.getEQ_transformationID() != null) {
+			indexDocument.put("transformationID", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_epc() != null) {
+			indexDocument.put("epcList.epc", new BsonInt32(1));
+			indexDocument.put("childEPCs.epc", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_parentID() != null) {
+			indexDocument.put("parentID", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_inputEPC() != null) {
+			indexDocument.put("inputEPCList.epc", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_outputEPC() != null) {
+			indexDocument.put("outputEPCList.epc", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_anyEPC() != null) {
+			indexDocument.put("epcList.epc", new BsonInt32(1));
+			indexDocument.put("childEPCs.epc", new BsonInt32(1));
+			indexDocument.put("inputEPCList.epc", new BsonInt32(1));
+			indexDocument.put("outputEPCList.epc", new BsonInt32(1));
+			indexDocument.put("parentID", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_epcClass() != null) {
+			indexDocument.put("extension.quantityList.epcClass", new BsonInt32(1));
+			indexDocument.put("extension.childQuantityList.epcClass", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_inputEPCClass() != null) {
+			indexDocument.put("inputQuantityList.epcClass", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_outputEPCClass() != null) {
+			indexDocument.put("outputQuantityList.epcClass", new BsonInt32(1));
+		}
+
+		if (p.getMATCH_anyEPCClass() != null) {
+			indexDocument.put("extension.quantityList.epcClass", new BsonInt32(1));
+			indexDocument.put("extension.childQuantityList.epcClass", new BsonInt32(1));
+			indexDocument.put("inputQuantityList.epcClass", new BsonInt32(1));
+			indexDocument.put("outputQuantityList.epcClass", new BsonInt32(1));
+		}
+
+		if (p.getEQ_eventID() != null) {
+			indexDocument.put("eventID", new BsonInt32(1));
+		}
+
+		if (p.getEQ_errorReason() != null) {
+			indexDocument.put("errorDeclaration.reason", new BsonInt32(1));
+		}
+
+		if (p.getEQ_correctiveEventID() != null) {
+			indexDocument.put("errorDeclaration.correctiveEventIDs", new BsonInt32(1));
+		}
+
+		if (p.getEXISTS_errorDeclaration() != null) {
+			indexDocument.put("errorDeclaration", new BsonInt32(1));
+		}
+
+		if (p.getParams() != null) {
+			Iterator<String> paramIter = p.getParams().keySet().iterator();
+			while (paramIter.hasNext()) {
+				String paramName = paramIter.next();
+
+				if (paramName.contains("EQ_bizTransaction_")) {
+					indexDocument.put("bizTransactionList", new BsonInt32(1));
+				}
+
+				if (paramName.contains("EQ_source_")) {
+					indexDocument.put("extension.sourceList", new BsonInt32(1));
+					indexDocument.put("sourceList", new BsonInt32(1));
+				}
+
+				
+				if (paramName.contains("EQ_destination_")) {
+					indexDocument.put("extension.destinationList", new BsonInt32(1));
+					indexDocument.put("destinationList", new BsonInt32(1));
+				}
+
+				if (paramName.startsWith("EQ_ILMD_")) {
+					String type = paramName.substring(8, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
+					indexDocument.put("extension.ilmd.any." + type, new BsonInt32(1));
+					indexDocument.put("ilmd.any." + type, new BsonInt32(1));
+				}
+
+				if (paramName.startsWith("GT_ILMD_") || paramName.startsWith("GE_ILMD_")
+						|| paramName.startsWith("LT_ILMD_") || paramName.startsWith("LE_ILMD_")) {
+					String type = paramName.substring(8, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
+					indexDocument.put("extension.ilmd.any." + type, new BsonInt32(1));
+					indexDocument.put("ilmd.any." + type, new BsonInt32(1));
+				}
+
+				if (paramName.startsWith("EXISTS_ILMD_")) {
+					String field = paramName.substring(12, paramName.length());
+					field = MongoWriterUtil.encodeMongoObjectKey(field);
+					indexDocument.put("extension.ilmd.any." + field, new BsonInt32(1));
+					indexDocument.put("ilmd.any." + field, new BsonInt32(1));
+				}
+
+				if (paramName.startsWith("EQ_ERROR_DECLARATION_")) {
+					String type = paramName.substring(21, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
+					indexDocument.put("errorDeclaration.any." + type , new BsonInt32(1));
+				}
+
+				if (paramName.startsWith("GT_ERROR_DECLARATION_") || paramName.startsWith("GE_ERROR_DECLARATION_")
+						|| paramName.startsWith("LT_ERROR_DECLARATION_")
+						|| paramName.startsWith("LE_ERROR_DECLARATION_")) {
+					String type = paramName.substring(21, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
+					indexDocument.put("errorDeclaration.any." + type , new BsonInt32(1));
+				}
+
+				boolean isExtraParam = isExtraParameter(paramName);
+
+				if (isExtraParam == true) {
+
+					if (paramName.startsWith("EQ_")) {
+						String type = paramName.substring(3, paramName.length());
+						type = MongoWriterUtil.encodeMongoObjectKey(type);
+						indexDocument.put("any." + type , new BsonInt32(1));
+					}
+
+					if (paramName.startsWith("GT_") || paramName.startsWith("GE_") || paramName.startsWith("LT_")
+							|| paramName.startsWith("LE_")) {
+						String type = paramName.substring(3, paramName.length());
+						type = MongoWriterUtil.encodeMongoObjectKey(type);
+						indexDocument.put("any." + type , new BsonInt32(1));
+					}
+
+					if (paramName.startsWith("EXISTS_")) {
+						String type = paramName.substring(3, paramName.length());
+						type = MongoWriterUtil.encodeMongoObjectKey(type);
+						indexDocument.put("any." + type , new BsonInt32(1));
+					}
+				}
+			}
+		}
+
+		// Update Query with ORDER and LIMIT
+		if (p.getOrderBy() != null) {
+			String orderBy = MongoWriterUtil.encodeMongoObjectKey(p.getOrderBy());
+			// Currently only eventTime, recordTime can be used
+			if (orderBy.trim().equals("eventTime")) {
+				indexDocument.put("eventTime" , new BsonInt32(1));
+			} else if (orderBy.trim().equals("recordTime")) {
+				indexDocument.put("recordTime" , new BsonInt32(1));
+			} else {
+				indexDocument.put("any." + orderBy , new BsonInt32(1));
+			}
+		}
+		
+		return indexDocument;
+	}
+	
+	boolean isExtraParameter(String paramName) {
+
+		if (paramName.contains("eventTime"))
+			return false;
+		if (paramName.contains("recordTime"))
+			return false;
+		if (paramName.contains("errorDeclarationTime"))
+			return false;
+		if (paramName.contains("action"))
+			return false;
+		if (paramName.contains("bizStep"))
+			return false;
+		if (paramName.contains("disposition"))
+			return false;
+		if (paramName.contains("readPoint"))
+			return false;
+		if (paramName.contains("bizLocation"))
+			return false;
+		if (paramName.contains("bizTransaction"))
+			return false;
+		if (paramName.contains("source"))
+			return false;
+		if (paramName.contains("destination"))
+			return false;
+		if (paramName.contains("transformationID"))
+			return false;
+		if (paramName.contains("ILMD"))
+			return false;
+		if (paramName.contains("eventID"))
+			return false;
+		if (paramName.contains("errorReason"))
+			return false;
+		if (paramName.contains("correctiveEventID"))
+			return false;
+		if (paramName.contains("errorDeclaration"))
+			return false;
+		if (paramName.contains("ERROR_DECLARATION"))
+			return false;
+		if (paramName.contains("INNER"))
+			return false;
+
 		return true;
 	}
 }

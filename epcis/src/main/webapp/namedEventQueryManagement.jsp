@@ -350,6 +350,31 @@
 									<code>List of characters should be encoded: + -> %2B , # -> %23</code><br>
 									
 									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>format</span>
+										<input id="format" type="text" class="form-control"
+											placeholder="XML or JSON" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('format')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('format')">ADD</button>
+										</span>
+									</div>
+
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span> <input
+											id="projectionType" type="text" class="form-control"
+											placeholder="Projection Key (e.g., eventTime, extension.quantityList, bizLocation)"
+											aria-describedby="basic-addon3"> <input id="PROJECTION"
+											type="text" class="form-control"
+											placeholder="true or false, true/false cannot be mixed, if true, eventType is automatically set as true"
+											aria-describedby="basic-addon3"> <span
+											class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addFamParam('PROJECTION','projectionType')">ADD</button>
+										</span>
+									</div>
+									
+									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">eventType</span>
 										<input id="eventType" type="text" class="form-control"
 											placeholder="Vertical bar Separated Values (VSV), Regex (e.g., ObjectEvent, ObjectEvent|AggregationEvent, (.)*Event^regex)"
