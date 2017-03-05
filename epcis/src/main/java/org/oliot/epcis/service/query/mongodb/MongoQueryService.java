@@ -890,7 +890,6 @@ public class MongoQueryService {
 	private FindIterable<BsonDocument> makeProjectSortedLimitedCursor(FindIterable<BsonDocument> cursor,
 			Map<String, String> extParams, String orderBy, String orderDirection, Integer eventCountLimit) {
 
-		// TODO: Projection
 		Iterator<Entry<String, String>> extParamIter = extParams.entrySet().iterator();
 		BsonDocument projection = new BsonDocument();
 		BsonBoolean projValue = null;
