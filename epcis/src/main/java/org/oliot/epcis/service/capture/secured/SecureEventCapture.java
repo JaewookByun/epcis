@@ -1,9 +1,6 @@
 package org.oliot.epcis.service.capture.secured;
 
 import java.io.InputStream;
-
-import java.util.Random;
-
 import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
@@ -22,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -79,27 +78,48 @@ public class SecureEventCapture implements ServletContextAware {
 		// HttpStatus.BAD_REQUEST);
 
 		/* this is query example for querying ac_api */
-		Random generator = new Random();
 
-		// url of ac_api server
-		String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/" + Configuration.epcis_id
-				+ "/furnish";
+		//check userID and accessToken is in caching
+		
+		boolean pass = false;
+		
+		//(Yalew Cache) 11. if pass the cache.
+		
+		
+		Jedis RedisCL = Configuration.jedisClient;
+		
+		
+		String result = RedisCL.get(userID+"-furnish");
+		
+	
+		if(result == null || !(result.equals(accessToken))){
+			//add to cache..
+			// url of ac_api server
+			String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/" + Configuration.epcis_id
+					+ "/furnish";
 
-		// query to ac_api server
-		String qurlParameters = "";
-		String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
+			// query to ac_api server
+			String qurlParameters = "";
+			String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-		// for debug, erase after implementing.
-		Configuration.logger.info(query_result);
-		query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
+			// for debug, erase after implementing.
+			Configuration.logger.info(query_result);
+			query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
 
-		boolean pass = (query_result.equals("yes")) ? true : false;
-
-		/* end of example for querying ac_api */
-
-		// =============================================================================================
-
+			pass = (query_result.equals("yes")) ? true : false;
+			/* end of example for querying ac_api */
+			if(pass){
+				RedisCL.set(userID+"-furnish", accessToken);
+			}
+			
+			// =============================================================================================
+		}
+		else{
+			pass = true;
+		}
+		
 		if (pass) {
+			
 			Configuration.logger.info(" EPCIS Document Capture Started.... ");
 
 			System.out.println(inputString);

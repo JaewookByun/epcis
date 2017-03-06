@@ -21,6 +21,7 @@ import org.oliot.epcis.service.subscription.MongoSubscription;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
+import redis.clients.jedis.Jedis;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -50,6 +51,7 @@ public class Configuration implements ServletContextListener {
 	public static boolean isQueryAccessControlOn;
 	public static boolean isTriggerSupported;
 	public static MongoClient mongoClient;
+	public static Jedis jedisClient;
 	public static MongoDatabase mongoDatabase;
 	public static String backend_ip;
 	public static int backend_port;
@@ -189,6 +191,16 @@ public class Configuration implements ServletContextListener {
 			}
 
 			epcis_id = id.trim();
+			
+			// Set Redis Database for caching
+			
+			jedisClient = new Jedis("localhost"); 
+		    System.out.println("Connection to server sucessfully"); 
+		    //set the data in redis string 
+			
+		    
+			
+			
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
