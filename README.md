@@ -27,7 +27,7 @@ Copyright (C) 2014-2017 Jaewook Byun
 
 > Spring Framework
 
-> MongoDB v3.2
+> MongoDB v3.4
 
 ### Contact ###
 > Korea Advanced Institute of Science and Technology (KAIST)
