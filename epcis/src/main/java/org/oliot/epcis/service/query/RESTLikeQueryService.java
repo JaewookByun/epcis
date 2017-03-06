@@ -437,10 +437,12 @@ public class RESTLikeQueryService implements ServletContextAware {
 			//if get the list of user-friend's value from redis.
 			
 			
-			result = RedisCL.get(userID+"-list");
+			List<String> result_list;
+					
+			result_list = RedisCL.lrange(userID+"-list", 0 ,-1);
 			
-			if(result!=null){
-				friendList = RedisCL.lrange(userID+"-list", 0 ,-1);
+			if(result_list.size() != 0){
+				friendList = result_list;
 			}
 			else{
 			quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/access";
