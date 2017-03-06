@@ -193,7 +193,7 @@ public class Configuration implements ServletContextListener {
 			epcis_id = id.trim();
 			
 			// Set Redis Database for caching
-			
+			//11. (Yalew Cache)
 			jedisClient = new Jedis("localhost"); 
 		    System.out.println("Connection to server sucessfully"); 
 		    //set the data in redis string 
