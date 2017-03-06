@@ -44,7 +44,7 @@
 				<a href="#" class="list-group-item active"> Specification </a> <a
 					href="#" class="list-group-item">EPCIS v1.2 compliance<br>
 					Java Web Service (Java v8, Tomcat v8, Servlet v3.1)<br>
-					MongoDB v3.2<br>Maven, Spring Framework
+					MongoDB v3.4<br>Maven v3, Spring Framework v4.3.6
 				</a>
 			</div>
 			<div class="list-group">
@@ -65,7 +65,7 @@
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
-				<a href="#" class="list-group-item active"> SOAP Web Service </a> <a
+				<a href="#" class="list-group-item active"> SOAP Web Service (CXF v3.1.10) </a> <a
 					href="./webservice" class="list-group-item">EPCIS v1.2
 					SOAP/HTTP Web Service</a>
 			</div>
