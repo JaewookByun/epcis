@@ -27,7 +27,7 @@
 	"trigger_support" : "on",
 	
 	"_ac_api_address" : "IP Address and port number of Access Control API",
-	"ac_api_address" : "143.248.57.21:3001",
+	"ac_api_address" : "143.248.55.159:3001",
 	
 	"_epcis_id" : "ID of EPCIS",
 	"epcis_id" : "epcis"

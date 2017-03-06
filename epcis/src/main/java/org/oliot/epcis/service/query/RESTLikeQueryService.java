@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +46,8 @@ import com.mongodb.client.MongoCollection;
 import com.restfb.Connection;
 import com.restfb.FacebookClient;
 import com.restfb.types.User;
+
+import redis.clients.jedis.Jedis;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -391,28 +392,57 @@ public class RESTLikeQueryService implements ServletContextAware {
 			// pop up this . return new ResponseEntity<>("No accessRight",
 			// HttpStatus.BAD_REQUEST);
 
-			/* this is query example for querying ac_api */
-			Random generator = new Random();
-
 			// url of ac_api server
-			String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/"
-					+ Configuration.epcis_id + "/subscribe";
+			
+			boolean pass = false;
+			String quri = null;
+			String qurlParameters = null;
+			String query_result = null;
+			
+			//(Yalew Cache)11. check subscribing authorization using token
+			
+			//if redis have user and token
+			
+			Jedis RedisCL = Configuration.jedisClient;
+			String result = RedisCL.get(userID+"-subscribe");	
+					
+			if(result == null || !(result.equals(accessToken))){
+				quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/"
+						+ Configuration.epcis_id + "/subscribe";
 
-			// query to ac_api server
-			String qurlParameters = "";
-			String query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
+				// query to ac_api server
+				qurlParameters = "";
+				query_result = Configuration.query_access_relation(quri, accessToken, qurlParameters);
 
-			// for debug, erase after implementing.
-			Configuration.logger.info(query_result);
-			query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
+				// for debug, erase after implementing.
+				Configuration.logger.info(query_result);
+				query_result = query_result.replaceAll("[\"{} ]", "").split(":")[1];
 
-			boolean pass = (query_result.equals("yes")) ? true : false;
-
+				pass = (query_result.equals("yes")) ? true : false;
+				if(pass){
+					RedisCL.set(userID+"-subscribe", accessToken);
+				}
+			}
+			else{
+				pass = true;
+			}
+			
 			if (!pass) {
 				return new ResponseEntity<>(new String("no subscribe auth"), HttpStatus.BAD_REQUEST);
 			}
 			/* end of example for querying ac_api */
 
+			
+			//(Yalew Cache)22. check 
+			//if get the list of user-friend's value from redis.
+			
+			
+			result = RedisCL.get(userID+"-list");
+			
+			if(result!=null){
+				friendList = RedisCL.lrange(userID+"-list", 0 ,-1);
+			}
+			else{
 			quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/access";
 
 			// query to ac_api server
@@ -430,6 +460,8 @@ public class RESTLikeQueryService implements ServletContextAware {
 			for (String accessuser : accessusers) {
 				Configuration.logger.info("Friends:" + accessuser);
 				friendList.add(accessuser);
+				RedisCL.lpush(userID+"-list", accessuser);
+			}
 			}
 
 			// 3. and then make restricted query_list
