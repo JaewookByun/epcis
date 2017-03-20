@@ -16,7 +16,7 @@ Copyright (C) 2014-2017 Jaewook Byun
 (http://link.springer.com/chapter/10.1007/978-3-319-26190-4_16)
 
 ### Temporary Server for Oliot EPCIS ###
-> [Server](http://143.248.56.100:8080/epcis)
+> [Server](http://14.63.168.75:8080/epcis/)
 
 ### Specification ###
 > Java, Web Service (Java v8, Servlet v3.1, Tomcat v8)
