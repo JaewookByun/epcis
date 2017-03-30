@@ -98,13 +98,19 @@ public class MongoReaderUtil {
 					} else if (isBsonDocument) {
 						String documentSuffix = "Document";
 						String parentTagName = anyKey.endsWith(documentSuffix) ? anyKey : anyKey + documentSuffix;
-						Element parentElement = createElement(doc, parentTagName, namespace, namespaceURI);
+						Element parentElement = doc.createElement(parentTagName);
+						if (namespace != null) {
+							parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
+						}
 						for(Element child : convertBsonValueToDocumentElements(bsonValue, doc, namespace, namespaceURI)) {
 							parentElement.appendChild(child);
 						}
 						elementList.add(parentElement);
 					} else {
-						Element element = createElement(doc, anyKey, namespace, namespaceURI);
+						Element element = doc.createElement(anyKey);
+						if (namespace != null) {
+							element.setAttribute("xmlns:" + namespace, namespaceURI);
+						}
 						element.setTextContent(value);
 						elementList.add(element);
 					}
@@ -134,26 +140,24 @@ public class MongoReaderUtil {
 		return value;
 	}
 
-	private static Element createElement(Document doc, String tagName, String namespace, String namespaceURI) {
-		Element element = doc.createElement(tagName);
-		if (namespace != null) {
-			element.setAttribute("xmlns:" + namespace, namespaceURI);
-		}
-		return element;
-	}
-
 	private static Element convertBsonValueToArrayElement(BsonValue bsonValue, String anyKey, Document doc, String namespace, String namespaceURI) {
 		String listSuffix = "List";
 		String parentTagName = anyKey.endsWith(listSuffix) ? anyKey : anyKey + listSuffix;
 		String childTagName = anyKey.endsWith(listSuffix)
 				? anyKey.substring(0, anyKey.length() - listSuffix.length()) : anyKey;
 
-		Element parentElement = createElement(doc, parentTagName, namespace, namespaceURI);
+		Element parentElement = doc.createElement(parentTagName);
+		if (namespace != null) {
+			parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
+		}
 		BsonArray arr = bsonValue.asArray();
 		Iterator<BsonValue> it = arr.iterator();
 		while (it.hasNext()) {
 			bsonValue = it.next();
-			Element element = createElement(doc, childTagName, namespace, namespaceURI);
+			Element element = doc.createElement(childTagName);
+			if (namespace != null) {
+				parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
+			}
 			if (bsonValue.isArray()) {
 				element.appendChild(convertBsonValueToArrayElement(bsonValue, anyKey, doc, namespace, namespaceURI));
 			} else if (bsonValue.isDocument()) {
