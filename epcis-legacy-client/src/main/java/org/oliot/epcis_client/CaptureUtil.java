@@ -321,6 +321,16 @@ public class CaptureUtil {
 				arr.add(convertToBsonValue(it.next()));
 			}
 			value = arr;
+		} else if (o instanceof Map) {
+			BsonDocument document = new BsonDocument();
+			@SuppressWarnings("unchecked")
+			Map<Object, Object> map = (Map<Object, Object>) o;
+			Iterator<Object> it = map.keySet().iterator();
+			while (it.hasNext()) {
+				String key = it.next().toString();
+				document.put(key, convertToBsonValue(map.get(key)));
+			}
+			value = document;
 		} else {
 			value = new BsonString(o.toString());
 		}
