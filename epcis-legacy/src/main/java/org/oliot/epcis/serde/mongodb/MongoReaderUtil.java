@@ -96,9 +96,7 @@ public class MongoReaderUtil {
 						elementList.add(parentElement);
 
 					} else if (isBsonDocument) {
-						String documentSuffix = "Document";
-						String parentTagName = anyKey.endsWith(documentSuffix) ? anyKey : anyKey + documentSuffix;
-						Element parentElement = doc.createElement(parentTagName);
+						Element parentElement = doc.createElement(anyKey);
 						if (namespace != null) {
 							parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
 						}
