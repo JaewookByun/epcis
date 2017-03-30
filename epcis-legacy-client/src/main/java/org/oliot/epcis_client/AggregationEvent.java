@@ -28,21 +28,10 @@ public class AggregationEvent extends EPCISEvent {
 
 	// EventTime, EventTimeZoneOffset,Action required
 	private String action;
-
 	private String parentID;
 	private List<String> childEPCs;
 	private List<QuantityElement> childQuantityList;
-
-	private String bizStep;
-	private String disposition;
-	private String readPoint;
-	private String bizLocation;
 	private Map<String, List<String>> bizTransactionList;
-	private Map<String, List<String>> sourceList;
-	private Map<String, List<String>> destinationList;
-	private Map<String, String> namespaces;
-
-	private Map<String, Map<String, Object>> extensions;
 
 	public AggregationEvent() {
 		super();
@@ -51,10 +40,6 @@ public class AggregationEvent extends EPCISEvent {
 		childEPCs = new ArrayList<String>();
 		childQuantityList = new ArrayList<QuantityElement>();
 		bizTransactionList = new HashMap<String, List<String>>();
-		sourceList = new HashMap<String, List<String>>();
-		destinationList = new HashMap<String, List<String>>();
-		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
 	}
 
 	public AggregationEvent(long eventTime, String eventTimeZoneOffset, String action) {
@@ -64,10 +49,6 @@ public class AggregationEvent extends EPCISEvent {
 		childEPCs = new ArrayList<String>();
 		childQuantityList = new ArrayList<QuantityElement>();
 		bizTransactionList = new HashMap<String, List<String>>();
-		sourceList = new HashMap<String, List<String>>();
-		destinationList = new HashMap<String, List<String>>();
-		namespaces = new HashMap<String, String>();
-		extensions = new HashMap<String, Map<String, Object>>();
 	}
 
 	public String getAction() {
@@ -78,37 +59,7 @@ public class AggregationEvent extends EPCISEvent {
 		this.action = action;
 	}
 
-	public String getBizStep() {
-		return bizStep;
-	}
 
-	public void setBizStep(String bizStep) {
-		this.bizStep = bizStep;
-	}
-
-	public String getDisposition() {
-		return disposition;
-	}
-
-	public void setDisposition(String disposition) {
-		this.disposition = disposition;
-	}
-
-	public String getReadPoint() {
-		return readPoint;
-	}
-
-	public void setReadPoint(String readPoint) {
-		this.readPoint = readPoint;
-	}
-
-	public String getBizLocation() {
-		return bizLocation;
-	}
-
-	public void setBizLocation(String bizLocation) {
-		this.bizLocation = bizLocation;
-	}
 
 	public Map<String, List<String>> getBizTransactionList() {
 		return bizTransactionList;
@@ -118,25 +69,7 @@ public class AggregationEvent extends EPCISEvent {
 		this.bizTransactionList = bizTransactionList;
 	}
 
-	public Map<String, List<String>> getSourceList() {
-		return sourceList;
-	}
 
-	public void setSourceList(Map<String, List<String>> sourceList) {
-		this.sourceList = sourceList;
-	}
-
-	public Map<String, List<String>> getDestinationList() {
-		return destinationList;
-	}
-
-	public void setDestinationList(Map<String, List<String>> destinationList) {
-		this.destinationList = destinationList;
-	}
-
-	public Map<String, String> getNamespaces() {
-		return namespaces;
-	}
 
 	public String getParentID() {
 		return parentID;
@@ -162,18 +95,6 @@ public class AggregationEvent extends EPCISEvent {
 		this.childQuantityList = childQuantityList;
 	}
 
-	public void setNamespaces(Map<String, String> namespaces) {
-		this.namespaces = namespaces;
-	}
-
-	public Map<String, Map<String, Object>> getExtensions() {
-		return extensions;
-	}
-
-	public void setExtensions(Map<String, Map<String, Object>> extensions) {
-		this.extensions = extensions;
-	}
-
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
@@ -188,34 +109,13 @@ public class AggregationEvent extends EPCISEvent {
 		if (this.childEPCs != null && this.childEPCs.size() != 0) {
 			aggregationEvent = util.putChildEPCs(aggregationEvent, childEPCs);
 		}
-		if (this.bizStep != null) {
-			aggregationEvent = util.putBizStep(aggregationEvent, bizStep);
-		}
-		if (this.disposition != null) {
-			aggregationEvent = util.putDisposition(aggregationEvent, disposition);
-		}
-		if (this.readPoint != null) {
-			aggregationEvent = util.putReadPoint(aggregationEvent, readPoint);
-		}
-		if (this.bizLocation != null) {
-			aggregationEvent = util.putBizLocation(aggregationEvent, bizLocation);
-		}
 		if (this.bizTransactionList != null && this.bizTransactionList.isEmpty() == false) {
 			aggregationEvent = util.putBizTransactionList(aggregationEvent, bizTransactionList);
 		}
-		if (this.extensions != null && this.extensions.isEmpty() == false) {
-			aggregationEvent = util.putExtensions(aggregationEvent, namespaces, extensions);
-		}
 
-		BsonDocument extension = new BsonDocument();
+		BsonDocument extension = asExtensionBsonDocument(util);
 		if (this.childQuantityList != null && this.childQuantityList.isEmpty() == false) {
 			extension = util.putChildQuantityList(extension, childQuantityList);
-		}
-		if (this.sourceList != null && this.sourceList.isEmpty() == false) {
-			extension = util.putSourceList(extension, sourceList);
-		}
-		if (this.destinationList != null && this.destinationList.isEmpty() == false) {
-			extension = util.putDestinationList(extension, destinationList);
 		}
 		if (extension.isEmpty() == false)
 			aggregationEvent.put("extension", extension);
