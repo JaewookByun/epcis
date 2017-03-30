@@ -3,6 +3,7 @@ package org.oliot.epcis.serde.mongodb;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,8 @@ public class MongoReaderUtil {
 				// Convert bson value to a more readable String (List are
 				// handled differently)
 				BsonValue bsonValue = anyObject.get(anyKey);
-				Boolean isBsonArray = (bsonValue.getBsonType() == BsonType.ARRAY);
+				boolean isBsonArray = (bsonValue.getBsonType() == BsonType.ARRAY);
+				boolean isBsonDocument = (bsonValue.getBsonType() == BsonType.DOCUMENT);
 				String value = convertBsonValueToString(bsonValue);
 
 				// Get Namespace
@@ -84,40 +86,25 @@ public class MongoReaderUtil {
 					namespace = anyKeyCheck[0];
 					namespaceURI = nsMap.get(namespace).toString();
 				}
-				if (anyKey != null && (value != null || isBsonArray)) {
+				if (anyKey != null && (value != null || isBsonArray || isBsonDocument)) {
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder builder = dbf.newDocumentBuilder();
 					Document doc = builder.newDocument();
 
 					if (isBsonArray) {
-						String listSuffix = "List";
-						String parentTagName = anyKey.endsWith(listSuffix) ? anyKey : anyKey + listSuffix;
-						String childTagName = anyKey.endsWith(listSuffix) ? anyKey.substring(0, anyKey.length() - listSuffix.length()) : anyKey;
-
-						Element parentElement = doc.createElement(parentTagName);
-						if (namespace != null) {
-							parentElement.setAttribute("xmlns:" + namespace, namespaceURI);
-						}
-						BsonArray arr = bsonValue.asArray();
-						Iterator<BsonValue> it = arr.iterator();
-						while (it.hasNext()) {
-							bsonValue = it.next();
-							value = convertBsonValueToString(bsonValue);
-
-							Element element = doc.createElement(childTagName);
-							if (namespace != null) {
-								element.setAttribute("xmlns:" + namespace, namespaceURI);
-							}
-							element.setTextContent(value);
-							parentElement.appendChild(element);
-						}
+						Element parentElement = convertBsonValueToArrayElement(bsonValue, anyKey, doc, namespace, namespaceURI);
 						elementList.add(parentElement);
 
-					} else {
-						Element element = doc.createElement(anyKey);
-						if (namespace != null) {
-							element.setAttribute("xmlns:" + namespace, namespaceURI);
+					} else if (isBsonDocument) {
+						String documentSuffix = "Document";
+						String parentTagName = anyKey.endsWith(documentSuffix) ? anyKey : anyKey + documentSuffix;
+						Element parentElement = createElement(doc, parentTagName, namespace, namespaceURI);
+						for(Element child : convertBsonValueToDocumentElements(bsonValue, doc, namespace, namespaceURI)) {
+							parentElement.appendChild(child);
 						}
+						elementList.add(parentElement);
+					} else {
+						Element element = createElement(doc, anyKey, namespace, namespaceURI);
 						element.setTextContent(value);
 						elementList.add(element);
 					}
@@ -145,6 +132,65 @@ public class MongoReaderUtil {
 			value = String.valueOf(bsonValue.asBoolean().getValue());
 		}
 		return value;
+	}
+
+	private static Element createElement(Document doc, String tagName, String namespace, String namespaceURI) {
+		Element element = doc.createElement(tagName);
+		if (namespace != null) {
+			element.setAttribute("xmlns:" + namespace, namespaceURI);
+		}
+		return element;
+	}
+
+	private static Element convertBsonValueToArrayElement(BsonValue bsonValue, String anyKey, Document doc, String namespace, String namespaceURI) {
+		String listSuffix = "List";
+		String parentTagName = anyKey.endsWith(listSuffix) ? anyKey : anyKey + listSuffix;
+		String childTagName = anyKey.endsWith(listSuffix)
+				? anyKey.substring(0, anyKey.length() - listSuffix.length()) : anyKey;
+
+		Element parentElement = createElement(doc, parentTagName, namespace, namespaceURI);
+		BsonArray arr = bsonValue.asArray();
+		Iterator<BsonValue> it = arr.iterator();
+		while (it.hasNext()) {
+			bsonValue = it.next();
+			Element element = createElement(doc, childTagName, namespace, namespaceURI);
+			if (bsonValue.isArray()) {
+				element.appendChild(convertBsonValueToArrayElement(bsonValue, anyKey, doc, namespace, namespaceURI));
+			} else if (bsonValue.isDocument()) {
+				for(Element child : convertBsonValueToDocumentElements(bsonValue, doc, namespace, namespaceURI)) {
+					element.appendChild(child);
+				}
+			} else {
+				String value = convertBsonValueToString(bsonValue);
+				element.setTextContent(value);
+			}
+
+			parentElement.appendChild(element);
+		}
+		return parentElement;
+	}
+
+	private static List<Element> convertBsonValueToDocumentElements(BsonValue bsonValue, Document doc, String namespace, String namespaceURI) {
+		List<Element> elements = new LinkedList<>();
+		BsonDocument document = bsonValue.asDocument();
+		for (String key : document.keySet()) {
+			bsonValue = document.get(key);
+			Element element;
+			if (bsonValue.isArray()) {
+				element = convertBsonValueToArrayElement(bsonValue, key, doc, namespace, namespaceURI);
+			} else if (bsonValue.isDocument()) {
+				element = doc.createElement(key);
+				for(Element child : convertBsonValueToDocumentElements(bsonValue, doc, namespace, namespaceURI)) {
+					element.appendChild(child);
+				}
+			} else {
+				element = doc.createElement(key);
+				String value = convertBsonValueToString(bsonValue);
+				element.setTextContent(value);
+			}
+			elements.add(element);
+		}
+		return elements;
 	}
 
 	static ILMDType putILMD(ILMDType ilmd, BsonDocument anyObject) {
