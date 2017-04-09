@@ -753,6 +753,12 @@ public class MongoWriterUtil {
 				if (time != null)
 					return time;
 				return new BsonString(value);
+			} else if (type.equals("point")) {
+				// TODO:
+				return null;
+			} else if (type.equals("polygon")) {
+				// TODO:
+				return null;
 			} else {
 				return new BsonString(value);
 			}
