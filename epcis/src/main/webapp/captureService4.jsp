@@ -3,19 +3,24 @@
 <html>
 <head>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	(function(i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function() {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', '//www.google-analytics.com/analytics.js',
+			'ga');
 
-  ga('create', 'UA-64257932-1', 'auto');
-  ga('send', 'pageview');
-
+	ga('create', 'UA-64257932-1', 'auto');
+	ga('send', 'pageview');
 </script>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description"
-	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
+<meta name="description" content="Tutorial for EPCIS v1.2">
 <meta name="author" content="Jaewook Jack Byun">
 
 <title>Write Your Events</title>
@@ -23,7 +28,7 @@
 <link rel="stylesheet" href="./css/bootstrap.min.css">
 
 <script
-	src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js?autoload=true&amp;skin=desert&amp;lang=html"
+	src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?autoload=true&amp;skin=desert&amp;lang=html"
 	defer="defer"></script>
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script>
@@ -42,6 +47,18 @@
 
 <body>
 
+	<!-- Ranch		  -112.158897, 34.445473 -->
+	<!--  Canned Factory    -117.688111, 34.002675  -->
+	<!-- Retail  -118.048614, 33.808517 -->
+	<!-- 
+-117.688793, 33.967676
+-117.641131, 33.885210
+-117.822161, 33.842986
+-118.025751, 33.853536
+-118.025064, 33.809047
+-118.048754, 33.805053
+ -->
+
 	<nav class="navbar navbar-default">
 		<div class="container">
 			<div class="navbar-header">
@@ -52,8 +69,8 @@
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">EPCIS v1.1 Tutorial and
-					Demonstration ( Oliot Opensource Project )</a>
+				<a class="navbar-brand" href="#">Traceability Demonstration of
+					Canned Beef with Oliot EPCIS v1.2</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
@@ -77,26 +94,19 @@
 		<div class="col-md-4">
 			<div class="list-group">
 				<a href="#" class="list-group-item active"
-					style="text-align: center"> Tranformation Event </a> <a href="#"
-					class="list-group-item">A TransformationEvent captures
-					information about an event in which one or more physical or digital
-					objects are fully or partially consumed as inputs and one or more
-					objects are produced as outputs.</a> <a href="#"
-					class="list-group-item active" style="text-align: center">
-					Transformation Event Example - In the butcher shop </a> <a href="#"
-					class="list-group-item"> &#8226; When: 2015-01-02T14:58:56 <br>
-					&#8226; What: <br> &nbsp;&nbsp;&nbsp; &#8226;
-					urn:epc:id:sgtin:0614141.107346.2017 (Cow) <br>
-					&nbsp;&nbsp;&nbsp; &#8226; urn:epc:id:sgtin:4012345.077889.25
-					(Beef) <br> &nbsp;&nbsp;&nbsp; &#8226;
-					urn:epc:id:sgtin:4012345.077889.26 (Beef) <br>
-					&nbsp;&nbsp;&nbsp; &#8226; urn:epc:id:sgtin:4012345.077889.27
-					(Beef) <br> &#8226; Where: urn:epc:id:sgln:4012345.00001.0
-					(Butcher shop) <br> &#8226; Why: The cow is butchered <br>
-					&nbsp;&nbsp;&nbsp; &#8226; Business Step: transforming <br>
-					&nbsp;&nbsp;&nbsp; &#8226; Disposition: in_progress
+					style="text-align: center"> Object Event </a> <a href="#"
+					class="list-group-item">The event type ObjectEvent describes
+					the creation/observation/deletion of objects.</a> <a href="#"
+					class="list-group-item"> &#8226; When: 2017-01-04T00:00:00.000
+					-8:00 ~ 2017-01-04T00:05:00.000 -8:00 <br> &#8226; What:
+					urn:epc:id:sscc:0000002.0000000002 (Truck) <br> &#8226; Where:
+					[ -117.688793, 33.967676 ] [ -117.641131, 33.885210 ] [
+					-117.822161, 33.842986 ] [ -118.025751, 33.853536 ] [ -118.025064,
+					33.809047 ] [ -118.048754, 33.805053 ] <br> &#8226; Why: The
+					truck carries the canned beef <br> &nbsp;&nbsp;&nbsp; &#8226; Business
+					Step: transporting
 				</a> <a href="#" class="list-group-item active"
-					style="text-align: center"> Capture Transformation Event </a> <a
+					style="text-align: center"> Capture Event </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
 					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
 					<br>
@@ -105,14 +115,14 @@
 				</a>
 			</div>
 			<button type="button" class="btn btn-danger" onclick="back()">Back
-				to previous step</button>
+				to main page</button>
+
 			<button type="button" class="btn btn-info" onclick="skip()">Skip
 				to next step</button>
 			<br> <br>
 			<footer>
-				<code style="font-size: 12pt">Auto-ID Labs. Korea 2015</code>
-				<br>
-				<br>
+				<code style="font-size: 12pt">Auto-ID Labs, KAIST 2017</code>
+				<br> <br>
 				<p class="lead"
 					style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 				<p>
@@ -130,14 +140,14 @@
 					'&gt;');
 		}
 
-		$("#transaction").load("./exampleXML/cow-transformation.xml",
+		$("#transaction").load("./exampleXML/Demo/example4.xml",
 				function(responseTxt, statusTxt, xhr) {
 					x = html(responseTxt);
 					document.getElementById("transaction").innerHTML = x;
 				});
 
 		function capture() {
-			$("#transaction").load("./exampleXML/cow-transformation.xml",
+			$("#transaction").load("./exampleXML/Demo/example4.xml",
 					function(responseTxt, statusTxt, xhr) {
 
 						$.ajax({
@@ -147,17 +157,19 @@
 							data : responseTxt
 						}).done(function() {
 							alert("Event is successfully stored");
-							document.location.href = "./captureService3.jsp";
+							document.location.href = "./captureService5.jsp";
 						});
 					});
 		}
 
 		function back() {
-			document.location.href = "./captureService1.jsp";
+			document.location.href = "./tutorialPage.jsp";
 		}
+
 		function skip() {
-			document.location.href = "./captureService3.jsp";
+			document.location.href = "./captureService5.jsp";
 		}
+
 		function backToMainPage() {
 			document.location.href = "./tutorialPage.jsp";
 		}
