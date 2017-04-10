@@ -898,10 +898,10 @@ public class MongoQueryService {
 			String paramKey = entry.getKey();
 			String paramValue = entry.getValue();
 			if (paramKey.startsWith("PROJECTION_")) {
-				if( projValue == null ){
+				if (projValue == null) {
 					if (paramValue != null && (paramValue.equals("true") || paramValue.equals("true^boolean"))) {
 						projValue = BsonBoolean.TRUE;
-					}else{
+					} else {
 						projValue = BsonBoolean.FALSE;
 					}
 				}
@@ -911,12 +911,11 @@ public class MongoQueryService {
 					projection.put(projKey, projValue);
 			}
 		}
-		if (!projection.isEmpty()){
-			if( projValue.getValue() == true)
+		if (!projection.isEmpty()) {
+			if (projValue.getValue() == true)
 				projection.append("eventType", BsonBoolean.TRUE);
 			cursor.projection(projection);
 		}
-
 
 		/**
 		 * orderBy : If specified, names a single field that will be used to
@@ -1550,6 +1549,16 @@ public class MongoQueryService {
 			while (paramIter.hasNext()) {
 				String paramName = paramIter.next();
 				String paramValues = p.getParams().get(paramName);
+
+				// db.EventData.createIndex({"any.http://ns．example．com/epcis#point":
+				// "2dsphere" });
+				if (paramName.contains("NEAR_")) {
+					String type = paramName.substring(5, paramName.length());
+					type = MongoWriterUtil.encodeMongoObjectKey(type);
+					BsonDocument query = getNearQueryObject(type, paramValues);
+					if (query != null)
+						queryList.add(query);
+				}
 
 				/**
 				 * EQ_bizTransaction_type: This is not a single parameter, but a

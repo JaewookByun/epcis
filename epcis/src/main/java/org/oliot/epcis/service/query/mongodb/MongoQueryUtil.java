@@ -36,6 +36,42 @@ import com.mongodb.client.MongoCollection;
 
 public class MongoQueryUtil {
 
+	static BsonDocument getNearQueryObject(String key, String paramValues) {
+
+		try {
+			// Prepare Query Values
+			String[] paramValueArr = paramValues.split(",");
+			if (paramValueArr.length < 2)
+				return null;
+
+			Double lon = Double.parseDouble(paramValueArr[0]);
+			Double lat = Double.parseDouble(paramValueArr[1]);
+			Integer min = null;
+			if (paramValueArr.length > 2)
+				min = Integer.parseInt(paramValueArr[2]);
+			Integer max = null;
+			if (paramValueArr.length > 3)
+				max = Integer.parseInt(paramValueArr[3]);
+
+			BsonDocument near = new BsonDocument();
+			BsonDocument geometry = new BsonDocument("type", new BsonString("Point"));
+			BsonArray coordinates = new BsonArray();
+			coordinates.add(new BsonDouble(lon));
+			coordinates.add(new BsonDouble(lat));
+			geometry.put("coordinates", coordinates);
+			near.put("$geometry", geometry);
+			if (min != null)
+				near.put("$minDistance", new BsonInt32(min));
+			if (max != null)
+				near.put("$maxDistance", new BsonInt32(max));
+
+			return new BsonDocument("any." + key, new BsonDocument("$near", near));
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	static BsonDocument getFamilyQueryObject(String type, String[] fieldArr, String csv) {
 
 		BsonArray orQueries = new BsonArray();
