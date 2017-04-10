@@ -2,22 +2,28 @@
 <html lang="en">
 <head>
 <script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	(function(i, s, o, g, r, a, m) {
+		i['GoogleAnalyticsObject'] = r;
+		i[r] = i[r] || function() {
+			(i[r].q = i[r].q || []).push(arguments)
+		}, i[r].l = 1 * new Date();
+		a = s.createElement(o), m = s.getElementsByTagName(o)[0];
+		a.async = 1;
+		a.src = g;
+		m.parentNode.insertBefore(a, m)
+	})(window, document, 'script', '//www.google-analytics.com/analytics.js',
+			'ga');
 
-  ga('create', 'UA-64257932-1', 'auto');
-  ga('send', 'pageview');
-
+	ga('create', 'UA-64257932-1', 'auto');
+	ga('send', 'pageview');
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description"
-	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
+<meta name="description" content="Tutorial for EPCIS v1.2">
 <meta name="author" content="Jaewook Jack Byun">
 
-<title>EPCIS v1.1 Tutorial - the cow's life</title>
+<title>Traceability Demonstration of Canned Beef with Oliot
+	EPCIS v1.2</title>
 
 <link rel="stylesheet" href="./css/bootstrap.min.css">
 <link href="./css/carousel.css" rel="stylesheet">
@@ -90,22 +96,27 @@ body {
 		$
 				.get(
 						baseURL
-								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:4012345.077889.27",
-						function(data) {
-							var text = new XMLSerializer().serializeToString(data);
-							xmlDoc = $.parseXML(text);
-							$xml = $(xmlDoc);		
+								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:0000003.000001.1",
+						function(xmlDoc) {
+							//console.log(xmlDoc);
+							//var text = new XMLSerializer().serializeToString(data);
+							//xmlDoc = $.parseXML(text);
+							$xml = $(xmlDoc);
+
 							if ($xml.find("eventTime").length == 0) {
 								alert("No Events, please capture your events first\nGo to Capture Tutorial");
 								document.location.href = "./captureService1.jsp";
 							}
 							$eventTime = $xml.find("eventTime")[0];
 							$epc = $xml.find("epc");
-							$geo = $xml.find("geo");
-							lat = $geo.text().split(",")[0].trim();
-							lon = $geo.text().split(",")[1].trim();
-							latf = parseFloat(lat);
-							lonf = parseFloat(lon);
+							//console.log($epc);
+							$geo = $xml.find("location");
+							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
+							$geoArr = $geo.text().replace(/\[/g, '').replace(
+									/\]/g, ',').split(",");
+							//console.log($geoArr);
+							latf = parseFloat($geoArr[1]);
+							lonf = parseFloat($geoArr[0]);
 							$latlng1 = new google.maps.LatLng(latf, lonf);
 							mapOptions = {
 								center : $latlng1,
@@ -115,19 +126,42 @@ body {
 							map.setOptions(mapOptions);
 							$marker1 = new google.maps.Marker({
 								position : $latlng1,
-								title : 'Matsuyama Food Mart',
+								title : 'Canning Factory',
 								map : map
 							});
 
-							infoText = "The beef pack" + "<br>was located in"
-									+ "<br>Matsuyama Food Mart<br>at<br>"
-									+ $eventTime.textContent.trim();
+							infoText = "The canned beef"
+									+ "<br>was processed in"
+									+ "<br>a canning factory here.<br><br> A transformation event found. <br> Please click this marker";
 
 							$infowindow1 = new google.maps.InfoWindow({
 								content : infoText
 							});
 
 							$infowindow1.open(map, $marker1);
+
+							latf = parseFloat($geoArr[5]);
+							lonf = parseFloat($geoArr[4]);
+							$latlng2 = new google.maps.LatLng(latf, lonf);
+							mapOptions = {
+								center : $latlng2,
+								zoom : 10,
+								mapTypeId : google.maps.MapTypeId.ROADMAP
+							};
+							map.setOptions(mapOptions);
+							$marker2 = new google.maps.Marker({
+								position : $latlng2,
+								title : 'Retail',
+								map : map
+							});
+
+							infoText = "You bought the canned beef from a retail shop here";
+
+							$infowindow2 = new google.maps.InfoWindow({
+								content : infoText
+							});
+
+							$infowindow2.open(map, $marker2);
 
 							google.maps.event.addListener($marker1, 'click',
 									trace2);
@@ -139,103 +173,95 @@ body {
 		$
 				.get(
 						baseURL
-								+ "/Service/Poll/SimpleEventQuery?MATCH_outputEPC=urn:epc:id:sgtin:4012345.077889.27",
-						function(data) {
-							var text = new XMLSerializer().serializeToString(data);
-							xmlDoc = $.parseXML(text);
+								+ "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sgtin:0000001.000001.1",
+						function(xmlDoc) {
+							//console.log(xmlDoc);
+							//var text = new XMLSerializer().serializeToString(data);
+							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							$eventTime = $xml.find("eventTime")[0];
-							$inputEPCList = $xml.find("inputEPCList");
-							$origin = $inputEPCList[0].textContent.trim();
-							$geo = $xml.find("geo");
-							lat = $geo.text().split(",")[0].trim();
-							lon = $geo.text().split(",")[1].trim();
-							latf = parseFloat(lat);
-							lonf = parseFloat(lon);
-							$latlng2 = new google.maps.LatLng(latf, lonf);
-							path1 = [ $latlng1, $latlng2 ];
 
-							infoText = "The beef pack"
-									+ "<br>was produced from" + "<br>the cow"
-									+ "<br>in Butcher Lauren B<br>at<br>"
-									+ $eventTime.textContent.trim();
+							$geo = $xml.find("location");
+							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
+							$geoArr = $geo.text().replace(/\[/g, '').replace(
+									/\]/g, ',').split(",");
+							//console.log($geoArr);
+							latf1 = parseFloat($geoArr[5]);
+							lonf1 = parseFloat($geoArr[4]);
+							$latlng3 = new google.maps.LatLng(latf1, lonf1);
+							$infowindow1.close();
+							$infowindow2.close();
+							//path1 = [ $latlng1, $latlng2 ];
 
-							$infowindow2 = new google.maps.InfoWindow({
+							infoText = "The canned beef was produced from"
+									+ "<br>the cow in a canning factory <br><br> Additional transporting events found. <br> Please click this marker";
+
+							$marker3 = new google.maps.Marker({
+								position : $latlng3,
+								title : 'Retail',
+								map : map
+							});
+
+							$infowindow3 = new google.maps.InfoWindow({
 								content : infoText,
 								maxWidth : 2000
 							});
 
-							// Animation
-							$infowindow1.close();
-							$cnt = 0;
+							mapOptions = {
+								center : $latlng3,
+								zoom : 10,
+								mapTypeId : google.maps.MapTypeId.ROADMAP
+							};
+							map.setOptions(mapOptions);
 
-							// smaller interval makes animation faster
-							var timer1 = setInterval(timer1func, 10);
+							$infowindow3.open(map, $marker3);
 
-							$marker2 = new google.maps.Marker({
-								position : $latlng2,
-								title : 'Matsuyama Food Mart',
+							latf2 = parseFloat($geoArr[1]);
+							lonf2 = parseFloat($geoArr[0]);
+							$latlng4 = new google.maps.LatLng(latf2, lonf2);
+
+							infoText = "The cow bred in a ranch <br><br> Additional transporting events found. <br> Please click this marker";
+
+							$marker4 = new google.maps.Marker({
+								position : $latlng4,
+								title : 'Ranch',
 								map : map
 							});
 
-							function timer1func() {
-								if ($cnt != 100) {
+							$infowindow4 = new google.maps.InfoWindow({
+								content : infoText,
+								maxWidth : 2000
+							});
 
-									latTmp = path1[0].lat()
-											+ (path1[1].lat() - path1[0].lat())
-											* $cnt / 100.0;
-									lngTmp = path1[0].lng()
-											+ (path1[1].lng() - path1[0].lng())
-											* $cnt / 100.0;
+							$infowindow4.open(map, $marker4);
 
-									$latlngTmp = new google.maps.LatLng(latTmp,
-											lngTmp);
+							$mid1 = new google.maps.LatLng((latf2+latf1)/2.0, (lonf2+lonf1)/2.0);
+							mapOptions1 = {
+								center : $mid1,
+								zoom : 8,
+								mapTypeId : google.maps.MapTypeId.ROADMAP
+							};
+							map.setOptions(mapOptions1);
 
-									pathTmp = [ $latlng1, $latlngTmp ];
-
-									var pathTmp = new google.maps.Polyline({
-										path : pathTmp,
-										strokeColor : "#1A3CE4",
-										strokeOpacity : 0.08,
-										strokeWeight : 5,
-										geodesic : true
-									});
-
-									pathTmp.setMap(map);
-									$cnt = $cnt + 1;
-
-									mapOptions = {
-										center : $latlngTmp,
-										zoom : 10,
-										mapTypeId : google.maps.MapTypeId.ROADMAP
-									};
-									map.setOptions(mapOptions);
-
-								} else if ($cnt == 100) {
-									clearInterval(timer1);
-									$infowindow2.open(map, $marker2);
-								}
-							}
-							google.maps.event.addListener($marker2, 'click',
-									trace3);
+							google.maps.event.addListener($marker4, 'click', trace3);
 						});
 	}
 
 	function trace3() {
-		console.log($origin);
 		$
 				.get(
-						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_epc="
-								+ $origin,
-						function(data) {
-							var text = new XMLSerializer().serializeToString(data);
-							xmlDoc = $.parseXML(text);
+						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000001",
+						function(xmlDoc) {
+							console.log(xmlDoc);
+							//var text = new XMLSerializer().serializeToString(data);
+							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
-							$eventTime = $xml.find("eventTime")[0];
-							$inputEPCList = $xml.find("inputEPCList");
-							$origin = $inputEPCList.text().trim();
-							$geo = $xml.find("geo");
-							console.log(data);
+							
+							$geo = $xml.find("location");
+							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
+							$geoArr = $geo.text().replace(/\[/g, '').replace(
+									/\]/g, ',').split(",");
+							console.log($geoArr);
 							lat = $geo.text().split(",")[0].trim();
 							lon = $geo.text().split(",")[1].trim();
 							latf = parseFloat(lat);
@@ -331,8 +357,8 @@ body {
 						class="icon-bar"></span> <span class="icon-bar"></span> <span
 						class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="#">EPCIS v1.1 Tutorial and
-					Demonstration ( Oliot Opensource Project )</a>
+				<a class="navbar-brand" href="#">Traceability Demonstration of
+					Canned Beef with Oliot EPCIS v1.2</a>
 			</div>
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
@@ -346,12 +372,13 @@ body {
 
 	<div class="container">
 		<p>
-			Insert the EPC you want to trace. Then,
+			Insert the EPC you want to trace. (Not Working for other epcs) <br>
+			Then,
 			<code>Click</code>
 			the latest marker
 		</p>
 		<input type="text" class="input-medium search-query"
-			value="urn:epc:id:sgtin:4012345.077889.27" size=35>
+			value="urn:epc:id:sgtin:0000003.000001.1" size=35>
 		<button type="button" class="btn btn-sm btn-primary"
 			onclick="trace1()">Trace everyday-object</button>
 	</div>
@@ -360,9 +387,8 @@ body {
 	<br>
 	<div class="container" align="left">
 		<footer>
-			<code style="font-size: 12pt">Auto-ID Labs. Korea 2015</code>
-			<br>
-			<br>
+			<code style="font-size: 12pt">Auto-ID Labs, KAIST 2017</code>
+			<br> <br>
 			<p class="lead"
 				style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 			<p>
