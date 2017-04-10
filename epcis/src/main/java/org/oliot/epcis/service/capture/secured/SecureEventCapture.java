@@ -55,7 +55,6 @@ public class SecureEventCapture implements ServletContextAware {
 		return result;
 	}
 
-	@SuppressWarnings("unused")
 	@RequestMapping(method = RequestMethod.POST)
 	@ResponseBody
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = true) String userID,
@@ -79,24 +78,21 @@ public class SecureEventCapture implements ServletContextAware {
 
 		/* this is query example for querying ac_api */
 
-		//check userID and accessToken is in caching
-		
+		// check userID and accessToken is in caching
+
 		boolean pass = false;
-		
-		//(Yalew Cache) 11. if pass the cache.
-		
-		
+
+		// (Yalew Cache) 11. if pass the cache.
+
 		Jedis RedisCL = Configuration.jedisClient;
-		
-		
-		String result = RedisCL.get(userID+"-furnish");
-		
-	
-		if(result == null || !(result.equals(accessToken))){
-			//add to cache..
+
+		String result = RedisCL.get(userID + "-furnish");
+
+		if (result == null || !(result.equals(accessToken))) {
+			// add to cache..
 			// url of ac_api server
-			String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/" + Configuration.epcis_id
-					+ "/furnish";
+			String quri = "http://" + Configuration.ac_api_address + "/user/" + userID + "/epcis/"
+					+ Configuration.epcis_id + "/furnish";
 
 			// query to ac_api server
 			String qurlParameters = "";
@@ -108,18 +104,17 @@ public class SecureEventCapture implements ServletContextAware {
 
 			pass = (query_result.equals("yes")) ? true : false;
 			/* end of example for querying ac_api */
-			if(pass){
-				RedisCL.set(userID+"-furnish", accessToken);
+			if (pass) {
+				RedisCL.set(userID + "-furnish", accessToken);
 			}
-			
+
 			// =============================================================================================
-		}
-		else{
+		} else {
 			pass = true;
 		}
-		
+
 		if (pass) {
-			
+
 			Configuration.logger.info(" EPCIS Document Capture Started.... ");
 
 			System.out.println(inputString);

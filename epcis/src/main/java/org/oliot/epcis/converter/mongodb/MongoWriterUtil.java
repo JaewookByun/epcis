@@ -753,12 +753,16 @@ public class MongoWriterUtil {
 				if (time != null)
 					return time;
 				return new BsonString(value);
-			} else if (type.equals("point")) {
-				// TODO:
-				return null;
-			} else if (type.equals("polygon")) {
-				// TODO:
-				return null;
+			} else if (type.equals("geoPoint")) {
+				BsonDocument point = getBsonGeoPoint(valArr[0]);
+				if (point == null)
+					return new BsonString(value);
+				return point;
+			} else if (type.equals("geoArea")) {
+				BsonDocument area = getBsonGeoArea(valArr[0]);
+				if (area == null)
+					return new BsonString(value);
+				return area;
 			} else {
 				return new BsonString(value);
 			}
@@ -815,6 +819,60 @@ public class MongoWriterUtil {
 		}
 		// Never Happened
 		return null;
+	}
+
+	static BsonDocument getBsonGeoPoint(String pointString) {
+		try {
+			BsonDocument pointDoc = new BsonDocument();
+			pointDoc.put("type", new BsonString("Point"));
+
+			String[] pointArr = pointString.split(",");
+			if (pointArr.length != 2)
+				return null;
+			BsonArray arr = new BsonArray();
+			arr.add(new BsonDouble(Double.parseDouble(pointArr[0])));
+			arr.add(new BsonDouble(Double.parseDouble(pointArr[1])));
+			pointDoc.put("coordinates", arr);
+			return pointDoc;
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	static BsonDocument getBsonGeoArea(String areaString) {
+		try {
+			BsonDocument areaDoc = new BsonDocument();
+			areaDoc.put("type", new BsonString("Polygon"));
+
+			String[] areaArr = areaString.split(",");
+			if (areaArr.length < 2)
+				return null;
+
+			BsonArray area = new BsonArray();
+			BsonArray point = null;
+			for (String element : areaArr) {
+				Double pointElementDouble = Double.parseDouble(element);
+				if (point == null) {
+					point = new BsonArray();
+				} else if (point.size() == 2) {
+					area.add(point);
+					point = new BsonArray();
+				}
+				point.add(new BsonDouble(pointElementDouble));
+			}
+
+			if (area.size() > 2) {
+				BsonValue first = area.get(0);
+				area.add(first);
+				areaDoc.put("coordinates", area);
+				return areaDoc;
+			}
+			return null;
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	static public String encodeMongoObjectKey(String key) {

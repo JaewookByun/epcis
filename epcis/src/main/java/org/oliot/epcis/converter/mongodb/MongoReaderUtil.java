@@ -217,7 +217,28 @@ public class MongoReaderUtil {
 				} else if (type == BsonType.DATE_TIME) {
 					value = getDateStream(anyObject.getDateTime(anyKey));
 				} else if (type == BsonType.DOCUMENT) {
-					nodeList = putAny(anyObject.getDocument(anyKey), doc);
+					BsonDocument anyDocument = anyObject.getDocument(anyKey);
+					if (anyDocument.containsKey("type") && anyDocument.containsKey("coordinates")) {
+						List<Double> list = new ArrayList<Double>();
+						Iterator<BsonValue> iter = anyDocument.getArray("coordinates").iterator();
+						while (iter.hasNext()) {
+							BsonValue val = iter.next();
+							if (val.getBsonType() == BsonType.DOUBLE) {
+								list.add(val.asDouble().getValue());
+							} else if (val.getBsonType() == BsonType.ARRAY) {
+								Iterator<BsonValue> iter2 = val.asArray().iterator();
+								while (iter2.hasNext()) {
+									BsonValue val2 = iter2.next();
+									if (val2.getBsonType() == BsonType.DOUBLE) {
+										list.add(val2.asDouble().getValue());
+									}
+								}
+							}
+						}
+						value = list.toString();
+					} else {
+						nodeList = putAny(anyDocument, doc);
+					}
 				}
 
 				// Get Namespace

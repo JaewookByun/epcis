@@ -306,7 +306,6 @@ public class RESTLikeQueryService implements ServletContextAware {
 		return new ResponseEntity<>(new String("org.oliot.epcis-1.2.7"), responseHeaders, HttpStatus.OK);
 	}
 
-	@SuppressWarnings("unused")
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> poll(@PathVariable String queryName, @RequestParam(required = false) String eventType,
