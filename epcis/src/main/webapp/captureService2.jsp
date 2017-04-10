@@ -48,7 +48,7 @@
 <body>
 
 
-	<!-- -117.688111, 34.00267 -->
+	<!-- -112.158897, 34.445473 -->
 	<!-- -112.170245, 34.547622  -->
 	<!-- -112.242315, 34.529610 -->
 	<!-- -112.322018, 34.585349  -->
@@ -111,7 +111,7 @@
 					class="list-group-item"> &#8226; When: 2017-01-02T00:00:00.000
 					-8:00 ~ 2017-01-02T00:18:00.000 -8:00 <br> &#8226; What:
 					urn:epc:id:sscc:0000002.0000000001 (Truck) <br> &#8226; Where:
-					[-112.158897, 34.445473] [ -117.688111, 34.00267 ] [ -112.170245,
+					[-112.158897, 34.445473] [ -112.170245,
 					34.547622 ] [ -112.242315, 34.529610 ] [ -112.322018, 34.585349 ] [
 					-112.362358, 34.578212 ] [ -112.385361, 34.550364 ] [ -112.448962,
 					34.547253 ] [ -112.462609, 34.541103 ] [ -112.463038, 34.525052 ] [
@@ -122,7 +122,7 @@
 					&#8226; Why: The truck carries the cow <br> &nbsp;&nbsp;&nbsp; &#8226;
 					Business Step: transporting 
 				</a> <a href="#" class="list-group-item active"
-					style="text-align: center"> Capture Transaction Event </a> <a
+					style="text-align: center"> Capture Event </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
 					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
 					<br>
