@@ -13,11 +13,15 @@
 					<epc>urn:epc:id:sgtin:0614141.107346.2018</epc>
 				</epcList>
 				<action>OBSERVE</action>
+				<!-- Point: Two Double Value longitude -> latitude -->
+				<example:point>127.365459, 36.374530^geoPoint</example:point>
+				<!-- Polygon with a Single Ring: List of Two Double Value (Circular), 
+					lon-lat-lon-lat -->
+				<example:polygon>127.361199, 36.372906, 127.361183, 36.371831,
+					127.361790, 36.372003, 127.361988, 36.372509, 127.361773,
+					36.372828^geoArea</example:polygon>
 			</ObjectEvent>
-			<!-- Point: Two Double Value -->
-			<example:point>[40,5]</example:point>
-			<!-- Polygon with a Single Ring: List of Two Double Value (Circular) -->
-			<example:polygon>[[[0,0],[3,6],[6,1],[0,0]]</example:polygon>
+
 		</EventList>
 	</EPCISBody>
 </epcis:EPCISDocument>
