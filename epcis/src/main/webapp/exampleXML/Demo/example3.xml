@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:demo="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<AggregationEvent>
+				<!-- The time when the cow is unloaded -->
+				<eventTime>2017-01-03T00:00:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<!-- A Truck -->
+				<parentID>urn:epc:id:sscc:0000002.0000000001</parentID>
+				<!-- The cow -->
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+				</childEPCs>
+				<!-- Unload -->
+				<action>DELETE</action>
+				<!-- The cow is unloaded from the truck -->
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<!-- Canning Factory -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000003.00001.1</id>
+				</bizLocation>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+			</AggregationEvent>
+			<extension>
+				<TransformationEvent>
+					<eventTime>2017-01-03T00:01:00.000-08:00</eventTime>
+					<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+					<!-- Processing Cow into 5 Canned Beefs -->
+					<inputEPCList>
+						<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+					</inputEPCList>
+					<outputEPCList>
+						<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.2</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.3</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.4</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.5</epc>
+					</outputEPCList>
+					<!-- Canning Factory -->
+					<bizLocation>
+						<id>urn:epc:id:sgln:0000003.00001.1</id>
+					</bizLocation>
+					<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+				</TransformationEvent>
+			</extension>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
