@@ -257,6 +257,7 @@ body {
 							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							
+							
 							$geo = $xml.find("location");
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
