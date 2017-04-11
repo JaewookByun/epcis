@@ -94,8 +94,7 @@
 					-8:00 <br> &#8226; What: urn:epc:id:sgtin:0000001.000001.1
 					(Cow) <br> &#8226; Where: urn:epc:id:sgln:0000001.00001.1
 					(Ranch), [-112.158897, 34.445473] <br> &#8226; Why: The cow is sold <br>
-					&nbsp;&nbsp;&nbsp; &#8226; Business Step: departing <br>
-					&nbsp;&nbsp;&nbsp; &#8226; Ownership transfer from Ranch to Canned Factory
+					&nbsp;&nbsp;&nbsp; &#8226; Ownership transfer from a ranch to a canned factory
 				</a>
 				<a href="#" class="list-group-item active"
 					style="text-align: center"> Aggregation Event </a> <a href="#"
@@ -104,8 +103,7 @@
 					class="list-group-item"> &#8226; When: 2017-01-01T00:01:00.000
 					-8:00 <br> &#8226; What: urn:epc:id:sgtin:0000001.000001.1
 					(Cow), urn:epc:id:sscc:0000002.0000000001 (Truck) <br> &#8226; Where: urn:epc:id:sgln:0000001.00001.1
-					(Ranch), [-112.158897, 34.445473] <br> &#8226; Why: The cow is loaded into the truck <br>
-					&nbsp;&nbsp;&nbsp; &#8226; Business Step: loading <br>
+					(Ranch), [-112.158897, 34.445473] <br> &#8226; Why: The cow is loaded into the truck 
 				</a>
 				 <a href="#" class="list-group-item active"
 					style="text-align: center"> Capture Events </a> <a
