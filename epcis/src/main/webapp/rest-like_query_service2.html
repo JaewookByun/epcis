@@ -18,6 +18,7 @@
 	ga('create', 'UA-64257932-1', 'auto');
 	ga('send', 'pageview');
 </script>
+<meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="./css/bootstrap-switch.min.css" rel="stylesheet"
@@ -33,21 +34,49 @@
 <script src="./js/bootstrap-select.js"></script>
 
 <script>
+	$(document)
+			.ready(
+					function() {
+						$('#pollBaseURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?");
+						$('#unsubscribeURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/Unsubscribe/{subscriptionID}");
+						$('#getSubscriptionIDsURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/GetSubscriptionIDs/SimpleEventQuery");
 
-	$(document).ready(function() {
-		$('#pollBaseURL').val("http://"+location.host+"/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?");
-		$('#unsubscribeURL').val("http://"+location.host+"/epcis/Service/Unsubscribe/{subscriptionID}");
-		$('#getSubscriptionIDsURL').val("http://"+location.host+"/epcis/Service/GetSubscriptionIDs/SimpleEventQuery");
+						systemInfoURL = 'http://' + location.host
+								+ '/epcis/Service/Admin/SystemInformation';
+						$
+								.ajax({
+									type : "GET",
+									url : systemInfoURL
+								})
+								.done(
+										function(result) {
+											$("#sysInfoResp")
+													.val(
+															"[EPCIS] "
+																	+ location.host
+																	+ "/epcis"
+																	+ " -> "
+																	+ "[MongoDB] "
+																	+ result.backend_database_name
+																	+ " database in "
+																	+ result.backend_ip
+																	+ ":"
+																	+ result.backend_port);
+										});
 
-		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
-		$.ajax({
-			type : "GET",
-			url : systemInfoURL
-		}).done(function(result) {
-			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
-		});
-		
-	});
+					});
 
 	function subscribe() {
 		var baseURL = $("#pollBaseURL").val();
@@ -63,7 +92,8 @@
 											.serializeToString(ret)).hide()
 									.fadeIn();
 						} catch (e) {
-							$("#xmlTextArea").val(JSON.stringify(ret,null,'\t')).hide()
+							$("#xmlTextArea").val(
+									JSON.stringify(ret, null, '\t')).hide()
 									.fadeIn();
 						}
 					} else {
@@ -151,8 +181,8 @@
 				<div class="col-sm-4">
 					<h4>EPCIS Query URL (Change IP or Domain if needed) (HTTP.GET)</h4>
 					<input id="sysInfoResp" type="text" class="form-control" disabled
-						placeholder="System Information...">
-					<input id="pollBaseURL" type="text" class="form-control"
+						placeholder="System Information..."> <input
+						id="pollBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}?"
 						placeholder="http://localhost:8080/epcis/Service/Subscribe/SimpleEventQuery/{subscriptionID}">
 					<input id="pollParam" type="text" class="form-control"
@@ -253,6 +283,46 @@
 										</span>
 									</div>
 									<h4>Parameters for polling SimpleEventQuery :</h4>
+
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>format</span>
+										<input id="format" type="text" class="form-control"
+											placeholder="XML or JSON" aria-describedby="basic-addon3"
+											onkeydown="if (event.keyCode == 13) addParam('format')">
+										<span class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addParam('format')">ADD</button>
+										</span>
+									</div>
+
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>NEAR_</span>
+										<input id="nearType" type="text" class="form-control"
+											placeholder="Extension Key indexed by 2dsphere (e.g., http://ns.example.com/epcis%23point). Please create 2dsphere index first (e.g., db.EventData.createIndex({'any.http://ns．example．com/epcis#point': '2dsphere' }); we encode '.' peiod with \uff0e inside MongoDB)"
+											aria-describedby="basic-addon3"> <input id="NEAR"
+											type="text" class="form-control"
+											placeholder="CSV of Longitude, Latitude, Minimum (meter, optional), Maximum (meter, optional)"
+											aria-describedby="basic-addon3"> <span
+											class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addFamParam('NEAR','nearType')">ADD</button>
+										</span>
+									</div>
+
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span>
+										<input id="projectionType" type="text" class="form-control"
+											placeholder="Projection Key (e.g., eventTime, extension.quantityList, bizLocation)"
+											aria-describedby="basic-addon3"> <input
+											id="PROJECTION" type="text" class="form-control"
+											placeholder="true or false, true/false cannot be mixed, if true, eventType is automatically set as true"
+											aria-describedby="basic-addon3"> <span
+											class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addFamParam('PROJECTION','projectionType')">ADD</button>
+										</span>
+									</div>
+
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">eventType</span>
 										<input id="eventType" type="text" class="form-control"

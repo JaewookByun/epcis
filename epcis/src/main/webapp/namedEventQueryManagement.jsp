@@ -19,6 +19,7 @@
 	ga('create', 'UA-64257932-1', 'auto');
 	ga('send', 'pageview');
 </script>
+<meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="./css/bootstrap-switch.min.css" rel="stylesheet"
@@ -374,6 +375,19 @@
 										</span>
 									</div>
 									
+									<div class="input-group input-group-sm">
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>NEAR_</span>
+										<input id="nearType" type="text" class="form-control"
+											placeholder="Extension Key indexed by 2dsphere (e.g., http://ns.example.com/epcis%23point). Please create 2dsphere index first (e.g., db.EventData.createIndex({'any.http://ns．example．com/epcis#point': '2dsphere' }); we encode '.' peiod with \uff0e inside MongoDB)"
+											aria-describedby="basic-addon3"> <input id="NEAR"
+											type="text" class="form-control"
+											placeholder="CSV of Longitude, Latitude, Minimum (meter, optional), Maximum (meter, optional)"
+											aria-describedby="basic-addon3"> <span
+											class="input-group-btn" aria-describedby="basic-addon3">
+											<button class="btn btn-default" type="button"
+												onclick="addFamParam('NEAR','nearType')">ADD</button>
+										</span>
+									</div>
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">eventType</span>
 										<input id="eventType" type="text" class="form-control"
