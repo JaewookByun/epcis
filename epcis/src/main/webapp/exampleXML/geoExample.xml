@@ -13,10 +13,10 @@
 					<epc>urn:epc:id:sgtin:0614141.107346.2018</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<!-- Point: Two Double Value longitude -> latitude -->
+				<!-- Point: Two Double Value longitude, latitude -->
 				<example:point>127.365459, 36.374530^geoPoint</example:point>
-				<!-- Polygon with a Single Ring: List of Two Double Value (Circular), 
-					lon-lat-lon-lat -->
+				<!-- Polygon with a Single Ring: List of Two Double Values -->
+				<!-- The last point is connected to the first point -->
 				<example:polygon>127.361199, 36.372906, 127.361183, 36.371831,
 					127.361790, 36.372003, 127.361988, 36.372509, 127.361773,
 					36.372828^geoArea</example:polygon>

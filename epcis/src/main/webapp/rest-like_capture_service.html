@@ -267,7 +267,7 @@
 			str = str.replace("Event", "Vocabulary");
 			str = str.replace("ECReport", "Vocabulary");
 			$("#captureURL").val(str);
-		} else if (type == "ecreport"){
+		} else if (type == "ecreport") {
 			var str = $("#captureURL").val();
 			str = str.replace("Event", "ECReport");
 			str = str.replace("Vocabulary", "ECReport");
@@ -408,6 +408,13 @@
 							<li><a
 								id="./exampleXML/gs1GermanyExample2(ErrorDeclaration2).xml"
 								href="#">Error Declaration Event Example 2 from GS1 Germany</a></li>
+							<li class="dropdown-header"></li>
+							<li><a
+								id="./exampleXML/geoExample.xml"
+								href="#">Oliot EPCIS geoPoint geoArea extension example 1</a></li>
+							<li><a
+								id="./exampleXML/geoExample2.xml"
+								href="#">Oliot EPCIS geoPoint geoArea extension example 2</a></li>
 							<li class="dropdown-header">Master Data Examples</li>
 							<li><a id="./exampleXML/gs1example5(Master).xml" href="#">GS1
 									Example 5 [EPCIS v1.2 section 9.8]</a></li>
@@ -415,7 +422,8 @@
 								id="./CoreBusinessVocabulary/CoreBusinessVocabulary.xml"
 								href="#">Electronic CBV</a></li>
 							<li class="dropdown-header">ECReport Example</li>
-							<li><a id="./exampleXML/ECReportExample1.xml" href="#">ECReport Example 1</a></li>
+							<li><a id="./exampleXML/ECReportExample1.xml" href="#">ECReport
+									Example 1</a></li>
 						</ul>
 					</div>
 					<textarea id="xmlTextArea" class="form-control auto-text-area"
@@ -474,9 +482,9 @@
 								onclick="replaceURL('ecreport')">EC Report Capture</button></td>
 						<td>
 							<ul class="list-group">
-								<li class="list-group-item">This convenient service allows you to
-									store your ECReport (from ALE middleware) into your backend storage
-								</li>
+								<li class="list-group-item">This convenient service allows
+									you to store your ECReport (from ALE middleware) into your
+									backend storage</li>
 								<li class="list-group-item">Method: post</li>
 								<li class="list-group-item">Contents: application/xml,
 									complying with <a href="./wsdl/EPCglobal-ale-1_1-ale.xsd">ALE
@@ -484,14 +492,10 @@
 								</li>
 								<li class="list-group-item">URL Format: <br>
 									http://{base-url}:{base-port}/epcis/Service/ECReportCapture <br>
+									<br> Additional Paramters: <br> eventTimeZoneOffset:
+									'XXX' <br> action: (ADD|OBSERVE|DELETE) <br> bizStep
+									<br> disposition <br> readPoint <br> bizLocation
 									<br>
-									Additional Paramters: <br>
-									eventTimeZoneOffset: 'XXX' <br>
-									action: (ADD|OBSERVE|DELETE) <br>
-									bizStep <br>
-									disposition <br>
-									readPoint <br>
-									bizLocation <br>
 								</li>
 							</ul>
 						</td>
