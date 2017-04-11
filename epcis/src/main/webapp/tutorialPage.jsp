@@ -19,8 +19,7 @@
 </script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description"
-	content="Tutorial for EPCIS v1.1. It peaks three different EPCIS events in the life of Cow">
+<meta name="description" content="Tutorial for EPCIS v1.2">
 <meta name="author" content="Jaewook Jack Byun">
 <title>EPCIS v1.2 Tutorial - the canned beef's lifecycle</title>
 
@@ -74,6 +73,7 @@
 			<li data-target="#myCarousel" data-slide-to="5"></li>
 			<li data-target="#myCarousel" data-slide-to="6"></li>
 			<li data-target="#myCarousel" data-slide-to="7"></li>
+			<li data-target="#myCarousel" data-slide-to="8"></li>
 		</ol>
 		<div class="carousel-inner" role="listbox">
 			<div class="item active">
@@ -150,6 +150,15 @@
 					</div>
 				</div>
 			</div>
+			<div class="item">
+				<img width="100%" src="./image/vis.png" alt="7">
+				<div class="container">
+					<div class="carousel-caption">
+						<h1>Trace a history</h1>
+						<h4>With standardized events</h4>
+					</div>
+				</div>
+			</div>
 		</div>
 		<a class="left carousel-control" href="#myCarousel" role="button"
 			data-slide="prev"> <span class="glyphicon glyphicon-chevron-left"
@@ -171,8 +180,8 @@
 					Where, When, and Why. This tutorial gives the guideline about</p>
 				<ul>
 					<li>How Ranch, Truck, Canned Factory, and Retail can record
-						the important events regarding the cow's lifecycle.</li>
-					<li>How Customer easily traces the canned beef</li>
+						the important events related to a canned beef's lifecycle.</li>
+					<li>How a customer traces the canned beef</li>
 				</ul>
 			</div>
 			<div class="col-md-4">
@@ -202,8 +211,7 @@
 
 		<footer>
 			<code style="font-size: 12pt">Auto-ID Labs, KAIST 2017</code>
-			<br>
-			<br>
+			<br> <br>
 			<p class="lead"
 				style="font-size: 12pt; color: blue; margin-top: 0pt; margin-bottom: 0pt">Contact</p>
 			<p>

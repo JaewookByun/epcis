@@ -303,7 +303,7 @@ public class RESTLikeQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "text/html; charset=utf-8");
 
-		return new ResponseEntity<>(new String("org.oliot.epcis-1.2.7"), responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(new String("org.oliot.epcis-1.2.8"), responseHeaders, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/Poll/{queryName}", method = RequestMethod.GET)
