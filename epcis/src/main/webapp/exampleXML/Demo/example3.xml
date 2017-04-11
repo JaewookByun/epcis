@@ -10,7 +10,7 @@
 				<!-- The time when the cow is unloaded -->
 				<eventTime>2017-01-03T00:00:00.000-08:00</eventTime>
 				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
-				<!-- A Truck -->
+				<!-- The truck -->
 				<parentID>urn:epc:id:sscc:0000002.0000000001</parentID>
 				<!-- The cow -->
 				<childEPCs>
@@ -29,6 +29,7 @@
 			</AggregationEvent>
 			<extension>
 				<TransformationEvent>
+					<!-- The time when the cow is transformed into canned beefs -->
 					<eventTime>2017-01-03T00:01:00.000-08:00</eventTime>
 					<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
 					<!-- Processing Cow into 5 Canned Beefs -->
@@ -50,25 +51,25 @@
 				</TransformationEvent>
 			</extension>
 			<TransactionEvent>
-				<!-- The time when the cow is sold -->
+				<!-- The time when one canned beef is sold -->
 				<eventTime>2017-01-03T00:02:00.000-08:00</eventTime>
 				<!-- in California time zone -->
 				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
 				<bizTransactionList>
 					<bizTransaction type="urn:epcglobal:cbv:btt:po">
-						http://transaction.acme.com/po/12345678
+						http://transaction.acme.com/po/12345679
 					</bizTransaction>
 				</bizTransactionList>
 				<!-- The canned beef -->
 				<epcList>
 					<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
 				</epcList>
-				<action>ADD</action>
+				<action>OBSERVE</action>
 				<!-- Canning Factory -->
 				<bizLocation>
 					<id>urn:epc:id:sgln:0000003.00001.1</id>
 				</bizLocation>
-				<!-- Ownership Transfer -->
+				<!-- Ownership Transfer from the canning factory to a retail shop -->
 				<extension>
 					<sourceList>
 						<source type="urn:epcglobal:cbv:sdt:owning_party">
@@ -83,9 +84,10 @@
 				<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
 			</TransactionEvent>
 			<AggregationEvent>
+				<!-- The time when the canned beef is loaded into a truck -->
 				<eventTime>2017-01-03T00:03:00.000-08:00</eventTime>
 				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
-				<!-- A Truck -->
+				<!-- A truck -->
 				<parentID>urn:epc:id:sscc:0000002.0000000002</parentID>
 				<!-- The canned beef -->
 				<childEPCs>
