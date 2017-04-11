@@ -22,13 +22,14 @@
 	ga('create', 'UA-64257932-1', 'auto');
 	ga('send', 'pageview');
 </script>
+
 </head>
 <body>
 	<script src="js/bootstrap.min.js"></script>
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
-			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.7</h3>
+			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.8</h3>
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
