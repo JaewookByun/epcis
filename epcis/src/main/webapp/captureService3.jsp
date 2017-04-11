@@ -112,8 +112,7 @@
 					-8:00 <br> &#8226; What: urn:epc:id:sscc:0000002.0000000001
 					(Truck) <br> urn:epc:id:sgtin:0000001.000001.1 (Cow) <br>
 					&#8226; Where:urn:epc:id:sgln:0000003.00001.1 (Canning Factory) <br>
-					&#8226; Why: The truck unloads the cow <br> &nbsp;&nbsp;&nbsp;
-					&#8226; Business Step: unloading
+					&#8226; Why: The truck unloads the cow 
 				</a> <a href="#" class="list-group-item active"
 					style="text-align: center"> Transformation Event </a> <a href="#"
 					class="list-group-item">The event type TransformationEvent
@@ -126,10 +125,10 @@
 					&#8226; Why: The cow is transformed into 5 canned beefs
 				</a> <a href="#" class="list-group-item active"
 					style="text-align: center"> Transaction/Aggregation Events </a> <a
-					href="#" class="list-group-item">The canned beef
-					urn:epc:id:sgtin:0000003.000001.1 is sold by a retail shop
-					urn:epc:id:sgln:0000004.00001.1 and loaded into the truck
-					urn:epc:id:sscc:0000002.0000000002. </a> <a href="#"
+					href="#" class="list-group-item">The canned beef 
+					(urn:epc:id:sgtin:0000003.000001.1) is sold by a retail shop
+					(urn:epc:id:sgln:0000004.00001.1) and loaded into the truck
+					(urn:epc:id:sscc:0000002.0000000002). </a> <a href="#"
 					class="list-group-item active" style="text-align: center">
 					Capture Event </a> <a href="#" class="list-group-item">
 					Send left EPCIS Document as HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>

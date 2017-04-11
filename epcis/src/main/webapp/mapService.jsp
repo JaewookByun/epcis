@@ -73,7 +73,7 @@ body {
 	var map;
 	function initialize() {
 		var mapOptions = {
-			center : new google.maps.LatLng(36.375410, 127.366351),
+			center : new google.maps.LatLng(33.808517, -118.048614),
 			zoom : 16,
 			mapTypeId : google.maps.MapTypeId.ROADMAP
 		};
@@ -130,12 +130,13 @@ body {
 								map : map
 							});
 
-							infoText = "The canned beef"
+							infoText = "2. The canned beef"
 									+ "<br>was processed in"
-									+ "<br>a canning factory here.<br><br> A transformation event found. <br> Please click this marker";
+									+ "<br>this canning factory. <br> in 3rd Jan. 2017 <br><br> <code>A transformation event found. <br> Please click this marker </code> ";
 
 							$infowindow1 = new google.maps.InfoWindow({
-								content : infoText
+								content : infoText,
+								maxHeight: 800
 							});
 
 							$infowindow1.open(map, $marker1);
@@ -155,7 +156,7 @@ body {
 								map : map
 							});
 
-							infoText = "You bought the canned beef from a retail shop here";
+							infoText = "1. The canned beef you now see <br> was ready for sale <br> in 5th Jan. 2017";
 
 							$infowindow2 = new google.maps.InfoWindow({
 								content : infoText
@@ -193,8 +194,9 @@ body {
 							$infowindow2.close();
 							//path1 = [ $latlng1, $latlng2 ];
 
-							infoText = "The canned beef was produced from"
-									+ "<br>the cow in a canning factory <br><br> Additional transporting events found. <br> Please click this marker";
+							infoText = "2. The canned beef"
+								+ "<br>was processed from a cow in"
+								+ "<br>this canning factory. <br> in 3rd Jan. 2017 <br><br> <code> Corresponding transporting events found. <br> Please click this marker </code>";
 
 							$marker3 = new google.maps.Marker({
 								position : $latlng3,
@@ -220,7 +222,7 @@ body {
 							lonf2 = parseFloat($geoArr[0]);
 							$latlng4 = new google.maps.LatLng(latf2, lonf2);
 
-							infoText = "The cow bred in a ranch <br><br> Additional transporting events found. <br> Please click this marker";
+							infoText = "3. The cow had bred in this ranch <br> (Observed in 1st Jan. 2017) <br><br> <code> Corresponding transporting events found. <br> Please click this marker </code>";
 
 							$marker4 = new google.maps.Marker({
 								position : $latlng4,
@@ -244,6 +246,8 @@ body {
 							map.setOptions(mapOptions1);
 
 							google.maps.event.addListener($marker4, 'click', trace3);
+							
+							google.maps.event.addListener($marker3, 'click', trace4);
 						});
 	}
 
@@ -252,96 +256,94 @@ body {
 				.get(
 						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000001",
 						function(xmlDoc) {
-							console.log(xmlDoc);
+							//console.log(xmlDoc);
 							//var text = new XMLSerializer().serializeToString(data);
 							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							
-							
 							$geo = $xml.find("location");
+							
+							$infowindow4.close();
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
 									/\]/g, ',').split(",");
-							console.log($geoArr);
-							lat = $geo.text().split(",")[0].trim();
-							lon = $geo.text().split(",")[1].trim();
-							latf = parseFloat(lat);
-							lonf = parseFloat(lon);
-							$latlng3 = new google.maps.LatLng(latf, lonf);
-							mapOptions = {
-								center : $latlng3,
-								zoom : 10,
-								mapTypeId : google.maps.MapTypeId.ROADMAP
-							};
-							map.setOptions(mapOptions);
-							$marker3 = new google.maps.Marker({
-								position : $latlng3,
-								title : 'Parker Ranch',
-								map : map
-							});
-
-							infoText = "The cow"
-									+ "<br>was sold from Parker Ranch"
-									+ "<br>to Butcher Lauren B<br>at<br>"
-									+ $eventTime.textContent.trim();
-
-							path2 = [ $latlng2, $latlng3 ];
-
-							// Animation
-							$infowindow2.close();
-							$cnt = 0;
-							var timer2 = setInterval(timer2func, 15);
-
-							function timer2func() {
-								if ($cnt != 100) {
-
-									latTmp = path2[0].lat()
-											+ (path2[1].lat() - path2[0].lat())
-											* $cnt / 100.0;
-									lngTmp = path2[0].lng()
-											+ (path2[1].lng() - path2[0].lng())
-											* $cnt / 100.0;
-
-									$latlngTmp = new google.maps.LatLng(latTmp,
-											lngTmp);
-
-									pathTmp = [ $latlng2, $latlngTmp ];
-
-									var pathTmp = new google.maps.Polyline({
-										path : pathTmp,
-										strokeColor : "#E4421A",
-										strokeOpacity : 0.08,
-										strokeWeight : 5,
-										geodesic : true
-									});
-
-									pathTmp.setMap(map);
-									$cnt = $cnt + 1;
-
-									mapOptions = {
-										center : $latlngTmp,
-										zoom : 10,
-										mapTypeId : google.maps.MapTypeId.ROADMAP
-									};
-									map.setOptions(mapOptions);
-
-								} else if ($cnt == 100) {
-									clearInterval(timer2);
-
-									$marker3 = new google.maps.Marker({
-										position : $latlng3,
-										title : 'Butcher Lauren B',
-										map : map
-									});
-
-									$infowindow3 = new google.maps.InfoWindow({
-										content : infoText,
-										maxWidth : 800
-									});
-
-									$infowindow3.open(map, $marker3);
-								}
-							}
+							//console.log($geoArr);
+							
+							var $markerT = null;
+							for(var i = 3; i < 38; i= i+2){
+								latfT1 = parseFloat($geoArr[i]);
+								lonfT1 = parseFloat($geoArr[i-1]);
+								$latlngT1 = new google.maps.LatLng(latfT1, lonfT1);
+								
+								latfT2 = parseFloat($geoArr[i+2]);
+								lonfT2 = parseFloat($geoArr[i+1]);
+								$latlngT2 = new google.maps.LatLng(latfT2, lonfT2);
+								
+								$markerT = new google.maps.Marker({
+									position : $latlngT2,
+									title : 'The Moving Route of Cow',
+									map : map
+								});
+								
+								var pathVar1 = new google.maps.Polyline({
+									path : [ $latlngT1, $latlngT2 ],
+									strokeColor : "#0000CD",
+									strokeOpacity : 0.5,
+									strokeWeight : 2,
+									geodesic : true
+								});
+								
+								pathVar1.setMap(map);
+								
+							}							
+						});
+	}
+	
+	function trace4() {
+		$
+				.get(
+						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000002",
+						function(xmlDoc) {
+							//console.log(xmlDoc);
+							//var text = new XMLSerializer().serializeToString(data);
+							//xmlDoc = $.parseXML(text);
+							$xml = $(xmlDoc);
+							
+							$geo = $xml.find("location");
+							
+							$infowindow3.close();
+							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
+							$geoArr = $geo.text().replace(/\[/g, '').replace(
+									/\]/g, ',').split(",");
+							//console.log($geoArr);
+							
+							var $markerT = null;
+							for(var i = 1; i < 16; i= i+2){
+								latfT1 = parseFloat($geoArr[i]);
+								lonfT1 = parseFloat($geoArr[i-1]);
+								$latlngT1 = new google.maps.LatLng(latfT1, lonfT1);
+								
+								latfT2 = parseFloat($geoArr[i+2]);
+								lonfT2 = parseFloat($geoArr[i+1]);
+								$latlngT2 = new google.maps.LatLng(latfT2, lonfT2);
+								
+								$markerT = new google.maps.Marker({
+									position : $latlngT2,
+									title : 'The Moving Route of Canned Beef',
+									map : map
+								});
+								
+								var pathVar1 = new google.maps.Polyline({
+									path : [ $latlngT1, $latlngT2 ],
+									strokeColor : "#FF0000",
+									strokeOpacity : 0.5,
+									strokeWeight : 2,
+									geodesic : true
+								});
+								
+								pathVar1.setMap(map);
+								
+							}							
 						});
 	}
 </script>
@@ -373,15 +375,13 @@ body {
 
 	<div class="container">
 		<p>
-			Insert the EPC you want to trace. (Not Working for other epcs) <br>
-			Then,
-			<code>Click</code>
-			the latest marker
+			You now see a canned beef in a retail shop. Insert the EPC of the
+			canned beef and Trace it<br>
 		</p>
 		<input type="text" class="input-medium search-query"
 			value="urn:epc:id:sgtin:0000003.000001.1" size=35>
 		<button type="button" class="btn btn-sm btn-primary"
-			onclick="trace1()">Trace everyday-object</button>
+			onclick="trace1()">Trace a canned beef</button>
 	</div>
 	<br>
 	<div id="map_canvas" align="center" style="width: 100%; height: 65%"></div>

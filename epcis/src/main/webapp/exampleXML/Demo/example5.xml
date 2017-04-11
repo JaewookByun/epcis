@@ -7,10 +7,10 @@
 	<EPCISBody>
 		<EventList>
 			<AggregationEvent>
-				<!-- The time when the cow is unloaded -->
+				<!-- The time when the canned beef is unloaded -->
 				<eventTime>2017-01-05T00:00:00.000-08:00</eventTime>
 				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
-				<!-- A Truck -->
+				<!-- The truck -->
 				<parentID>urn:epc:id:sscc:0000002.0000000002</parentID>
 				<!-- The canned beef -->
 				<childEPCs>
@@ -18,7 +18,7 @@
 				</childEPCs>
 				<!-- Unload -->
 				<action>DELETE</action>
-				<!-- The cow is unloaded from the truck -->
+				<!-- The canned beef is unloaded from the truck -->
 				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
 				<!-- Retail -->
 				<bizLocation>
@@ -28,7 +28,7 @@
 				<demo:location>-118.048614, 33.808517^geoPoint</demo:location>
 			</AggregationEvent>
 			<ObjectEvent>
-				<!-- A truck transports the cow -->
+				<!-- The time when the canned beef is ready for sale -->
 				<eventTime>2017-01-05T00:01:00.000-08:00</eventTime>
 				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
 				<epcList>
