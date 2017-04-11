@@ -1550,8 +1550,7 @@ public class MongoQueryService {
 				String paramName = paramIter.next();
 				String paramValues = p.getParams().get(paramName);
 
-				// db.EventData.createIndex({"any.http://ns．example．com/epcis#point":
-				// "2dsphere" });
+				// db.EventData.createIndex({"any.http://ns．example．com/epcis#point": "2dsphere" });
 				if (paramName.contains("NEAR_")) {
 					String type = paramName.substring(5, paramName.length());
 					type = MongoWriterUtil.encodeMongoObjectKey(type);
