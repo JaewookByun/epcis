@@ -801,7 +801,7 @@ public class MongoWriterUtil {
 		return errorBson;
 	}
 
-	static BsonDateTime getBsonDateTime(String standardDateString) {
+	public static BsonDateTime getBsonDateTime(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
@@ -821,7 +821,7 @@ public class MongoWriterUtil {
 		return null;
 	}
 
-	static BsonDocument getBsonGeoPoint(String pointString) {
+	public static BsonDocument getBsonGeoPoint(String pointString) {
 		try {
 			BsonDocument pointDoc = new BsonDocument();
 			pointDoc.put("type", new BsonString("Point"));
@@ -840,7 +840,7 @@ public class MongoWriterUtil {
 		}
 	}
 
-	static BsonDocument getBsonGeoArea(String areaString) {
+	public static BsonDocument getBsonGeoArea(String areaString) {
 		try {
 			BsonDocument areaDoc = new BsonDocument();
 			areaDoc.put("type", new BsonString("Polygon"));

@@ -179,6 +179,7 @@ public class AggregationEvent extends EPCISEvent {
 
 		BsonDocument aggregationEvent = super.asBsonDocument();
 		// Required Fields
+		aggregationEvent = util.putEventType(aggregationEvent, "AggregationEvent");
 		aggregationEvent = util.putAction(aggregationEvent, action);
 
 		// Optional Fields

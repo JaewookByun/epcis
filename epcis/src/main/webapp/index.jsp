@@ -29,7 +29,7 @@
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
-			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.8</h3>
+			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.9</h3>
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
@@ -74,8 +74,9 @@
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> REST-Like Web
 					Service </a> <a href="./tutorialPage.jsp"
-					class="list-group-item">Traceability Demonstration <code>new</code></a>  <a href="./rest-like_capture_service.html"
-					class="list-group-item">EPCIS Capture Client</a> <a
+					class="list-group-item">Traceability Demonstration</a>  <a href="./rest-like_capture_service.html"
+					class="list-group-item">EPCIS Capture Client</a> <a href="./rest-like_capture_service2.html"
+					class="list-group-item">EPCIS Capture Client (Parameterized Capture) <code>new</code></a> <a
 					href="./rest-like_query_service.html" class="list-group-item">EPCIS
 					Query Client</a> <a href="./rest-like_query_service2.html"
 					class="list-group-item">EPCIS Query Client (Subscription)</a>

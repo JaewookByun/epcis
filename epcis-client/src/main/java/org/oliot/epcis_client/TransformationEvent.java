@@ -203,6 +203,7 @@ public class TransformationEvent extends EPCISEvent {
 		CaptureUtil util = new CaptureUtil();
 
 		BsonDocument transformationEvent = super.asBsonDocument();
+		transformationEvent = util.putEventType(transformationEvent, "TransformationEvent");
 
 		// Optional Fields
 		if (this.inputEPCList != null && this.inputEPCList.size() != 0) {

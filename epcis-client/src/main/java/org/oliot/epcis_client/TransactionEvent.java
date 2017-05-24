@@ -186,6 +186,7 @@ public class TransactionEvent extends EPCISEvent {
 
 		BsonDocument transactionEvent = super.asBsonDocument();
 		// Required Fields
+		transactionEvent = util.putEventType(transactionEvent, "TransactionEvent");
 		transactionEvent = util.putAction(transactionEvent, action);
 		transactionEvent = util.putBizTransactionList(transactionEvent, bizTransactionList);
 
