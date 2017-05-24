@@ -13,22 +13,21 @@ public class SoapTest {
 	@SuppressWarnings({ "resource", "unused" })
 	@RequestMapping(value = "/EventCapture", method = RequestMethod.POST)
 	@ResponseBody
-	public String test1()
-	{
+	public String test1() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:SoapCaptureClient.xml");
-		CoreCaptureService client = (CoreCaptureService)context.getBean("client");
-		//client.capture(epcisDocument);
+		CoreCaptureService client = (CoreCaptureService) context.getBean("client");
+		// client.capture(epcisDocument);
 		return "OK";
-		
+
 	}
+
 	@SuppressWarnings({ "resource", "unused" })
 	@RequestMapping(value = "/VocabularyCapture", method = RequestMethod.POST)
 	@ResponseBody
-	public String test2()
-	{
+	public String test2() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:SoapCaptureClient.xml");
-		CoreCaptureService client = (CoreCaptureService)context.getBean("client");
-		//client.capture(epcisDocument);
-		return "OK";		
+		CoreCaptureService client = (CoreCaptureService) context.getBean("client");
+		// client.capture(epcisDocument);
+		return "OK";
 	}
 }
