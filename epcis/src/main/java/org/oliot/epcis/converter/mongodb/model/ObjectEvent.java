@@ -1,4 +1,4 @@
-package org.oliot.epcis_client;
+package org.oliot.epcis.converter.mongodb.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.bson.BsonDocument;
+import org.bson.BsonValue;
 
 /**
- * Copyright (C) 2014-16 Jaewook Byun
+ * Copyright (C) 2014-17 Jaewook Byun
  *
  * This project is part of Oliot (oliot.org), pursuing the implementation of
  * Electronic Product Code Information Service(EPCIS) v1.1 specification in
@@ -24,81 +25,49 @@ import org.bson.BsonDocument;
  * 
  *         bjw0829@kaist.ac.kr, bjw0829@gmail.com
  */
-public class TransactionEvent extends EPCISEvent {
+public class ObjectEvent extends EPCISEvent {
 
-	// EventTime, EventTimeZoneOffset,Action, bizTransactionList required
-	private String action;
-	private Map<String, List<String>> bizTransactionList;
+	// EventTime, EventTimeZoneOffset,Action required
 
-	private String parentID;
 	private List<String> epcList;
 	private List<QuantityElement> quantityList;
-
+	private String action;
 	private String bizStep;
 	private String disposition;
 	private String readPoint;
 	private String bizLocation;
-
+	private Map<String, List<String>> bizTransactionList;
 	private Map<String, List<String>> sourceList;
 	private Map<String, List<String>> destinationList;
 	private Map<String, String> namespaces;
-
+	private BsonDocument ilmds;
 	private BsonDocument extensions;
 
-	public TransactionEvent(Map<String, List<String>> bizTransactionList) {
+	public ObjectEvent() {
 		super();
-
-		// Required Fields
 		action = "OBSERVE";
-		this.bizTransactionList = bizTransactionList;
-
 		epcList = new ArrayList<String>();
 		quantityList = new ArrayList<QuantityElement>();
-
+		bizTransactionList = new HashMap<String, List<String>>();
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
+		ilmds = new BsonDocument();
 		extensions = new BsonDocument();
 	}
 
-	public TransactionEvent(long eventTime, String eventTimeZoneOffset, String action,
-			Map<String, List<String>> bizTransactionList) {
+	public ObjectEvent(long eventTime, String eventTimeZoneOffset, String action) {
 		super(eventTime, eventTimeZoneOffset);
 
 		this.action = action;
-		this.bizTransactionList = bizTransactionList;
-
 		epcList = new ArrayList<String>();
 		quantityList = new ArrayList<QuantityElement>();
-
+		bizTransactionList = new HashMap<String, List<String>>();
 		sourceList = new HashMap<String, List<String>>();
 		destinationList = new HashMap<String, List<String>>();
 		namespaces = new HashMap<String, String>();
+		ilmds = new BsonDocument();
 		extensions = new BsonDocument();
-	}
-
-	public String getAction() {
-		return action;
-	}
-
-	public void setAction(String action) {
-		this.action = action;
-	}
-
-	public Map<String, List<String>> getBizTransactionList() {
-		return bizTransactionList;
-	}
-
-	public void setBizTransactionList(Map<String, List<String>> bizTransactionList) {
-		this.bizTransactionList = bizTransactionList;
-	}
-
-	public String getParentID() {
-		return parentID;
-	}
-
-	public void setParentID(String parentID) {
-		this.parentID = parentID;
 	}
 
 	public List<String> getEpcList() {
@@ -115,6 +84,14 @@ public class TransactionEvent extends EPCISEvent {
 
 	public void setQuantityList(List<QuantityElement> quantityList) {
 		this.quantityList = quantityList;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
 	}
 
 	public String getBizStep() {
@@ -149,6 +126,14 @@ public class TransactionEvent extends EPCISEvent {
 		this.bizLocation = bizLocation;
 	}
 
+	public Map<String, List<String>> getBizTransactionList() {
+		return bizTransactionList;
+	}
+
+	public void setBizTransactionList(Map<String, List<String>> bizTransactionList) {
+		this.bizTransactionList = bizTransactionList;
+	}
+
 	public Map<String, List<String>> getSourceList() {
 		return sourceList;
 	}
@@ -173,7 +158,15 @@ public class TransactionEvent extends EPCISEvent {
 		this.namespaces = namespaces;
 	}
 
-	public BsonDocument getExtensions() {
+	public Map<String, BsonValue> getIlmd() {
+		return ilmds;
+	}
+
+	public void setIlmd(BsonDocument ilmds) {
+		this.ilmds = ilmds;
+	}
+
+	public Map<String, BsonValue> getExtensions() {
 		return extensions;
 	}
 
@@ -184,34 +177,32 @@ public class TransactionEvent extends EPCISEvent {
 	public BsonDocument asBsonDocument() {
 		CaptureUtil util = new CaptureUtil();
 
-		BsonDocument transactionEvent = super.asBsonDocument();
+		BsonDocument objectEvent = super.asBsonDocument();
 		// Required Fields
-		transactionEvent = util.putEventType(transactionEvent, "TransactionEvent");
-		transactionEvent = util.putAction(transactionEvent, action);
-		transactionEvent = util.putBizTransactionList(transactionEvent, bizTransactionList);
+		objectEvent = util.putEventType(objectEvent, "ObjectEvent");
+		objectEvent = util.putAction(objectEvent, action);
 
 		// Optional Fields
-		if (this.parentID != null) {
-			transactionEvent = util.putParentID(transactionEvent, parentID);
-		}
 		if (this.epcList != null && this.epcList.size() != 0) {
-			transactionEvent = util.putEPCList(transactionEvent, epcList);
+			objectEvent = util.putEPCList(objectEvent, epcList);
 		}
 		if (this.bizStep != null) {
-			transactionEvent = util.putBizStep(transactionEvent, bizStep);
+			objectEvent = util.putBizStep(objectEvent, bizStep);
 		}
 		if (this.disposition != null) {
-			transactionEvent = util.putDisposition(transactionEvent, disposition);
+			objectEvent = util.putDisposition(objectEvent, disposition);
 		}
 		if (this.readPoint != null) {
-			transactionEvent = util.putReadPoint(transactionEvent, readPoint);
+			objectEvent = util.putReadPoint(objectEvent, readPoint);
 		}
 		if (this.bizLocation != null) {
-			transactionEvent = util.putBizLocation(transactionEvent, bizLocation);
+			objectEvent = util.putBizLocation(objectEvent, bizLocation);
 		}
-
+		if (this.bizTransactionList != null && this.bizTransactionList.isEmpty() == false) {
+			objectEvent = util.putBizTransactionList(objectEvent, bizTransactionList);
+		}
 		if (this.extensions != null && this.extensions.isEmpty() == false) {
-			transactionEvent = util.putExtensions(transactionEvent, namespaces, extensions);
+			objectEvent = util.putExtensions(objectEvent, namespaces, extensions);
 		}
 
 		BsonDocument extension = new BsonDocument();
@@ -224,9 +215,12 @@ public class TransactionEvent extends EPCISEvent {
 		if (this.destinationList != null && this.destinationList.isEmpty() == false) {
 			extension = util.putDestinationList(extension, destinationList);
 		}
+		if (this.ilmds != null && this.ilmds.isEmpty() == false) {
+			extension = util.putILMD(extension, namespaces, ilmds);
+		}
 		if (extension.isEmpty() == false)
-			transactionEvent.put("extension", extension);
+			objectEvent.put("extension", extension);
 
-		return transactionEvent;
+		return objectEvent;
 	}
 }

@@ -1,4 +1,4 @@
-package org.oliot.epcis_client;
+package org.oliot.epcis.converter.mongodb.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -204,7 +204,6 @@ public class TransformationEvent extends EPCISEvent {
 
 		BsonDocument transformationEvent = super.asBsonDocument();
 		transformationEvent = util.putEventType(transformationEvent, "TransformationEvent");
-
 		// Optional Fields
 		if (this.inputEPCList != null && this.inputEPCList.size() != 0) {
 			transformationEvent = util.putInputEPCList(transformationEvent, inputEPCList);

@@ -1,4 +1,4 @@
-package org.oliot.epcis_client;
+package org.oliot.epcis.converter.mongodb.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -185,6 +185,7 @@ public class TransactionEvent extends EPCISEvent {
 		CaptureUtil util = new CaptureUtil();
 
 		BsonDocument transactionEvent = super.asBsonDocument();
+
 		// Required Fields
 		transactionEvent = util.putEventType(transactionEvent, "TransactionEvent");
 		transactionEvent = util.putAction(transactionEvent, action);
