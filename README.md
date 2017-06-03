@@ -8,7 +8,9 @@ Copyright (C) 2014-2017 Jaewook Byun
 
 ### For Our Community ###
 > Auto-ID Labs. KAIST is interested in knowing how Oliot EPCIS can be used for different application domains. 
+
 > Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.)
+
 > The information will be managed and summarized in Wiki.
 
 ### Paper Publication ###
