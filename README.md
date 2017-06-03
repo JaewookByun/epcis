@@ -20,6 +20,8 @@ Copyright (C) 2014-2017 Jaewook Byun
 
 - Jaewook Byun, Sungpil Woo, Daeyoung Kim,"Efficient and privacy-enhanced object traceability based on unified and linked EPCIS events." Computers in Industry 89 (2017): 35-49. [URL](http://www.sciencedirect.com/science/article/pii/S016636151630135X)
 
+- Sungpil woo, Jaehee Ha, Jaewook Byun, Kiwoong Kwon, Yalew Tolcha, Daeyoun Kang, Hoang Minh Nguyen, Myungchul Kim, and Daeyoung Kim, “Secure-EPCIS : Addressing Security Issues in EPCIS for IoT applications”,  13th IEEE World Congress on Services (Services 2017), Honolulu, Hawaii, USA, June 25 - 30, 2017. (Accessible Link will be provided)
+
 ### Introduction ###
 > EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
 
