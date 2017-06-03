@@ -4,10 +4,12 @@ Copyright (C) 2014-2017 Jaewook Byun
 
 > This project is part of Oliot ([Oliot Homepage](http://oliot.org)).
 
-> Oliot epcis is an opensource web serivce implementing EPC Information Service (EPCIS) v1.2 specification 
+> Oliot epcis is an opensource web serivce implementing EPC Information Service (EPCIS) v1.2 specification.
 
-### Introduction ###
-> EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
+### For Our Community ###
+> Auto-ID Labs. KAIST is interested in knowing how Oliot EPCIS can be used for different application domains. 
+> Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.)
+> The information will be managed and summarized in Wiki.
 
 ### Paper Publication ###
 - Jaewook Byun, Daeyoung Kim. "Oliot EPCIS: New EPC information service and challenges towards the Internet of Things." RFID (RFID), 2015 IEEE International Conference on. IEEE, 2015. [URL](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7113075&tag=1)
@@ -15,6 +17,9 @@ Copyright (C) 2014-2017 Jaewook Byun
 - Jaewook Byun, Daeyoung Kim, "EPC Graph Information Service: Enhanced object traceability on unified and linked EPCIS events," The 16th International Conference on Web Information System Engineering (WISE 2015), Miami, Florida, USA, November 1-3, 2015. [URL](http://link.springer.com/chapter/10.1007/978-3-319-26190-4_16)
 
 - Jaewook Byun, Sungpil Woo, Daeyoung Kim,"Efficient and privacy-enhanced object traceability based on unified and linked EPCIS events." Computers in Industry 89 (2017): 35-49. [URL](http://www.sciencedirect.com/science/article/pii/S016636151630135X)
+
+### Introduction ###
+> EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
 
 ### Temporary Server for Oliot EPCIS ###
 > [Server](http://14.63.168.75:8080/epcis/)
