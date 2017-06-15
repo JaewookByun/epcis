@@ -348,7 +348,7 @@
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
 								<li class="list-group-item">Administrator method</li>
 								<li class="list-group-item">Parameters: <br>
-									<code>List of characters should be encoded: + -> %2B , # -> %23</code><br>
+									<code>List of characters should be encoded: + -> %2B , # -> %23, ^ -> %5E</code><br>
 									
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3"><code>new</code>format</span>
