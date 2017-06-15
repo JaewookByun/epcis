@@ -24,6 +24,7 @@ import org.oliot.model.epcis.VocabularyType;
 
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.InsertManyOptions;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -48,7 +49,9 @@ public class MongoCaptureUtil {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
 		try {
-			collection.insertMany(bsonDocumentList);
+			InsertManyOptions option = new InsertManyOptions();
+			option.ordered(false);
+			collection.insertMany(bsonDocumentList, option);
 		} catch (MongoBulkWriteException e) {
 			retMsg.put("error", e.getMessage());
 			return retMsg;
