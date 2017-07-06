@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
@@ -392,6 +393,8 @@ public class MongoQueryService {
 
 		MongoCursor<BsonDocument> slCursor = cursor.iterator();
 
+		HashSet<BsonDocument> dbObjectSet = new HashSet<BsonDocument>();
+
 		while (slCursor.hasNext()) {
 			BsonDocument dbObject = slCursor.next();
 
@@ -404,41 +407,98 @@ public class MongoQueryService {
 			if (!isPostFilterPassed(eventTypeInDoc, dbObject, p.getParams()))
 				continue;
 
-			if (p.getFormat() == null || p.getFormat().equals("XML")) {
+			dbObjectSet.add(dbObject);
+		}
+
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
+
+			List<JAXBElement> converted = dbObjectSet.parallelStream().map(obj -> {
+				String eventTypeInDoc = obj.getString("eventType").getValue();
 				if (eventTypeInDoc.equals("AggregationEvent")) {
 					AggregationEventReadConverter con = new AggregationEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
-							con.convert(dbObject));
-					eventObjects.add(element);
+							con.convert(obj));
+					return element;
 				} else if (eventTypeInDoc.equals("ObjectEvent")) {
 					ObjectEventReadConverter con = new ObjectEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
-							con.convert(dbObject));
-					eventObjects.add(element);
+							con.convert(obj));
+					return element;
 				} else if (eventTypeInDoc.equals("QuantityEvent")) {
 					QuantityEventReadConverter con = new QuantityEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
-							con.convert(dbObject));
-					eventObjects.add(element);
+							con.convert(obj));
+					return element;
 				} else if (eventTypeInDoc.equals("TransactionEvent")) {
 					TransactionEventReadConverter con = new TransactionEventReadConverter();
 					JAXBElement element = new JAXBElement(new QName("TransactionEvent"), TransactionEventType.class,
-							con.convert(dbObject));
-					eventObjects.add(element);
+							con.convert(obj));
+					return element;
 				} else if (eventTypeInDoc.equals("TransformationEvent")) {
 					TransformationEventReadConverter con = new TransformationEventReadConverter();
-					TransformationEventType transformationEvent = con.convert(dbObject);
+					TransformationEventType transformationEvent = con.convert(obj);
 					EPCISEventListExtensionType extension = new EPCISEventListExtensionType();
 					extension.setTransformationEvent(transformationEvent);
 					JAXBElement element = new JAXBElement(new QName("extension"), EPCISEventListExtensionType.class,
 							extension);
-					eventObjects.add(element);
-				}
-			} else {
-				dbObject.remove("_id");
-				retArray.put(new JSONObject(dbObject.toJson()));
-			}
+					return element;
+				} else
+					return null;
+			}).filter(obj -> obj != null).collect(Collectors.toList());
+
+			eventObjects.addAll(converted);
+		} else {
+			List<JSONObject> objList = dbObjectSet.parallelStream().map(obj -> {
+				return new JSONObject(obj.toJson());
+			}).collect(Collectors.toList());
+			retArray = new JSONArray(objList);
 		}
+
+		/*
+		 * before Parallel conversion while (slCursor.hasNext()) { BsonDocument
+		 * dbObject = slCursor.next();
+		 * 
+		 * String eventTypeInDoc = dbObject.getString("eventType").getValue();
+		 * 
+		 * if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
+		 * continue; }
+		 * 
+		 * if (!isPostFilterPassed(eventTypeInDoc, dbObject, p.getParams()))
+		 * continue;
+		 * 
+		 * if (p.getFormat() == null || p.getFormat().equals("XML")) { if
+		 * (eventTypeInDoc.equals("AggregationEvent")) {
+		 * AggregationEventReadConverter con = new
+		 * AggregationEventReadConverter(); JAXBElement element = new
+		 * JAXBElement(new QName("AggregationEvent"),
+		 * AggregationEventType.class, con.convert(dbObject));
+		 * eventObjects.add(element); } else if
+		 * (eventTypeInDoc.equals("ObjectEvent")) { ObjectEventReadConverter con
+		 * = new ObjectEventReadConverter(); JAXBElement element = new
+		 * JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
+		 * con.convert(dbObject)); eventObjects.add(element); } else if
+		 * (eventTypeInDoc.equals("QuantityEvent")) { QuantityEventReadConverter
+		 * con = new QuantityEventReadConverter(); JAXBElement element = new
+		 * JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
+		 * con.convert(dbObject)); eventObjects.add(element); } else if
+		 * (eventTypeInDoc.equals("TransactionEvent")) {
+		 * TransactionEventReadConverter con = new
+		 * TransactionEventReadConverter(); JAXBElement element = new
+		 * JAXBElement(new QName("TransactionEvent"),
+		 * TransactionEventType.class, con.convert(dbObject));
+		 * eventObjects.add(element); } else if
+		 * (eventTypeInDoc.equals("TransformationEvent")) {
+		 * TransformationEventReadConverter con = new
+		 * TransformationEventReadConverter(); TransformationEventType
+		 * transformationEvent = con.convert(dbObject);
+		 * EPCISEventListExtensionType extension = new
+		 * EPCISEventListExtensionType();
+		 * extension.setTransformationEvent(transformationEvent); JAXBElement
+		 * element = new JAXBElement(new QName("extension"),
+		 * EPCISEventListExtensionType.class, extension);
+		 * eventObjects.add(element); } } else { retArray.put(new
+		 * JSONObject(dbObject.toJson())); } }
+		 */
 
 		// M44
 		if (p.getMaxEventCount() != null) {
@@ -1550,7 +1610,8 @@ public class MongoQueryService {
 				String paramName = paramIter.next();
 				String paramValues = p.getParams().get(paramName);
 
-				// db.EventData.createIndex({"any.http://ns．example．com/epcis#point": "2dsphere" });
+				// db.EventData.createIndex({"any.http://ns．example．com/epcis#point":
+				// "2dsphere" });
 				if (paramName.contains("NEAR_")) {
 					String type = paramName.substring(5, paramName.length());
 					type = MongoWriterUtil.encodeMongoObjectKey(type);
