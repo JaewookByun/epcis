@@ -19,7 +19,7 @@
 	ga('create', 'UA-64257932-1', 'auto');
 	ga('send', 'pageview');
 </script>
-<meta charset="utf-8"/>
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="./css/bootstrap-switch.min.css" rel="stylesheet"
@@ -121,41 +121,70 @@
 			console.log('Successful login for: ' + response.name);
 			$('#fid').val(response.id).hide().fadeIn('slow');
 		});
-		var facebookAppID = "<%=facebookAppID%>";
-		FB.api('/'+facebookAppID, function(response) {
-			$('#consoleMsg').val('Welcome to '+response.name).hide().fadeIn('slow');
+		var facebookAppID = "<%=facebookAppID%>
+	";
+		FB.api('/' + facebookAppID, function(response) {
+			$('#consoleMsg').val('Welcome to ' + response.name).hide().fadeIn(
+					'slow');
 		});
 	}
 </script>
 
 
 <script>
+	$(document)
+			.ready(
+					function() {
+						$('#addBaseURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/Admin/NamedEventQuery/{name}?");
+						$('#getURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/Admin/NamedEventQuery");
+						$('#deleteURL')
+								.val(
+										"http://"
+												+ location.host
+												+ "/epcis/Service/Admin/NamedEventQuery/{name}?");
 
-	$(document).ready(function() {
-		$('#addBaseURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery/{name}?");
-		$('#getURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery");
-		$('#deleteURL').val("http://"+location.host+"/epcis/Service/Admin/NamedEventQuery/{name}?");
-		
-		systemInfoURL = 'http://'+location.host+'/epcis/Service/Admin/SystemInformation';
-		$.ajax({
-			type : "GET",
-			url : systemInfoURL
-		}).done(function(result) {
-			$("#sysInfoResp").val( "[EPCIS] " + location.host + "/epcis" + " -> " + "[MongoDB] " + result.backend_database_name + " database in " + result.backend_ip + ":" + result.backend_port);
-		});
-		
-	});
-	
-	
-	
+						systemInfoURL = 'http://' + location.host
+								+ '/epcis/Service/Admin/SystemInformation';
+						$
+								.ajax({
+									type : "GET",
+									url : systemInfoURL
+								})
+								.done(
+										function(result) {
+											$("#sysInfoResp")
+													.val(
+															"[EPCIS] "
+																	+ location.host
+																	+ "/epcis"
+																	+ " -> "
+																	+ "[MongoDB] "
+																	+ result.backend_database_name
+																	+ " database in "
+																	+ result.backend_ip
+																	+ ":"
+																	+ result.backend_port);
+										});
+
+					});
+
 	function addNamedEventQuery() {
 		var baseURL = $("#addBaseURL").val();
 		var params = $("#pollParam").val();
 		var desc = $("#description").val();
 		var fid = $("#fid").val();
 		var fAccessToken = $("#fAccessToken").val();
-		
-		var url = baseURL + params + "&description="+desc + "&userID="+fid + "&accessToken="+fAccessToken;
+
+		var url = baseURL + params + "&description=" + desc + "&userID=" + fid
+				+ "&accessToken=" + fAccessToken;
 		$.get(
 				url,
 				function(ret) {
@@ -167,8 +196,8 @@
 						$("#xmlTextArea").val(ret).hide().fadeIn();
 					}
 				}).fail(function(e) {
-					$("#xmlTextArea").val(e.responseText).hide().fadeIn();
-				});
+			$("#xmlTextArea").val(e.responseText).hide().fadeIn();
+		});
 	}
 
 	function getNamedEventQueries() {
@@ -183,8 +212,8 @@
 		var base = $("#deleteURL").val();
 		var fid = $("#fid").val();
 		var fAccessToken = $("#fAccessToken").val();
-		var u = base + "&userID="+fid + "&accessToken="+fAccessToken;
-		
+		var u = base + "&userID=" + fid + "&accessToken=" + fAccessToken;
+
 		$.ajax({
 			type : "DELETE",
 			url : u
@@ -209,7 +238,7 @@
 
 		$("#pollParam").val(curParam);
 	}
-	
+
 	function replaceURL(type) {
 		if (type == "event") {
 			var str = $("#addBaseURL").val();
@@ -227,8 +256,8 @@
 	function movePage(page) {
 		document.location.href = page;
 	}
-	
-	function reset(){
+
+	function reset() {
 		$('#pollParam').val('');
 	}
 </script>
@@ -244,7 +273,8 @@
 					class="icon-bar"></span> <span class="icon-bar"></span> <span
 					class="icon-bar"></span>
 			</button>
-			<a class="navbar-brand" href="#">Oliot EPCIS Named Event Query Management Tool</a>
+			<a class="navbar-brand" href="#">Oliot EPCIS Named Event Query
+				Management Tool</a>
 		</div>
 		<div id="navbar" class="navbar-collapse collapse">
 			<form class="navbar-form navbar-right">
@@ -254,31 +284,35 @@
 		</div>
 
 		<fb:login-button
-						data-scope="public_profile,user_friends,user_about_me,user_events,user_likes,user_location,user_posts,user_relationships,user_relationship_details,email"
-						onlogin="checkLoginState();" auto_logout_link="true"
-						class="panel-body">
-					</fb:login-button>
-					<input id="consoleMsg" type="text" class="form-control" disabled placeholder="Message from Facebook">
-					<input id="fid" type="hidden" class="form-control"
-						placeholder="ID will be shown here" > <br>
-					<input id="fAccessToken" type="hidden" class="form-control"
-						placeholder="Access Token will be shown here">
+			data-scope="public_profile,user_friends,user_about_me,user_events,user_likes,user_location,user_posts,user_relationships,user_relationship_details,email"
+			onlogin="checkLoginState();" auto_logout_link="true"
+			class="panel-body">
+		</fb:login-button>
+		<input id="consoleMsg" type="text" class="form-control" disabled
+			placeholder="Message from Facebook"> <input id="fid"
+			type="hidden" class="form-control"
+			placeholder="ID will be shown here"> <br> <input
+			id="fAccessToken" type="hidden" class="form-control"
+			placeholder="Access Token will be shown here">
 
 		<div class="panel-body">
 			<div class="row">
 				<div class="col-sm-4">
-					<h4>Named Event Query Management URL (Change IP or Domain if needed)</h4>
+					<h4>Named Event Query Management URL (Change IP or Domain if
+						needed)</h4>
 					<input id="sysInfoResp" type="text" class="form-control" disabled
-						placeholder="System Information...">
-					<input id="addBaseURL" type="text" class="form-control"
+						placeholder="System Information..."> <input
+						id="addBaseURL" type="text" class="form-control"
 						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
 						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">
 					<input id="description" type="text" class="form-control"
 						placeholder="Description for NamedEventQuery to be added">
 					<input id="pollParam" type="text" class="form-control"
 						placeholder="POLL PARAMETERS">
-					<button type="button" class="btn btn-info" onclick="addNamedEventQuery()">Add NamedEventQuery</button>
-					<button type="reset" class="btn btn-danger" onclick="reset()">Reset Params</button>	
+					<button type="button" class="btn btn-info"
+						onclick="addNamedEventQuery()">Add NamedEventQuery</button>
+					<button type="reset" class="btn btn-danger" onclick="reset()">Reset
+						Params</button>
 					<br> <br> <input id="getURL" type="text"
 						class="form-control"
 						value="http://localhost:8080/epcis/Service/Admin/NamedEventQuery"
@@ -310,13 +344,13 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>						
-						getNamedEventQueries
-						</td>
+						<td>getNamedEventQueries</td>
 						<td>
 							<ul class="list-group">
-								<li class="list-group-item">Return existing NamedEventQueries</li>
-								<li class="list-group-item"><code>HTTP.GET</code><br> URL:
+								<li class="list-group-item">Return existing
+									NamedEventQueries</li>
+								<li class="list-group-item"><code>HTTP.GET</code><br>
+									URL:
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery</li>
 								<li class="list-group-item">Return Type: application/json</li>
 								<li class="list-group-item">No Access Control Needed</li>
@@ -324,9 +358,7 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
-						deleteNamedEventQuery
-						</td>
+						<td>deleteNamedEventQuery</td>
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">Delete existing NamedEventQuery</li>
@@ -338,18 +370,16 @@
 						</td>
 					</tr>
 					<tr>
-						<td>
-						addNamedEventQueries
-						</td>
+						<td>addNamedEventQueries</td>
 						<td>
 							<ul class="list-group">
 								<li class="list-group-item">Register NamedEventQuery</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>URL:
 									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
 								<li class="list-group-item">Administrator method</li>
-								<li class="list-group-item">Parameters: <br>
-									<code>List of characters should be encoded: + -> %2B , # -> %23, ^ -> %5E</code><br>
-									
+								<li class="list-group-item">Parameters: <br> <code>List
+										of characters should be encoded: + -> %2B , # -> %23, ^ -> %5E</code><br>
+
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3"><code>new</code>format</span>
 										<input id="format" type="text" class="form-control"
@@ -362,11 +392,11 @@
 									</div>
 
 									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span> <input
-											id="projectionType" type="text" class="form-control"
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span>
+										<input id="projectionType" type="text" class="form-control"
 											placeholder="Projection Key (e.g., eventTime, extension.quantityList, bizLocation)"
-											aria-describedby="basic-addon3"> <input id="PROJECTION"
-											type="text" class="form-control"
+											aria-describedby="basic-addon3"> <input
+											id="PROJECTION" type="text" class="form-control"
 											placeholder="true or false, true/false cannot be mixed, if true, eventType is automatically set as true"
 											aria-describedby="basic-addon3"> <span
 											class="input-group-btn" aria-describedby="basic-addon3">
@@ -374,7 +404,7 @@
 												onclick="addFamParam('PROJECTION','projectionType')">ADD</button>
 										</span>
 									</div>
-									
+
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3"><code>new</code>NEAR_</span>
 										<input id="nearType" type="text" class="form-control"
@@ -685,7 +715,7 @@
 											placeholder="extensionType (e.g., http://ns.example.com/epcis0%23a)"
 											aria-describedby="basic-addon3"> <input id="EQ"
 											type="text" class="form-control"
-											placeholder="extensionValue Type-available VSV, Regex (e.g., 15^int, EQ_http://ns.example.com/epcis0%23a=string, EQ_http://ns.example.com/epcis1%23c=20.5^double,, EQ_http://ns.example.com/epcis2%23f=2013-06-08T23:58:56.591%2B09:00^time and	long/boolean are available)"
+											placeholder="extensionValue Type-available VSV, Regex (e.g., 15%5Eint, EQ_http://ns.example.com/epcis0%23a=string, EQ_http://ns.example.com/epcis1%23c=20.5%5Edouble,, EQ_http://ns.example.com/epcis2%23f=2013-06-08T23:58:56.591%2B09:00%5EdateTime and	long/boolean are available)"
 											aria-describedby="basic-addon3"> <span
 											class="input-group-btn" aria-describedby="basic-addon3">
 											<button class="btn btn-default" type="button"
