@@ -19,7 +19,7 @@
 	ga('send', 'pageview');
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta charset="utf-8"/>
+<meta charset="utf-8" />
 <link href="./css/bootstrap.min.css" rel="stylesheet" media="screen">
 <link href="./css/bootstrap-switch.min.css" rel="stylesheet"
 	media="screen">
@@ -252,10 +252,10 @@
 												onclick="addParam('format')">ADD</button>
 										</span>
 									</div>
-									
+
 									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3"><code>new</code>NEAR_</span> <input
-											id="nearType" type="text" class="form-control"
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>NEAR_</span>
+										<input id="nearType" type="text" class="form-control"
 											placeholder="Extension Key indexed by 2dsphere (e.g., http://ns.example.com/epcis%23point). Please create 2dsphere index first (e.g., db.EventData.createIndex({'any.http://ns．example．com/epcis#point': '2dsphere' }); we encode '.' peiod with \uff0e inside MongoDB)"
 											aria-describedby="basic-addon3"> <input id="NEAR"
 											type="text" class="form-control"
@@ -268,11 +268,11 @@
 									</div>
 
 									<div class="input-group input-group-sm">
-										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span> <input
-											id="projectionType" type="text" class="form-control"
+										<span class="input-group-addon" id="basic-addon3"><code>new</code>PROJECTION_</span>
+										<input id="projectionType" type="text" class="form-control"
 											placeholder="Projection Key (e.g., eventTime, extension.quantityList, bizLocation)"
-											aria-describedby="basic-addon3"> <input id="PROJECTION"
-											type="text" class="form-control"
+											aria-describedby="basic-addon3"> <input
+											id="PROJECTION" type="text" class="form-control"
 											placeholder="true or false, true/false cannot be mixed, if true, eventType is automatically set as true"
 											aria-describedby="basic-addon3"> <span
 											class="input-group-btn" aria-describedby="basic-addon3">
@@ -578,7 +578,7 @@
 											placeholder="extensionType (e.g., http://ns.example.com/epcis0%23a)"
 											aria-describedby="basic-addon3"> <input id="EQ"
 											type="text" class="form-control"
-											placeholder="extensionValue Type-available VSV, Regex (e.g., 15^int, EQ_http://ns.example.com/epcis0%23a=string, EQ_http://ns.example.com/epcis1%23c=20.5^double,, EQ_http://ns.example.com/epcis2%23f=2013-06-08T23:58:56.591%2B09:00^time and	long/boolean are available)"
+											placeholder="extensionValue Type-available VSV, Regex (e.g., 15%5Eint, EQ_http://ns.example.com/epcis0%23a=string, EQ_http://ns.example.com/epcis1%23c=20.5%5Edouble,, EQ_http://ns.example.com/epcis2%23f=2013-06-08T23:58:56.591%2B09:00%5EdateTime and	long/boolean are available)"
 											aria-describedby="basic-addon3"> <span
 											class="input-group-btn" aria-describedby="basic-addon3">
 											<button class="btn btn-default" type="button"
