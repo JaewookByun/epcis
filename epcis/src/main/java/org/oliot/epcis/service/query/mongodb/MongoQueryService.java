@@ -521,7 +521,47 @@ public class MongoQueryService {
 		if (p.getFormat() == null || p.getFormat().equals("XML")) {
 			StringWriter sw = new StringWriter();
 			JAXB.marshal(epcisQueryDocumentType, sw);
-			return sw.toString();
+
+			String result = sw.toString();
+			// String simple = result.replaceAll("(<\\?[^<]*\\?>)?", "")
+			// . /* remove preamble */
+			// replaceAll("xmlns.*?(\"|\').*?(\"|\')",
+			// "")
+			// .replaceAll("(<)(\\w+:)(.*?>)",
+			// "$1$3")
+			// .replaceAll("(</)(\\w+:)(.*?>)",
+			// "$1$3");
+
+			// try {
+			// DocumentBuilderFactory dbFactory =
+			// DocumentBuilderFactory.newInstance();
+			// DocumentBuilder dBuilder;
+			// dBuilder = dbFactory.newDocumentBuilder();
+			// Document doc =
+			// dBuilder.parse(IOUtils.toInputStream(sw.toString(), "UTF-8"));
+			// Transformer tf =
+			// TransformerFactory.newInstance().newTransformer();
+			// tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			// tf.setOutputProperty(OutputKeys.INDENT, "yes");
+			// Writer out = new StringWriter();
+			// tf.transform(new DOMSource(doc), new StreamResult(out));
+			// System.out.println(out.toString());
+			//
+			// } catch (ParserConfigurationException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (SAXException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (TransformerException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
+
+			return result;
 		} else {
 			return retArray.toString(1);
 		}
