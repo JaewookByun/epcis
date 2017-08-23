@@ -96,13 +96,13 @@ body {
 		$
 				.get(
 						baseURL
-								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:0000003.000001.1",
+								+ "/Service/Poll/SimpleEventQuery?MATCH_epc=urn:epc:id:sgtin:0000003.000001.1&orderBy=eventTime&orderDirection=DESC",
 						function(xmlDoc) {
 							//console.log(xmlDoc);
 							//var text = new XMLSerializer().serializeToString(data);
 							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
-
+						
 							if ($xml.find("eventTime").length == 0) {
 								alert("No Events, please capture your events first\nGo to Capture Tutorial");
 								document.location.href = "./captureService1.jsp";
@@ -115,8 +115,8 @@ body {
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
 									/\]/g, ',').split(",");
 							//console.log($geoArr);
-							latf = parseFloat($geoArr[1]);
-							lonf = parseFloat($geoArr[0]);
+							latf = parseFloat($geoArr[7]);
+							lonf = parseFloat($geoArr[6]);
 							$latlng1 = new google.maps.LatLng(latf, lonf);
 							mapOptions = {
 								center : $latlng1,
@@ -141,8 +141,8 @@ body {
 
 							$infowindow1.open(map, $marker1);
 
-							latf = parseFloat($geoArr[5]);
-							lonf = parseFloat($geoArr[4]);
+							latf = parseFloat($geoArr[1]);
+							lonf = parseFloat($geoArr[0]);
 							$latlng2 = new google.maps.LatLng(latf, lonf);
 							mapOptions = {
 								center : $latlng2,
@@ -174,7 +174,7 @@ body {
 		$
 				.get(
 						baseURL
-								+ "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sgtin:0000001.000001.1",
+								+ "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sgtin:0000001.000001.1&orderBy=eventTime&orderDirection=DESC",
 						function(xmlDoc) {
 							//console.log(xmlDoc);
 							//var text = new XMLSerializer().serializeToString(data);
@@ -187,8 +187,8 @@ body {
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
 									/\]/g, ',').split(",");
 							//console.log($geoArr);
-							latf1 = parseFloat($geoArr[5]);
-							lonf1 = parseFloat($geoArr[4]);
+							latf1 = parseFloat($geoArr[1]);
+							lonf1 = parseFloat($geoArr[0]);
 							$latlng3 = new google.maps.LatLng(latf1, lonf1);
 							$infowindow1.close();
 							$infowindow2.close();
@@ -218,8 +218,8 @@ body {
 
 							$infowindow3.open(map, $marker3);
 
-							latf2 = parseFloat($geoArr[1]);
-							lonf2 = parseFloat($geoArr[0]);
+							latf2 = parseFloat($geoArr[7]);
+							lonf2 = parseFloat($geoArr[6]);
 							$latlng4 = new google.maps.LatLng(latf2, lonf2);
 
 							infoText = "3. The cow had bred in this ranch <br> (Observed in 1st Jan. 2017) <br><br> <code> Corresponding transporting events found. <br> Please click this marker </code>";
@@ -254,7 +254,7 @@ body {
 	function trace3() {
 		$
 				.get(
-						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000001",
+						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000001&orderBy=eventTime&orderDirection=DESC",
 						function(xmlDoc) {
 							//console.log(xmlDoc);
 							//var text = new XMLSerializer().serializeToString(data);
@@ -302,7 +302,7 @@ body {
 	function trace4() {
 		$
 				.get(
-						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000002",
+						baseURL + "/Service/Poll/SimpleEventQuery?MATCH_anyEPC=urn:epc:id:sscc:0000002.0000000002&orderBy=eventTime&orderDirection=DESC",
 						function(xmlDoc) {
 							//console.log(xmlDoc);
 							//var text = new XMLSerializer().serializeToString(data);
