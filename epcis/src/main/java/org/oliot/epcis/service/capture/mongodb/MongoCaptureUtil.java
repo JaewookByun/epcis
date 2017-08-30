@@ -2,6 +2,7 @@ package org.oliot.epcis.service.capture.mongodb;
 
 import java.util.HashMap;
 import java.util.List;
+import org.json.JSONObject;
 
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
@@ -99,6 +100,21 @@ public class MongoCaptureUtil {
 		return object2Save;
 	}
 
+	
+	/* added for JSONcapture */
+	public void captureJSONEvent(JSONObject event) {
+
+		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",BsonDocument.class);
+		BsonDocument dbObject = BsonDocument.parse(event.toString());
+		if (Configuration.isTriggerSupported == true) {
+			TriggerEngine.examineAndFire("EventData", dbObject);
+		}
+		collection.insertOne(dbObject);
+		Configuration.logger.info(" Event Saved ");
+	}
+	/* added for JSONcapture */
+
+	
 	public String capture(Object event, String userID, String accessModifier, Integer gcpLength) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
