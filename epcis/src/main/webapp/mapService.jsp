@@ -28,11 +28,10 @@
 <link rel="stylesheet" href="./css/bootstrap.min.css">
 <link href="./css/carousel.css" rel="stylesheet">
 
-<script
-	src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="./js/jquery.min.js"></script>
 <script src="./js/bootstrap.js"></script>
 <script type="text/javascript"
-	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&sensor=TRUE&language=en&v=3">
+	src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCAo5V1vzVEXzkliRcdS0jjTb_UNTt9MoM&language=en&v=3">
 	
 </script>
 <script>
@@ -110,7 +109,8 @@ body {
 							$eventTime = $xml.find("eventTime")[0];
 							$epc = $xml.find("epc");
 							//console.log($epc);
-							$geo = $xml.find("location");
+							$geo = $xml.find("demo\\:location");
+							//console.log($geo);
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
 									/\]/g, ',').split(",");
@@ -182,7 +182,7 @@ body {
 							$xml = $(xmlDoc);
 							$eventTime = $xml.find("eventTime")[0];
 
-							$geo = $xml.find("location");
+							$geo = $xml.find("demo\\:location");
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
 							$geoArr = $geo.text().replace(/\[/g, '').replace(
 									/\]/g, ',').split(",");
@@ -261,7 +261,7 @@ body {
 							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							
-							$geo = $xml.find("location");
+							$geo = $xml.find("demo\\:location");
 							
 							$infowindow4.close();
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
@@ -309,7 +309,7 @@ body {
 							//xmlDoc = $.parseXML(text);
 							$xml = $(xmlDoc);
 							
-							$geo = $xml.find("location");
+							$geo = $xml.find("demo\\:location");
 							
 							$infowindow3.close();
 							//console.log($geo.text().replace(/\[/g,'').replace(/\]/g,'').split(","));
@@ -399,10 +399,6 @@ body {
 			</p>
 		</footer>
 	</div>
-
-	<script src="js/bootstrap.min.js"></script>
-	<script
-		src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 </body>
 
 </html>
