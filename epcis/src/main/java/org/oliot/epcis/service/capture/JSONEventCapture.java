@@ -1,9 +1,6 @@
 package org.oliot.epcis.service.capture;
 
-import java.io.InputStream;
-
 import javax.servlet.ServletContext;
-import javax.xml.bind.JAXB;
 import java.util.Iterator;
 
 import org.apache.log4j.Level;
@@ -13,7 +10,6 @@ import org.json.JSONObject;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 import org.oliot.model.jsonschema.JsonSchemaLoader;
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,9 +68,7 @@ public class JSONEventCapture implements ServletContextAware {
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) String userID,
 			@RequestParam(required = false) String accessToken, @RequestParam(required = false) String accessModifier,
 			@RequestParam(required = false) Integer gcpLength) {
-		JSONObject retMsg = new JSONObject();
-
-		
+		// JSONObject retMsg = new JSONObject();
 
 		Configuration.logger.info(" EPCIS Json Document Capture Started.... ");
 
@@ -90,14 +84,14 @@ public class JSONEventCapture implements ServletContextAware {
 
 				if (!CaptureUtil.validate(jsonEvent, jsonEventSchema)) {
 					Configuration.logger.info("Json Document is invalid" + " about general_validcheck");
-					
-					return new ResponseEntity<>("Error: Json Document is not valid" + "general_validcheck", HttpStatus.BAD_REQUEST);
-			
+
+					return new ResponseEntity<>("Error: Json Document is not valid" + "general_validcheck",
+							HttpStatus.BAD_REQUEST);
+
 				}
-				
+
 				/* Schema check for Capture */
-				
-				
+
 				JSONArray jsonEventList = jsonEvent.getJSONObject("epcis").getJSONObject("EPCISBody")
 						.getJSONArray("EventList");
 
@@ -113,8 +107,9 @@ public class JSONEventCapture implements ServletContextAware {
 						if (!CaptureUtil.validate(jsonObjectEvent, objectEventSchema)) {
 							Configuration.logger
 									.info("Json Document is not valid" + " detail validation check for objectevent");
-							return new ResponseEntity<>("Error: Json Document is not valid" + " for detail validation check for objectevent", HttpStatus.BAD_REQUEST);
-									
+							return new ResponseEntity<>("Error: Json Document is not valid"
+									+ " for detail validation check for objectevent", HttpStatus.BAD_REQUEST);
+
 						}
 
 						/* finish validation logic for ObjectEvent */
@@ -139,15 +134,16 @@ public class JSONEventCapture implements ServletContextAware {
 
 							if (!namespace_flag) {
 								Configuration.logger.info("Json Document doesn't have namespace in any field");
-								return new ResponseEntity<>("Error: Json Document doesn't have namespace in any field"+ " for detail validation check for objectevent", HttpStatus.BAD_REQUEST);
-								
+								return new ResponseEntity<>(
+										"Error: Json Document doesn't have namespace in any field"
+												+ " for detail validation check for objectevent",
+										HttpStatus.BAD_REQUEST);
 
 							}
 							/* finish finding namespace in the any field. */
 
 							/*
-							 * Start Validation whether each component use
-							 * correct name space
+							 * Start Validation whether each component use correct name space
 							 */;
 
 							Iterator<String> keyIter = anyobject.keys();
@@ -156,21 +152,23 @@ public class JSONEventCapture implements ServletContextAware {
 
 								if (!temp.contains(namespace)) {
 									Configuration.logger.info("Json Document use invalid namespace in anyfield");
-									
-									return new ResponseEntity<>("Error: Json Document use invalid namespace in anyfield"+ " for detail validation check for objectevent", HttpStatus.BAD_REQUEST);
-									
+
+									return new ResponseEntity<>(
+											"Error: Json Document use invalid namespace in anyfield"
+													+ " for detail validation check for objectevent",
+											HttpStatus.BAD_REQUEST);
+
 								}
 							}
 							/*
-							 * Finish validation whether each component use
-							 * correct name space
+							 * Finish validation whether each component use correct name space
 							 */
 
 						}
 
-							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.captureJSONEvent(jsonObjectEvent);
-						
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.captureJSONEvent(jsonObjectEvent);
+
 					} else if (jsonEventElement.has("AggregationEvent") == true) {
 
 						/*
@@ -183,10 +181,12 @@ public class JSONEventCapture implements ServletContextAware {
 
 							Configuration.logger.info(
 									"Json Document is not valid" + " detail validation check for aggregationevent");
-							
-							
-							return new ResponseEntity<>("Error: Json Document is not valid" + " for detail validation check for aggregationevent", HttpStatus.BAD_REQUEST);
-							
+
+							return new ResponseEntity<>(
+									"Error: Json Document is not valid"
+											+ " for detail validation check for aggregationevent",
+									HttpStatus.BAD_REQUEST);
+
 						}
 						/* finish validation logic for AggregationEvent */
 
@@ -211,15 +211,17 @@ public class JSONEventCapture implements ServletContextAware {
 
 							if (!namespace_flag) {
 								Configuration.logger.info("Json Document doesn't have namespace in any field");
-								
-								return new ResponseEntity<>("Error: Json Document doesn't have namespace in any field"+ " for detail validation check for aggregationevent", HttpStatus.BAD_REQUEST);
+
+								return new ResponseEntity<>(
+										"Error: Json Document doesn't have namespace in any field"
+												+ " for detail validation check for aggregationevent",
+										HttpStatus.BAD_REQUEST);
 
 							}
 							/* finish finding namespace in the any field. */
 
 							/*
-							 * Start Validation whether each component use
-							 * correct name space
+							 * Start Validation whether each component use correct name space
 							 */;
 
 							Iterator<String> keyIter = anyobject.keys();
@@ -228,21 +230,23 @@ public class JSONEventCapture implements ServletContextAware {
 
 								if (!temp.contains(namespace)) {
 									Configuration.logger.info("Json Document use invalid namespace in anyfield");
-									
-									return new ResponseEntity<>("Error: Json Document use invalid namespace in anyfield"+ " for detail validation check for aggregationevent", HttpStatus.BAD_REQUEST);
+
+									return new ResponseEntity<>(
+											"Error: Json Document use invalid namespace in anyfield"
+													+ " for detail validation check for aggregationevent",
+											HttpStatus.BAD_REQUEST);
 
 								}
 							}
 
 						}
-							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("AggregationEvent"));
-						
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("AggregationEvent"));
+
 					} else if (jsonEventElement.has("TransformationEvent") == true) {
 
 						/*
-						 * startpoint of validation logic for
-						 * TransFormationEvent
+						 * startpoint of validation logic for TransFormationEvent
 						 */
 						JSONObject transformationEventSchema = schemaLoader.getTransformationEventSchema();
 						JSONObject jsonTransformationEvent = jsonEventElement.getJSONObject("TransformationEvent");
@@ -251,8 +255,11 @@ public class JSONEventCapture implements ServletContextAware {
 
 							Configuration.logger.info(
 									"Json Document is not valid" + " detail validation check for TransFormationEvent");
-							
-							return new ResponseEntity<>("Error: Json Document is not valid"+ " for detail validation check for TransFormationEvent", HttpStatus.BAD_REQUEST);
+
+							return new ResponseEntity<>(
+									"Error: Json Document is not valid"
+											+ " for detail validation check for TransFormationEvent",
+									HttpStatus.BAD_REQUEST);
 
 						}
 						/* finish validation logic for TransFormationEvent */
@@ -277,15 +284,17 @@ public class JSONEventCapture implements ServletContextAware {
 							}
 
 							if (!namespace_flag) {
-								Configuration.logger.info("Json Document doesn't have namespace in any field");								
-								return new ResponseEntity<>("Error: Json Document doesn't have namespace in any field"+ " for detail validation check for TransformationEvent", HttpStatus.BAD_REQUEST);
+								Configuration.logger.info("Json Document doesn't have namespace in any field");
+								return new ResponseEntity<>(
+										"Error: Json Document doesn't have namespace in any field"
+												+ " for detail validation check for TransformationEvent",
+										HttpStatus.BAD_REQUEST);
 
 							}
 							/* finish finding namespace in the any field. */
 
 							/*
-							 * Start Validation whether each component use
-							 * correct name space
+							 * Start Validation whether each component use correct name space
 							 */;
 
 							Iterator<String> keyIter = anyobject.keys();
@@ -294,19 +303,21 @@ public class JSONEventCapture implements ServletContextAware {
 
 								if (!temp.contains(namespace)) {
 									Configuration.logger.info("Json Document use invalid namespace in anyfield");
-									return new ResponseEntity<>("Error: Json Document use invalid namespace in anyfield"+ " for detail validation check for TransformationEvent", HttpStatus.BAD_REQUEST);
+									return new ResponseEntity<>(
+											"Error: Json Document use invalid namespace in anyfield"
+													+ " for detail validation check for TransformationEvent",
+											HttpStatus.BAD_REQUEST);
 								}
 							}
 						}
 
-							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("TransformationEvent"));
-						
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("TransformationEvent"));
+
 					} else if (jsonEventElement.has("TransactionEvent") == true) {
 
 						/*
-						 * startpoint of validation logic for
-						 * TransFormationEvent
+						 * startpoint of validation logic for TransFormationEvent
 						 */
 						JSONObject transactionEventSchema = schemaLoader.getTransactionEventSchema();
 						JSONObject jsonTransactionEvent = jsonEventElement.getJSONObject("TransactionEvent");
@@ -315,8 +326,11 @@ public class JSONEventCapture implements ServletContextAware {
 
 							Configuration.logger.info(
 									"Json Document is not valid." + " detail validation check for TransactionEvent");
-							return new ResponseEntity<>("Error: Json Document is not valid"+ " for detail validation check for TransactionEvent", HttpStatus.BAD_REQUEST);								
-									
+							return new ResponseEntity<>(
+									"Error: Json Document is not valid"
+											+ " for detail validation check for TransactionEvent",
+									HttpStatus.BAD_REQUEST);
+
 						}
 						/* finish validation logic for TransFormationEvent */
 
@@ -341,14 +355,16 @@ public class JSONEventCapture implements ServletContextAware {
 
 							if (!namespace_flag) {
 								Configuration.logger.info("Json Document doesn't have namespace in any field");
-								return new ResponseEntity<>("Error: Json Document doesn't have namespace in any field"+ " for detail validation check for TransactionEvent", HttpStatus.BAD_REQUEST);								
+								return new ResponseEntity<>(
+										"Error: Json Document doesn't have namespace in any field"
+												+ " for detail validation check for TransactionEvent",
+										HttpStatus.BAD_REQUEST);
 
 							}
 							/* finish finding namespace in the any field. */
 
 							/*
-							 * Start Validation whether each component use
-							 * correct name space
+							 * Start Validation whether each component use correct name space
 							 */;
 
 							Iterator<String> keyIter = anyobject.keys();
@@ -357,19 +373,24 @@ public class JSONEventCapture implements ServletContextAware {
 
 								if (!temp.contains(namespace)) {
 									Configuration.logger.info("Json Document use invalid namespace in anyfield");
-									return new ResponseEntity<>("Error: Json Document use invalid namespace in anyfield"+ " for detail validation check for TransactionEvent", HttpStatus.BAD_REQUEST);								
+									return new ResponseEntity<>(
+											"Error: Json Document use invalid namespace in anyfield"
+													+ " for detail validation check for TransactionEvent",
+											HttpStatus.BAD_REQUEST);
 								}
 							}
 
 						}
 
-							MongoCaptureUtil m = new MongoCaptureUtil();
-							m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("TransactionEvent"));
+						MongoCaptureUtil m = new MongoCaptureUtil();
+						m.captureJSONEvent(jsonEventList.getJSONObject(i).getJSONObject("TransactionEvent"));
 					} else {
 						Configuration.logger
 								.info("Json Document is not valid. " + " It doesn't have standard event_type");
-						return new ResponseEntity<>("Error: Json Document is not valid" + " It doesn't have standard event_type", HttpStatus.BAD_REQUEST);								
-						
+						return new ResponseEntity<>(
+								"Error: Json Document is not valid" + " It doesn't have standard event_type",
+								HttpStatus.BAD_REQUEST);
+
 					}
 
 				}
@@ -381,9 +402,8 @@ public class JSONEventCapture implements ServletContextAware {
 			} catch (Exception e) {
 				Configuration.logger.log(Level.ERROR, e.toString());
 			}
-			
-			return new ResponseEntity<>("EPCIS Document : Captured ", HttpStatus.OK);								
-			
+
+			return new ResponseEntity<>("EPCIS Document : Captured ", HttpStatus.OK);
 
 		} else {
 			JSONObject jsonEvent = new JSONObject(inputString);
@@ -395,22 +415,22 @@ public class JSONEventCapture implements ServletContextAware {
 				JSONObject jsonEventElement = jsonEventList.getJSONObject(i);
 
 				if (jsonEventElement.has("ObjectEvent") == true) {
-						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.captureJSONEvent(jsonEventElement.getJSONObject("ObjectEvent"));
+					MongoCaptureUtil m = new MongoCaptureUtil();
+					m.captureJSONEvent(jsonEventElement.getJSONObject("ObjectEvent"));
 				} else if (jsonEventElement.has("AggregationEvent") == true) {
-						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.captureJSONEvent(jsonEventElement.getJSONObject("AggregationEvent"));
+					MongoCaptureUtil m = new MongoCaptureUtil();
+					m.captureJSONEvent(jsonEventElement.getJSONObject("AggregationEvent"));
 				} else if (jsonEventElement.has("TransformationEvent") == true) {
-						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.captureJSONEvent(jsonEventElement.getJSONObject("TransformationEvent"));
+					MongoCaptureUtil m = new MongoCaptureUtil();
+					m.captureJSONEvent(jsonEventElement.getJSONObject("TransformationEvent"));
 				} else if (jsonEventElement.has("TransactionEvent") == true) {
-						MongoCaptureUtil m = new MongoCaptureUtil();
-						m.captureJSONEvent(jsonEventElement.getJSONObject("TransactionEvent"));
-					}
+					MongoCaptureUtil m = new MongoCaptureUtil();
+					m.captureJSONEvent(jsonEventElement.getJSONObject("TransactionEvent"));
 				}
 			}
-			return new ResponseEntity<>("EPCIS Document : Captured ", HttpStatus.OK);
-					
 		}
+		return new ResponseEntity<>("EPCIS Document : Captured ", HttpStatus.OK);
+
+	}
 
 }
