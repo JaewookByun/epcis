@@ -1,5 +1,4 @@
 ### Oliot EPCIS Repository ###
-Copyright (C) 2014-2017 Jaewook Byun
 > Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
 
 > This project is part of Oliot ([Oliot Homepage](http://oliot.org)).
@@ -7,7 +6,7 @@ Copyright (C) 2014-2017 Jaewook Byun
 > Oliot epcis is an opensource web serivce implementing EPC Information Service (EPCIS) v1.2 specification.
 
 ### For Our Community* ###
-> Auto-ID Labs. KAIST is interested in knowing how Oliot EPCIS can be used for different application domains. 
+> Auto-ID Labs, KAIST is interested in knowing how Oliot EPCIS can be used for different application domains. 
 
 > Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.)
 
@@ -20,11 +19,14 @@ Copyright (C) 2014-2017 Jaewook Byun
 
 - Jaewook Byun, Sungpil Woo, Daeyoung Kim,"Efficient and privacy-enhanced object traceability based on unified and linked EPCIS events." Computers in Industry 89 (2017): 35-49. [URL](http://www.sciencedirect.com/science/article/pii/S016636151630135X)
 
+> Note: if you publish papers using Oliot EPCIS and want to disclose it, let us know.
+
 ### Introduction ###
 > EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
 
-### Temporary Server for Oliot EPCIS ###
+### Tutorial Server for Oliot EPCIS ###
 > [Server](http://14.63.168.75:8080/epcis/)
+> Note: The server couldn't be accessible temporally.
 
 ### Specification ###
 > Java, Web Service (Java v8, Servlet v3.1, Tomcat v8)
@@ -38,11 +40,7 @@ Copyright (C) 2014-2017 Jaewook Byun
 > MongoDB v3.4
 
 ### Contact ###
-> Korea Advanced Institute of Science and Technology (KAIST)
-
-> Real-time and Embedded Systems Laboratory(RESL)
-
-> Auto-ID Labs @ Korea
+> Auto-ID Labs, KAIST
 
 > Maintainer:
 
