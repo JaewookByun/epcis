@@ -72,8 +72,8 @@ body {
 	var markers = [];
 	function initialize() {
 		var mapOptions = {
-			center : new google.maps.LatLng(44.510207, -177.460940),
-			zoom : 3,
+			center : new google.maps.LatLng(35.541637, 123.714265),
+			zoom : 5,
 			mapTypeId : google.maps.MapTypeId.ROADMAP
 		};
 		map = new google.maps.Map(document.getElementById("map_canvas"),
@@ -88,7 +88,7 @@ body {
 	}
 
 	function backToMainPage() {
-		window.location.href = 'tutorialPage.jsp';
+		window.location.href = 'index.jsp';
 	}
 
 	function trace() {
@@ -172,7 +172,7 @@ body {
 			<div id="navbar" class="navbar-collapse collapse">
 				<form class="navbar-form navbar-right">
 					<button type="button" class="btn btn-success"
-						onclick="backToMainPage()">Back to Tutorial Page</button>
+						onclick="backToMainPage()">Back to Index Page</button>
 				</form>
 			</div>
 			<!--/.navbar-collapse -->
@@ -182,9 +182,13 @@ body {
 	<div class="container">
 		<p>
 			Insert an EPC and click the button to see the history<br>
+			<code>urn:epc:id:grai:95100027.1027.55414</code>
+			<code>urn:epc:id:grai:95100027.1027.53374</code><br>
+			<code>urn:epc:id:grai:95100027.1027.53089</code>
+			<code>urn:epc:id:grai:95100043.1025.40666</code><br>
 		</p>
 		<input id="epc" type="text" class="input-medium search-query"
-			value="urn:epc:id:sscc:0000002.0000000001" size=35>
+			value="urn:epc:id:grai:95100027.1027.55414" size=35>
 		<button type="button" class="btn btn-sm btn-primary" onclick="trace()">Trace
 		</button>
 	</div>
