@@ -75,7 +75,8 @@
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> REST-Like Web
 					Service </a> <a href="./tutorialPage.jsp"
-					class="list-group-item">Traceability Demonstration</a>  <a href="./rest-like_capture_service.html"
+					class="list-group-item">Traceability Demonstration</a>  <a href="./mapService2.jsp"
+					class="list-group-item">Traceability Demonstration2</a>  <a href="./rest-like_capture_service.html"
 					class="list-group-item">EPCIS Capture Client</a> <a href="./rest-like_capture_service2.html"
 					class="list-group-item">EPCIS Capture Client (Parameterized Capture) </a> <a
 					href="./rest-like_query_service.html" class="list-group-item">EPCIS
