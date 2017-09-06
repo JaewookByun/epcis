@@ -6,198 +6,319 @@
 	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
 	<EPCISBody>
 		<EventList>
+			<!-- Pallet 1 -->
 			<ObjectEvent>
-				<!-- A truck transports the cow -->
-				<eventTime>2017-01-02T00:00:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-02-14T16:39:18.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.55414</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<!-- From here -->
-				<demo:location>-112.158897, 34.445473^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:commissioning</bizStep>
+				<demo:location>126.742141, 36.821394^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:01:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-02-14T16:42:02.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.55414</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.170245, 34.547622^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>126.742141, 36.821394^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:02:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-02-14T17:06:50.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.55414</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.242315, 34.529610^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>127.654820, 34.816013^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:03:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-02-19T14:45:43.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.55414</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.322018, 34.585349^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>121.026899, 31.340787^geoPoint</demo:location>
+			</ObjectEvent>
+			<!-- Pallet 2 -->
+			<ObjectEvent>
+				<eventTime>2016-09-08T17:21:46.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:commissioning</bizStep>
+				<demo:location>126.742141, 36.821493^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:04:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-10-04T13:29:15.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.362358, 34.578212^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>126.742141, 36.821493^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:05:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-10-04T13:51:00.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.385361, 34.550364^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>126.754565, 37.489842^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:06:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-12-30T10:00:33.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.448962, 34.547253^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>120.439539, 36.115623^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:07:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-12-30T10:04:44.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.462609, 34.541103^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>120.439539, 36.115623^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:08:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-01-04T10:24:52.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.463038, 34.525052^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>120.439539, 36.115623^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:09:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-01-04T10:34:17.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.477028, 34.517415^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>120.386123, 36.068039^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:10:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-04-06T17:32:42.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.485440, 34.495347^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>126.610410, 37.503280^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:11:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2017-08-23T16:01:19.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53374</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.499001, 34.493083^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>126.610410, 37.503280^geoPoint</demo:location>
+			</ObjectEvent>
+			<!-- Pallet 3 -->
+			<ObjectEvent>
+				<eventTime>2016-06-01T12:10:43.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:commissioning</bizStep>
+				<demo:location>126.742141, 36.821493^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:12:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-06-01T12:30:47.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.546553, 34.442524^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>126.742141, 36.821493^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:13:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-06-24T09:42:30.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-112.716216, 34.295717^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>129.260785, 35.328503^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:14:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-08-02T11:04:24.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-113.142677, 33.932086^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>120.443479, 36.117055^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:15:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-08-02T11:12:46.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-113.684966, 33.715415^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>120.443479, 36.117055^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:16:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-08-02T11:15:05.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-116.131034, 33.678670^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>120.443479, 36.117055^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:17:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-08-02T11:16:08.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<demo:location>-117.278929, 33.932552^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>120.386123, 36.068039^geoPoint</demo:location>
 			</ObjectEvent>
 			<ObjectEvent>
-				<eventTime>2017-01-02T00:18:00.000-08:00</eventTime>
-				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<eventTime>2016-09-30T17:06:56.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
 				<epcList>
-					<epc>urn:epc:id:sscc:0000002.0000000001</epc>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
 				</epcList>
 				<action>OBSERVE</action>
-				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
-				<!-- To here -->
-				<demo:location>-117.674437, 34.005443^geoPoint</demo:location>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>126.610410, 37.503280^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2016-09-30T17:07:35.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100027.1027.53089</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>126.610410, 37.503280^geoPoint</demo:location>
+			</ObjectEvent>
+			<!-- Pallet 4 -->
+			<ObjectEvent>
+				<eventTime>2016-09-13T12:32:49.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:commissioning</bizStep>
+				<demo:location>120.526701, 36.671930^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2016-09-13T13:45:47.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>120.526701, 36.671930^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2016-09-13T17:13:58.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>119.988638, 36.775120^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2016-11-21T15:17:35.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>127.361632, 37.354984^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2016-11-21T15:19:20.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>127.361632, 37.354984^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-02-07T12:05:49.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<demo:location>127.361632, 37.354984^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-02-07T12:07:22.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<demo:location>127.201659, 37.844124^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-02-07T12:08:03.000+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>127.201659, 37.844124^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-02-07T12:21:01.479+09:00</eventTime>
+				<eventTimeZoneOffset>+09:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:grai:95100043.1025.40666</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:inspecting</bizStep>
+				<demo:location>127.201659, 37.844124^geoPoint</demo:location>
 			</ObjectEvent>
 		</EventList>
 	</EPCISBody>
