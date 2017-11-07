@@ -13,7 +13,7 @@
 > The information will be managed and summarized in Wiki.
 
 ### Paper Publication* ###
-- Jaewook Byun, Sungpil Woo, Yalew Tolcha, and Daeyoung Kim. "Oliot EPCIS: Engineering a Web information system complying with EPC Information Services standard towards the Internet of Things." Computers in Industry, Elsevier, Oct. 2017, [URL](https://www.sciencedirect.com/science/article/pii/S016636151730458X).
+- Jaewook Byun, Sungpil Woo, Yalew Tolcha, and Daeyoung Kim. "Oliot EPCIS: Engineering a Web information system complying with EPC Information Services standard towards the Internet of Things." Computers in Industry 94 (2018): 82-97. [URL](https://www.sciencedirect.com/science/article/pii/S016636151730458X).
 
 - Jaewook Byun, Daeyoung Kim. "Oliot EPCIS: New EPC information service and challenges towards the Internet of Things." RFID (RFID), 2015 IEEE International Conference on. IEEE, 2015. [URL](http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=7113075&tag=1)
 
