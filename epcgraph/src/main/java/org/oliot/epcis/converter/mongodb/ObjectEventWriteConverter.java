@@ -3,12 +3,15 @@ package org.oliot.epcis.converter.mongodb;
 import static org.oliot.epcis.converter.mongodb.MongoWriterUtil.*;
 
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.List;
 
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
+import org.lilliput.chronograph.persistent.ChronoGraph;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -142,4 +145,125 @@ public class ObjectEventWriteConverter {
 		}
 		return dbo;
 	}
+	
+	public void capture(ObjectEventType objectEventType, Integer gcpLength) {
+
+		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName);
+
+		// EPC List
+		HashSet<String> objectSet = new HashSet<String>();
+		if (objectEventType.getEpcList() != null) {
+			EPCListType epcs = objectEventType.getEpcList();
+			List<EPC> epcList = epcs.getEpc();
+			for (int i = 0; i < epcList.size(); i++) {
+				objectSet.add(epcList.get(i).getValue());
+			}
+		}
+
+		Long eventTime = null;
+		if (objectEventType.getEventTime() != null)
+			eventTime = objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis();
+		else
+			eventTime = System.currentTimeMillis();
+
+		final long t = eventTime;
+
+		BsonDocument objProperty = new BsonDocument();
+		// Event Time Zone
+		if (objectEventType.getEventTimeZoneOffset() != null)
+			objProperty.put("eventTimeZoneOffset", new BsonString(objectEventType.getEventTimeZoneOffset()));
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		objProperty.put("recordTime", new BsonDateTime(recordTimeMilis));
+		// Action
+		if (objectEventType.getAction() != null)
+			objProperty.put("action", new BsonString(objectEventType.getAction().name()));
+		// Biz Step
+		if (objectEventType.getBizStep() != null)
+			objProperty.put("bizStep", new BsonString(objectEventType.getBizStep()));
+		// Disposition
+		if (objectEventType.getDisposition() != null)
+			objProperty.put("disposition", new BsonString(objectEventType.getDisposition()));
+		// BizTransaction
+		if (objectEventType.getBizTransactionList() != null) {
+			BusinessTransactionListType bizListType = objectEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
+			BsonArray bizTranList = getBizTransactionObjectList(bizList);
+			objProperty.put("bizTransactionList", bizTranList);
+		}
+		// Vendor Extension
+		if (objectEventType.getAny() != null) {
+			List<Object> objList = objectEventType.getAny();
+			BsonDocument map2Save = getAnyMap(objList);
+			if (map2Save != null && map2Save.isEmpty() == false)
+				objProperty.put("any", map2Save);
+
+		}
+		// Extension
+		BsonArray classArray = null;
+		if (objectEventType.getExtension() != null) {
+			ObjectEventExtensionType oee = objectEventType.getExtension();
+			BsonDocument extension = getObjectEventExtensionObject(oee, gcpLength);
+			if (extension.containsKey("sourceList"))
+				objProperty.put("sourceList", extension.get("sourceList"));
+			if (extension.containsKey("destinationList"))
+				objProperty.put("destinationList", extension.get("destinationList"));
+			if (extension.containsKey("quantityList"))
+				classArray = extension.getArray("quantityList");
+		}
+
+		objectSet.parallelStream().forEach(object -> {
+			// object = vid
+			g.getChronoVertex(object).setTimestampProperties(t, objProperty);
+
+			// Read Point
+			if (objectEventType.getReadPoint() != null) {
+				ReadPointType readPointType = objectEventType.getReadPoint();
+				String locID = readPointType.getId();
+				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+			}
+			// BizLocation
+			if (objectEventType.getBizLocation() != null) {
+				BusinessLocationType bizLocationType = objectEventType.getBizLocation();
+				String locID = bizLocationType.getId();
+				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+			}
+
+		});
+
+		classArray.parallelStream().forEach(classElem -> {
+
+			BsonDocument classDoc = classElem.asDocument();
+			String epcClass = classDoc.getString("epcClass").getValue();
+
+			BsonDocument classProperty = objProperty.clone();
+			if (!classDoc.containsKey("epcClass"))
+				return;
+			if (classDoc.containsKey("quantity"))
+				classProperty.put("quantity", classDoc.getDouble("quantity"));
+			if (classDoc.containsKey("uom"))
+				classProperty.put("uom", classDoc.getString("uom"));
+			g.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
+
+			// Read Point
+			if (objectEventType.getReadPoint() != null) {
+				ReadPointType readPointType = objectEventType.getReadPoint();
+				String locID = readPointType.getId();
+				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+			}
+			// BizLocation
+			if (objectEventType.getBizLocation() != null) {
+				BusinessLocationType bizLocationType = objectEventType.getBizLocation();
+				String locID = bizLocationType.getId();
+				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+			}
+		});
+
+		g.shutdown();
+
+		return;
+	}
+	
 }
