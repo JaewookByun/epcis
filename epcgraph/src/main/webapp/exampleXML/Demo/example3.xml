@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:demo="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<AggregationEvent>
+				<!-- The time when the cow is unloaded -->
+				<eventTime>2017-01-03T00:00:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<!-- The truck -->
+				<parentID>urn:epc:id:sscc:0000002.0000000001</parentID>
+				<!-- The cow -->
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+				</childEPCs>
+				<!-- Unload -->
+				<action>DELETE</action>
+				<!-- The cow is unloaded from the truck -->
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<!-- Canning Factory -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000003.00001.1</id>
+				</bizLocation>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+			</AggregationEvent>
+			<extension>
+				<TransformationEvent>
+					<!-- The time when the cow is transformed into canned beefs -->
+					<eventTime>2017-01-03T00:01:00.000-08:00</eventTime>
+					<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+					<!-- Processing Cow into 5 Canned Beefs -->
+					<inputEPCList>
+						<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+					</inputEPCList>
+					<outputEPCList>
+						<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.2</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.3</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.4</epc>
+						<epc>urn:epc:id:sgtin:0000003.000001.5</epc>
+					</outputEPCList>
+					<!-- Canning Factory -->
+					<bizLocation>
+						<id>urn:epc:id:sgln:0000003.00001.1</id>
+					</bizLocation>
+					<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+				</TransformationEvent>
+			</extension>
+			<TransactionEvent>
+				<!-- The time when one canned beef is sold -->
+				<eventTime>2017-01-03T00:02:00.000-08:00</eventTime>
+				<!-- in California time zone -->
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">
+						http://transaction.acme.com/po/12345679
+					</bizTransaction>
+				</bizTransactionList>
+				<!-- The canned beef -->
+				<epcList>
+					<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<!-- Canning Factory -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000003.00001.1</id>
+				</bizLocation>
+				<!-- Ownership Transfer from the canning factory to a retail shop -->
+				<extension>
+					<sourceList>
+						<source type="urn:epcglobal:cbv:sdt:owning_party">
+							urn:epc:id:sgln:0000003.00001.1</source>
+					</sourceList>
+					<destinationList>
+						<destination type="urn:epcglobal:cbv:sdt:owning_party">
+							urn:epc:id:sgln:0000004.00001.1</destination>
+					</destinationList>
+				</extension>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+			</TransactionEvent>
+			<AggregationEvent>
+				<!-- The time when the canned beef is loaded into a truck -->
+				<eventTime>2017-01-03T00:03:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<!-- A truck -->
+				<parentID>urn:epc:id:sscc:0000002.0000000002</parentID>
+				<!-- The canned beef -->
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+				</childEPCs>
+				<action>ADD</action>
+				<!-- The canned beef is loaded into the truck -->
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<!-- Canning Factory -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000003.00001.1</id>
+				</bizLocation>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-117.688111, 34.002675^geoPoint</demo:location>
+			</AggregationEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
