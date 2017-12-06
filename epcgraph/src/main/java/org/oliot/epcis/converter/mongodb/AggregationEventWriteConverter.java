@@ -141,9 +141,12 @@ public class AggregationEventWriteConverter {
 			}
 		}
 
+		// Build Graph
+		capture(aggregationEventType, gcpLength);
+
 		return dbo;
 	}
-	
+
 	public void capture(AggregationEventType aggregationEventType, Integer gcpLength) {
 
 		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
@@ -211,17 +214,15 @@ public class AggregationEventWriteConverter {
 
 		// Extension
 		BsonArray childClassArray = null;
+		BsonDocument extension = null;
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
-			BsonDocument extension = getAggregationEventExtensionObject(aee, gcpLength);
-
-			if (extension.containsKey("sourceList"))
-				objProperty.put("sourceList", extension.get("sourceList"));
-			if (extension.containsKey("destinationList"))
-				objProperty.put("destinationList", extension.get("destinationList"));
+			extension = getAggregationEventExtensionObject(aee, gcpLength);
 			if (extension.containsKey("childQuantityList"))
 				childClassArray = extension.getArray("childQuantityList");
 		}
+
+		final BsonDocument extensionf = extension;
 
 		// object = vid
 		if (parentID != null) {
@@ -237,6 +238,44 @@ public class AggregationEventWriteConverter {
 				String locID = bizLocationType.getId();
 				g.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
 			}
+
+			if (extensionf != null) {
+				if (extensionf.containsKey("sourceList")) {
+					BsonArray sources = extensionf.getArray("sourceList");
+					sources.parallelStream().forEach(elem -> {
+						BsonDocument sourceDoc = elem.asDocument();
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(parentID,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+						}
+
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(parentID,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+						}
+					});
+				}
+
+				if (extensionf.containsKey("destinationList")) {
+					BsonArray destinations = extensionf.getArray("destinationList");
+					destinations.parallelStream().forEach(elem -> {
+						BsonDocument destDoc = elem.asDocument();
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(parentID,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+						}
+
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(parentID,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+						}
+					});
+				}
+			}
 		}
 
 		childSet.parallelStream().forEach(child -> {
@@ -251,6 +290,44 @@ public class AggregationEventWriteConverter {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				g.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
+			}
+
+			if (extensionf != null) {
+				if (extensionf.containsKey("sourceList")) {
+					BsonArray sources = extensionf.getArray("sourceList");
+					sources.parallelStream().forEach(elem -> {
+						BsonDocument sourceDoc = elem.asDocument();
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(child,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+						}
+
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(child,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+						}
+					});
+				}
+
+				if (extensionf.containsKey("destinationList")) {
+					BsonArray destinations = extensionf.getArray("destinationList");
+					destinations.parallelStream().forEach(elem -> {
+						BsonDocument destDoc = elem.asDocument();
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(child,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+						}
+
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(child,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+						}
+					});
+				}
 			}
 		});
 
@@ -280,20 +357,58 @@ public class AggregationEventWriteConverter {
 				String locID = bizLocationType.getId();
 				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
+
+			if (extensionf != null) {
+				if (extensionf.containsKey("sourceList")) {
+					BsonArray sources = extensionf.getArray("sourceList");
+					sources.parallelStream().forEach(elem -> {
+						BsonDocument sourceDoc = elem.asDocument();
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+						}
+
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+						}
+					});
+				}
+
+				if (extensionf.containsKey("destinationList")) {
+					BsonArray destinations = extensionf.getArray("destinationList");
+					destinations.parallelStream().forEach(elem -> {
+						BsonDocument destDoc = elem.asDocument();
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+						}
+
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+						}
+					});
+				}
+			}
 		});
 
 		if (parentID != null) {
-			childSet.parallelStream().forEach(child -> {
+			childSet.stream().forEach(child -> {
 				g.addTimestampEdgeProperties(parentID, child, "contains", t, objProperty);
 			});
-			childClassArray.parallelStream().forEach(classElem -> {
+			childClassArray.stream().forEach(classElem -> {
 				String epcClass = classElem.asDocument().getString("epcClass").getValue();
 				g.addTimestampEdgeProperties(parentID, epcClass, "contains", t, objProperty);
 			});
 		}
 
 		g.shutdown();
-		
+
 		return;
 	}
 }
