@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:demo="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<AggregationEvent>
+				<!-- The time when the canned beef is unloaded -->
+				<eventTime>2017-01-05T00:00:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<!-- The truck -->
+				<parentID>urn:epc:id:sscc:0000002.0000000002</parentID>
+				<!-- The canned beef -->
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+				</childEPCs>
+				<!-- Unload -->
+				<action>DELETE</action>
+				<!-- The canned beef is unloaded from the truck -->
+				<bizStep>urn:epcglobal:cbv:bizstep:unloading</bizStep>
+				<!-- Retail -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000004.00001.1</id>
+				</bizLocation>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-118.048614, 33.808517^geoPoint</demo:location>
+			</AggregationEvent>
+			<ObjectEvent>
+				<!-- The time when the canned beef is ready for sale -->
+				<eventTime>2017-01-05T00:01:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sgtin:0000003.000001.1</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<disposition>urn:epcglobal:cbv:disp:sellable_accessible</disposition>
+				<demo:location>-118.048614, 33.808517^geoPoint</demo:location>
+			</ObjectEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
