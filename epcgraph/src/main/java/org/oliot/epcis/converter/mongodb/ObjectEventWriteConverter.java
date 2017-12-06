@@ -102,12 +102,10 @@ public class ObjectEventWriteConverter {
 		/*
 		 * if (objectEventType.getIlmd() != null) { ILMDType ilmd =
 		 * objectEventType.getIlmd(); if (ilmd.getExtension() != null) {
-		 * ILMDExtensionType ilmdExtension = ilmd.getExtension(); BsonDocument
-		 * map2Save = getILMDExtensionMap(ilmdExtension); if (map2Save != null)
-		 * dbo.put("ilmd", map2Save); if (epcList != null) {
-		 * MasterDataWriteConverter mdConverter = new
-		 * MasterDataWriteConverter(); mdConverter.capture(epcList, map2Save); }
-		 * } }
+		 * ILMDExtensionType ilmdExtension = ilmd.getExtension(); BsonDocument map2Save
+		 * = getILMDExtensionMap(ilmdExtension); if (map2Save != null) dbo.put("ilmd",
+		 * map2Save); if (epcList != null) { MasterDataWriteConverter mdConverter = new
+		 * MasterDataWriteConverter(); mdConverter.capture(epcList, map2Save); } } }
 		 */
 		// Vendor Extension
 		if (objectEventType.getAny() != null) {
@@ -143,9 +141,13 @@ public class ObjectEventWriteConverter {
 				}
 			}
 		}
+
+		// Build Graph
+		capture(objectEventType, gcpLength);
+
 		return dbo;
 	}
-	
+
 	public void capture(ObjectEventType objectEventType, Integer gcpLength) {
 
 		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
@@ -203,16 +205,15 @@ public class ObjectEventWriteConverter {
 		}
 		// Extension
 		BsonArray classArray = null;
+		BsonDocument extension = null;
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
-			BsonDocument extension = getObjectEventExtensionObject(oee, gcpLength);
-			if (extension.containsKey("sourceList"))
-				objProperty.put("sourceList", extension.get("sourceList"));
-			if (extension.containsKey("destinationList"))
-				objProperty.put("destinationList", extension.get("destinationList"));
+			extension = getObjectEventExtensionObject(oee, gcpLength);
 			if (extension.containsKey("quantityList"))
 				classArray = extension.getArray("quantityList");
 		}
+
+		final BsonDocument extensionf = extension;
 
 		objectSet.parallelStream().forEach(object -> {
 			// object = vid
@@ -229,6 +230,44 @@ public class ObjectEventWriteConverter {
 				BusinessLocationType bizLocationType = objectEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+			}
+
+			if (extensionf != null) {
+				if (extensionf.containsKey("sourceList")) {
+					BsonArray sources = extensionf.getArray("sourceList");
+					sources.parallelStream().forEach(elem -> {
+						BsonDocument sourceDoc = elem.asDocument();
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(object,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+						}
+
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(object,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+						}
+					});
+				}
+
+				if (extensionf.containsKey("destinationList")) {
+					BsonArray destinations = extensionf.getArray("destinationList");
+					destinations.parallelStream().forEach(elem -> {
+						BsonDocument destDoc = elem.asDocument();
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(object,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+						}
+
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(object,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+						}
+					});
+				}
 			}
 
 		});
@@ -259,11 +298,50 @@ public class ObjectEventWriteConverter {
 				String locID = bizLocationType.getId();
 				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
+
+			if (extensionf != null) {
+				if (extensionf.containsKey("sourceList")) {
+					BsonArray sources = extensionf.getArray("sourceList");
+					sources.parallelStream().forEach(elem -> {
+						BsonDocument sourceDoc = elem.asDocument();
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+						}
+
+						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+						}
+					});
+				}
+
+				if (extensionf.containsKey("destinationList")) {
+					BsonArray destinations = extensionf.getArray("destinationList");
+					destinations.parallelStream().forEach(elem -> {
+						BsonDocument destDoc = elem.asDocument();
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+						}
+
+						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+							g.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+						}
+					});
+				}
+			}
+
 		});
 
 		g.shutdown();
 
 		return;
 	}
-	
+
 }

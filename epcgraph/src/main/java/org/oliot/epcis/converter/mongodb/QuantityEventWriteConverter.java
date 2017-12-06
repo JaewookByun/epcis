@@ -8,8 +8,11 @@ import java.util.List;
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
+import org.lilliput.chronograph.persistent.ChronoGraph;
+import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -119,6 +122,82 @@ public class QuantityEventWriteConverter {
 			}
 		}
 
+		// Build Graph
+		capture(quantityEventType, gcpLength);
+
 		return dbo;
+	}
+
+	public void capture(QuantityEventType quantityEventType, Integer gcpLength) {
+
+		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName);
+
+		// EPC List
+
+		String epcClass = quantityEventType.getEpcClass();
+
+		Long eventTime = null;
+		if (quantityEventType.getEventTime() != null)
+			eventTime = quantityEventType.getEventTime().toGregorianCalendar().getTimeInMillis();
+		else
+			eventTime = System.currentTimeMillis();
+
+		final long t = eventTime;
+
+		BsonDocument objProperty = new BsonDocument();
+
+		objProperty.put("quantity", new BsonDouble(quantityEventType.getQuantity()));
+
+		// Event Time Zone
+		if (quantityEventType.getEventTimeZoneOffset() != null)
+			objProperty.put("eventTimeZoneOffset", new BsonString(quantityEventType.getEventTimeZoneOffset()));
+		// Record Time : according to M5
+		GregorianCalendar recordTime = new GregorianCalendar();
+		long recordTimeMilis = recordTime.getTimeInMillis();
+		objProperty.put("recordTime", new BsonDateTime(recordTimeMilis));
+		// Biz Step
+		if (quantityEventType.getBizStep() != null)
+			objProperty.put("bizStep", new BsonString(quantityEventType.getBizStep()));
+		// Disposition
+		if (quantityEventType.getDisposition() != null)
+			objProperty.put("disposition", new BsonString(quantityEventType.getDisposition()));
+		// BizTransaction
+		if (quantityEventType.getBizTransactionList() != null) {
+			BusinessTransactionListType bizListType = quantityEventType.getBizTransactionList();
+			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
+			BsonArray bizTranList = getBizTransactionObjectList(bizList);
+			objProperty.put("bizTransactionList", bizTranList);
+		}
+		// Vendor Extension
+		if (quantityEventType.getAny() != null) {
+			List<Object> objList = quantityEventType.getAny();
+			BsonDocument map2Save = getAnyMap(objList);
+			if (map2Save != null && map2Save.isEmpty() == false)
+				objProperty.put("any", map2Save);
+
+		}
+
+		if (epcClass != null) {
+			g.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
+
+			// Read Point
+			if (quantityEventType.getReadPoint() != null) {
+				ReadPointType readPointType = quantityEventType.getReadPoint();
+				String locID = readPointType.getId();
+				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+			}
+			// BizLocation
+			if (quantityEventType.getBizLocation() != null) {
+				BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
+				String locID = bizLocationType.getId();
+				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+			}
+
+		}
+
+		g.shutdown();
+
+		return;
 	}
 }
