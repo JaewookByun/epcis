@@ -269,7 +269,6 @@ public class ObjectEventWriteConverter {
 					});
 				}
 			}
-
 		});
 
 		classArray.parallelStream().forEach(classElem -> {
