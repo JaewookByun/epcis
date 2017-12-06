@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:demo="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<ObjectEvent>
+				<!-- A truck transports the canned beef -->
+				<eventTime>2017-01-04T00:00:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<!-- From here -->
+				<demo:location>-117.688793, 33.967676^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-01-04T00:01:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<demo:location>-117.641131, 33.885210^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-01-04T00:02:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<demo:location>-117.822161, 33.842986^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-01-04T00:03:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<demo:location>-118.025751, 33.853536^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-01-04T00:04:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<demo:location>-118.025064, 33.809047^geoPoint</demo:location>
+			</ObjectEvent>
+			<ObjectEvent>
+				<eventTime>2017-01-04T00:05:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<epcList>
+					<epc>urn:epc:id:sscc:0000002.0000000002</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<bizStep>urn:epcglobal:cbv:bizstep:transporting</bizStep>
+				<!-- To here -->
+				<demo:location>-118.048754, 33.805053^geoPoint</demo:location>
+			</ObjectEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
