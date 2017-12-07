@@ -215,7 +215,7 @@ public class ObjectEventWriteConverter {
 
 		final BsonDocument extensionf = extension;
 
-		objectSet.parallelStream().forEach(object -> {
+		objectSet.stream().forEach(object -> {
 			// object = vid
 			g.getChronoVertex(object).setTimestampProperties(t, objProperty);
 
@@ -271,7 +271,7 @@ public class ObjectEventWriteConverter {
 			}
 		});
 
-		classArray.parallelStream().forEach(classElem -> {
+		classArray.stream().forEach(classElem -> {
 
 			BsonDocument classDoc = classElem.asDocument();
 			String epcClass = classDoc.getString("epcClass").getValue();
