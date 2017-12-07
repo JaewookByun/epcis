@@ -895,7 +895,7 @@ public class TraversalEngine {
 
 	public TraversalEngine toEvent(final Long timestamp) {
 		// Check Input element class
-		checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
+		//checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
 
 		// Pipeline Update
 		if (isPathEnabled) {
