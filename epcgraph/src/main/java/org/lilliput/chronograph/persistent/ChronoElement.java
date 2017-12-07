@@ -4,10 +4,13 @@ import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.UpdateOptions;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Element;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
@@ -70,8 +73,8 @@ abstract class ChronoElement implements Element {
 	}
 
 	/**
-	 * Return the object value associated with the provided string key. If no
-	 * value exists for that key, return null.
+	 * Return the object value associated with the provided string key. If no value
+	 * exists for that key, return null.
 	 *
 	 * @param key
 	 *            the key of the key/value property, Tokens.ID, Tokens.LABEL,
@@ -147,8 +150,8 @@ abstract class ChronoElement implements Element {
 	 *
 	 * @param key
 	 *            the key of the property to remove from the element
-	 * @return the object value associated with that key prior to removal.
-	 *         Should be instance of BsonValue
+	 * @return the object value associated with that key prior to removal. Should be
+	 *         instance of BsonValue
 	 */
 	@Override
 	public <T> T removeProperty(final String key) {
@@ -247,8 +250,7 @@ abstract class ChronoElement implements Element {
 	}
 
 	/**
-	 * Set TimestampProperty for timestamp and key, existing value will be
-	 * replaced
+	 * Set TimestampProperty for timestamp and key, existing value will be replaced
 	 * 
 	 * @param timestamp
 	 * @param key
@@ -327,8 +329,8 @@ abstract class ChronoElement implements Element {
 		if (this instanceof ChronoVertex) {
 			MongoCursor<BsonDocument> cursor = graph.getVertexCollection()
 					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(Tokens.FC.$in.toString(), timestamps)))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(Tokens.FC.$in.toString(), timestamps)))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
 			while (cursor.hasNext()) {
 				BsonDocument doc = cursor.next();
@@ -337,8 +339,8 @@ abstract class ChronoElement implements Element {
 		} else {
 			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection()
 					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(Tokens.FC.$in.toString(), timestamps)))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(Tokens.FC.$in.toString(), timestamps)))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
 			while (cursor.hasNext()) {
 				BsonDocument doc = cursor.next();
@@ -586,8 +588,8 @@ abstract class ChronoElement implements Element {
 		if (this instanceof ChronoVertex) {
 			BsonDocument higher = graph.getVertexCollection()
 					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(AC.$gt.toString(), new BsonDateTime(timestamp))))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(AC.$gt.toString(), new BsonDateTime(timestamp))))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).sort(Tokens.SORT_TIMESTAMP_ASC).limit(1).first();
 			if (higher == null)
 				return null;
@@ -596,8 +598,8 @@ abstract class ChronoElement implements Element {
 		} else {
 			BsonDocument higher = graph.getEdgeCollection()
 					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(AC.$gt.toString(), new BsonDateTime(timestamp))))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(AC.$gt.toString(), new BsonDateTime(timestamp))))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).sort(Tokens.SORT_TIMESTAMP_ASC).limit(1).first();
 			if (higher == null)
 				return null;
@@ -642,8 +644,8 @@ abstract class ChronoElement implements Element {
 		if (this instanceof ChronoVertex) {
 			BsonDocument lower = graph.getVertexCollection()
 					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(AC.$lt.toString(), new BsonDateTime(timestamp))))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(AC.$lt.toString(), new BsonDateTime(timestamp))))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).sort(Tokens.SORT_TIMESTAMP_DESC).limit(1).first();
 			if (lower == null)
 				return null;
@@ -652,8 +654,8 @@ abstract class ChronoElement implements Element {
 		} else {
 			BsonDocument lower = graph.getEdgeCollection()
 					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
-									new BsonDocument(AC.$lt.toString(), new BsonDateTime(timestamp))))
+							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP)
+							.append(Tokens.TIMESTAMP, new BsonDocument(AC.$lt.toString(), new BsonDateTime(timestamp))))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).sort(Tokens.SORT_TIMESTAMP_DESC).limit(1).first();
 			if (lower == null)
 				return null;
@@ -713,6 +715,25 @@ abstract class ChronoElement implements Element {
 					return doc.getDateTime(Tokens.TIMESTAMP).getValue();
 			}
 		}
+	}
+
+	/**
+	 * Only work for ChronoVertex
+	 * 
+	 * @param direction
+	 * @return
+	 */
+	public TreeSet<Long> getTimestamps(Direction direction, BsonArray labels, long left, AC comparator) {
+		TreeSet<Long> timestamps = new TreeSet<Long>();
+
+		if (this instanceof ChronoVertex) {
+			ChronoVertex v = (ChronoVertex) this;
+			HashSet<Long> tSet = (HashSet<Long>) v.getChronoEdgeSet(direction, labels).parallelStream()
+					.flatMap(e -> e.getTimestamps(left, comparator).parallelStream()).collect(Collectors.toSet());
+			timestamps.addAll(tSet);
+		}
+
+		return timestamps;
 	}
 
 	/**

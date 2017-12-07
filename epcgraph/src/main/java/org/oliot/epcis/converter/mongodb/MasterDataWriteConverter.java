@@ -8,6 +8,7 @@ import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AttributeType;
 import org.oliot.model.epcis.EPC;
@@ -95,6 +96,10 @@ public class MasterDataWriteConverter {
 				}
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
+
+					ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+							Configuration.databaseName);
+
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
 						// e.g. defnition
@@ -111,8 +116,13 @@ public class MasterDataWriteConverter {
 							} else {
 								eArr = attrObj.getArray(key);
 							}
-							eArr.add(MongoWriterUtil.converseType(value));
+
+							BsonValue bsonVal = MongoWriterUtil.converseType(value);
+							eArr.add(bsonVal);
 							attrObj.put(key, eArr);
+							
+							g.getChronoVertex(vocID).setProperty(key, bsonVal);
+
 						} else {
 							// ComplexType
 							for (Object value : valueList) {
@@ -154,6 +164,8 @@ public class MasterDataWriteConverter {
 					}
 					attrObj.put("lastUpdated", new BsonDateTime(System.currentTimeMillis()));
 					voc.put("attributes", attrObj);
+					
+					g.shutdown();
 				}
 
 				// If children found, overwrite previous one(s)
@@ -173,6 +185,7 @@ public class MasterDataWriteConverter {
 				}
 			}
 		}
+
 		return 0;
 	}
 
