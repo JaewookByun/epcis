@@ -213,7 +213,7 @@ public class AggregationEventWriteConverter {
 		}
 
 		// Extension
-		BsonArray childClassArray = null;
+		BsonArray childClassArray = new BsonArray();
 		BsonDocument extension = null;
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
@@ -278,7 +278,7 @@ public class AggregationEventWriteConverter {
 			}
 		}
 
-		childSet.parallelStream().forEach(child -> {
+		childSet.stream().forEach(child -> {
 			// Read Point
 			if (aggregationEventType.getReadPoint() != null) {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
@@ -331,7 +331,8 @@ public class AggregationEventWriteConverter {
 			}
 		});
 
-		childClassArray.parallelStream().forEach(classElem -> {
+		
+		childClassArray.stream().forEach(classElem -> {
 
 			BsonDocument classDoc = classElem.asDocument();
 			String epcClass = classDoc.getString("epcClass").getValue();
