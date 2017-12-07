@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
+import org.bson.BsonDouble;
 import org.bson.BsonNull;
 import org.bson.BsonString;
 import org.bson.BsonValue;
@@ -398,6 +399,47 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		MongoCursor<BsonDocument> cursor = vertices
 				.find(Tokens.FLT_VERTEX_FIELD_NOT_INCLUDED.append(key, (BsonValue) value))
 				.projection(Tokens.PRJ_ONLY_ID).iterator();
+
+		while (cursor.hasNext()) {
+			BsonDocument v = cursor.next();
+			ret.add(new ChronoVertex(v.getString(Tokens.ID).getValue(), this));
+		}
+		return ret.parallelStream();
+	}
+
+	/**
+	 * Geospatial query
+	 * 
+	 * @param key
+	 *            should be indexed by 2dsphere
+	 *            db.vertices.createIndex({"urn:oliot:ubv:mda:gps" : "2dsphere"})
+	 * @param lon
+	 * @param lat
+	 * @param radius
+	 *            in metres db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near : {
+	 *            $geometry: { type: "Point", coordinates: [ -1.1673,52.93]},
+	 *            $maxDistance: 50000}}})
+	 * 
+	 * @return
+	 */
+	public Stream<ChronoVertex> getChronoVertexStream(String key, double lon, double lat, double radius) {
+		HashSet<ChronoVertex> ret = new HashSet<ChronoVertex>();
+
+		BsonArray coordinates = new BsonArray();
+		coordinates.add(new BsonDouble(lon));
+		coordinates.add(new BsonDouble(lat));
+		BsonDocument geometry = new BsonDocument();
+		geometry.put("type", new BsonString("Point"));
+		geometry.put("coordinates", coordinates);
+		BsonDocument near = new BsonDocument();
+		near.put("$geometry", geometry);
+		near.put("$maxDistance", new BsonDouble(radius));
+		BsonDocument geoquery = new BsonDocument();
+		geoquery.put("$near", near);
+		BsonDocument queryDoc = new BsonDocument();
+		queryDoc.put(key, geoquery);
+
+		MongoCursor<BsonDocument> cursor = vertices.find(queryDoc).projection(Tokens.PRJ_ONLY_ID).iterator();
 
 		while (cursor.hasNext()) {
 			BsonDocument v = cursor.next();

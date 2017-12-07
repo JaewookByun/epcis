@@ -53,8 +53,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Return the edges incident to the vertex according to the provided
-	 * direction and edge labels.
+	 * Return the edges incident to the vertex according to the provided direction
+	 * and edge labels.
 	 *
 	 * @param direction
 	 *            the direction of the edges to retrieve
@@ -76,8 +76,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Return the edges incident to the vertex according to the provided
-	 * direction and edge labels.
+	 * Return the edges incident to the vertex according to the provided direction
+	 * and edge labels.
 	 *
 	 * @param direction
 	 *            the direction of the edges to retrieve
@@ -189,8 +189,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Generate a query object that can be used to fine tune which
-	 * edges/vertices are retrieved that are incident/adjacent to this vertex.
+	 * Generate a query object that can be used to fine tune which edges/vertices
+	 * are retrieved that are incident/adjacent to this vertex.
 	 *
 	 * @return a vertex query object with methods for constraining which data is
 	 *         pulled from the underlying graph
@@ -201,8 +201,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Add a new outgoing edge v.outE from this vertex to the parameter vertex
-	 * with provided edge label.
+	 * Add a new outgoing edge v.outE from this vertex to the parameter vertex with
+	 * provided edge label.
 	 *
 	 * @param label
 	 *            the label of the edge
@@ -216,8 +216,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Add a new outgoing edge v.outE from this vertex to the parameter vertex
-	 * with provided edge label.
+	 * Add a new outgoing edge v.outE from this vertex to the parameter vertex with
+	 * provided edge label.
 	 *
 	 * @param label
 	 *            the label of the edge
@@ -230,14 +230,13 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Add a new ingoing edge v.inE from this vertex to the parameter vertex
-	 * with provided edge label.
+	 * Add a new ingoing edge v.inE from this vertex to the parameter vertex with
+	 * provided edge label.
 	 *
 	 * @param label
 	 *            the label of the edge
 	 * @param in:
-	 *            v.in: the vertex to connect to with an incoming edge to be
-	 *            created
+	 *            v.in: the vertex to connect to with an incoming edge to be created
 	 * @return the newly created edge
 	 */
 	public ChronoEdge addInEdge(final String label, final ChronoVertex in) {
@@ -245,8 +244,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Add a new ingoing edge v.inE from this vertex to the parameter vertex
-	 * with provided edge label.
+	 * Add a new ingoing edge v.inE from this vertex to the parameter vertex with
+	 * provided edge label.
 	 *
 	 * @param label
 	 *            the label of the edge
@@ -283,8 +282,7 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Return intervalVertexEvent with the given interval (No interaction with
-	 * DB)
+	 * Return intervalVertexEvent with the given interval (No interaction with DB)
 	 * 
 	 * @param interval
 	 * @return intervalVertexEvent
@@ -461,8 +459,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	/**
 	 * @param timestamp
-	 * @return timestampVertexEvent with the higher timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the higher timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickHigherTimestamp(Long timestamp) {
 		Long higherTimestamp = this.getHigherTimestamp(timestamp);
@@ -473,8 +471,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	/**
 	 * @param timestamp
-	 * @return timestampVertexEvent with the higher timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the higher timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickHigherTimestamp(LongInterval interval, Position pos) {
 		long timestamp = interval.getTimestamp(pos);
@@ -485,8 +483,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	 * Floor: less than or equal to the given timestamp
 	 * 
 	 * @param timestamp
-	 * @return timestampVertexEvent with the floor timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the floor timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickFloorTimestamp(Long timestamp) {
 		Long floorTimestamp = this.getFloorTimestamp(timestamp);
@@ -497,8 +495,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	/**
 	 * @param timestamp
-	 * @return timestampVertexEvent with the floor timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the floor timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickFloorTimestamp(LongInterval interval, Position pos) {
 		long timestamp = interval.getTimestamp(pos);
@@ -509,8 +507,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	 * Lower: less than or equal to the given timestamp
 	 * 
 	 * @param timestamp
-	 * @return timestampVertexEvent with the lower timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the lower timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickLowerTimestamp(Long timestamp) {
 		Long lowerTimestamp = this.getLowerTimestamp(timestamp);
@@ -521,8 +519,8 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	/**
 	 * @param timestamp
-	 * @return timestampVertexEvent with the lower timestamp of the given
-	 *         timestamp or null
+	 * @return timestampVertexEvent with the lower timestamp of the given timestamp
+	 *         or null
 	 */
 	public VertexEvent pickLowerTimestamp(LongInterval interval, Position pos) {
 		long timestamp = interval.getTimestamp(pos);
