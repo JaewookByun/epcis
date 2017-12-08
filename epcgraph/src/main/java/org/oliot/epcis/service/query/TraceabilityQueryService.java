@@ -29,6 +29,7 @@ import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.VertexEvent;
 import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearch;
+import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearchEmulation;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -159,6 +160,63 @@ public class TraceabilityQueryService implements ServletContextAware {
 		else
 			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
 					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
+		g.shutdown();
+
+		// JSONarray contains each path
+		// contains time - vertex mapping
+
+		JSONArray pathArray = new JSONArray();
+
+		Iterator<Set> pathSetIter = pathMap.values().iterator();
+		while (pathSetIter.hasNext()) {
+			Set pathSet = pathSetIter.next();
+			Iterator<List> pathIter = pathSet.iterator();
+			while (pathIter.hasNext()) {
+				List path = pathIter.next();
+				Iterator<VertexEvent> vi = path.iterator();
+				JSONArray p = new JSONArray();
+				while (vi.hasNext()) {
+					VertexEvent ve = vi.next();
+					p.put(ve.toString());
+				}
+				pathArray.put(p);
+			}
+		}
+		// {urn:epc:id:sgtin:0000001.000001.6-1509461936591=[[urn:epc:id:sgtin:0000001.000001.1-946652400000,
+		// urn:epc:id:sgtin:0000001.000001.2-1383231536591,
+		// urn:epc:id:sgtin:0000001.000001.3-1414767536591,
+		// urn:epc:id:sgtin:0000001.000001.4-1446303536591,
+		// urn:epc:id:sgtin:0000001.000001.5-1477925936591,
+		// urn:epc:id:sgtin:0000001.000001.6-1509461936591]]}
+
+		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
+
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/TransformE", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getTransformTreeEmulation(@RequestParam String epc,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
+
+		// 여기에 에뮬레이션을 함
+
+		// Time processing
+		long startTimeMil = 0;
+		startTimeMil = TimeUtil.getTimeMil(startTime);
+
+		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName);
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
+		BsonArray transforms = new BsonArray();
+		transforms.add(new BsonString("transformsTo"));
+
+		PersistentBreadthFirstSearchEmulation tBFS = new PersistentBreadthFirstSearchEmulation();
+		Map pathMap = new HashMap();
+		pathMap = tBFS.compute(epc, startTimeMil, AC.$gte);
 		g.shutdown();
 
 		// JSONarray contains each path
