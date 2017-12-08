@@ -22,7 +22,7 @@ public class CreateTransformationTestDoc {
 		String cTime = sdf.format(new Date());
 		
 		String body = "";
-		for (int i = 0; i < 500; i++) {
+		for (int i = 0; i < 3; i++) {
 			body += "<extension>\n" + "				<TransformationEvent>\n"
 					+ "					<eventTime>" +cTime + "</eventTime>\n"
 					+ "					<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n"
