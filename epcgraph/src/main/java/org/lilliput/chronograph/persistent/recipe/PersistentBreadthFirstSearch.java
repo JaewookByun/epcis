@@ -2,7 +2,6 @@ package org.lilliput.chronograph.persistent.recipe;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bson.BsonArray;
@@ -35,35 +34,44 @@ import com.tinkerpop.pipes.PipeFunction;
  */
 public class PersistentBreadthFirstSearch {
 
-	private ConcurrentHashMap<ChronoVertex, Long> lowerBound = new ConcurrentHashMap<ChronoVertex, Long>();
+	private ConcurrentHashMap<ChronoVertex, Long> gamma = new ConcurrentHashMap<ChronoVertex, Long>();
 
-	public Set<ChronoVertex> compute(ChronoGraph g, VertexEvent source, BsonArray labels, TemporalType typeOfEvent,
-			AC tt, AC s, AC e, AC ss, AC se, AC es, AC ee, Position pos) {
+	@SuppressWarnings("rawtypes")
+	public Map compute(ChronoGraph g, VertexEvent source, BsonArray labels, TemporalType typeOfEvent, AC tt, AC s, AC e,
+			AC ss, AC se, AC es, AC ee, Position pos, String order) {
 
-		lowerBound.put(source.getVertex(), source.getTimestamp());
+		// order = forward / backward
+
+		gamma.put(source.getVertex(), source.getTimestamp());
 
 		PipeFunction<VertexEvent, Boolean> exceedBound2 = new PipeFunction<VertexEvent, Boolean>() {
 			@Override
 			public Boolean compute(VertexEvent ve) {
-				if (lowerBound.containsKey(ve.getVertex()) && (ve.getTimestamp() >= lowerBound.get(ve.getVertex()))) {
-					return false;
+				if (order.equals("forward")) {
+					if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() >= gamma.get(ve.getVertex()))) {
+						return false;
+					}
+				} else {
+					if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() <= gamma.get(ve.getVertex()))) {
+						return false;
+					}
 				}
+
 				return true;
 			}
 		};
 
-		PipeFunction<List<VertexEvent>, Object> storeLowerBound = new PipeFunction<List<VertexEvent>, Object>() {
+		PipeFunction<List<VertexEvent>, Object> storeGamma = new PipeFunction<List<VertexEvent>, Object>() {
 			@Override
 			public Object compute(List<VertexEvent> vertexEvents) {
 				vertexEvents.parallelStream().forEach(ve -> {
-					lowerBound.put(ve.getVertex(), ve.getTimestamp());
+					gamma.put(ve.getVertex(), ve.getTimestamp());
 				});
 				return null;
 			}
 		};
 
 		LoopPipeFunction exitIfEmptyIterator = new LoopPipeFunction() {
-			@SuppressWarnings("rawtypes")
 			@Override
 			public boolean compute(Object argument, Map<Object, Object> currentPath, int loopCount) {
 
@@ -76,24 +84,29 @@ public class PersistentBreadthFirstSearch {
 			}
 		};
 
-		TraversalEngine pipeLine = new TraversalEngine(g, source, true, false, VertexEvent.class);
+		TraversalEngine pipeLine = new TraversalEngine(g, source, true, true, VertexEvent.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
-		pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
+		if (order.equals("forward"))
+			pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
+		else
+			pipeLine = pipeLine.ine(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
 		pipeLine = pipeLine.filter(exceedBound2);
 		pipeLine = pipeLine.gather();
 		// 방문한 버텍스 중 최소만을 꼽는다 해당 스텝에서 도달 한 것 중
-		pipeLine = pipeLine.elementDedup(FC.$min);
+		if (order.equals("forward"))
+			pipeLine = pipeLine.elementDedup(FC.$min);
+		else
+			pipeLine = pipeLine.elementDedup(FC.$max);
 		// lower bound 보다 크면 필터한다.
 		// lower bound 가 없는 것은 무한대
 		// pipeLine = pipeLine.transform(exceedBound, List.class);
-		pipeLine = pipeLine.sideEffect(storeLowerBound);
+		pipeLine = pipeLine.sideEffect(storeGamma);
 		// pipeLine = pipeLine.pathEnabledTransform(historyPipe, List.class);
 		// pipeLine.storeTimestamp(bound);
 		// pipeLine.pathFilter(bound, );
 		// pipeLine = pipeLine.sideEffect(storeCurrentVertexEvents);
 		pipeLine = pipeLine.loop("s", exitIfEmptyIterator);
-		pipeLine.toList();
-		return lowerBound.keySet();
+		return pipeLine.path();
 	}
 }

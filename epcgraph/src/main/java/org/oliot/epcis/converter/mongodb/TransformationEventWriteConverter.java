@@ -311,110 +311,118 @@ public class TransformationEventWriteConverter {
 			objProperty.put("extension", extension);
 		}
 
-		inputSet.stream().forEach(input -> {
+		if (inputSet != null)
+			inputSet.stream().forEach(input -> {
 
-			// Read Point
-			if (transformationEventType.getReadPoint() != null) {
-				ReadPointType readPointType = transformationEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (transformationEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
-			}
+				// Read Point
+				if (transformationEventType.getReadPoint() != null) {
+					ReadPointType readPointType = transformationEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (transformationEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
+				}
 
+				if (outputSet != null)
+					outputSet.stream().forEach(output -> {
+						g.addTimestampEdgeProperties(input, output, "transformsTo", t, objProperty);
+					});
+
+				if (outputClassSet != null)
+					outputClassSet.stream().forEach(classElem -> {
+						String epcClass = classElem.asDocument().getString("epcClass").getValue();
+						g.addTimestampEdgeProperties(input, epcClass, "transformsTo", t, objProperty);
+					});
+			});
+
+		if (inputClassSet != null)
+			inputClassSet.stream().forEach(inputClassElem -> {
+				BsonDocument classDoc = inputClassElem.asDocument();
+				String inputClassID = inputClassElem.asDocument().getString("epcClass").getValue();
+				BsonDocument classProperty = new BsonDocument();
+				if (!classDoc.containsKey("epcClass"))
+					return;
+				if (classDoc.containsKey("quantity"))
+					classProperty.put("quantity", classDoc.getDouble("quantity"));
+				if (classDoc.containsKey("uom"))
+					classProperty.put("uom", classDoc.getString("uom"));
+
+				// Read Point
+				if (transformationEventType.getReadPoint() != null) {
+					ReadPointType readPointType = transformationEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (transformationEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
+				}
+
+				if (outputSet != null)
+					outputSet.stream().forEach(output -> {
+						g.addTimestampEdgeProperties(inputClassID, output, "transformsTo", t, objProperty);
+					});
+
+				if (outputClassSet != null)
+					outputClassSet.stream().forEach(classElem -> {
+						String epcClass = classElem.asDocument().getString("epcClass").getValue();
+						g.addTimestampEdgeProperties(inputClassID, epcClass, "transformsTo", t, objProperty);
+					});
+
+				g.getChronoVertex(inputClassID).setTimestampProperties(t, classProperty);
+			});
+
+		if (outputSet != null)
 			outputSet.stream().forEach(output -> {
-				g.addTimestampEdgeProperties(input, output, "transformsTo", t, objProperty);
+
+				// Read Point
+				if (transformationEventType.getReadPoint() != null) {
+					ReadPointType readPointType = transformationEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (transformationEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
+				}
 			});
 
-			outputClassSet.stream().forEach(classElem -> {
-				String epcClass = classElem.asDocument().getString("epcClass").getValue();
-				g.addTimestampEdgeProperties(input, epcClass, "transformsTo", t, objProperty);
+		if (outputClassSet != null)
+			outputClassSet.stream().forEach(outputClassElem -> {
+
+				BsonDocument classDoc = outputClassElem.asDocument();
+				String outputClassID = outputClassElem.asDocument().getString("epcClass").getValue();
+				BsonDocument classProperty = new BsonDocument();
+				if (!classDoc.containsKey("epcClass"))
+					return;
+				if (classDoc.containsKey("quantity"))
+					classProperty.put("quantity", classDoc.getDouble("quantity"));
+				if (classDoc.containsKey("uom"))
+					classProperty.put("uom", classDoc.getString("uom"));
+
+				// Read Point
+				if (transformationEventType.getReadPoint() != null) {
+					ReadPointType readPointType = transformationEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (transformationEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
+				}
+
+				g.getChronoVertex(outputClassID).setTimestampProperties(t, classProperty);
 			});
-		});
-
-		inputClassSet.stream().forEach(inputClassElem -> {
-			BsonDocument classDoc = inputClassElem.asDocument();
-			String inputClassID = inputClassElem.asDocument().getString("epcClass").getValue();
-			BsonDocument classProperty = new BsonDocument();
-			if (!classDoc.containsKey("epcClass"))
-				return;
-			if (classDoc.containsKey("quantity"))
-				classProperty.put("quantity", classDoc.getDouble("quantity"));
-			if (classDoc.containsKey("uom"))
-				classProperty.put("uom", classDoc.getString("uom"));
-
-			// Read Point
-			if (transformationEventType.getReadPoint() != null) {
-				ReadPointType readPointType = transformationEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (transformationEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
-			}
-
-			outputSet.stream().forEach(output -> {
-				g.addTimestampEdgeProperties(inputClassID, output, "transformsTo", t, objProperty);
-			});
-
-			outputClassSet.stream().forEach(classElem -> {
-				String epcClass = classElem.asDocument().getString("epcClass").getValue();
-				g.addTimestampEdgeProperties(inputClassID, epcClass, "transformsTo", t, objProperty);
-			});
-
-			g.getChronoVertex(inputClassID).setTimestampProperties(t, classProperty);
-		});
-
-		outputSet.stream().forEach(output -> {
-
-			// Read Point
-			if (transformationEventType.getReadPoint() != null) {
-				ReadPointType readPointType = transformationEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (transformationEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
-			}
-		});
-
-		outputClassSet.stream().forEach(outputClassElem -> {
-
-			BsonDocument classDoc = outputClassElem.asDocument();
-			String outputClassID = outputClassElem.asDocument().getString("epcClass").getValue();
-			BsonDocument classProperty = new BsonDocument();
-			if (!classDoc.containsKey("epcClass"))
-				return;
-			if (classDoc.containsKey("quantity"))
-				classProperty.put("quantity", classDoc.getDouble("quantity"));
-			if (classDoc.containsKey("uom"))
-				classProperty.put("uom", classDoc.getString("uom"));
-
-			// Read Point
-			if (transformationEventType.getReadPoint() != null) {
-				ReadPointType readPointType = transformationEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (transformationEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
-			}
-
-			g.getChronoVertex(outputClassID).setTimestampProperties(t, classProperty);
-		});
 
 		g.shutdown();
 

@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+import com.mongodb.MongoClient;
+
 /**
  * Copyright (C) 2014-2017 Jaewook Byun
  *
@@ -99,6 +101,23 @@ public class EventCapture implements ServletContextAware {
 			return new ResponseEntity<>(retMsg.toString(), HttpStatus.OK);
 		else
 			return new ResponseEntity<>(retMsg.toString(), HttpStatus.BAD_REQUEST);
+	}
+
+	public void capture(String inputString) {
+
+		InputStream epcisStream = CaptureUtil.getXMLDocumentInputStream(inputString);
+		EPCISDocumentType epcisDocument = JAXB.unmarshal(epcisStream, EPCISDocumentType.class);
+
+		Configuration.backend_ip = "localhost";
+		Configuration.backend_port = 27017;
+		Configuration.databaseName = "epcis";
+		Configuration.mongoClient = new MongoClient(Configuration.backend_ip, Configuration.backend_port);
+		Configuration.mongoDatabase = Configuration.mongoClient.getDatabase(Configuration.databaseName);
+
+		CaptureService cs = new CaptureService();
+		cs.capture(epcisDocument, null, null, null);
+
+		Configuration.mongoClient.close();
 	}
 
 }
