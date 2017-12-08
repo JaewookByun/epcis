@@ -880,7 +880,7 @@ public class VertexEvent implements Element {
 		else
 			return (T) vertex.getIntervalPropertyValue(interval, key);
 	}
-
+	
 	/**
 	 * @deprecated use getTimestampPropertyKeys or getIntervalPropertyKeys
 	 */

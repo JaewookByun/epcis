@@ -7,7 +7,10 @@ import com.mongodb.client.model.UpdateOptions;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Element;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -733,6 +736,54 @@ abstract class ChronoElement implements Element {
 			timestamps.addAll(tSet);
 		}
 
+		return timestamps;
+	}
+
+	/**
+	 * @param left
+	 * @param comparator
+	 * @return closest timestamp to the given timestamp based on comparator
+	 */
+	public TreeSet<Long> getTimestamps(HashMap<Long, AC> compSet) {
+		TreeSet<Long> timestamps = new TreeSet<Long>();
+
+		if (this instanceof ChronoVertex) {
+			Iterator<Entry<Long, AC>> iter = compSet.entrySet().iterator();
+			BsonDocument query = new BsonDocument(Tokens.VERTEX, new BsonString(this.id));
+
+			while (iter.hasNext()) {
+				Entry<Long, AC> comp = iter.next();
+				query.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
+						new BsonDocument(comp.getValue().toString(), new BsonDateTime(comp.getKey())));
+			}
+
+			MongoCursor<BsonDocument> docIter = graph.getVertexCollection().find(query).iterator();
+
+			while (docIter.hasNext()) {
+				BsonDocument doc = docIter.next();
+				timestamps.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
+			}
+			return timestamps;
+		} else if (this instanceof ChronoEdge) {
+
+			Iterator<Entry<Long, AC>> iter = compSet.entrySet().iterator();
+			BsonDocument query = new BsonDocument(Tokens.EDGE, new BsonString(this.id));
+
+			while (iter.hasNext()) {
+				Entry<Long, AC> comp = iter.next();
+				query.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.TIMESTAMP,
+						new BsonDocument(comp.getValue().toString(), new BsonDateTime(comp.getKey())));
+			}
+
+			MongoCursor<BsonDocument> docIter = graph.getEdgeCollection().find(query).iterator();
+
+			while (docIter.hasNext()) {
+				BsonDocument doc = docIter.next();
+				timestamps.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
+			}
+			return timestamps;
+
+		}
 		return timestamps;
 	}
 

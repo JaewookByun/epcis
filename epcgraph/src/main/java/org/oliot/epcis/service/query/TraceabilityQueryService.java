@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
@@ -14,14 +15,19 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.bson.Document;
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.lilliput.chronograph.common.TemporalType;
+import org.lilliput.chronograph.common.Tokens.AC;
+import org.lilliput.chronograph.common.Tokens.Position;
 import org.lilliput.chronograph.persistent.ChronoEdge;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
+import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearch;
 import org.oliot.epcis.configuration.Configuration;
-import org.oliot.epcis.security.OAuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -34,14 +40,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
-import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-import com.restfb.Connection;
-import com.restfb.FacebookClient;
-import com.restfb.types.User;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -84,13 +82,16 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	/**
-	 * FOR DEBUGGING
+	 * JSONArray
 	 * 
 	 * @return a list of nodes in graph store
 	 */
 	@RequestMapping(value = "/Resources", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getAllVertices() {
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
 		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
 				Configuration.databaseName);
@@ -106,29 +107,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 		} finally {
 			g.shutdown();
 		}
-		return new ResponseEntity<>(new String("[Lilliput] : Debugging method\n" + jarr.toString(1)), HttpStatus.OK);
-	}
-
-	/**
-	 * JSONArray
-	 * 
-	 * @return a list of nodes in graph store
-	 */
-	@RequestMapping(value = "/Resource", method = RequestMethod.GET)
-	@ResponseBody
-	public ResponseEntity<?> getExistingNodes() {
-
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
-		String ret = null;
-		try {
-			// ret = GraphBuilderUtil.getAllVerticesAsJSONArrayString(g);
-		} finally {
-			g.shutdown();
-		}
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
-		return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(new String(jarr.toString(1)), responseHeaders, HttpStatus.OK);
 	}
 
 	/**
@@ -136,18 +115,50 @@ public class TraceabilityQueryService implements ServletContextAware {
 	 * 
 	 * @return remove All vertices for developer
 	 */
-	@RequestMapping(value = "/Resource", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/Resources", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<?> deleteAllExistingNodes() {
 
 		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
 				Configuration.databaseName);
 		try {
-			// GraphBuilderUtil.removeAllVertices(g);
+			g.getVertexCollection().drop();
+			g.getEdgeCollection().drop();
 		} finally {
 			g.shutdown();
 		}
 		return new ResponseEntity<>("[Lilliput] : All Vertices Removed\n", HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/Transform", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getTransformTree(@RequestParam String epc,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
+
+		// Time processing
+		long startTimeMil = 0;
+		startTimeMil = TimeUtil.getTimeMil(startTime);
+
+		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName);
+		try {
+
+			HttpHeaders responseHeaders = new HttpHeaders();
+			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
+			BsonArray transforms = new BsonArray();
+			transforms.add(new BsonString("transforms"));
+
+			PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
+			tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms, TemporalType.TIMESTAMP,
+					AC.$gte, null, null, null, null, null, null, Position.first);
+
+		} finally {
+			g.shutdown();
+		}
+
+		return new ResponseEntity<>(new String("Format of 'scope' = {resource|relationship|ego|sibling|trace}"),
+				HttpStatus.BAD_REQUEST);
 	}
 
 	/**
@@ -191,33 +202,12 @@ public class TraceabilityQueryService implements ServletContextAware {
 	 *         form. Also, if recursiveOrder is desc, a sub-document cannot contain
 	 *         older relationship of parent one.
 	 */
-	@RequestMapping(value = "/Resource/{epc}", method = RequestMethod.GET)
+	@RequestMapping(value = "/Resource", method = RequestMethod.GET)
 	@ResponseBody
-	public ResponseEntity<?> getResource(@PathVariable String epc, @RequestParam(required = false) String scope,
+	public ResponseEntity<?> getResource(@RequestParam String epc, @RequestParam(required = false) String scope,
 			@RequestParam(required = false) String fromTime, @RequestParam(required = false) String toTime,
 			@RequestParam(required = false) String orderByTime, @RequestParam(required = false) String limit,
-			@RequestParam(required = false) String relationship, @RequestParam(required = false) String fid,
-			@RequestParam(required = false) String accessToken, HttpServletRequest request) {
-
-		// Access Control is not mandatory
-		// However, if fid and accessToken provided, more information provided
-		FacebookClient fc = null;
-		List<String> friendList = null;
-		if (fid != null) {
-			// Check accessToken
-			fc = OAuthUtil.isValidatedFacebookClient(accessToken, fid);
-			if (fc == null) {
-				return new ResponseEntity<>(new String("Invalid AccessToken"), HttpStatus.BAD_REQUEST);
-			}
-			friendList = new ArrayList<String>();
-
-			Connection<User> friendConnection = fc.fetchConnection("me/friends", User.class);
-			for (List<User> friends : friendConnection) {
-				for (User friend : friends) {
-					friendList.add(friend.getId());
-				}
-			}
-		}
+			@RequestParam(required = false) String relationship, HttpServletRequest request) {
 
 		if (scope == null)
 			scope = "resource";
@@ -236,8 +226,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
 			if (scope.trim().equals("resource")) {
-				String ret = getVertexAttributesAsJsonLD(g, request, epc, fromTimeMil, toTimeMil, orderByTime, limit,
-						fid, friendList);
+				String ret = getVertexAttributesAsJsonLD(g, request, epc, fromTimeMil, toTimeMil, orderByTime, limit);
 				g.shutdown();
 				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 			} else if (scope.trim().equals("relationship")) {
@@ -246,7 +235,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 			} else if (scope.trim().equals("ego")) {
 
-				String ret = getEgoNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil, fc, fid);
+				String ret = getEgoNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
 				g.shutdown();
 				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 
@@ -256,7 +245,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 							"Format of 'relationship' in sibling network = {edgeLabelToParent,edgeLabelToSibling}"),
 							HttpStatus.BAD_REQUEST);
 				}
-				String ret = getSiblingNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil, fc, fid);
+				String ret = getSiblingNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
 				g.shutdown();
 				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 			} else if (scope.trim().equals("trace")) {
@@ -277,7 +266,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	public JSONObject getNoN(ChronoGraph g, HttpServletRequest request, String parent, String parentRel, String epc,
-			String relationship, long fromTimeMil, long toTimeMil, FacebookClient fc, String fid) {
+			String relationship, long fromTimeMil, long toTimeMil) {
 		try {
 
 			// Vertex should be unique
@@ -431,7 +420,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	public String getSiblingNetwork(ChronoGraph g, HttpServletRequest request, String epc, String relationship,
-			long fromTimeMil, long toTimeMil, FacebookClient fc, String fid) {
+			long fromTimeMil, long toTimeMil) {
 		try {
 
 			// String expression = "g.V('label','" +
@@ -515,7 +504,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 					 * maxMil = mil; } }
 					 */
 					neighborObj = getNoN(g, request, epc, edgeLabel, neighborLabel, relationship, fromTimeMil,
-							toTimeMil, fc, fid);
+							toTimeMil);
 					neighborObj.put("eventTime", tArr);
 					edgeObj.put(neighborLabel, neighborObj);
 					retObj.put(edgeLabel, edgeObj);
@@ -534,7 +523,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 	@SuppressWarnings("null")
 	public String getEgoNetwork(ChronoGraph g, HttpServletRequest request, String epc, String relationship,
-			long fromTimeMil, long toTimeMil, FacebookClient fc, String fid) {
+			long fromTimeMil, long toTimeMil) {
 		try {
 
 			// Vertex should be unique
@@ -662,110 +651,59 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	public String getVertexAttributesAsJsonLD(ChronoGraph g, HttpServletRequest request, String epc, long fromTimeMil,
-			long toTimeMil, String orderByTime, String limit, String fid, List<String> friendList) {
+			long toTimeMil, String orderByTime, String limit) {
 
 		try {
-
-			MongoClient mongo = null;
-			mongo = new MongoClient("localhost", 27017);
-			MongoDatabase db = mongo.getDatabase("sepcis");
 
 			JSONObject retObj = new JSONObject();
 
 			// Vertex should be unique
-			ChronoVertex v = g.getChronoVertices("vlabel", epc).iterator().next();
-			String masterdataString = v.getProperty("attributeList");
+			ChronoVertex v = g.getChronoVertex(epc);
+			BsonDocument staticProp = v.getProperties();
 
 			// Master Data
-			if (masterdataString != null) {
-				JSONObject masterObj = new JSONObject(masterdataString);
+			if (staticProp != null) {
+				staticProp.remove("_type");
+				staticProp.remove("_id");
+				JSONObject masterObj = new JSONObject(staticProp.toJson());
 				retObj.put("attributeList", masterObj);
 			}
 
-			String serviceProfileString = v.getProperty("serviceProfile");
+			HashMap<Long, AC> range = new HashMap<Long, AC>();
+			range.put(fromTimeMil, AC.$gte);
+			range.put(toTimeMil, AC.$lte);
 
-			// Service Profile
-			if (serviceProfileString != null) {
-				JSONArray serviceArr = new JSONArray(serviceProfileString);
-				retObj.put("serviceProfile", serviceArr);
-			}
+			TreeSet<Long> timestamps = v.getTimestamps(range);
 
-			// DBCollection collection = mongoOperation.getCollection(epc);
-			MongoCollection<Document> collection = db.getCollection(epc);
-			FindIterable<Document> findIterable = collection.find();
+			Iterator<Long> timestampIter = null;
 			// Order
 			if (orderByTime == null || orderByTime.equals("desc")) {
-				findIterable.sort(new Document("eventTime", -1));
+				timestampIter = timestamps.descendingIterator();
 			} else {
-				findIterable.sort(new Document("eventTime", 1));
+				timestampIter = timestamps.iterator();
 			}
 
 			// Limit
-			int limitInt = 0;
+			int limitInt = Integer.MAX_VALUE;
 			if (limit != null) {
 				limitInt = Integer.parseInt(limit);
-				findIterable.limit(limitInt);
 			}
-			MongoCursor<Document> cursor = findIterable.iterator();
-			JSONObject context = new JSONObject();
-			while (cursor.hasNext()) {
-				Document event = (Document) cursor.next();
-				if (event == null)
-					continue;
 
-				Object eventTime = event.get("eventTime");
-				long eventTimeMil = 0;
-				try {
-					eventTimeMil = Long.parseLong(eventTime.toString());
-				} catch (NumberFormatException e) {
-					continue;
-				} catch (NullPointerException e) {
-					continue;
-				}
-				if (eventTimeMil == 0)
-					continue;
-				if ((fromTimeMil != 0) && (fromTimeMil > eventTimeMil))
-					continue;
-				if ((toTimeMil != 0) && (eventTimeMil > toTimeMil))
-					continue;
+			int cnt = 0;
+			while (timestampIter.hasNext()) {
+				if (cnt >= limitInt)
+					break;
+				Long t = timestampIter.next();
 
-				Iterator<String> keyIter = event.keySet().iterator();
+				BsonDocument tProp = v.getTimestampProperties(t);
+				tProp.remove("_vertex");
+				tProp.remove("_t");
+				tProp.remove("_type");
+				tProp.remove("_id");
+				tProp.remove("recordTime");
 
-				while (keyIter.hasNext()) {
-					String objKey = keyIter.next().toString();
-
-					if (objKey.equals("extensionList")) {
-						Document extObj = (Document) event.get(objKey);
-						Iterator<String> extKeyIter = extObj.keySet().iterator();
-						JSONObject tempObj = new JSONObject();
-						while (extKeyIter.hasNext()) {
-							String extKey = extKeyIter.next().toString();
-							if (extKey.startsWith("@")) {
-								context.put(extKey.substring(1, extKey.length()), extObj.get(extKey).toString());
-
-							} else {
-								tempObj.put(extKey, extObj.get(extKey).toString());
-							}
-						}
-						event.put("extensionList", tempObj);
-					} else if (objKey.equals("ilmd")) {
-						Document ilmdObj = (Document) event.get(objKey);
-						Iterator<String> ilmdKeyIter = ilmdObj.keySet().iterator();
-						JSONObject tempObj = new JSONObject();
-						while (ilmdKeyIter.hasNext()) {
-							String ilmdKey = ilmdKeyIter.next().toString();
-							if (ilmdKey.startsWith("@")) {
-								context.put(ilmdKey.substring(1, ilmdKey.length()), ilmdObj.get(ilmdKey).toString());
-
-							} else {
-								tempObj.put(ilmdKey, ilmdObj.get(ilmdKey).toString());
-							}
-						}
-						event.put("ilmd", tempObj);
-					}
-				}
-				event.remove("_id");
-				retObj.put(String.valueOf(eventTimeMil), JSONUtil.toJson(event));
+				retObj.put(t.toString(), new JSONObject(tProp.toJson()));
+				cnt++;
 			}
 
 			// PUT JSON-LD @id field
@@ -773,9 +711,8 @@ public class TraceabilityQueryService implements ServletContextAware {
 			retObj.put("@id", epc);
 
 			// PUT JSON-LD @context field
-			retObj = JSONUtil.putJsonLDContext(retObj, context);
+			// retObj = JSONUtil.putJsonLDContext(retObj, context);
 
-			mongo.close();
 			return retObj.toString(2);
 		} catch (NoSuchElementException e) {
 			return "No such vertex labelled with {epc} : " + e;
