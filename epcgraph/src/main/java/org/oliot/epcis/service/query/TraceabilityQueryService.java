@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
@@ -26,6 +27,7 @@ import org.lilliput.chronograph.common.Tokens.Position;
 import org.lilliput.chronograph.persistent.ChronoEdge;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
+import org.lilliput.chronograph.persistent.VertexEvent;
 import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearch;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -130,6 +132,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 		return new ResponseEntity<>("[Lilliput] : All Vertices Removed\n", HttpStatus.OK);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value = "/Transform", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getTransformTree(@RequestParam String epc,
@@ -141,24 +144,52 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
 				Configuration.databaseName);
-		try {
 
-			HttpHeaders responseHeaders = new HttpHeaders();
-			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
-			BsonArray transforms = new BsonArray();
-			transforms.add(new BsonString("transforms"));
+		BsonArray transforms = new BsonArray();
+		transforms.add(new BsonString("transformsTo"));
 
-			PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
-			tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms, TemporalType.TIMESTAMP,
-					AC.$gte, null, null, null, null, null, null, Position.first);
+		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
+		Map pathMap = new HashMap();
+		if (order.equals("forward"))
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first, order);
+		else
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
+		g.shutdown();
 
-		} finally {
-			g.shutdown();
+		// JSONarray contains each path
+		// contains time - vertex mapping
+
+		JSONArray pathArray = new JSONArray();
+
+		Iterator<Set> pathSetIter = pathMap.values().iterator();
+		while (pathSetIter.hasNext()) {
+			Set pathSet = pathSetIter.next();
+			Iterator<List> pathIter = pathSet.iterator();
+			while (pathIter.hasNext()) {
+				List path = pathIter.next();
+				Iterator<VertexEvent> vi = path.iterator();
+				JSONArray p = new JSONArray();
+				while (vi.hasNext()) {
+					VertexEvent ve = vi.next();
+					p.put(ve.toString());
+				}
+				pathArray.put(p);
+			}
 		}
+		// {urn:epc:id:sgtin:0000001.000001.6-1509461936591=[[urn:epc:id:sgtin:0000001.000001.1-946652400000,
+		// urn:epc:id:sgtin:0000001.000001.2-1383231536591,
+		// urn:epc:id:sgtin:0000001.000001.3-1414767536591,
+		// urn:epc:id:sgtin:0000001.000001.4-1446303536591,
+		// urn:epc:id:sgtin:0000001.000001.5-1477925936591,
+		// urn:epc:id:sgtin:0000001.000001.6-1509461936591]]}
 
-		return new ResponseEntity<>(new String("Format of 'scope' = {resource|relationship|ego|sibling|trace}"),
-				HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
+
 	}
 
 	/**
