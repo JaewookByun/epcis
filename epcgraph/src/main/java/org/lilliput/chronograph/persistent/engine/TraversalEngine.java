@@ -23,6 +23,7 @@ import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.Step;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
+import org.lilliput.chronograph.common.Tokens.FC;
 import org.lilliput.chronograph.common.Tokens.Position;
 import org.lilliput.chronograph.persistent.ChronoEdge;
 import org.lilliput.chronograph.persistent.ChronoGraph;
@@ -895,7 +896,7 @@ public class TraversalEngine {
 
 	public TraversalEngine toEvent(final Long timestamp) {
 		// Check Input element class
-		//checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
+		// checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
 
 		// Pipeline Update
 		if (isPathEnabled) {
@@ -1699,6 +1700,76 @@ public class TraversalEngine {
 		final Class[] args = new Class[1];
 		args[0] = PipeFunction.class;
 		final Step step = new Step(this.getClass().getName(), "filter", args, filterFunction);
+		stepList.add(step);
+		return this;
+	}
+
+	// Event의 Collection을 가정하고
+	// 주어진 Graph Element Set를 지운다
+	public TraversalEngine elementDedup(FC fc) {
+		// Stream Update
+		if (isPathEnabled) {
+
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(e -> {
+
+				// System.out.println(((List)e).size());
+				Map<String, Set<VertexEvent>> group = (Map<String, Set<VertexEvent>>) ((List) e).parallelStream()
+						.collect(Collectors.groupingBy(VertexEvent::getVertexID,
+								Collectors.mapping(VertexEvent::getThis, Collectors.toSet())));
+
+				List<VertexEvent> dedup = group.entrySet().parallelStream().map(e1 -> {
+					VertexEvent min = e1.getValue().parallelStream().min(Comparator.comparing(ve -> ve.getTimestamp()))
+							.get();
+					return min;
+
+				}).collect(Collectors.toList());
+
+				// System.out.println(dedup.size());
+
+				return new AbstractMap.SimpleImmutableEntry(e, dedup);
+
+			}).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
+
+			// System.out.println("MAP : " + intermediate.size());
+
+			// Update Path
+			if (elementClass != List.class)
+				updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+
+		} else {
+			stream = stream.map(e -> {
+
+				if (e instanceof List) {
+
+					// System.out.println(((List) e).size());
+					Map<String, Set<VertexEvent>> group = (Map<String, Set<VertexEvent>>) ((List) e).parallelStream()
+							.collect(Collectors.groupingBy(VertexEvent::getVertexID,
+									Collectors.mapping(VertexEvent::getThis, Collectors.toSet())));
+
+					List<VertexEvent> dedup = group.entrySet().parallelStream().map(e1 -> {
+
+						VertexEvent min = e1.getValue().parallelStream()
+								.min(Comparator.comparing(ve -> ve.getTimestamp())).get();
+						return min;
+
+					}).collect(Collectors.toList());
+
+					// System.out.println(dedup.size());
+					return dedup;
+				} else {
+					return e;
+				}
+			});
+		}
+
+		// Step Update
+		final Class[] args = new Class[1];
+		args[0] = FC.class;
+		final Step step = new Step(this.getClass().getName(), "elementDedup", args, fc);
 		stepList.add(step);
 		return this;
 	}
