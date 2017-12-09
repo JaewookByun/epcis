@@ -8,4 +8,26 @@ public class EPCTime {
 		this.epc = epc;
 		this.time = time;
 	}
+
+	public EPCTime getThis() {
+		return this;
+	}
+	
+	public String getEpc() {
+		return epc;
+	}
+
+	public void setEpc(String epc) {
+		this.epc = epc;
+	}
+
+	public Long getTime() {
+		return time;
+	}
+
+	public void setTime(Long time) {
+		this.time = time;
+	}
+	
+	
 }

@@ -230,11 +230,11 @@ public class TraceabilityQueryService implements ServletContextAware {
 			Iterator<List> pathIter = pathSet.iterator();
 			while (pathIter.hasNext()) {
 				List path = pathIter.next();
-				Iterator<VertexEvent> vi = path.iterator();
+				Iterator<EPCTime> vi = path.iterator();
 				JSONArray p = new JSONArray();
 				while (vi.hasNext()) {
-					VertexEvent ve = vi.next();
-					p.put(ve.toString());
+					EPCTime ve = vi.next();
+					p.put(ve.epc+"-"+ve.time);
 				}
 				pathArray.put(p);
 			}

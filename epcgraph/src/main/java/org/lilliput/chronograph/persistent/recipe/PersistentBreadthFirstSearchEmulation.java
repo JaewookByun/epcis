@@ -34,22 +34,21 @@ import com.tinkerpop.pipes.PipeFunction;
 
 public class PersistentBreadthFirstSearchEmulation {
 
-	private ConcurrentHashMap<EPCTime, Long> gamma = new ConcurrentHashMap<EPCTime, Long>();
+	private ConcurrentHashMap<String, Long> gamma = new ConcurrentHashMap<String, Long>();
 
 	@SuppressWarnings("rawtypes")
 	public Map compute(String epc, Long startTime, AC tt) {
 
 		// order = forward / backward
 		EPCTime source = new EPCTime(epc, startTime);
-		gamma.put(source, startTime);
+		gamma.put(epc, startTime);
 
 		PipeFunction<EPCTime, Boolean> exceedBound2 = new PipeFunction<EPCTime, Boolean>() {
 			@Override
 			public Boolean compute(EPCTime ve) {
-				// if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() >=
-				// gamma.get(ve.getVertex()))) {
-				// return false;
-				// }
+				if (gamma.containsKey(ve.epc) && (ve.time >= gamma.get(ve.epc))) {
+					return false;
+				}
 				return true;
 			}
 		};
@@ -58,7 +57,7 @@ public class PersistentBreadthFirstSearchEmulation {
 			@Override
 			public Object compute(List<EPCTime> vertexEvents) {
 				vertexEvents.parallelStream().forEach(ve -> {
-					// gamma.put(ve.getVertex(), ve.getTimestamp());
+					gamma.put(ve.epc, ve.time);
 				});
 				return null;
 			}
@@ -87,7 +86,6 @@ public class PersistentBreadthFirstSearchEmulation {
 		NaiveTraversalEngine pipeLine = new NaiveTraversalEngine(collection, source, true, true, String.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
-		// TODO: 여기까지 됨 
 		pipeLine = pipeLine.oute(null, TemporalType.TIMESTAMP, tt, null, null, null, null, null, null, Position.first);
 		pipeLine = pipeLine.filter(exceedBound2);
 		pipeLine = pipeLine.gather();

@@ -6,7 +6,7 @@ import java.util.Date;
 import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
-public class CreateTransformationTestDoc {
+public class CreateTransformationLinear {
 
 	@Test
 	public void test() {
@@ -22,7 +22,8 @@ public class CreateTransformationTestDoc {
 		String cTime = sdf.format(new Date());
 		
 		String body = "";
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 200; i++) {
+			cTime = sdf.format(new Date());
 			body += "<extension>\n" + "				<TransformationEvent>\n"
 					+ "					<eventTime>" +cTime + "</eventTime>\n"
 					+ "					<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n"
