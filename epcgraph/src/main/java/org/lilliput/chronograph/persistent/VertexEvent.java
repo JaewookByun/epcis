@@ -1,5 +1,7 @@
 package org.lilliput.chronograph.persistent;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -7,10 +9,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
+import org.bson.BsonDateTime;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.lilliput.chronograph.common.ExceptionFactory;
 import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.TemporalType;
+import org.lilliput.chronograph.common.Tokens;
 import org.lilliput.chronograph.common.Tokens.AC;
 import org.lilliput.chronograph.common.Tokens.Position;
 
@@ -749,52 +756,83 @@ public class VertexEvent implements Element {
 			TemporalType typeOfVertexEvent, final AC tt, final AC s, final AC e, final AC ss, final AC se, final AC es,
 			final AC ee, Position pos) {
 
-		if (typeOfVertexEvent == null)
-			typeOfVertexEvent = this.temporalType;
+		// TODO: PoC
+		// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
+		// db.EventData.createIndex({"inputEPCList.epc":1})
+		BsonDocument query = new BsonDocument(Tokens.OUT_VERTEX, new BsonString(vertex.toString()));
+		query.append("_t", new BsonDocument("$gte", new BsonDateTime(timestamp)));
+		BsonDocument proj = new BsonDocument("_t", new BsonBoolean(true))
+				.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
 
-		Set<ChronoEdge> edgeSet = vertex.getChronoEdgeSet(direction, labels, Integer.MAX_VALUE);
-
-		if (temporalType.equals(TemporalType.TIMESTAMP) && typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
-			// T -> T
-			return edgeSet.parallelStream().map(edge -> {
-				Long t = edge.getTimestamp(timestamp, tt);
-				return edge.pickTimestamp(t);
-			}).filter(edge -> edge != null).map(edgeEvent -> edgeEvent.getVertexEvent(direction.opposite()))
-					.collect(Collectors.toSet());
-		} else if (temporalType.equals(TemporalType.TIMESTAMP) && typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
-			// T -> I
-			return edgeSet.parallelStream().map(edge -> {
-				TreeSet<LongInterval> intvSet = edge.getIntervals(timestamp, s, e);
-				if (intvSet.isEmpty())
-					return null;
-				if (pos.equals(Position.first))
-					return edge.pickInterval(intvSet.first());
-				else
-					return edge.pickInterval(intvSet.last());
-			}).filter(edge -> edge != null).map(edgeEvent -> edgeEvent.getVertexEvent(direction.opposite()))
-					.collect(Collectors.toSet());
-		} else if (temporalType.equals(TemporalType.TIMESTAMP) && typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
-			// I -> T
-			return edgeSet.parallelStream().map(edge -> {
-				TreeSet<Long> tSet = edge.getTimestamps(interval, s, e);
-				if (tSet.isEmpty())
-					return null;
-				return edge.pickTimestamp(tSet.first());
-			}).filter(edge -> edge != null).map(edgeEvent -> edgeEvent.getVertexEvent(direction.opposite()))
-					.collect(Collectors.toSet());
-		} else {
-			// I -> I
-			return edgeSet.parallelStream().map(edge -> {
-				TreeSet<LongInterval> intvSet = edge.getIntervals(interval, ss, se, es, ee);
-				if (intvSet.isEmpty())
-					return null;
-				if (pos.equals(Position.first))
-					return edge.pickInterval(intvSet.first());
-				else
-					return edge.pickInterval(intvSet.last());
-			}).filter(edge -> edge != null).map(edgeEvent -> edgeEvent.getVertexEvent(direction.opposite()))
-					.collect(Collectors.toSet());
+		// outV
+		// label
+		// t > gte
+		HashSet<VertexEvent> ret = new HashSet<VertexEvent>();
+		Iterator<BsonDocument> x = vertex.graph.getEdgeCollection().find(query).projection(proj).iterator();
+		while (x.hasNext()) {
+			BsonDocument d = x.next();
+			String inV = d.getString("_inV").getValue();
+			Long t = d.getDateTime("_t").getValue();
+			VertexEvent ve = new VertexEvent(graph, inV + "-" + t);
+			ret.add(ve);
 		}
+		return ret;
+
+		// previous logic backup
+		// if (typeOfVertexEvent == null)
+		// typeOfVertexEvent = this.temporalType;
+		//
+		// Set<ChronoEdge> edgeSet = vertex.getChronoEdgeSet(direction, labels,
+		// Integer.MAX_VALUE);
+		//
+		// if (temporalType.equals(TemporalType.TIMESTAMP) &&
+		// typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
+		// // T -> T
+		// return edgeSet.parallelStream().map(edge -> {
+		// Long t = edge.getTimestamp(timestamp, tt);
+		// return edge.pickTimestamp(t);
+		// }).filter(edge -> edge != null).map(edgeEvent ->
+		// edgeEvent.getVertexEvent(direction.opposite()))
+		// .collect(Collectors.toSet());
+		// } else if (temporalType.equals(TemporalType.TIMESTAMP) &&
+		// typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
+		// // T -> I
+		// return edgeSet.parallelStream().map(edge -> {
+		// TreeSet<LongInterval> intvSet = edge.getIntervals(timestamp, s, e);
+		// if (intvSet.isEmpty())
+		// return null;
+		// if (pos.equals(Position.first))
+		// return edge.pickInterval(intvSet.first());
+		// else
+		// return edge.pickInterval(intvSet.last());
+		// }).filter(edge -> edge != null).map(edgeEvent ->
+		// edgeEvent.getVertexEvent(direction.opposite()))
+		// .collect(Collectors.toSet());
+		// } else if (temporalType.equals(TemporalType.TIMESTAMP) &&
+		// typeOfVertexEvent.equals(TemporalType.TIMESTAMP)) {
+		// // I -> T
+		// return edgeSet.parallelStream().map(edge -> {
+		// TreeSet<Long> tSet = edge.getTimestamps(interval, s, e);
+		// if (tSet.isEmpty())
+		// return null;
+		// return edge.pickTimestamp(tSet.first());
+		// }).filter(edge -> edge != null).map(edgeEvent ->
+		// edgeEvent.getVertexEvent(direction.opposite()))
+		// .collect(Collectors.toSet());
+		// } else {
+		// // I -> I
+		// return edgeSet.parallelStream().map(edge -> {
+		// TreeSet<LongInterval> intvSet = edge.getIntervals(interval, ss, se, es, ee);
+		// if (intvSet.isEmpty())
+		// return null;
+		// if (pos.equals(Position.first))
+		// return edge.pickInterval(intvSet.first());
+		// else
+		// return edge.pickInterval(intvSet.last());
+		// }).filter(edge -> edge != null).map(edgeEvent ->
+		// edgeEvent.getVertexEvent(direction.opposite()))
+		// .collect(Collectors.toSet());
+		// }
 	}
 
 	public Iterable<VertexEvent> getVertexEvents(final Direction direction, final BsonArray labels,
@@ -880,7 +918,7 @@ public class VertexEvent implements Element {
 		else
 			return (T) vertex.getIntervalPropertyValue(interval, key);
 	}
-	
+
 	/**
 	 * @deprecated use getTimestampPropertyKeys or getIntervalPropertyKeys
 	 */

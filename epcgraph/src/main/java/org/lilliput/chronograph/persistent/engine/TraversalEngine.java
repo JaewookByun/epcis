@@ -1152,6 +1152,7 @@ public class TraversalEngine {
 			// Get Sub-Path
 			Map intermediate = (Map) stream.map(ve -> {
 				VertexEvent cve = (VertexEvent) ve;
+				
 				return new AbstractMap.SimpleImmutableEntry(cve,
 						cve.getVertexEventSet(Direction.OUT, labels, typeOfVertexEvent, tt, s, e, ss, se, es, ee, pos));
 			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));

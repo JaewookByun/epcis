@@ -1,15 +1,10 @@
 package org.lilliput.chronograph.persistent.engine;
 
-import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.getMatchQueryObject;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,8 +17,8 @@ import java.util.stream.Stream;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.log4j.Level;
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -40,9 +35,7 @@ import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.EdgeEvent;
 import org.lilliput.chronograph.persistent.VertexEvent;
-import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.service.query.EPCTime;
-import org.oliot.epcis.service.query.mongodb.MongoQueryService;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -1175,24 +1168,24 @@ public class NaiveTraversalEngine {
 				query.put("inputEPCList.epc", new BsonString(epc));
 				BsonDateTime geBsonDateTime = new BsonDateTime(t);
 				query.put("eventTime", new BsonDocument("$gte", geBsonDateTime));
-				
+
 				Set<EPCTime> outSet = new HashSet<EPCTime>();
-				
+				BsonDocument proj = new BsonDocument();
+				proj.append("outputEPCList.epc", new BsonBoolean(true)).append("_id", new BsonBoolean(false));
 				MongoCursor<BsonDocument> iter = collection.find(query).iterator();
-				while(iter.hasNext()) {
+				while (iter.hasNext()) {
 					BsonDocument doc = iter.next();
 					BsonArray outArr = doc.getArray("outputEPCList");
 					Long ttt = doc.getDateTime("eventTime").getValue();
 					Iterator<BsonValue> iter2 = outArr.iterator();
-					while(iter2.hasNext()) {
+					while (iter2.hasNext()) {
 						BsonDocument doc2 = iter2.next().asDocument();
 						EPCTime out = new EPCTime(doc2.getString("epc").getValue(), ttt);
 						outSet.add(out);
 					}
 					System.out.println(doc);
 				}
-				
-				
+
 				// source -> set<dest>
 				return new AbstractMap.SimpleImmutableEntry(et, outSet);
 				// return new AbstractMap.SimpleImmutableEntry(cve,
@@ -1758,13 +1751,12 @@ public class NaiveTraversalEngine {
 			Map intermediate = (Map) stream.map(e -> {
 
 				// System.out.println(((List)e).size());
-				Map<String, Set<VertexEvent>> group = (Map<String, Set<VertexEvent>>) ((List) e).parallelStream()
-						.collect(Collectors.groupingBy(VertexEvent::getVertexID,
-								Collectors.mapping(VertexEvent::getThis, Collectors.toSet())));
+				Map<String, Set<EPCTime>> group = (Map<String, Set<EPCTime>>) ((List) e).parallelStream()
+						.collect(Collectors.groupingBy(EPCTime::getEpc,
+								Collectors.mapping(EPCTime::getThis, Collectors.toSet())));
 
-				List<VertexEvent> dedup = group.entrySet().parallelStream().map(e1 -> {
-					VertexEvent min = e1.getValue().parallelStream().min(Comparator.comparing(ve -> ve.getTimestamp()))
-							.get();
+				List<EPCTime> dedup = group.entrySet().parallelStream().map(e1 -> {
+					EPCTime min = e1.getValue().parallelStream().min(Comparator.comparing(ve -> ve.time)).get();
 					return min;
 
 				}).collect(Collectors.toList());

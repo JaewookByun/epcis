@@ -89,7 +89,7 @@ public class Converter {
 				EdgeEvent cee = (EdgeEvent) iterator.next();
 				idArr.add(new BsonString(cee.toString()));
 				edgeArr.add(new BsonString(cee.getEdge().toString()));
-				
+
 			}
 		}
 
@@ -187,7 +187,15 @@ public class Converter {
 	public static BsonDocument makeTimestampEdgeEventDocument(BsonDocument base, String eID, long timestamp) {
 		if (base == null)
 			base = new BsonDocument();
+
+		String[] arr = eID.split("\\|");
+		String outV = arr[0];
+		String inV = arr[2];
+		String label = arr[1];
 		base.put(Tokens.ID, new BsonString(eID + "-" + timestamp));
+		base.put(Tokens.OUT_VERTEX, new BsonString(outV));
+		base.put(Tokens.LABEL, new BsonString(label));
+		base.put(Tokens.IN_VERTEX, new BsonString(inV));
 		base.put(Tokens.EDGE, new BsonString(eID));
 		base.put(Tokens.TIMESTAMP, new BsonDateTime(timestamp));
 		base.put(Tokens.TYPE, Tokens.TYPE_TIMESTAMP);
