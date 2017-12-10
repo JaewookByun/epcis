@@ -29,5 +29,8 @@ public class EPCTime {
 		this.time = time;
 	}
 	
+	public String toString() {
+		return epc+"-"+time;
+	}
 	
 }
