@@ -203,6 +203,7 @@ public class MongoQueryUtil {
 					String value = param.asString().getValue();
 					value = value.replace(".", "[.]");
 					value = value.replace("*", "(.)*");
+					value += "$";
 					BsonRegularExpression expr = new BsonRegularExpression(value);
 					BsonDocument regexQuery = new BsonDocument(field, new BsonDocument("$regex", expr));
 					orQueries.add(regexQuery);
