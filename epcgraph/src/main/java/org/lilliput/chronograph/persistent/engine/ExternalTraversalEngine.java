@@ -1,10 +1,19 @@
 package org.lilliput.chronograph.persistent.engine;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,15 +23,14 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import java.util.Random;
 import java.util.Set;
 
 import org.bson.BsonArray;
-import org.bson.BsonBoolean;
-import org.bson.BsonDateTime;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
-import org.bson.BsonValue;
 import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.Step;
@@ -36,9 +44,12 @@ import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.EdgeEvent;
 import org.lilliput.chronograph.persistent.VertexEvent;
 import org.oliot.epcis.service.query.EPCTime;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.pipes.PipeFunction;
 
@@ -60,7 +71,7 @@ import com.tinkerpop.pipes.PipeFunction;
  * 
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class NaiveTraversalEngine {
+public class ExternalTraversalEngine {
 
 	// Stream for graph traversal
 	private Stream stream;
@@ -85,7 +96,7 @@ public class NaiveTraversalEngine {
 	private Map<Object, Object> previousPath;
 	private Map<Object, Object> currentPath;
 
-	private final MongoCollection<BsonDocument> collection;
+	private final ChronoGraph g;
 
 	/**
 	 * 
@@ -99,8 +110,8 @@ public class NaiveTraversalEngine {
 	 * @param isPathEnabled
 	 *            would spend resources to manage Path
 	 */
-	public NaiveTraversalEngine(final MongoCollection<BsonDocument> collection, final Object starts,
-			final boolean setParallel, final boolean setPathEnabled, final Class elementClass) {
+	public ExternalTraversalEngine(final ChronoGraph g, final Object starts, final boolean setParallel,
+			final boolean setPathEnabled, final Class elementClass) {
 
 		previousPath = new HashMap<Object, Object>();
 		currentPath = new HashMap<Object, Object>();
@@ -157,12 +168,12 @@ public class NaiveTraversalEngine {
 		this.isParallel = setParallel;
 		this.loopCount = 0;
 		listElementClass = null;
-		this.collection = collection;
+		this.g = g;
 	}
 
-	private NaiveTraversalEngine(final MongoCollection<BsonDocument> collection, final Object starts,
-			final boolean setParallel, final int loopCount, final boolean setPathEnabled, final Class elementClass,
-			final Class listElementClass, Map currentPath) {
+	private ExternalTraversalEngine(final ChronoGraph g, final Object starts, final boolean setParallel,
+			final int loopCount, final boolean setPathEnabled, final Class elementClass, final Class listElementClass,
+			Map currentPath) {
 
 		previousPath = new HashMap<Object, Object>();
 		if (currentPath != null)
@@ -228,7 +239,7 @@ public class NaiveTraversalEngine {
 		this.isPathEnabled = setPathEnabled;
 		this.isParallel = setParallel;
 		this.listElementClass = null;
-		this.collection = collection;
+		this.g = g;
 	}
 
 	///////////////////////
@@ -249,7 +260,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine V() {
+	public ExternalTraversalEngine V() {
 		// Check Input element class
 		checkInputElementClass(ChronoGraph.class);
 
@@ -295,7 +306,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine E() {
+	public ExternalTraversalEngine E() {
 		// Check Input element class
 		checkInputElementClass(ChronoGraph.class);
 
@@ -345,7 +356,7 @@ public class NaiveTraversalEngine {
 	 *            the value that all the emitted vertices should have for the key
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine V(final String key, final Object value) {
+	public ExternalTraversalEngine V(final String key, final Object value) {
 		// Check Input element class
 		checkInputElementClass(ChronoGraph.class);
 
@@ -397,7 +408,7 @@ public class NaiveTraversalEngine {
 	 *            the value that all the emitted edges should have for the key
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine E(final String key, final Object value) {
+	public ExternalTraversalEngine E(final String key, final Object value) {
 		// Check Input element class
 		checkInputElementClass(ChronoGraph.class);
 
@@ -451,7 +462,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine bothE(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine bothE(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -505,7 +516,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine outE(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine outE(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -559,7 +570,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine inE(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine inE(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -612,7 +623,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine bothV() {
+	public ExternalTraversalEngine bothV() {
 		// Check Input element class
 		checkInputElementClass(ChronoEdge.class);
 
@@ -659,7 +670,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine outV() {
+	public ExternalTraversalEngine outV() {
 		// Check Input element class
 		checkInputElementClass(ChronoEdge.class);
 
@@ -705,7 +716,7 @@ public class NaiveTraversalEngine {
 	 * 
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine inV() {
+	public ExternalTraversalEngine inV() {
 		// Check Input element class
 		checkInputElementClass(ChronoEdge.class);
 
@@ -758,7 +769,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine both(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine both(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -811,7 +822,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine out(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine out(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -865,7 +876,7 @@ public class NaiveTraversalEngine {
 	 *            the edge labels to traverse
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine in(final BsonArray labels, final int branchFactor) {
+	public ExternalTraversalEngine in(final BsonArray labels, final int branchFactor) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class);
 
@@ -905,7 +916,7 @@ public class NaiveTraversalEngine {
 	/// Temporal Traversal Language ///
 	////////////////////////////////////////
 
-	public NaiveTraversalEngine toEvent(final Long timestamp) {
+	public ExternalTraversalEngine toEvent(final Long timestamp) {
 		// Check Input element class
 		// checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
 
@@ -957,7 +968,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	public NaiveTraversalEngine toEvent(final LongInterval interval) {
+	public ExternalTraversalEngine toEvent(final LongInterval interval) {
 		// Check Input element class
 		checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
 
@@ -1009,7 +1020,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	public NaiveTraversalEngine toElement() {
+	public ExternalTraversalEngine toElement() {
 		// Check Input element class
 		checkInputElementClass(VertexEvent.class, EdgeEvent.class);
 
@@ -1058,7 +1069,7 @@ public class NaiveTraversalEngine {
 
 	// Vertex Events to Edge Events //
 
-	public NaiveTraversalEngine outEe(final BsonArray labels, final TemporalType typeOfEdgeEvent, final AC tt,
+	public ExternalTraversalEngine outEe(final BsonArray labels, final TemporalType typeOfEdgeEvent, final AC tt,
 			final AC s, final AC e, final AC ss, final AC se, final AC es, final AC ee) {
 		// Check Input element class
 		checkInputElementClass(VertexEvent.class);
@@ -1104,7 +1115,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	public NaiveTraversalEngine inEe(final BsonArray labels, final TemporalType typeOfEdgeEvent, final AC tt,
+	public ExternalTraversalEngine inEe(final BsonArray labels, final TemporalType typeOfEdgeEvent, final AC tt,
 			final AC s, final AC e, final AC ss, final AC se, final AC es, final AC ee) {
 		// Check Input element class
 		checkInputElementClass(VertexEvent.class);
@@ -1150,41 +1161,131 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	
+	@SuppressWarnings("unused")
+	private Set<EPCTime> getNextOutSet(EPCTime source)
+			throws IOException, ParserConfigurationException, SAXException, ParseException {
+
+		Set<EPCTime> ret = new HashSet<EPCTime>();
+
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		String time = sdf.format(new Date(source.time));
+
+		String url = "http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?";
+		url += "MATCH_inputEPC=" + source.epc + "&GE_eventTime=" + time;
+
+		URL captureURL = new URL(url);
+
+		HttpURLConnection con = (HttpURLConnection) captureURL.openConnection();
+
+		// optional default is GET
+		con.setRequestMethod("GET");
+
+		int responseCode = con.getResponseCode();
+		// System.out.println("\nSending 'GET' request to URL : " +
+		// captureURL.toString());
+		// System.out.println("Response Code : " + responseCode);
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+		String inputLine;
+		StringBuffer response = new StringBuffer();
+
+		while ((inputLine = in.readLine()) != null) {
+			response.append(inputLine);
+		}
+		in.close();
+
+		String res = response.toString();
+
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(new ByteArrayInputStream(res.getBytes()));
+
+		NodeList transformationEvents = doc.getElementsByTagName("TransformationEvent");
+		for (int i = 0; i < transformationEvents.getLength(); i++) {
+			// for each event
+			Node transformationEvent = transformationEvents.item(i);
+			NodeList transformationElements = transformationEvent.getChildNodes();
+			long eventTimeMil = 0;
+			HashSet<String> epcSet = new HashSet<String>();
+			for (int j = 0; j < transformationElements.getLength(); j++) {
+				Node element = transformationElements.item(j);
+				String nodeName = element.getNodeName();
+				if (nodeName.equals("eventTime")) {
+					String eventTime = element.getTextContent();
+					eventTimeMil = sdf.parse(eventTime).getTime();
+				}
+				if (nodeName.equals("outputEPCList")) {
+					NodeList outputEPCList = element.getChildNodes();
+					for (int k = 0; k < outputEPCList.getLength(); k++) {
+						Node outputEPC = outputEPCList.item(k);
+						NodeList elem2 = outputEPC.getChildNodes();
+						if (elem2 instanceof Element) {
+							for (int l = 0; l < elem2.getLength(); l++) {
+								Node elem3 = elem2.item(l);
+								String epc = elem3.getTextContent();
+								epcSet.add(epc);
+
+							}
+						}
+					}
+				}
+			}
+			Iterator<String> epcIter = epcSet.iterator();
+			while (epcIter.hasNext()) {
+				String epc = epcIter.next();
+				EPCTime epcTime = new EPCTime(epc, eventTimeMil);
+				ret.add(epcTime);
+			}
+		}
+
+		//System.out.println("source: " + source.epc);
+		//System.out.println("dest: " + ret);
+		// System.out.println(ret);
+		//System.out.println("x");
+		// System.out.println("x");
+		// NodeList nl = doc.getElementsByTagName("outputEPCList");
+		// for(int i = 0 ; i < nl.getLength() ; i++) {
+		// Node n = nl.item(i);
+		// NodeList cnl = n.getChildNodes();
+		// for(int j = 0 ; j < cnl.getLength() ; j++) {
+		// Node cn = cnl.item(j);
+		// if( cn instanceof Element) {
+		// String epc = cn.getTextContent();
+		//
+		// }
+		// }
+		// System.out.println(n);
+		// }
+		// System.out.println(nl);
+		// TODO:
+
+		// print result
+		// System.out.println(response.toString());
+		return ret;
+	}
 
 	// Vertex Events to Vertex Events //
-	public NaiveTraversalEngine oute(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt,
+	public ExternalTraversalEngine oute(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt,
 			final AC s, final AC e, final AC ss, final AC se, final AC es, final AC ee, final Position pos) {
 		// Pipeline Update
 
 		if (isPathEnabled) {
 			// Get Sub-Path
 			Map intermediate = (Map) stream.map(ve -> {
-				
+
 				// et 가 in 에 속한
 				EPCTime et = (EPCTime) ve;
-				String epc = et.epc;
-				Long t = et.time;
-				BsonDocument query = new BsonDocument();
-				query.put("inputEPCList.epc", new BsonString(epc));
-				BsonDateTime geBsonDateTime = new BsonDateTime(t);
-				query.put("eventTime", new BsonDocument("$gte", geBsonDateTime));
-
 				Set<EPCTime> outSet = new HashSet<EPCTime>();
-				BsonDocument proj = new BsonDocument();
-				proj.append("outputEPCList.epc", new BsonBoolean(true)).append("_id", new BsonBoolean(false));
-				MongoCursor<BsonDocument> iter = collection.find(query).iterator();
-				while (iter.hasNext()) {
-					BsonDocument doc = iter.next();
-					BsonArray outArr = doc.getArray("outputEPCList");
-					Long ttt = doc.getDateTime("eventTime").getValue();
-					Iterator<BsonValue> iter2 = outArr.iterator();
-					while (iter2.hasNext()) {
-						BsonDocument doc2 = iter2.next().asDocument();
-						EPCTime out = new EPCTime(doc2.getString("epc").getValue(), ttt);
-						outSet.add(out);
-					}
-					// System.out.println(doc);
+				try {
+					outSet = getNextOutSet(et);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch (ParserConfigurationException e1) {
+					e1.printStackTrace();
+				} catch (SAXException e1) {
+					e1.printStackTrace();
+				} catch (ParseException e1) {
+					e1.printStackTrace();
 				}
 
 				// source -> set<dest>
@@ -1192,7 +1293,6 @@ public class NaiveTraversalEngine {
 				// return new AbstractMap.SimpleImmutableEntry(cve,
 				// cve.getVertexEventSet(Direction.OUT, labels, typeOfVertexEvent, tt, s, e, ss,
 				// se, es, ee, pos));
-				
 			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
 
 			// Update Path
@@ -1227,7 +1327,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	public NaiveTraversalEngine ine(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt,
+	public ExternalTraversalEngine ine(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt,
 			final AC s, final AC e, final AC ss, final AC se, final AC es, final AC ee, final Position pos) {
 		// Check Input element class
 		checkInputElementClass(VertexEvent.class);
@@ -1276,7 +1376,7 @@ public class NaiveTraversalEngine {
 
 	// Edge Events to Vertex Events //
 
-	public NaiveTraversalEngine inVe() {
+	public ExternalTraversalEngine inVe() {
 		// Check Input element class
 		checkInputElementClass(EdgeEvent.class);
 
@@ -1309,7 +1409,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	public NaiveTraversalEngine outVe() {
+	public ExternalTraversalEngine outVe() {
 		// Check Input element class
 		checkInputElementClass(EdgeEvent.class);
 
@@ -1360,7 +1460,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine shuffle() {
+	public ExternalTraversalEngine shuffle() {
 		// Check Invalid Input element class
 		checkInvalidInputElementClass(List.class);
 
@@ -1394,7 +1494,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine gather() {
+	public ExternalTraversalEngine gather() {
 		// Check Invalid Input element class
 		checkInvalidInputElementClass(List.class);
 
@@ -1434,7 +1534,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine scatter() {
+	public ExternalTraversalEngine scatter() {
 		if (elementClass != List.class)
 			return this;
 		// Check Input element class
@@ -1495,7 +1595,7 @@ public class NaiveTraversalEngine {
 	 *            the transformation function of the pipe
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine transform(final PipeFunction function, final Class outputClass) {
+	public ExternalTraversalEngine transform(final PipeFunction function, final Class outputClass) {
 		// Pipeline Update
 
 		if (isPathEnabled) {
@@ -1541,7 +1641,7 @@ public class NaiveTraversalEngine {
 	 * @return the extended Pipeline
 	 */
 
-	public NaiveTraversalEngine order(final Comparator comparator) {
+	public ExternalTraversalEngine order(final Comparator comparator) {
 		// Pipeline Update
 
 		if (isParallel) {
@@ -1577,7 +1677,7 @@ public class NaiveTraversalEngine {
 	 * 
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine dedup() {
+	public ExternalTraversalEngine dedup() {
 		// Pipeline Update
 
 		if (isPathEnabled) {
@@ -1623,7 +1723,7 @@ public class NaiveTraversalEngine {
 	 *            the collection except from the stream
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine except(final Collection collection) {
+	public ExternalTraversalEngine except(final Collection collection) {
 		// Pipeline Update
 
 		if (isPathEnabled) {
@@ -1668,7 +1768,7 @@ public class NaiveTraversalEngine {
 	 * @return the extended Pipeline
 	 */
 
-	public NaiveTraversalEngine retain(final Collection collection) {
+	public ExternalTraversalEngine retain(final Collection collection) {
 		// Pipeline Update
 
 		if (isPathEnabled) {
@@ -1714,7 +1814,7 @@ public class NaiveTraversalEngine {
 	 *            the filter function of the pipe
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine filter(final PipeFunction filterFunction) {
+	public ExternalTraversalEngine filter(final PipeFunction filterFunction) {
 		// Pipeline Update
 
 		if (isPathEnabled) {
@@ -1745,7 +1845,7 @@ public class NaiveTraversalEngine {
 
 	// Event의 Collection을 가정하고
 	// 주어진 Graph Element Set를 지운다
-	public NaiveTraversalEngine elementDedup(FC fc) {
+	public ExternalTraversalEngine elementDedup(FC fc) {
 		// Stream Update
 		if (isPathEnabled) {
 
@@ -1830,7 +1930,7 @@ public class NaiveTraversalEngine {
 	 *            pass if bias > random the bias of the random coin
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine random(final Double bias) {
+	public ExternalTraversalEngine random(final Double bias) {
 		// Pipeline Update
 		if (isPathEnabled) {
 			List intermediate = (List) stream.filter(e -> bias > new Random().nextDouble())
@@ -1874,7 +1974,7 @@ public class NaiveTraversalEngine {
 	 *            the high end of the range
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine range(final int maxSize) {
+	public ExternalTraversalEngine range(final int maxSize) {
 		// Pipeline Update
 		if (isPathEnabled) {
 			List intermediate = (List) stream.limit(maxSize).collect(Collectors.toList());
@@ -1912,7 +2012,7 @@ public class NaiveTraversalEngine {
 	 *
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine simplePath() {
+	public ExternalTraversalEngine simplePath() {
 		// Pipeline Update
 		if (isPathEnabled) {
 
@@ -1970,7 +2070,7 @@ public class NaiveTraversalEngine {
 	 * @return the extended Pipeline
 	 */
 
-	public NaiveTraversalEngine sideEffect(final PipeFunction sideEffectFunction) {
+	public ExternalTraversalEngine sideEffect(final PipeFunction sideEffectFunction) {
 
 		if (isPathEnabled) {
 			List intermediate = (List) stream.map(e -> {
@@ -2022,7 +2122,7 @@ public class NaiveTraversalEngine {
 	 * @return the extended Pipeline
 	 */
 
-	public NaiveTraversalEngine ifThenElse(final PipeFunction ifFunction, final PipeFunction thenFunction,
+	public ExternalTraversalEngine ifThenElse(final PipeFunction ifFunction, final PipeFunction thenFunction,
 			final PipeFunction elseFunction) {
 		// Pipeline Update
 
@@ -2061,7 +2161,7 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	private NaiveTraversalEngine innerLoop(final List<Step> stepList, final LoopPipeFunction whileFunction) {
+	private ExternalTraversalEngine innerLoop(final List<Step> stepList, final LoopPipeFunction whileFunction) {
 		// Inner Pipeline Update
 		if (isPathEnabled) {
 			previousPath = new HashMap<Object, Object>(currentPath);
@@ -2072,7 +2172,7 @@ public class NaiveTraversalEngine {
 
 				if ((boolean) whileFunction.compute(intermediate, previousPath, this.loopCount)) {
 
-					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
+					ExternalTraversalEngine innerPipeline = new ExternalTraversalEngine(g, e, isParallel,
 							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, previousPath);
 					for (Object stepObject : stepList) {
 						Step step = (Step) stepObject;
@@ -2117,7 +2217,7 @@ public class NaiveTraversalEngine {
 				Object intermediate = e;
 				if ((boolean) whileFunction.compute(intermediate, null, this.loopCount)) {
 
-					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
+					ExternalTraversalEngine innerPipeline = new ExternalTraversalEngine(g, e, isParallel,
 							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, null);
 					for (Object stepObject : stepList) {
 						Step step = (Step) stepObject;
@@ -2149,7 +2249,7 @@ public class NaiveTraversalEngine {
 	 *            whether or not to continue looping on the current object
 	 * @return the extended Pipeline
 	 */
-	public NaiveTraversalEngine loop(final String namedStep, final LoopPipeFunction whileFunction) {
+	public ExternalTraversalEngine loop(final String namedStep, final LoopPipeFunction whileFunction) {
 		// Pipeline Update
 		int lastStepIdx = stepList.size();
 
@@ -2164,7 +2264,7 @@ public class NaiveTraversalEngine {
 				if ((boolean) whileFunction.compute(intermediate, previousPath, this.loopCount)) {
 
 					// Create inner pipeline
-					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
+					ExternalTraversalEngine innerPipeline = new ExternalTraversalEngine(g, e, isParallel,
 							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, previousPath);
 
 					// Prepare reflection method
@@ -2214,7 +2314,7 @@ public class NaiveTraversalEngine {
 					if (backStepIdx == null || (lastStepIdx - (backStepIdx) + 1) < 0)
 						return makeStream(e, isParallel);
 
-					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
+					ExternalTraversalEngine innerPipeline = new ExternalTraversalEngine(g, e, isParallel,
 							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, null);
 					List loopSteps = stepList.subList(backStepIdx + 1, lastStepIdx);
 					for (Object stepObject : loopSteps) {
@@ -2256,7 +2356,7 @@ public class NaiveTraversalEngine {
 	 * @return the extended Pipeline
 	 */
 
-	public NaiveTraversalEngine as(final String name) {
+	public ExternalTraversalEngine as(final String name) {
 		// Step Update
 		final Class[] args = new Class[1];
 		args[0] = String.class;
@@ -2307,7 +2407,7 @@ public class NaiveTraversalEngine {
 		return currentPath;
 	}
 
-	private NaiveTraversalEngine invoke(final List<Step> stepList) {
+	private ExternalTraversalEngine invoke(final List<Step> stepList) {
 		for (Step step : stepList) {
 			step.invoke();
 		}

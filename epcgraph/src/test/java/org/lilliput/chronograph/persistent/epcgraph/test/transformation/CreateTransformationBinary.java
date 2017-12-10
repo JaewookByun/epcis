@@ -1,4 +1,4 @@
-package org.lilliput.chronograph.persistent.epcgraph.test;
+package org.lilliput.chronograph.persistent.epcgraph.test.transformation;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,7 +21,7 @@ public class CreateTransformationBinary {
 		String cTime = sdf.format(new Date());
 
 		String body = "";
-		for (int i = 0; i < 3200; i++) {
+		for (int i = 0; i < 1000; i++) {
 			cTime = sdf.format(new Date());
 			body += "<extension>\n" + "				<TransformationEvent>\n" + "					<eventTime>" + cTime
 					+ "</eventTime>\n" + "					<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n"

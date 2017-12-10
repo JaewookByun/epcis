@@ -1,4 +1,4 @@
-package org.lilliput.chronograph.persistent.epcgraph.test;
+package org.lilliput.chronograph.persistent.epcgraph.test.transformation;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
