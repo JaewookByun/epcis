@@ -69,7 +69,7 @@ public class TransformationQueryEmulationTest {
 
 		client.close();
 
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 10; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -113,14 +113,14 @@ public class TransformationQueryEmulationTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-12-09T16:17:05.765Z";
 
-		int loopCount = 100;
+		int loopCount = 1;
 
 		for (int i = 0; i < loopCount; i++) {
 			long pre = System.currentTimeMillis();
 			JSONArray arr = getTransformationTreeEmulation(source, startTime);
 			long aft = System.currentTimeMillis();
 			long elapsedTime = aft - pre;
-			 System.out.println(arr.toString(2));
+			System.out.println(arr.toString(2));
 			System.out.println("Elapsed Time: " + elapsedTime);
 			timeList.add(elapsedTime);
 		}
@@ -163,8 +163,9 @@ public class TransformationQueryEmulationTest {
 				Iterator<EPCTime> vi = path.iterator();
 				JSONArray p = new JSONArray();
 				while (vi.hasNext()) {
-					EPCTime ve = vi.next();
-					p.put(ve.epc + "-" + ve.time);
+					Object ve = vi.next();
+					if (ve != null)
+						p.put(ve.toString());
 				}
 				pathArray.put(p);
 			}

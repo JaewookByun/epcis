@@ -1710,7 +1710,7 @@ public class TraversalEngine {
 
 			// Update Path ( Filter if any last elements of each path are not
 			// included in intermediate )
-			currentPath.keySet().retainAll(intermediate);
+			// currentPath.keySet().retainAll(intermediate);
 
 			// Make stream again
 			if (isParallel)
@@ -2360,7 +2360,7 @@ public class TraversalEngine {
 	private void updateTransformationPath(final Map intermediate) {
 
 		HashMap<Object, Object> nextPath = new HashMap<Object, Object>();
-		System.out.println("PREV: " + currentPath);
+		// System.out.println("PREV: " + currentPath);
 
 		// intermediate maps source to dest set
 		Iterator<Entry> intermediateEntrySet = intermediate.entrySet().iterator();
@@ -2478,7 +2478,7 @@ public class TraversalEngine {
 
 		currentPath.clear();
 		currentPath = new HashMap<Object, Object>(nextPath);
-		System.out.println("NEXT: " + currentPath);
+		// System.out.println("NEXT: " + currentPath);
 	}
 
 	// Backup
