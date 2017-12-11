@@ -177,20 +177,12 @@ public class TraceabilityQueryService implements ServletContextAware {
 				JSONArray p = new JSONArray();
 				while (vi.hasNext()) {
 					Object ve = vi.next();
-					if (ve == null)
-						p.put("null");
-					else
+					if (ve != null)
 						p.put(ve.toString());
 				}
 				pathArray.put(p);
 			}
 		}
-		// {urn:epc:id:sgtin:0000001.000001.6-1509461936591=[[urn:epc:id:sgtin:0000001.000001.1-946652400000,
-		// urn:epc:id:sgtin:0000001.000001.2-1383231536591,
-		// urn:epc:id:sgtin:0000001.000001.3-1414767536591,
-		// urn:epc:id:sgtin:0000001.000001.4-1446303536591,
-		// urn:epc:id:sgtin:0000001.000001.5-1477925936591,
-		// urn:epc:id:sgtin:0000001.000001.6-1509461936591]]}
 
 		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
 
@@ -236,8 +228,10 @@ public class TraceabilityQueryService implements ServletContextAware {
 				Iterator<EPCTime> vi = path.iterator();
 				JSONArray p = new JSONArray();
 				while (vi.hasNext()) {
-					EPCTime ve = vi.next();
-					p.put(ve.epc + "-" + ve.time);
+					Object ve = vi.next();
+					if(ve != null) {
+						p.put(ve.toString());
+					}
 				}
 				pathArray.put(p);
 			}

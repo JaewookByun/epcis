@@ -61,7 +61,7 @@ public class TransformationQueryTest {
 
 		client.close();
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 200; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -92,7 +92,7 @@ public class TransformationQueryTest {
 			double avg = doTransformationQuery();
 
 			System.out.println(i + "\t" + avg);
-			bw.write(i+"\t"+avg+"\n");
+			bw.write(i + "\t" + avg + "\n");
 			bw.flush();
 		}
 		bw.close();
@@ -105,7 +105,7 @@ public class TransformationQueryTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-01-01T00:00:00";
 
-		int loopCount = 1;
+		int loopCount = 100;
 
 		for (int i = 0; i < loopCount; i++) {
 			String url = "http://localhost:8080/epcis/Service/Transform?startTime=" + startTime + "&epc=" + source
@@ -122,12 +122,7 @@ public class TransformationQueryTest {
 		double total = timeList.parallelStream().mapToDouble(t -> {
 			return t.longValue();
 		}).sum();
-		// System.out.println(total / loopCount);
 
-		// 10: 37.61
-		// 100: 56.11
-		// 1000: 270.62
-		// 10000:
 		return total / loopCount;
 	}
 

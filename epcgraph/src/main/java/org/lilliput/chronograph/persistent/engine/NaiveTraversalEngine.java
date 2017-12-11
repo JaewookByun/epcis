@@ -82,10 +82,10 @@ public class NaiveTraversalEngine {
 
 	// Path Map: Last Object -> Set of Path List
 	// HashMap<Object, HashSet<List>>
-	private Map<Object, Object> previousPath;
+	// private Map<Object, Object> previousPath;
 	private Map<Object, Object> currentPath;
 
-	private final MongoCollection<BsonDocument> collection;
+	private final MongoCollection collection;
 
 	/**
 	 * 
@@ -99,10 +99,10 @@ public class NaiveTraversalEngine {
 	 * @param isPathEnabled
 	 *            would spend resources to manage Path
 	 */
-	public NaiveTraversalEngine(final MongoCollection<BsonDocument> collection, final Object starts,
-			final boolean setParallel, final boolean setPathEnabled, final Class elementClass) {
+	public NaiveTraversalEngine(final MongoCollection collection, final Object starts, final boolean setParallel,
+			final boolean setPathEnabled, final Class elementClass) {
 
-		previousPath = new HashMap<Object, Object>();
+		// previousPath = new HashMap<Object, Object>();
 		currentPath = new HashMap<Object, Object>();
 
 		// Initialize Stream and Path
@@ -132,8 +132,7 @@ public class NaiveTraversalEngine {
 				stream = (Stream) starts;
 			}
 		} else if (starts instanceof ChronoGraph || starts instanceof ChronoVertex || starts instanceof ChronoEdge
-				|| starts instanceof VertexEvent || starts instanceof EdgeEvent || starts instanceof String
-				|| starts instanceof EPCTime) {
+				|| starts instanceof VertexEvent || starts instanceof EdgeEvent || starts instanceof EPCTime) {
 
 			HashSet set = new HashSet();
 			set.add(starts);
@@ -160,51 +159,74 @@ public class NaiveTraversalEngine {
 		this.collection = collection;
 	}
 
-	private NaiveTraversalEngine(final MongoCollection<BsonDocument> collection, final Object starts,
-			final boolean setParallel, final int loopCount, final boolean setPathEnabled, final Class elementClass,
-			final Class listElementClass, Map currentPath) {
+	private NaiveTraversalEngine(final MongoCollection collection, final Object starts, final boolean setParallel,
+			final int loopCount, final boolean setPathEnabled, final Class elementClass, final Class listElementClass,
+			Map currentPath) {
 
-		previousPath = new HashMap<Object, Object>();
-		if (currentPath != null)
-			this.currentPath = new HashMap(currentPath);
-		else
-			this.currentPath = new HashMap<Object, Object>();
+		// previousPath = new HashMap<Object, Object>();
+		// if (currentPath != null)
+		// this.currentPath = new HashMap(currentPath);
+		// else
+		this.currentPath = currentPath;
 
 		// Initialize Stream and Path
 		if (starts instanceof Stream) {
 			this.elementClass = elementClass;
-			if (setPathEnabled) {
-				if (setParallel) {
-					stream = ((Set) ((Stream) starts).map(element -> {
-						HashSet initPathSet = new HashSet();
-						List list = new ArrayList();
-						list.add(element);
-						initPathSet.add(list);
-						currentPath.put(element, initPathSet);
-						return element;
-					}).collect(Collectors.toSet())).parallelStream();
-				} else {
-					stream = ((Set) ((Stream) starts).map(element -> {
-						HashSet initPathSet = new HashSet();
-						List list = new ArrayList();
-						list.add(element);
-						initPathSet.add(list);
-						currentPath.put(element, initPathSet);
-						return element;
-					}).collect(Collectors.toSet())).stream();
-				}
-			} else {
-				stream = (Stream) starts;
-			}
+			// if (setPathEnabled) {
+			// if (setParallel) {
+			// stream = ((Set) ((Stream) starts).map(element -> {
+			// HashSet initPathSet = new HashSet();
+			// List list = new ArrayList();
+			// list.add(element);
+			// initPathSet.add(list);
+			// this.currentPath.put(element, initPathSet);
+			// return element;
+			// }).collect(Collectors.toSet())).parallelStream();
+			// } else {
+			// stream = ((Set) ((Stream) starts).map(element -> {
+			// HashSet initPathSet = new HashSet();
+			// List list = new ArrayList();
+			// list.add(element);
+			// initPathSet.add(list);
+			// this.currentPath.put(element, initPathSet);
+			// return element;
+			// }).collect(Collectors.toSet())).stream();
+			// }
+			// } else {
+			stream = (Stream) starts;
+			// }
 		} else if (starts instanceof Collection) {
-			if (setParallel == true)
-				stream = ((Collection) starts).parallelStream();
-			else
-				stream = ((Collection) starts).stream();
 			this.elementClass = listElementClass;
+			// if (setPathEnabled) {
+			// if (setParallel) {
+			// stream = ((Set) ((Collection) starts).parallelStream().map(element -> {
+			// HashSet initPathSet = new HashSet();
+			// List list = new ArrayList();
+			// list.add(element);
+			// initPathSet.add(list);
+			// this.currentPath.put(element, initPathSet);
+			// return element;
+			// }).collect(Collectors.toSet())).parallelStream();
+			// } else {
+			// stream = ((Set) ((Collection) starts).parallelStream().map(element -> {
+			// HashSet initPathSet = new HashSet();
+			// List list = new ArrayList();
+			// list.add(element);
+			// initPathSet.add(list);
+			// this.currentPath.put(element, initPathSet);
+			// return element;
+			// }).collect(Collectors.toSet())).stream();
+			// }
+			// } else {
+			if (setParallel) {
+				stream = ((Collection) starts).parallelStream();
+			} else {
+				stream = ((Collection) starts).stream();
+			}
+			// }
+
 		} else if (starts instanceof ChronoGraph || starts instanceof ChronoVertex || starts instanceof ChronoEdge
-				|| starts instanceof VertexEvent || starts instanceof EdgeEvent || starts instanceof String
-				|| starts instanceof EPCTime) {
+				|| starts instanceof VertexEvent || starts instanceof EdgeEvent || starts instanceof EPCTime) {
 
 			HashSet set = new HashSet();
 			set.add(starts);
@@ -214,13 +236,13 @@ public class NaiveTraversalEngine {
 				stream = set.stream();
 			this.elementClass = starts.getClass();
 
-			if (setPathEnabled) {
-				HashSet initPathSet = new HashSet();
-				List list = new ArrayList();
-				list.add(starts);
-				initPathSet.add(list);
-				currentPath.put(starts, initPathSet);
-			}
+			// if (setPathEnabled) {
+			// HashSet initPathSet = new HashSet();
+			// List list = new ArrayList();
+			// list.add(starts);
+			// initPathSet.add(list);
+			// this.currentPath.put(starts, initPathSet);
+			// }
 		}
 		stepList = new ArrayList<Step>();
 		stepIndex = new HashMap<String, Integer>();
@@ -1150,8 +1172,6 @@ public class NaiveTraversalEngine {
 		return this;
 	}
 
-	
-
 	// Vertex Events to Vertex Events //
 	public NaiveTraversalEngine oute(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt,
 			final AC s, final AC e, final AC ss, final AC se, final AC es, final AC ee, final Position pos) {
@@ -1160,7 +1180,7 @@ public class NaiveTraversalEngine {
 		if (isPathEnabled) {
 			// Get Sub-Path
 			Map intermediate = (Map) stream.map(ve -> {
-				
+
 				// et 가 in 에 속한
 				EPCTime et = (EPCTime) ve;
 				String epc = et.epc;
@@ -1192,7 +1212,7 @@ public class NaiveTraversalEngine {
 				// return new AbstractMap.SimpleImmutableEntry(cve,
 				// cve.getVertexEventSet(Direction.OUT, labels, typeOfVertexEvent, tt, s, e, ss,
 				// se, es, ee, pos));
-				
+
 			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
 
 			// Update Path
@@ -1449,7 +1469,7 @@ public class NaiveTraversalEngine {
 
 			// Update Path ( Filter if any last elements of each path are not
 			// included in intermediate )
-			currentPath.keySet().retainAll(intermediate);
+			// currentPath.keySet().retainAll(intermediate);
 
 			// Make stream again
 			if (isParallel)
@@ -1723,7 +1743,7 @@ public class NaiveTraversalEngine {
 
 			// Update Path ( Filter if any last elements of each path are not
 			// included in intermediate )
-			currentPath.keySet().retainAll(intermediate);
+			// currentPath.keySet().retainAll(intermediate);
 
 			// Make stream again
 			if (isParallel)
@@ -2064,16 +2084,16 @@ public class NaiveTraversalEngine {
 	private NaiveTraversalEngine innerLoop(final List<Step> stepList, final LoopPipeFunction whileFunction) {
 		// Inner Pipeline Update
 		if (isPathEnabled) {
-			previousPath = new HashMap<Object, Object>(currentPath);
-			currentPath.clear();
+			// previousPath = new HashMap<Object, Object>(currentPath);
+			// currentPath.clear();
 
 			List intermediateList = (List) stream.flatMap(e -> {
 				Object intermediate = e;
 
-				if ((boolean) whileFunction.compute(intermediate, previousPath, this.loopCount)) {
+				if ((boolean) whileFunction.compute(intermediate, currentPath, this.loopCount)) {
 
 					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
-							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, previousPath);
+							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, currentPath);
 					for (Object stepObject : stepList) {
 						Step step = (Step) stepObject;
 						step.setInstance(innerPipeline);
@@ -2084,16 +2104,17 @@ public class NaiveTraversalEngine {
 
 					// Update Path
 					Map innerPathMap = innerPipeline.path();
-					Iterator<Entry> innerPathEntryIter = innerPathMap.entrySet().iterator();
-					while (innerPathEntryIter.hasNext()) {
-						Entry entry = innerPathEntryIter.next();
-						if (currentPath.containsKey(entry.getKey())) {
-							Set tempSet = (Set) currentPath.get(entry.getKey());
-							tempSet.addAll((Set) entry.getValue());
-						} else {
-							currentPath.put(entry.getKey(), entry.getValue());
-						}
-					}
+					currentPath = innerPathMap;
+					// Iterator<Entry> innerPathEntryIter = innerPathMap.entrySet().iterator();
+					// while (innerPathEntryIter.hasNext()) {
+					// Entry entry = innerPathEntryIter.next();
+					// if (currentPath.containsKey(entry.getKey())) {
+					// Set tempSet = (Set) currentPath.get(entry.getKey());
+					// tempSet.addAll((Set) entry.getValue());
+					// } else {
+					// currentPath.put(entry.getKey(), entry.getValue());
+					// }
+					// }
 
 					if (isParallel)
 						return innerIntermediate.parallelStream();
@@ -2105,8 +2126,8 @@ public class NaiveTraversalEngine {
 			}).collect(Collectors.toList());
 
 			// Check No Path Update
-			if (currentPath.isEmpty())
-				currentPath = new HashMap<Object, Object>(previousPath);
+			// if (currentPath.isEmpty())
+			// currentPath = new HashMap<Object, Object>(previousPath);
 
 			if (isParallel)
 				stream = intermediateList.parallelStream();
@@ -2155,17 +2176,17 @@ public class NaiveTraversalEngine {
 
 		if (isPathEnabled) {
 
-			previousPath = new HashMap<Object, Object>(currentPath);
-			currentPath.clear();
+			// previousPath = new HashMap<Object, Object>(currentPath);
+			// currentPath.clear();
 
 			List intermediateList = (List) stream.flatMap(e -> {
 				Object intermediate = e;
 
-				if ((boolean) whileFunction.compute(intermediate, previousPath, this.loopCount)) {
+				if ((boolean) whileFunction.compute(intermediate, currentPath, this.loopCount)) {
 
 					// Create inner pipeline
 					NaiveTraversalEngine innerPipeline = new NaiveTraversalEngine(collection, e, isParallel,
-							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, previousPath);
+							this.loopCount + 1, isPathEnabled, e.getClass(), listElementClass, currentPath);
 
 					// Prepare reflection method
 					Integer backStepIdx = stepIndex.get(namedStep);
@@ -2183,16 +2204,30 @@ public class NaiveTraversalEngine {
 
 					// Update Path
 					Map innerPathMap = innerPipeline.path();
-					Iterator<Entry> innerPathEntryIter = innerPathMap.entrySet().iterator();
-					while (innerPathEntryIter.hasNext()) {
-						Entry entry = innerPathEntryIter.next();
-						if (currentPath.containsKey(entry.getKey())) {
-							Set tempSet = (Set) currentPath.get(entry.getKey());
-							tempSet.addAll((Set) entry.getValue());
-						} else {
-							currentPath.put(entry.getKey(), entry.getValue());
-						}
-					}
+					currentPath = innerPathMap;
+					// {urn:epc:id:sgtin:0000001.000001.1-1513000563783=
+					// [[urn:epc:id:sgtin:0000001.000001.0-946652400000,
+					// urn:epc:id:sgtin:0000001.000001.1-1513000563783]],
+					// urn:epc:id:sgtin:0000001.000001.2-1513000563783=
+					// [[urn:epc:id:sgtin:0000001.000001.0-946652400000,
+					// urn:epc:id:sgtin:0000001.000001.2-1513000563783]]}
+
+					// {urn:epc:id:sgtin:0000001.000001.4-1513000564583=
+					// [[urn:epc:id:sgtin:0000001.000001.1-1513000563783,
+					// urn:epc:id:sgtin:0000001.000001.4-1513000564583]],
+					// urn:epc:id:sgtin:0000001.000001.3-1513000564583=
+					// [[urn:epc:id:sgtin:0000001.000001.1-1513000563783,
+					// urn:epc:id:sgtin:0000001.000001.3-1513000564583]]}
+					// Iterator<Entry> innerPathEntryIter = innerPathMap.entrySet().iterator();
+					// while (innerPathEntryIter.hasNext()) {
+					// Entry entry = innerPathEntryIter.next();
+					// if (currentPath.containsKey(entry.getKey())) {
+					// Set tempSet = (Set) currentPath.get(entry.getKey());
+					// tempSet.addAll((Set) entry.getValue());
+					// } else {
+					// currentPath.put(entry.getKey(), entry.getValue());
+					// }
+					// }
 
 					if (isParallel)
 						return innerIntermediate.parallelStream();
@@ -2355,67 +2390,192 @@ public class NaiveTraversalEngine {
 	}
 
 	private void updateTransformationPath(final Map intermediate) {
-		previousPath = new HashMap<Object, Object>(currentPath);
-		currentPath.clear();
 
+		HashMap<Object, Object> nextPath = new HashMap<Object, Object>();
+		System.out.println("PREV: " + currentPath);
+
+		// intermediate maps source to dest set
 		Iterator<Entry> intermediateEntrySet = intermediate.entrySet().iterator();
 		while (intermediateEntrySet.hasNext()) {
 			Entry entry = intermediateEntrySet.next();
 			// 1 or 2
-			Object key = entry.getKey();
+			Object source = entry.getKey();
 			Object objectValue = entry.getValue();
 			if (objectValue instanceof Set) {
-				Set value = (Set) objectValue;
+				Set destSet = (Set) objectValue;
 
-				Iterator valueIterator = value.iterator();
-				while (valueIterator.hasNext()) {
-					Object val = valueIterator.next();
-					HashSet<List> previousPaths = (HashSet) previousPath.get(key);
+				if (destSet.isEmpty()) {
 
-					Iterator<List> previousPathIterator = previousPaths.iterator();
-					while (previousPathIterator.hasNext()) {
-						List previousPath = previousPathIterator.next();
-						if (currentPath.containsKey(val)) {
-							HashSet<List> currentExisting = (HashSet) currentPath.get(val);
-							List clone = new ArrayList(previousPath);
-							clone.add(val);
-							currentExisting.add(clone);
-							currentPath.put(val, currentExisting);
+					HashSet<List> currentPaths = (HashSet) currentPath.get(source);
+					Iterator<List> currentPathIterator = currentPaths.iterator();
+					while (currentPathIterator.hasNext()) {
+						List current = currentPathIterator.next();
+						List clone = new ArrayList(current);
+						clone.add(null);
+						if (nextPath.containsKey(null)) {
+							HashSet<List> nextExisting = (HashSet) nextPath.get(null);
+
+							nextExisting.add(clone);
+							nextPath.put(null, nextExisting);
 						} else {
-							HashSet<List> currentNew = new HashSet<List>();
-							List clone = new ArrayList(previousPath);
-							clone.add(val);
-							currentNew.add(clone);
-							currentPath.put(val, currentNew);
+							HashSet<List> nextEmpty = new HashSet<List>();
+							nextEmpty.add(clone);
+							nextPath.put(null, nextEmpty);
+						}
+					}
+					continue;
+				}
+
+				Iterator valueIterator = destSet.iterator();
+				while (valueIterator.hasNext()) {
+					Object dest = valueIterator.next();
+					HashSet<List> currentPaths = (HashSet) currentPath.get(source);
+					Iterator<List> currentPathIterator = currentPaths.iterator();
+					while (currentPathIterator.hasNext()) {
+						List current = currentPathIterator.next();
+						List clone = new ArrayList(current);
+						clone.add(dest);
+						if (nextPath.containsKey(dest)) {
+							HashSet<List> nextExisting = (HashSet) nextPath.get(dest);
+							nextExisting.add(clone);
+							nextPath.put(dest, nextExisting);
+						} else {
+							HashSet<List> nextEmpty = new HashSet<List>();
+							nextEmpty.add(clone);
+							nextPath.put(dest, nextEmpty);
 						}
 					}
 				}
 			} else {
-				Object val = entry.getValue();
+				Object dest = entry.getValue();
 
-				HashSet<List> previousPaths = (HashSet) previousPath.get(key);
+				if (dest == null) {
 
-				Iterator<List> previousPathIterator = previousPaths.iterator();
-				while (previousPathIterator.hasNext()) {
-					List previousPath = previousPathIterator.next();
-					if (currentPath.containsKey(val)) {
-						HashSet<List> currentExisting = (HashSet) currentPath.get(val);
-						List clone = new ArrayList(previousPath);
-						clone.add(val);
-						currentExisting.add(clone);
-						currentPath.put(val, currentExisting);
+					HashSet<List> currentPaths = (HashSet) currentPath.get(source);
+					Iterator<List> currentPathIterator = currentPaths.iterator();
+					while (currentPathIterator.hasNext()) {
+						List current = currentPathIterator.next();
+						List clone = new ArrayList(current);
+						clone.add(null);
+						if (nextPath.containsKey(null)) {
+							HashSet<List> nextExisting = (HashSet) nextPath.get(null);
+
+							nextExisting.add(clone);
+							nextPath.put(null, nextExisting);
+						} else {
+							HashSet<List> nextEmpty = new HashSet<List>();
+							nextEmpty.add(clone);
+							nextPath.put(null, nextEmpty);
+						}
+					}
+					continue;
+				}
+
+				HashSet<List> currentPaths = (HashSet) currentPath.get(source);
+
+				Iterator<List> currentPathIterator = currentPaths.iterator();
+				while (currentPathIterator.hasNext()) {
+					List current = currentPathIterator.next();
+					List clone = new ArrayList(current);
+					clone.add(dest);
+					if (nextPath.containsKey(dest)) {
+						HashSet<List> nextExisting = (HashSet) nextPath.get(dest);
+						nextExisting.add(clone);
+						nextPath.put(dest, nextExisting);
 					} else {
-						HashSet<List> currentNew = new HashSet<List>();
-						List clone = new ArrayList(previousPath);
-						clone.add(val);
-						currentNew.add(clone);
-						currentPath.put(val, currentNew);
+						HashSet<List> nextEmpty = new HashSet<List>();
+						nextEmpty.add(clone);
+						nextPath.put(dest, nextEmpty);
 					}
 				}
 			}
 		}
-		previousPath.clear();
+
+		Iterator<Entry<Object, Object>> iter = currentPath.entrySet().iterator();
+		while (iter.hasNext()) {
+			Entry<Object, Object> entry = iter.next();
+			if (entry.getKey() == null) {
+				if (nextPath.containsKey(null)) {
+					HashSet<List> next = (HashSet) nextPath.get(null);
+					next.addAll((HashSet<List>) entry.getValue());
+				}
+			} else {
+
+				if (!intermediate.containsKey(entry.getKey())) {
+					nextPath.put(entry.getKey(), entry.getValue());
+				}
+			}
+
+		}
+
+		currentPath.clear();
+		currentPath = new HashMap<Object, Object>(nextPath);
+		System.out.println("NEXT: " + currentPath);
 	}
+
+	// Backup
+	// private void updateTransformationPath(final Map intermediate) {
+	// previousPath = new HashMap<Object, Object>(currentPath);
+	// currentPath.clear();
+	//
+	// Iterator<Entry> intermediateEntrySet = intermediate.entrySet().iterator();
+	// while (intermediateEntrySet.hasNext()) {
+	// Entry entry = intermediateEntrySet.next();
+	// // 1 or 2
+	// Object key = entry.getKey();
+	// Object objectValue = entry.getValue();
+	// if (objectValue instanceof Set) {
+	// Set value = (Set) objectValue;
+	//
+	// Iterator valueIterator = value.iterator();
+	// while (valueIterator.hasNext()) {
+	// Object val = valueIterator.next();
+	// HashSet<List> previousPaths = (HashSet) previousPath.get(key);
+	//
+	// Iterator<List> previousPathIterator = previousPaths.iterator();
+	// while (previousPathIterator.hasNext()) {
+	// List previousPath = previousPathIterator.next();
+	// if (currentPath.containsKey(val)) {
+	// HashSet<List> currentExisting = (HashSet) currentPath.get(val);
+	// List clone = new ArrayList(previousPath);
+	// clone.add(val);
+	// currentExisting.add(clone);
+	// currentPath.put(val, currentExisting);
+	// } else {
+	// HashSet<List> currentNew = new HashSet<List>();
+	// List clone = new ArrayList(previousPath);
+	// clone.add(val);
+	// currentNew.add(clone);
+	// currentPath.put(val, currentNew);
+	// }
+	// }
+	// }
+	// } else {
+	// Object val = entry.getValue();
+	//
+	// HashSet<List> previousPaths = (HashSet) previousPath.get(key);
+	//
+	// Iterator<List> previousPathIterator = previousPaths.iterator();
+	// while (previousPathIterator.hasNext()) {
+	// List previousPath = previousPathIterator.next();
+	// if (currentPath.containsKey(val)) {
+	// HashSet<List> currentExisting = (HashSet) currentPath.get(val);
+	// List clone = new ArrayList(previousPath);
+	// clone.add(val);
+	// currentExisting.add(clone);
+	// currentPath.put(val, currentExisting);
+	// } else {
+	// HashSet<List> currentNew = new HashSet<List>();
+	// List clone = new ArrayList(previousPath);
+	// clone.add(val);
+	// currentNew.add(clone);
+	// currentPath.put(val, currentNew);
+	// }
+	// }
+	// }
+	// }
+	// previousPath.clear();
+	// }
 
 	private void checkInputElementClass(final Class correctClass) {
 		if (elementClass != correctClass)
