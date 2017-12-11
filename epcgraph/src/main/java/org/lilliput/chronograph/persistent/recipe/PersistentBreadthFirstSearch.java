@@ -47,10 +47,10 @@ public class PersistentBreadthFirstSearch {
 		PipeFunction<VertexEvent, Boolean> exceedBound2 = new PipeFunction<VertexEvent, Boolean>() {
 			@Override
 			public Boolean compute(VertexEvent ve) {
-				//if (order.equals("forward")) {
-					if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() >= gamma.get(ve.getVertex()))) {
-						return false;
-					}
+				// if (order.equals("forward")) {
+				if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() >= gamma.get(ve.getVertex()))) {
+					return false;
+				}
 				// } else {
 				// if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() <=
 				// gamma.get(ve.getVertex()))) {
@@ -85,18 +85,18 @@ public class PersistentBreadthFirstSearch {
 			}
 		};
 
-		TraversalEngine pipeLine = new TraversalEngine(g, source, true, true, VertexEvent.class);
+		TraversalEngine pipeLine = new TraversalEngine(g, source, false, true, VertexEvent.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
-		//if (order.equals("forward"))
-			pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
+		// if (order.equals("forward"))
+		pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
 		// else
 		// pipeLine = pipeLine.ine(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
 		pipeLine = pipeLine.filter(exceedBound2);
 		pipeLine = pipeLine.gather();
 		// 방문한 버텍스 중 최소만을 꼽는다 해당 스텝에서 도달 한 것 중
-		//if (order.equals("forward"))
-			pipeLine = pipeLine.elementDedup(FC.$min);
+		// if (order.equals("forward"))
+		pipeLine = pipeLine.elementDedup(FC.$min);
 		// else
 		// pipeLine = pipeLine.elementDedup(FC.$max);
 		// lower bound 보다 크면 필터한다.
@@ -107,6 +107,7 @@ public class PersistentBreadthFirstSearch {
 		// pipeLine.storeTimestamp(bound);
 		// pipeLine.pathFilter(bound, );
 		// pipeLine = pipeLine.sideEffect(storeCurrentVertexEvents);
+		System.out.println(pipeLine.path());
 		pipeLine = pipeLine.loop("s", exitIfEmptyIterator);
 		return pipeLine.path();
 	}
