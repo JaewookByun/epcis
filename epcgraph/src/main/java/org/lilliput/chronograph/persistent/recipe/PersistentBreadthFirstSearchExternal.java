@@ -9,7 +9,6 @@ import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
 import org.lilliput.chronograph.common.Tokens.FC;
 import org.lilliput.chronograph.common.Tokens.Position;
-import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.engine.ExternalTraversalEngine;
 import org.oliot.epcis.service.query.EPCTime;
 

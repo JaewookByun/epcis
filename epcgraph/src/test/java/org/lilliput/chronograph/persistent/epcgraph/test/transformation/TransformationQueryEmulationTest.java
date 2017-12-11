@@ -106,7 +106,6 @@ public class TransformationQueryEmulationTest {
 		bw.close();
 	}
 
-	@SuppressWarnings("unused")
 	public double doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();
