@@ -61,7 +61,7 @@ public class TransformationQueryTest {
 
 		client.close();
 
-		for (int i = 0; i < 10000; i++) {
+		for (int i = 0; i < 2; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -105,7 +105,7 @@ public class TransformationQueryTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-01-01T00:00:00";
 
-		int loopCount = 100;
+		int loopCount = 1;
 
 		for (int i = 0; i < loopCount; i++) {
 			String url = "http://localhost:8080/epcis/Service/Transform?startTime=" + startTime + "&epc=" + source
