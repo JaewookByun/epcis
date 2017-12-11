@@ -38,8 +38,10 @@ public class SimplePathTest {
 		engine.scatter();
 		engine.out(null, Integer.MAX_VALUE);
 		engine.gather();
-		engine.loop("s", loop);
+		engine.loop("s", loop).toList();
 
+		System.out.println(engine.path());
+		
 		g.clear();
 		g.shutdown();
 	}

@@ -83,7 +83,7 @@ public class PersistentBreadthFirstSearchEmulation {
 
 		// collection.find()
 
-		NaiveTraversalEngine pipeLine = new NaiveTraversalEngine(collection, source, true, true, String.class);
+		NaiveTraversalEngine pipeLine = new NaiveTraversalEngine(collection, source, true, true, EPCTime.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
 		pipeLine = pipeLine.oute(null, TemporalType.TIMESTAMP, tt, null, null, null, null, null, null, Position.first);

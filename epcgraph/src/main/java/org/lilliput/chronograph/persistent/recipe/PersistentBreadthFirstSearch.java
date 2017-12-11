@@ -107,7 +107,7 @@ public class PersistentBreadthFirstSearch {
 		// pipeLine.storeTimestamp(bound);
 		// pipeLine.pathFilter(bound, );
 		// pipeLine = pipeLine.sideEffect(storeCurrentVertexEvents);
-		System.out.println(pipeLine.path());
+		// System.out.println(pipeLine.path());
 		pipeLine = pipeLine.loop("s", exitIfEmptyIterator);
 		return pipeLine.path();
 	}
