@@ -61,7 +61,7 @@ public class TransformationQueryTest {
 
 		client.close();
 
-		for (int i = 0; i < 200; i++) {
+		for (int i = 0; i < 2; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"

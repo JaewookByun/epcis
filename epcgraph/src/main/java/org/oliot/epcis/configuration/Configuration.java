@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
+import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.service.subscription.MongoSubscription;
 
 import com.mongodb.MongoClient;
@@ -59,6 +60,7 @@ public class Configuration implements ServletContextListener {
 	public static JSONObject json;
 	public static String ac_api_address;
 	public static String epcis_id;
+	public static ChronoGraph g;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -225,6 +227,8 @@ public class Configuration implements ServletContextListener {
 		}
 		mongoClient = new MongoClient(backend_ip, backend_port);
 		mongoDatabase = mongoClient.getDatabase(databaseName);
+		
+		g = new ChronoGraph(backend_ip, backend_port, databaseName);
 	}
 
 	/**

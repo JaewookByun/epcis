@@ -2495,7 +2495,7 @@ public class ExternalTraversalEngine {
 	private void updateTransformationPath(final Map intermediate) {
 
 		HashMap<Object, Object> nextPath = new HashMap<Object, Object>();
-		System.out.println("PREV: " + currentPath);
+		// System.out.println("PREV: " + currentPath);
 
 		// intermediate maps source to dest set
 		Iterator<Entry> intermediateEntrySet = intermediate.entrySet().iterator();
@@ -2613,7 +2613,7 @@ public class ExternalTraversalEngine {
 
 		currentPath.clear();
 		currentPath = new HashMap<Object, Object>(nextPath);
-		System.out.println("NEXT: " + currentPath);
+		// System.out.println("NEXT: " + currentPath);
 	}
 
 	// Backup

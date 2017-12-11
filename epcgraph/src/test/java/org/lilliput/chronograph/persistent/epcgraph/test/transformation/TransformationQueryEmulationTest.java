@@ -69,7 +69,7 @@ public class TransformationQueryEmulationTest {
 
 		client.close();
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 300; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -106,6 +106,7 @@ public class TransformationQueryEmulationTest {
 		bw.close();
 	}
 
+	@SuppressWarnings("unused")
 	public double doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();
@@ -113,14 +114,14 @@ public class TransformationQueryEmulationTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-12-09T16:17:05.765Z";
 
-		int loopCount = 1;
+		int loopCount = 100;
 
 		for (int i = 0; i < loopCount; i++) {
 			long pre = System.currentTimeMillis();
 			JSONArray arr = getTransformationTreeEmulation(source, startTime);
 			long aft = System.currentTimeMillis();
 			long elapsedTime = aft - pre;
-			System.out.println(arr.toString(2));
+			// System.out.println(arr.toString(2));
 			System.out.println("Elapsed Time: " + elapsedTime);
 			timeList.add(elapsedTime);
 		}
