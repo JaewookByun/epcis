@@ -96,19 +96,10 @@ public class TraceabilityQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
 		JSONArray jarr = new JSONArray();
-
-		try {
-
-			Iterator<ChronoVertex> vi = g.getChronoVertices().iterator();
-			while (vi.hasNext()) {
-				jarr.put(vi.next().toString());
-			}
-
-		} finally {
-			g.shutdown();
+		Iterator<ChronoVertex> vi = Configuration.g.getChronoVertices().iterator();
+		while (vi.hasNext()) {
+			jarr.put(vi.next().toString());
 		}
 		return new ResponseEntity<>(new String(jarr.toString(1)), responseHeaders, HttpStatus.OK);
 	}
@@ -121,15 +112,8 @@ public class TraceabilityQueryService implements ServletContextAware {
 	@RequestMapping(value = "/Resources", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<?> deleteAllExistingNodes() {
-
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
-		try {
-			g.getVertexCollection().drop();
-			g.getEdgeCollection().drop();
-		} finally {
-			g.shutdown();
-		}
+		Configuration.g.getVertexCollection().drop();
+		Configuration.g.getEdgeCollection().drop();
 		return new ResponseEntity<>("[Lilliput] : All Vertices Removed\n", HttpStatus.OK);
 	}
 
@@ -143,14 +127,13 @@ public class TraceabilityQueryService implements ServletContextAware {
 		long startTimeMil = 0;
 		startTimeMil = TimeUtil.getTimeMil(startTime);
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
-
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
 		BsonArray transforms = new BsonArray();
 		transforms.add(new BsonString("transformsTo"));
+
+		ChronoGraph g = Configuration.g;
 
 		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
 		Map pathMap = new HashMap();
@@ -160,7 +143,6 @@ public class TraceabilityQueryService implements ServletContextAware {
 		else
 			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
 					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
-		g.shutdown();
 
 		// JSONarray contains each path
 		// contains time - vertex mapping
@@ -200,9 +182,6 @@ public class TraceabilityQueryService implements ServletContextAware {
 		long startTimeMil = 0;
 		startTimeMil = TimeUtil.getTimeMil(startTime);
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
-
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
@@ -212,7 +191,6 @@ public class TraceabilityQueryService implements ServletContextAware {
 		PersistentBreadthFirstSearchEmulation tBFS = new PersistentBreadthFirstSearchEmulation();
 		Map pathMap = new HashMap();
 		pathMap = tBFS.compute(epc, startTimeMil, AC.$gte);
-		g.shutdown();
 
 		// JSONarray contains each path
 		// contains time - vertex mapping
@@ -229,7 +207,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 				JSONArray p = new JSONArray();
 				while (vi.hasNext()) {
 					Object ve = vi.next();
-					if(ve != null) {
+					if (ve != null) {
 						p.put(ve.toString());
 					}
 				}
@@ -242,6 +220,59 @@ public class TraceabilityQueryService implements ServletContextAware {
 		// urn:epc:id:sgtin:0000001.000001.4-1446303536591,
 		// urn:epc:id:sgtin:0000001.000001.5-1477925936591,
 		// urn:epc:id:sgtin:0000001.000001.6-1509461936591]]}
+
+		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
+
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/OwnershipTransfer", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getOwnershipTransferQuery(@RequestParam String epc,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
+
+		// Time processing
+		long startTimeMil = 0;
+		startTimeMil = TimeUtil.getTimeMil(startTime);
+
+		ChronoGraph g = Configuration.g;
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
+		BsonArray transforms = new BsonArray();
+		transforms.add(new BsonString("transformsTo"));
+
+		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
+		Map pathMap = new HashMap();
+		if (order.equals("forward"))
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first, order);
+		else
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
+		
+		// JSONarray contains each path
+		// contains time - vertex mapping
+
+		JSONArray pathArray = new JSONArray();
+
+		Iterator<Set> pathSetIter = pathMap.values().iterator();
+		while (pathSetIter.hasNext()) {
+			Set pathSet = pathSetIter.next();
+			Iterator<List> pathIter = pathSet.iterator();
+			while (pathIter.hasNext()) {
+				List path = pathIter.next();
+				Iterator<VertexEvent> vi = path.iterator();
+				JSONArray p = new JSONArray();
+				while (vi.hasNext()) {
+					Object ve = vi.next();
+					if (ve != null)
+						p.put(ve.toString());
+				}
+				pathArray.put(p);
+			}
+		}
 
 		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
 
@@ -304,47 +335,36 @@ public class TraceabilityQueryService implements ServletContextAware {
 		fromTimeMil = TimeUtil.getTimeMil(fromTime);
 		toTimeMil = TimeUtil.getTimeMil(toTime);
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
-		try {
+		ChronoGraph g = Configuration.g;
 
-			HttpHeaders responseHeaders = new HttpHeaders();
-			responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
-			if (scope.trim().equals("resource")) {
-				String ret = getVertexAttributesAsJsonLD(g, request, epc, fromTimeMil, toTimeMil, orderByTime, limit);
-				g.shutdown();
-				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
-			} else if (scope.trim().equals("relationship")) {
-				String ret = getRelationship(g, epc);
-				g.shutdown();
-				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
-			} else if (scope.trim().equals("ego")) {
+		if (scope.trim().equals("resource")) {
+			String ret = getVertexAttributesAsJsonLD(g, request, epc, fromTimeMil, toTimeMil, orderByTime, limit);
+			return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
+		} else if (scope.trim().equals("relationship")) {
+			String ret = getRelationship(g, epc);
+			return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
+		} else if (scope.trim().equals("ego")) {
+			String ret = getEgoNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
+			return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 
-				String ret = getEgoNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
-				g.shutdown();
-				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
-
-			} else if (scope.trim().equals("sibling")) {
-				if (relationship.split(",").length != 2) {
-					return new ResponseEntity<>(new String(
-							"Format of 'relationship' in sibling network = {edgeLabelToParent,edgeLabelToSibling}"),
-							HttpStatus.BAD_REQUEST);
-				}
-				String ret = getSiblingNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
-				g.shutdown();
-				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
-			} else if (scope.trim().equals("trace")) {
-				if (relationship.split(",").length != 1) {
-					return new ResponseEntity<>(new String("Format of 'relationship' = edgeLabel"),
-							HttpStatus.BAD_REQUEST);
-				}
-				String ret = getTracePath(g, request, epc, relationship, fromTimeMil, toTimeMil);
-				g.shutdown();
-				return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
+		} else if (scope.trim().equals("sibling")) {
+			if (relationship.split(",").length != 2) {
+				return new ResponseEntity<>(
+						new String(
+								"Format of 'relationship' in sibling network = {edgeLabelToParent,edgeLabelToSibling}"),
+						HttpStatus.BAD_REQUEST);
 			}
-		} finally {
-			g.shutdown();
+			String ret = getSiblingNetwork(g, request, epc, relationship, fromTimeMil, toTimeMil);
+			return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
+		} else if (scope.trim().equals("trace")) {
+			if (relationship.split(",").length != 1) {
+				return new ResponseEntity<>(new String("Format of 'relationship' = edgeLabel"), HttpStatus.BAD_REQUEST);
+			}
+			String ret = getTracePath(g, request, epc, relationship, fromTimeMil, toTimeMil);
+			return new ResponseEntity<>(ret, responseHeaders, HttpStatus.OK);
 		}
 
 		return new ResponseEntity<>(new String("Format of 'scope' = {resource|relationship|ego|sibling|trace}"),
