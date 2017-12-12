@@ -83,6 +83,7 @@ public class CaptureService implements CoreCaptureService {
 				return util.capture(bsonDocumentList);
 		} catch (NullPointerException ex) {
 			// No Event
+			System.out.println(ex);
 		}
 		return new HashMap<String, Object>();
 	}

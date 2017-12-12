@@ -207,8 +207,7 @@ public class TransformationEventWriteConverter {
 
 	public void capture(TransformationEventType transformationEventType, Integer gcpLength) {
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
+		ChronoGraph g = Configuration.g;
 
 		// input EPC list
 		HashSet<String> inputSet = new HashSet<String>();
@@ -423,8 +422,6 @@ public class TransformationEventWriteConverter {
 
 				g.getChronoVertex(outputClassID).setTimestampProperties(t, classProperty);
 			});
-
-		g.shutdown();
 
 		return;
 	}

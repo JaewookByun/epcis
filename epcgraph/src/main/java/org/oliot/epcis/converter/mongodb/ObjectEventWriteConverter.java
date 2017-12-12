@@ -150,8 +150,7 @@ public class ObjectEventWriteConverter {
 
 	public void capture(ObjectEventType objectEventType, Integer gcpLength) {
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
+		ChronoGraph g = Configuration.g;
 
 		// EPC List
 		HashSet<String> objectSet = new HashSet<String>();
@@ -215,130 +214,132 @@ public class ObjectEventWriteConverter {
 
 		final BsonDocument extensionf = extension;
 
-		objectSet.stream().forEach(object -> {
-			// object = vid
-			g.getChronoVertex(object).setTimestampProperties(t, objProperty);
+		if (objectSet != null && !objectSet.isEmpty()) {
+			objectSet.stream().forEach(object -> {
+				// object = vid
+				g.getChronoVertex(object).setTimestampProperties(t, objProperty);
 
-			// Read Point
-			if (objectEventType.getReadPoint() != null) {
-				ReadPointType readPointType = objectEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (objectEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = objectEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
-			}
-
-			if (extensionf != null) {
-				if (extensionf.containsKey("sourceList")) {
-					BsonArray sources = extensionf.getArray("sourceList");
-					sources.parallelStream().forEach(elem -> {
-						BsonDocument sourceDoc = elem.asDocument();
-						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(object,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
-						}
-
-						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(object,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("DELETE")));
-						}
-					});
+				// Read Point
+				if (objectEventType.getReadPoint() != null) {
+					ReadPointType readPointType = objectEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (objectEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = objectEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
 				}
 
-				if (extensionf.containsKey("destinationList")) {
-					BsonArray destinations = extensionf.getArray("destinationList");
-					destinations.parallelStream().forEach(elem -> {
-						BsonDocument destDoc = elem.asDocument();
-						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(object,
-									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
-						}
+				if (extensionf != null) {
+					if (extensionf.containsKey("sourceList")) {
+						BsonArray sources = extensionf.getArray("sourceList");
+						sources.stream().forEach(elem -> {
+							BsonDocument sourceDoc = elem.asDocument();
+							if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+								g.addTimestampEdgeProperties(object,
+										sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+										"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+							}
 
-						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(object,
-									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("ADD")));
-						}
-					});
+							if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+								g.addTimestampEdgeProperties(object,
+										sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned",
+										t, new BsonDocument("action", new BsonString("DELETE")));
+							}
+						});
+					}
+
+					if (extensionf.containsKey("destinationList")) {
+						BsonArray destinations = extensionf.getArray("destinationList");
+						destinations.stream().forEach(elem -> {
+							BsonDocument destDoc = elem.asDocument();
+							if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+								g.addTimestampEdgeProperties(object,
+										destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+										"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+							}
+
+							if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+								g.addTimestampEdgeProperties(object,
+										destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned",
+										t, new BsonDocument("action", new BsonString("ADD")));
+							}
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 
-		classArray.stream().forEach(classElem -> {
+		if (classArray != null && !classArray.isEmpty()) {
+			classArray.stream().forEach(classElem -> {
 
-			BsonDocument classDoc = classElem.asDocument();
-			String epcClass = classDoc.getString("epcClass").getValue();
+				BsonDocument classDoc = classElem.asDocument();
+				String epcClass = classDoc.getString("epcClass").getValue();
 
-			BsonDocument classProperty = objProperty.clone();
-			if (!classDoc.containsKey("epcClass"))
-				return;
-			if (classDoc.containsKey("quantity"))
-				classProperty.put("quantity", classDoc.getDouble("quantity"));
-			if (classDoc.containsKey("uom"))
-				classProperty.put("uom", classDoc.getString("uom"));
-			g.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
+				BsonDocument classProperty = objProperty.clone();
+				if (!classDoc.containsKey("epcClass"))
+					return;
+				if (classDoc.containsKey("quantity"))
+					classProperty.put("quantity", classDoc.getDouble("quantity"));
+				if (classDoc.containsKey("uom"))
+					classProperty.put("uom", classDoc.getString("uom"));
+				g.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
 
-			// Read Point
-			if (objectEventType.getReadPoint() != null) {
-				ReadPointType readPointType = objectEventType.getReadPoint();
-				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-			}
-			// BizLocation
-			if (objectEventType.getBizLocation() != null) {
-				BusinessLocationType bizLocationType = objectEventType.getBizLocation();
-				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-			}
-
-			if (extensionf != null) {
-				if (extensionf.containsKey("sourceList")) {
-					BsonArray sources = extensionf.getArray("sourceList");
-					sources.parallelStream().forEach(elem -> {
-						BsonDocument sourceDoc = elem.asDocument();
-						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(epcClass,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
-						}
-
-						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(epcClass,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("DELETE")));
-						}
-					});
+				// Read Point
+				if (objectEventType.getReadPoint() != null) {
+					ReadPointType readPointType = objectEventType.getReadPoint();
+					String locID = readPointType.getId();
+					g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				}
+				// BizLocation
+				if (objectEventType.getBizLocation() != null) {
+					BusinessLocationType bizLocationType = objectEventType.getBizLocation();
+					String locID = bizLocationType.getId();
+					g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 				}
 
-				if (extensionf.containsKey("destinationList")) {
-					BsonArray destinations = extensionf.getArray("destinationList");
-					destinations.parallelStream().forEach(elem -> {
-						BsonDocument destDoc = elem.asDocument();
-						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(epcClass,
-									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
-						}
+				if (extensionf != null) {
+					if (extensionf.containsKey("sourceList")) {
+						BsonArray sources = extensionf.getArray("sourceList");
+						sources.stream().forEach(elem -> {
+							BsonDocument sourceDoc = elem.asDocument();
+							if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+								g.addTimestampEdgeProperties(epcClass,
+										sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+										"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+							}
 
-						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(epcClass,
-									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("ADD")));
-						}
-					});
+							if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+								g.addTimestampEdgeProperties(epcClass,
+										sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned",
+										t, new BsonDocument("action", new BsonString("DELETE")));
+							}
+						});
+					}
+
+					if (extensionf.containsKey("destinationList")) {
+						BsonArray destinations = extensionf.getArray("destinationList");
+						destinations.stream().forEach(elem -> {
+							BsonDocument destDoc = elem.asDocument();
+							if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+								g.addTimestampEdgeProperties(epcClass,
+										destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+										"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+							}
+
+							if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+								g.addTimestampEdgeProperties(epcClass,
+										destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned",
+										t, new BsonDocument("action", new BsonString("ADD")));
+							}
+						});
+					}
 				}
-			}
 
-		});
-
-		g.shutdown();
+			});
+		}
 
 		return;
 	}

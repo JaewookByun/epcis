@@ -6,6 +6,7 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
+import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +114,7 @@ public class EventCapture implements ServletContextAware {
 		Configuration.databaseName = "epcis";
 		Configuration.mongoClient = new MongoClient(Configuration.backend_ip, Configuration.backend_port);
 		Configuration.mongoDatabase = Configuration.mongoClient.getDatabase(Configuration.databaseName);
+		Configuration.g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port, Configuration.databaseName);
 
 		CaptureService cs = new CaptureService();
 		cs.capture(epcisDocument, null, null, null);
