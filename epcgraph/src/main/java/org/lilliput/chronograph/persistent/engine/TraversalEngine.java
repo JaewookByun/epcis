@@ -1213,6 +1213,111 @@ public class TraversalEngine {
 		return this;
 	}
 
+	public TraversalEngine bothe(final String label, final AC tt) {
+		// Check Input element class
+		checkInputElementClass(VertexEvent.class);
+
+		// Pipeline Update
+
+		if (isPathEnabled) {
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(ve -> {
+				VertexEvent cve = (VertexEvent) ve;
+				return new AbstractMap.SimpleImmutableEntry(cve, cve.getBothVertexEventSet(label, tt));
+			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
+
+			// Update Path
+			updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+		} else {
+			stream = stream.flatMap(ve -> {
+				return ((VertexEvent) ve).getBothVertexEventSet(label, tt);
+			});
+		}
+		// Step Update
+		final Class[] args = new Class[2];
+		args[0] = String.class;
+		args[1] = AC.class;
+		final Step step = new Step(this.getClass().getName(), "bothe", args, label, tt);
+		stepList.add(step);
+
+		// Set Class
+		elementClass = VertexEvent.class;
+		return this;
+	}
+
+	public TraversalEngine oute(final String label, final AC tt) {
+		// Check Input element class
+		checkInputElementClass(VertexEvent.class);
+
+		// Pipeline Update
+
+		if (isPathEnabled) {
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(ve -> {
+				VertexEvent cve = (VertexEvent) ve;
+				return new AbstractMap.SimpleImmutableEntry(cve, cve.getOutVertexEventSet(label, tt));
+			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
+
+			// Update Path
+			updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+		} else {
+			stream = stream.flatMap(ve -> {
+				return ((VertexEvent) ve).getOutVertexEventSet(label, tt);
+			});
+		}
+		// Step Update
+		final Class[] args = new Class[2];
+		args[0] = String.class;
+		args[1] = AC.class;
+		final Step step = new Step(this.getClass().getName(), "oute", args, label, tt);
+		stepList.add(step);
+
+		// Set Class
+		elementClass = VertexEvent.class;
+		return this;
+	}
+
+	public TraversalEngine ine(final String label, final AC tt) {
+		// Check Input element class
+		checkInputElementClass(VertexEvent.class);
+
+		// Pipeline Update
+
+		if (isPathEnabled) {
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(ve -> {
+				VertexEvent cve = (VertexEvent) ve;
+				return new AbstractMap.SimpleImmutableEntry(cve, cve.getInVertexEventSet(label, tt));
+			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
+
+			// Update Path
+			updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+		} else {
+			stream = stream.flatMap(ve -> {
+				return ((VertexEvent) ve).getInVertexEventSet(label, tt);
+			});
+		}
+		// Step Update
+		final Class[] args = new Class[2];
+		args[0] = String.class;
+		args[1] = AC.class;
+		final Step step = new Step(this.getClass().getName(), "ine", args, label, tt);
+		stepList.add(step);
+
+		// Set Class
+		elementClass = VertexEvent.class;
+		return this;
+	}
+
 	public TraversalEngine ine(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt, final AC s,
 			final AC e, final AC ss, final AC se, final AC es, final AC ee, final Position pos) {
 		// Check Input element class
@@ -1488,8 +1593,13 @@ public class TraversalEngine {
 		if (isPathEnabled) {
 			// Get Sub-Path
 			Map intermediate = (Map) stream.map(e -> {
-				return new AbstractMap.SimpleImmutableEntry(e, function.compute(e));
-			}).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
+
+				Object val = function.compute(e);
+				if (val == null)
+					return null;
+
+				return new AbstractMap.SimpleImmutableEntry(e, val);
+			}).filter(e -> e != null).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
 
 			// Update Path
 			if (elementClass != List.class)
