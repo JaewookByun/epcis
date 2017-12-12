@@ -143,8 +143,7 @@ public class TransactionEventWriteConverter {
 
 	public void capture(TransactionEventType transactionEventType, Integer gcpLength) {
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
+		ChronoGraph g = Configuration.g;
 
 		// Parent ID
 		String parentID = transactionEventType.getParentID();
@@ -338,8 +337,6 @@ public class TransactionEventWriteConverter {
 			}
 
 		});
-
-		g.shutdown();
 
 		return;
 	}

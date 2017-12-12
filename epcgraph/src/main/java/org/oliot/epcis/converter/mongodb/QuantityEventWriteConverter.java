@@ -130,8 +130,7 @@ public class QuantityEventWriteConverter {
 
 	public void capture(QuantityEventType quantityEventType, Integer gcpLength) {
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
+		ChronoGraph g = Configuration.g;
 
 		// EPC List
 
@@ -195,8 +194,6 @@ public class QuantityEventWriteConverter {
 			}
 
 		}
-
-		g.shutdown();
 
 		return;
 	}

@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
@@ -240,14 +241,15 @@ abstract class ChronoElement implements Element {
 		if (timestampProperties == null)
 			timestampProperties = new BsonDocument();
 		if (this instanceof ChronoVertex) {
-			graph.getVertexCollection().findOneAndReplace(
-					new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)),
-					Converter.makeTimestampVertexEventDocument(timestampProperties, this.id, timestamp),
+			BsonString idKey = new BsonString(this.id + "-" + timestamp);
+
+			graph.getVertexCollection().findOneAndReplace(new BsonDocument(Tokens.ID, idKey),
+					Converter.makeTimestampVertexEventDocumentWithoutID(timestampProperties, this.id, timestamp),
 					new FindOneAndReplaceOptions().upsert(true));
 		} else {
 			graph.getEdgeCollection().findOneAndReplace(
 					new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)),
-					Converter.makeTimestampEdgeEventDocument(timestampProperties, this.id, timestamp),
+					Converter.makeTimestampEdgeEventDocumentWithoutID(timestampProperties, this.id, timestamp),
 					new FindOneAndReplaceOptions().upsert(true));
 		}
 	}
@@ -737,6 +739,187 @@ abstract class ChronoElement implements Element {
 		}
 
 		return timestamps;
+	}
+
+	/**
+	 * edge events per vertex
+	 * 
+	 * @param direction
+	 * @param label
+	 * @param left
+	 * @param comparator
+	 * @return
+	 */
+	public HashMap<String, TreeMap<Long, String>> getOwnershipTransfer(Direction direction, String label, long left,
+			AC comparator) {
+
+		HashMap<String, TreeMap<Long, String>> ret = new HashMap<String, TreeMap<Long, String>>();
+
+		if (this instanceof ChronoVertex) {
+			ChronoVertex v = (ChronoVertex) this;
+
+			if (direction.equals(Direction.OUT)) {
+
+				// outv label t inv
+				// inv label t outv
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.OUT_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.IN_VERTEX, new BsonBoolean(true));
+				projection.append("action", new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String inV = doc.getString(Tokens.IN_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					String action = doc.getString("action").getValue();
+					// { "_inV" : "urn:epc:id:sgln:0000001.00001.0", "_t" : { "$date" :
+					// 1513079328721 } }
+					if (ret.containsKey(inV)) {
+						TreeMap<Long, String> retVal = ret.get(inV);
+						retVal.put(time, action);
+						ret.put(inV, retVal);
+					} else {
+						TreeMap<Long, String> retVal = new TreeMap<Long, String>();
+						retVal.put(time, action);
+						ret.put(inV, retVal);
+					}
+				}
+				return ret;
+			} else if (direction.equals(Direction.IN)) {
+
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.IN_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.OUT_VERTEX, new BsonBoolean(true));
+				projection.append("action", new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String outV = doc.getString(Tokens.OUT_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					String action = doc.getString("action").getValue();
+					// { "_inV" : "urn:epc:id:sgln:0000001.00001.0", "_t" : { "$date" :
+					// 1513079328721 } }
+					if (ret.containsKey(outV)) {
+						TreeMap<Long, String> retVal = ret.get(outV);
+						retVal.put(time, action);
+						ret.put(outV, retVal);
+					} else {
+						TreeMap<Long, String> retVal = new TreeMap<Long, String>();
+						retVal.put(time, action);
+						ret.put(outV, retVal);
+					}
+				}
+				return ret;
+
+			}
+
+		}
+
+		return null;
+	}
+
+	/**
+	 * edge events per vertex
+	 * 
+	 * @param direction
+	 * @param label
+	 * @param left
+	 * @param comparator
+	 * @return
+	 */
+	public HashMap<String, TreeMap<Long, EdgeEvent>> getTNeighbors(Direction direction, String label, long left,
+			AC comparator) {
+
+		HashMap<String, TreeMap<Long, EdgeEvent>> ret = new HashMap<String, TreeMap<Long, EdgeEvent>>();
+
+		if (this instanceof ChronoVertex) {
+			ChronoVertex v = (ChronoVertex) this;
+
+			if (direction.equals(Direction.OUT)) {
+
+				// outv label t inv
+				// inv label t outv
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.OUT_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.IN_VERTEX, new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String inV = doc.getString(Tokens.IN_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					EdgeEvent ee = new EdgeEvent(graph, new ChronoEdge(v.toString() + "|" + label + "|" + inV, graph),
+							time);
+					// { "_inV" : "urn:epc:id:sgln:0000001.00001.0", "_t" : { "$date" :
+					// 1513079328721 } }
+					if (ret.containsKey(inV)) {
+						TreeMap<Long, EdgeEvent> retVal = ret.get(inV);
+						retVal.put(time, ee);
+						ret.put(inV, retVal);
+					} else {
+						TreeMap<Long, EdgeEvent> retVal = new TreeMap<Long, EdgeEvent>();
+						retVal.put(time, ee);
+						ret.put(inV, retVal);
+					}
+				}
+				return ret;
+			} else if (direction.equals(Direction.IN)) {
+
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.IN_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.OUT_VERTEX, new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String outV = doc.getString(Tokens.OUT_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					EdgeEvent ee = new EdgeEvent(graph, new ChronoEdge(outV + "|" + label + v.toString(), graph), time);
+					// { "_inV" : "urn:epc:id:sgln:0000001.00001.0", "_t" : { "$date" :
+					// 1513079328721 } }
+					if (ret.containsKey(outV)) {
+						TreeMap<Long, EdgeEvent> retVal = ret.get(outV);
+						retVal.put(time, ee);
+						ret.put(outV, retVal);
+					} else {
+						TreeMap<Long, EdgeEvent> retVal = new TreeMap<Long, EdgeEvent>();
+						retVal.put(time, ee);
+						ret.put(outV, retVal);
+					}
+				}
+				return ret;
+
+			}
+
+		}
+
+		return null;
 	}
 
 	/**
