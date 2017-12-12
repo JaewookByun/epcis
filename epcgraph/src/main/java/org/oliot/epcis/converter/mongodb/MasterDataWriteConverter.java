@@ -97,8 +97,7 @@ public class MasterDataWriteConverter {
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
 
-					ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-							Configuration.databaseName);
+					ChronoGraph g = Configuration.g;
 
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
@@ -164,8 +163,6 @@ public class MasterDataWriteConverter {
 					}
 					attrObj.put("lastUpdated", new BsonDateTime(System.currentTimeMillis()));
 					voc.put("attributes", attrObj);
-					
-					g.shutdown();
 				}
 
 				// If children found, overwrite previous one(s)

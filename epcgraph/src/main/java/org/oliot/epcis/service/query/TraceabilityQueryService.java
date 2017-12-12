@@ -6,8 +6,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.script.ScriptEngine;
@@ -225,7 +227,6 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@RequestMapping(value = "/OwnershipTransfer", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getOwnershipTransferQuery(@RequestParam String epc,
@@ -240,41 +241,54 @@ public class TraceabilityQueryService implements ServletContextAware {
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
-		BsonArray transforms = new BsonArray();
-		transforms.add(new BsonString("transformsTo"));
+		ChronoVertex v = g.getChronoVertex(epc);
+		HashMap<String, TreeMap<Long, String>> tNeighbors = v.getOwnershipTransfer(Direction.OUT, "isPossessed",
+				startTimeMil, AC.$gte);
 
-		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
-		Map pathMap = new HashMap();
-		if (order.equals("forward"))
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
-					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first, order);
-		else
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
-					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
-		
-		// JSONarray contains each path
-		// contains time - vertex mapping
+		// outV : [ "s-e", "s-e" ];
+		JSONObject retObj = new JSONObject();
+		Iterator<Entry<String, TreeMap<Long, String>>> iterator = tNeighbors.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<String, TreeMap<Long, String>> elem = iterator.next();
+			String neighbor = elem.getKey();
+			TreeMap<Long, String> valueMap = elem.getValue();
+			Iterator<Entry<Long, String>> valueIter = valueMap.entrySet().iterator();
 
-		JSONArray pathArray = new JSONArray();
-
-		Iterator<Set> pathSetIter = pathMap.values().iterator();
-		while (pathSetIter.hasNext()) {
-			Set pathSet = pathSetIter.next();
-			Iterator<List> pathIter = pathSet.iterator();
-			while (pathIter.hasNext()) {
-				List path = pathIter.next();
-				Iterator<VertexEvent> vi = path.iterator();
-				JSONArray p = new JSONArray();
-				while (vi.hasNext()) {
-					Object ve = vi.next();
-					if (ve != null)
-						p.put(ve.toString());
+			Long start = null;
+			JSONArray ranges = new JSONArray();
+			while (valueIter.hasNext()) {
+				Entry<Long, String> valueElem = valueIter.next();
+				Long time = valueElem.getKey();
+				String action = valueElem.getValue();
+				if (action.equals("ADD")) {
+					if (start == null)
+						start = time;
+				} else if (action.equals("DELETE")) {
+					if (start != null) {
+						ranges.put(start + "-" + time);
+						start = null;
+					}
 				}
-				pathArray.put(p);
 			}
+			retObj.put(neighbor, ranges);
 		}
 
-		return new ResponseEntity<>(pathArray.toString(2), responseHeaders, HttpStatus.OK);
+		// {
+		// "urn:epc:id:sgln:0000001.00001.0": [
+		// "1513081997716-1513081998717"
+		// ],
+		// "urn:epc:id:sgln:0000001.00001.1": [
+		// "1513081998717-1513081999717"
+		// ],
+		// "urn:epc:id:sgln:0000001.00001.2": [
+		// "1513081999717-1513082000717"
+		// ],
+		// "urn:epc:id:sgln:0000001.00001.3": [
+		// "1513082000717-1513082001718"
+		// ]
+		// }
+
+		return new ResponseEntity<>(retObj.toString(2), responseHeaders, HttpStatus.OK);
 
 	}
 

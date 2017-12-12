@@ -149,8 +149,7 @@ public class AggregationEventWriteConverter {
 
 	public void capture(AggregationEventType aggregationEventType, Integer gcpLength) {
 
-		ChronoGraph g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
-				Configuration.databaseName);
+		ChronoGraph g = Configuration.g;
 
 		// Parent ID
 		String parent = null;
@@ -331,7 +330,6 @@ public class AggregationEventWriteConverter {
 			}
 		});
 
-		
 		childClassArray.stream().forEach(classElem -> {
 
 			BsonDocument classDoc = classElem.asDocument();
@@ -407,8 +405,6 @@ public class AggregationEventWriteConverter {
 				g.addTimestampEdgeProperties(parentID, epcClass, "contains", t, objProperty);
 			});
 		}
-
-		g.shutdown();
 
 		return;
 	}

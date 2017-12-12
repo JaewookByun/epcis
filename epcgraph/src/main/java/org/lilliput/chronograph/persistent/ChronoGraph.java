@@ -97,6 +97,14 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 				new Parameter(Tokens.START, 1), new Parameter(Tokens.END, 1));
 		// g.getChronoVertices()
 		createKeyIndex(null, ChronoVertex.class, new Parameter(Tokens.TYPE, 1), new Parameter(Tokens.ID, 1));
+
+		// outv label t inv
+		// inv label t outv
+		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.OUT_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
+				new Parameter(Tokens.TIMESTAMP, 1), new Parameter(Tokens.IN_VERTEX, 1));
+		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.IN_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
+				new Parameter(Tokens.TIMESTAMP, 1), new Parameter(Tokens.OUT_VERTEX, 1));
+
 	}
 
 	public ChronoGraph() {
