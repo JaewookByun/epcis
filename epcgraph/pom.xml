@@ -158,13 +158,13 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>epcis</finalName>
+		<finalName>epcgraph</finalName>
 	</build>
 
 	<repositories>
 		<repository>
-			<id>epcis.local</id>
-			<name>epcis</name>
+			<id>epcgraph.local</id>
+			<name>epcgraph</name>
 			<url>file:${project.basedir}/libs</url>
 		</repository>
 	</repositories>

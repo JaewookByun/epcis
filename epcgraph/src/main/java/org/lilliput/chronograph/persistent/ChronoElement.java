@@ -393,8 +393,6 @@ abstract class ChronoElement implements Element {
 
 	/**
 	 *
-	 * TODO: Check again
-	 *
 	 * @param interval
 	 * @return
 	 */
@@ -822,6 +820,73 @@ abstract class ChronoElement implements Element {
 						retVal.put(time, action);
 						ret.put(outV, retVal);
 					}
+				}
+				return ret;
+
+			}
+
+		}
+
+		return null;
+	}
+
+	/**
+	 * edge events per vertex
+	 * 
+	 * @param direction
+	 * @param label
+	 * @param left
+	 * @param comparator
+	 * @return
+	 */
+	public TreeMap<Long, ChronoVertex> getTimestampNeighborVertices(Direction direction, String label, long left,
+			AC comparator) {
+
+		TreeMap<Long, ChronoVertex> ret = new TreeMap<Long, ChronoVertex>();
+
+		if (this instanceof ChronoVertex) {
+			ChronoVertex v = (ChronoVertex) this;
+
+			if (direction.equals(Direction.OUT)) {
+
+				// outv label t inv
+				// inv label t outv
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.OUT_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.IN_VERTEX, new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String inV = doc.getString(Tokens.IN_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					ret.put(time, graph.getChronoVertex(inV));
+				}
+				return ret;
+			} else if (direction.equals(Direction.IN)) {
+
+				BsonDocument query = new BsonDocument();
+				query.append(Tokens.IN_VERTEX, new BsonString(v.toString()));
+				query.append(Tokens.LABEL, new BsonString(label));
+				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+
+				BsonDocument projection = new BsonDocument();
+				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
+				projection.append(Tokens.OUT_VERTEX, new BsonBoolean(true));
+				projection.append(Tokens.ID, new BsonBoolean(false));
+				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+						.iterator();
+				while (iterator.hasNext()) {
+					BsonDocument doc = iterator.next();
+					String outV = doc.getString(Tokens.OUT_VERTEX).getValue();
+					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
+					ret.put(time, graph.getChronoVertex(outV));
 				}
 				return ret;
 

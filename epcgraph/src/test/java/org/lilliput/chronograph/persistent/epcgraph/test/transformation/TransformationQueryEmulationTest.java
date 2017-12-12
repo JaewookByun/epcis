@@ -64,7 +64,7 @@ public class TransformationQueryEmulationTest {
 		db.getCollection("EventData").drop();
 		db.getCollection("edges").drop();
 		db.getCollection("vertices").drop();
-		db.getCollection("EventDate").createIndex(
+		db.getCollection("EventData").createIndex(
 				new BsonDocument("eventTime", new BsonInt32(1)).append("inputEPCList.epc", new BsonInt32(1)));
 
 		client.close();
