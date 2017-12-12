@@ -23,6 +23,8 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.lilliput.chronograph.common.LongInterval;
+import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
 import org.lilliput.chronograph.common.Tokens.Position;
@@ -30,6 +32,7 @@ import org.lilliput.chronograph.persistent.ChronoEdge;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.VertexEvent;
+import org.lilliput.chronograph.persistent.engine.TraversalEngine;
 import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearch;
 import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearchEmulation;
 import org.oliot.epcis.configuration.Configuration;
@@ -49,6 +52,7 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.VertexQuery;
+import com.tinkerpop.pipes.PipeFunction;
 import com.tinkerpop.pipes.util.structures.Tree;
 
 /**
@@ -322,6 +326,112 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 		return new ResponseEntity<>(retObj.toString(2), responseHeaders, HttpStatus.OK);
 
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/Aggregation", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getAggregationQuery(@RequestParam String epc,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
+
+		// Time processing
+		long startTimeMil = 0;
+		startTimeMil = TimeUtil.getTimeMil(startTime);
+
+		ChronoGraph g = Configuration.g;
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
+		VertexEvent ve = g.getChronoVertex(epc).setTimestamp(startTimeMil);
+
+		BsonArray contains = new BsonArray();
+		contains.add(new BsonString("contains"));
+
+		LoopPipeFunction loop = new LoopPipeFunction() {
+
+			@Override
+			public boolean compute(Object argument, Map<Object, Object> currentPath, int loopCount) {
+				if (argument == null)
+					return false;
+				else
+					return true;
+			}
+		};
+
+		PipeFunction<VertexEvent, VertexEvent> transform = new PipeFunction<VertexEvent, VertexEvent>() {
+
+			@Override
+			public VertexEvent compute(VertexEvent argument) {
+				
+				Set<VertexEvent> veSet = argument.getBothVertexEventSet("contains", AC.$gt);
+				if(veSet == null || veSet.isEmpty())
+					return null;
+				
+				if(veSet.size() == 1)
+					return veSet.iterator().next();
+				
+				
+				Iterator<VertexEvent> iter = veSet.iterator();
+				VertexEvent v1 = iter.next();
+				VertexEvent v2 = iter.next();
+				
+				if(v1.getTimestamp() < v2.getTimestamp())
+					return v1;
+				else
+					return v2;
+			}
+		};
+
+		TraversalEngine engine = new TraversalEngine(g, ve, true, true, VertexEvent.class);
+		engine.as("s");
+		engine.transform(transform, VertexEvent.class);
+		engine.loop("s", loop).toList();
+
+		JSONArray ret = new JSONArray();
+		// TODO:
+		HashMap<SourceDest, LongInterval> ppp = new HashMap<SourceDest, LongInterval>();
+		
+		Map path = engine.path();
+
+			
+		Iterator iter = path.values().iterator();
+		while (iter.hasNext()) {
+			HashSet next = (HashSet) iter.next();
+			Iterator<ArrayList> pathIter = next.iterator();
+			while (pathIter.hasNext()) {
+				ArrayList eachPath = pathIter.next();
+				Iterator elemIter = eachPath.iterator();
+				while (elemIter.hasNext()) {
+					Object elem = elemIter.next();
+					if (elem instanceof VertexEvent) {
+						VertexEvent veElem = (VertexEvent) elem;
+						ret.put(veElem.toString());
+					}
+				}
+			}
+		}
+//		[
+//		  "urn:epc:id:sscc:0000001.0000000000-946652400000",
+//		  "urn:epc:id:sscc:0000001.0000000001-1513128715633",
+//		  "urn:epc:id:sscc:0000001.0000000002-1513128741975",
+//		  "urn:epc:id:sscc:0000001.0000000003-1513128757309",
+//		  "urn:epc:id:sscc:0000001.0000000004-1513128937396",
+//		  "urn:epc:id:sscc:0000001.0000000005-1513128957028",
+//		  "urn:epc:id:sscc:0000001.0000000004-1513228714629",
+//		  "urn:epc:id:sscc:0000001.0000000003-1513228714630",
+//		  "urn:epc:id:sscc:0000001.0000000002-1513228714631",
+//		  "urn:epc:id:sscc:0000001.0000000001-1513228714632",
+//		  "urn:epc:id:sscc:0000001.0000000000-1513228714633"
+//		]
+
+		return new ResponseEntity<>(ret.toString(2), responseHeaders, HttpStatus.OK);
+
+	}
+	
+	class SourceDest{
+		public ChronoVertex source;
+		public ChronoVertex dest;
 	}
 
 	/**

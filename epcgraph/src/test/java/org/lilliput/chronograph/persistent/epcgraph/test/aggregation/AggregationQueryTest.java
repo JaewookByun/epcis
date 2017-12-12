@@ -1,8 +1,7 @@
-package org.lilliput.chronograph.persistent.epcgraph.test.location;
+package org.lilliput.chronograph.persistent.epcgraph.test.aggregation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 
@@ -26,40 +25,29 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
 
-public class LocationQueryEmulationTest {
+public class AggregationQueryTest {
 	public static String fileBaseLoc = "/home/jack/test/";
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
-	public int transferCount = 300;
-	public int iterationCount = 100;
+	public int transferCount = 30;
+	public int iterationCount = 1;
 
 	@Test
-	public void test()
-			throws IOException, InterruptedException, ParserConfigurationException, SAXException, ParseException {
+	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");
 		file.createNewFile();
@@ -76,9 +64,21 @@ public class LocationQueryEmulationTest {
 
 		client.close();
 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		String cTime = sdf.format(new Date());
+
+		long lastTimeMil = System.currentTimeMillis() + 100000000;
+
 		for (int i = 0; i < transferCount; i++) {
 
-			// Insert Event
+			Thread.sleep(1000);
+
+			cTime = sdf.format(new Date());
+			String epcParent = String.format("%010d", i + 1);
+			String epcChild = String.format("%010d", i);
+
+			// urn:epc:id:sscc:0000002.0000000001
+
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
 					+ "<epcis:EPCISDocument schemaVersion=\"1.2\"\n"
 					+ "	creationDate=\"2013-06-04T14:59:02.099+02:00\" xmlns:epcis=\"urn:epcglobal:epcis:xsd:1\"\n"
@@ -86,21 +86,27 @@ public class LocationQueryEmulationTest {
 
 			String bottom = "</EventList>\n" + "	</EPCISBody>\n" + "</epcis:EPCISDocument>";
 
-			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-			String cTime = sdf.format(new Date());
+			String body = "<AggregationEvent>\n" + "				<eventTime>" + cTime + "</eventTime>\n"
+					+ "				<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n"
+					+ "				<parentID>urn:epc:id:sscc:0000001." + epcParent + "</parentID>\n"
+					+ "				<childEPCs>\n" + "					<epc>urn:epc:id:sscc:0000001." + epcChild
+					+ "</epc>\n" + "				</childEPCs>\n" + "				<action>ADD</action>\n"
+					+ "				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>\n"
+					+ "				<!-- TNT Liverpool depot -->\n" + "				<bizLocation>\n"
+					+ "					<id>urn:epc:id:sgln:0000001.00002.1</id>\n" + "				</bizLocation>\n"
+					+ "			</AggregationEvent>";
 
-			String body = "";
+			String lastTime = sdf.format(new Date(lastTimeMil - i));
 
-			Thread.sleep(1000);
-
-			cTime = sdf.format(new Date());
-
-			body += "<ObjectEvent>\n" + "	<eventTime>" + cTime + "</eventTime>\n"
-					+ "	<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n" + "	<epcList>\n"
-					+ "		<epc>urn:epc:id:sgtin:0000001.000001.0</epc>\n" + "	</epcList>\n"
-					+ "	<action>OBSERVE</action>\n" + "	<bizStep>urn:epcglobal:cbv:bizstep:receiving</bizStep>\n"
-					+ "	<bizLocation>\n" + "		<id>urn:epc:id:sgln:0000001.00001." + i + "</id>\n"
-					+ "	</bizLocation>\n" + "</ObjectEvent>";
+			body += "<AggregationEvent>\n" + "				<eventTime>" + lastTime + "</eventTime>\n"
+					+ "				<eventTimeZoneOffset>+00:00</eventTimeZoneOffset>\n"
+					+ "				<parentID>urn:epc:id:sscc:0000001." + epcParent + "</parentID>\n"
+					+ "				<childEPCs>\n" + "					<epc>urn:epc:id:sscc:0000001." + epcChild
+					+ "</epc>\n" + "				</childEPCs>\n" + "				<action>DELETE</action>\n"
+					+ "				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>\n"
+					+ "				<!-- TNT Liverpool depot -->\n" + "				<bizLocation>\n"
+					+ "					<id>urn:epc:id:sgln:0000001.00002.1</id>\n" + "				</bizLocation>\n"
+					+ "			</AggregationEvent>";
 
 			EventCapture cap = new EventCapture();
 			cap.capture(top + body + bottom);
@@ -116,18 +122,16 @@ public class LocationQueryEmulationTest {
 		bw.close();
 	}
 
-	public double doTransformationQuery()
-			throws IOException, ParserConfigurationException, SAXException, ParseException {
+	public double doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();
 
-		String source = "urn:epc:id:sgtin:0000001.000001.0";
+		String source = "urn:epc:id:sscc:0000001.0000000000";
+		String startTime = "2000-01-01T00:00:00";
 
 		for (int i = 0; i < iterationCount; i++) {
-
-			String url = "http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?";
-			url += "MATCH_epc=" + source;
-
+			String url = "http://localhost:8080/epcgraph/Service/Aggregation?startTime=" + startTime + "&epc=" + source
+					+ "&order=forward";
 			URL captureURL = new URL(url);
 			long pre = System.currentTimeMillis();
 			sendPost(captureURL, null);
@@ -152,15 +156,10 @@ public class LocationQueryEmulationTest {
 	 *            start with /
 	 * @param message
 	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws ParseException
 	 */
 	@SuppressWarnings("unused")
-	private void sendPost(URL captureURL, byte[] bytes)
-			throws IOException, ParserConfigurationException, SAXException, ParseException {
+	private void sendPost(URL captureURL, byte[] bytes) throws IOException {
 		HttpURLConnection con = (HttpURLConnection) captureURL.openConnection();
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
 		// optional default is GET
 		con.setRequestMethod("GET");
@@ -179,46 +178,8 @@ public class LocationQueryEmulationTest {
 		}
 		in.close();
 
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(new ByteArrayInputStream(response.toString().getBytes()));
-
-		// HashMap<String, TreeMap<Long, EdgeEvent>> tNeighbors =
-		// v.getTNeighbors(Direction.OUT, "isPossessed",
-		// startTimeMil, AC.$gte);
-
-		// dest , 시간 , ADD or DELETE
-
-		JSONObject timeNeighbors = new JSONObject();
-
-		NodeList objectEvents = doc.getElementsByTagName("ObjectEvent");
-		for (int i = 0; i < objectEvents.getLength(); i++) {
-			// for each event
-			Node objectEvent = objectEvents.item(i);
-			NodeList objectElements = objectEvent.getChildNodes();
-			long eventTimeMil = 0;
-			String location = null;
-			for (int j = 0; j < objectElements.getLength(); j++) {
-				Node element = objectElements.item(j);
-				String nodeName = element.getNodeName();
-				if (nodeName.equals("eventTime")) {
-					String eventTime = element.getTextContent();
-					eventTimeMil = sdf.parse(eventTime).getTime();
-				}
-
-				if (nodeName.equals("bizLocation")) {
-					NodeList bizLocationElements = element.getChildNodes();
-					for (int k = 0; k < bizLocationElements.getLength(); k++) {
-						Node bizLocationElement = bizLocationElements.item(k);
-						if(bizLocationElement instanceof Element) {
-							location = bizLocationElement.getTextContent();
-						}
-					}
-				}
-			}
-			timeNeighbors.put(String.valueOf(eventTimeMil), location);
-		}
-
-		// System.out.println(timeNeighbors.toString(2));
+		// print result
+		JSONArray arr = new JSONArray(response.toString());
+		System.out.println(arr.toString(2));
 	}
 }

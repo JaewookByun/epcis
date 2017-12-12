@@ -1,5 +1,6 @@
 package org.lilliput.chronograph.persistent;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -750,6 +751,122 @@ public class VertexEvent implements Element {
 					return edge.pickInterval(intvSet.last());
 			}).filter(edge -> edge != null).map(edgeEvent -> edgeEvent.getVertexEvent(direction.opposite()));
 		}
+	}
+
+	public Set<VertexEvent> getBothVertexEventSet(final String label, final AC tt) {
+		HashSet<VertexEvent> ret = new HashSet<VertexEvent>();
+
+		HashMap<String, Long> map = new HashMap<String, Long>();
+
+		// db.edges.createIndex({"_outV" : 1, "_label" : 1, "_t" : 1, "_inV" : 1})
+		BsonDocument query1 = new BsonDocument(Tokens.IN_VERTEX, new BsonString(vertex.toString()));
+		query1.append(Tokens.LABEL, new BsonString(label));
+		query1.append(Tokens.TIMESTAMP, new BsonDocument(tt.toString(), new BsonDateTime(timestamp)));
+		BsonDocument proj1 = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
+				.append(Tokens.OUT_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
+
+		Iterator<BsonDocument> x1 = vertex.graph.getEdgeCollection().find(query1).projection(proj1).iterator();
+
+		while (x1.hasNext()) {
+			BsonDocument d = x1.next();
+			String outV = d.getString(Tokens.OUT_VERTEX).getValue();
+			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
+			if (map.containsKey(outV)) {
+				// TODO:
+				if (map.get(outV) > t)
+					map.put(outV, t);
+			} else
+				map.put(outV, t);
+		}
+
+		// db.edges.createIndex({"_outV" : 1, "_label" : 1, "_t" : 1, "_inV" : 1})
+		BsonDocument query2 = new BsonDocument(Tokens.OUT_VERTEX, new BsonString(vertex.toString()));
+		query2.append(Tokens.LABEL, new BsonString(label));
+		query2.append(Tokens.TIMESTAMP, new BsonDocument(tt.toString(), new BsonDateTime(timestamp)));
+		BsonDocument proj2 = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
+				.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
+
+		Iterator<BsonDocument> x2 = vertex.graph.getEdgeCollection().find(query2).projection(proj2).iterator();
+
+		while (x2.hasNext()) {
+			BsonDocument d = x2.next();
+			String inV = d.getString(Tokens.IN_VERTEX).getValue();
+			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
+			if (map.containsKey(inV)) {
+				// TODO:
+				if (map.get(inV) > t)
+					map.put(inV, t);
+			} else
+				map.put(inV, t);
+		}
+
+		map.entrySet().parallelStream().forEach(entry -> {
+			VertexEvent ve = new VertexEvent(graph, entry.getKey() + "-" + entry.getValue());
+			ret.add(ve);
+		});
+		return ret;
+	}
+
+	public Set<VertexEvent> getOutVertexEventSet(final String label, final AC tt) {
+
+		// db.edges.createIndex({"_outV" : 1, "_label" : 1, "_t" : 1, "_inV" : 1})
+		BsonDocument query = new BsonDocument(Tokens.OUT_VERTEX, new BsonString(vertex.toString()));
+		query.append(Tokens.LABEL, new BsonString(label));
+		query.append(Tokens.TIMESTAMP, new BsonDocument(tt.toString(), new BsonDateTime(timestamp)));
+		BsonDocument proj = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
+				.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
+
+		HashSet<VertexEvent> ret = new HashSet<VertexEvent>();
+		Iterator<BsonDocument> x = vertex.graph.getEdgeCollection().find(query).projection(proj).iterator();
+		HashMap<String, Long> map = new HashMap<String, Long>();
+		while (x.hasNext()) {
+			BsonDocument d = x.next();
+			String inV = d.getString(Tokens.IN_VERTEX).getValue();
+			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
+			if (map.containsKey(inV)) {
+				// TODO:
+				if (map.get(inV) > t)
+					map.put(inV, t);
+			} else
+				map.put(inV, t);
+		}
+
+		map.entrySet().parallelStream().forEach(entry -> {
+			VertexEvent ve = new VertexEvent(graph, entry.getKey() + "-" + entry.getValue());
+			ret.add(ve);
+		});
+		return ret;
+	}
+
+	public Set<VertexEvent> getInVertexEventSet(final String label, final AC tt) {
+
+		// db.edges.createIndex({"_outV" : 1, "_label" : 1, "_t" : 1, "_inV" : 1})
+		BsonDocument query = new BsonDocument(Tokens.IN_VERTEX, new BsonString(vertex.toString()));
+		query.append(Tokens.LABEL, new BsonString(label));
+		query.append(Tokens.TIMESTAMP, new BsonDocument(tt.toString(), new BsonDateTime(timestamp)));
+		BsonDocument proj = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
+				.append(Tokens.OUT_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
+
+		HashSet<VertexEvent> ret = new HashSet<VertexEvent>();
+		Iterator<BsonDocument> x = vertex.graph.getEdgeCollection().find(query).projection(proj).iterator();
+		HashMap<String, Long> map = new HashMap<String, Long>();
+		while (x.hasNext()) {
+			BsonDocument d = x.next();
+			String outV = d.getString(Tokens.OUT_VERTEX).getValue();
+			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
+			if (map.containsKey(outV)) {
+				// TODO:
+				if (map.get(outV) > t)
+					map.put(outV, t);
+			} else
+				map.put(outV, t);
+		}
+
+		map.entrySet().parallelStream().forEach(entry -> {
+			VertexEvent ve = new VertexEvent(graph, entry.getKey() + "-" + entry.getValue());
+			ret.add(ve);
+		});
+		return ret;
 	}
 
 	public Set<VertexEvent> getVertexEventSet(final Direction direction, final BsonArray labels,

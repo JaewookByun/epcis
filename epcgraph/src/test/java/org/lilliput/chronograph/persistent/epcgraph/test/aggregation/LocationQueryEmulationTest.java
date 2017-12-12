@@ -1,4 +1,4 @@
-package org.lilliput.chronograph.persistent.epcgraph.test.location;
+package org.lilliput.chronograph.persistent.epcgraph.test.aggregation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
