@@ -292,6 +292,38 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 	}
 
+	@RequestMapping(value = "/Location", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> getLocationQuery(@RequestParam String epc,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
+
+		// Time processing
+		long startTimeMil = 0;
+		startTimeMil = TimeUtil.getTimeMil(startTime);
+
+		ChronoGraph g = Configuration.g;
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
+
+		ChronoVertex v = g.getChronoVertex(epc);
+		TreeMap<Long, ChronoVertex> timestampNeighbors = v.getTimestampNeighborVertices(Direction.OUT, "isLocatedIn",
+				startTimeMil, AC.$gte);
+
+		// outV : [ "t1", "t2", "t3", "t4" ];
+		JSONObject retObj = new JSONObject();
+		Iterator<Entry<Long, ChronoVertex>> iterator = timestampNeighbors.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<Long, ChronoVertex> elem = iterator.next();
+			Long time = elem.getKey();
+			ChronoVertex neighbor = elem.getValue();
+			retObj.put(time.toString(), neighbor.toString());
+		}
+
+		return new ResponseEntity<>(retObj.toString(2), responseHeaders, HttpStatus.OK);
+
+	}
+
 	/**
 	 * 
 	 * @param epc
