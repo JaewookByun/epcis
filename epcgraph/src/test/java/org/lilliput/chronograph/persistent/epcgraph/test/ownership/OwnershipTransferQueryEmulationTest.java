@@ -203,7 +203,6 @@ public class OwnershipTransferQueryEmulationTest {
 
 		NodeList objectEvents = doc.getElementsByTagName("ObjectEvent");
 		for (int i = 0; i < objectEvents.getLength(); i++) {
-			// for each event
 			Node objectEvent = objectEvents.item(i);
 			NodeList objectElements = objectEvent.getChildNodes();
 			long eventTimeMil = 0;
@@ -233,7 +232,6 @@ public class OwnershipTransferQueryEmulationTest {
 									}
 								}
 							}
-
 						}
 						if (extensionElementName.equals("destinationList")) {
 							NodeList destList = extensionElement.getChildNodes();
@@ -251,7 +249,6 @@ public class OwnershipTransferQueryEmulationTest {
 					}
 				}
 			}
-
 			Iterator<String> sourceIter = sourceSet.iterator();
 			while (sourceIter.hasNext()) {
 				String source = sourceIter.next();
@@ -265,7 +262,6 @@ public class OwnershipTransferQueryEmulationTest {
 					tNeighbors.put(source, sourceValue);
 				}
 			}
-
 			Iterator<String> destIter = destSet.iterator();
 			while (destIter.hasNext()) {
 				String dest = destIter.next();
