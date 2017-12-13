@@ -757,19 +757,12 @@ abstract class ChronoElement implements Element {
 			ChronoVertex v = (ChronoVertex) this;
 
 			if (direction.equals(Direction.OUT)) {
-
-				// outv label t inv
-				// inv label t outv
-				BsonDocument query = new BsonDocument();
-				query.append(Tokens.OUT_VERTEX, new BsonString(v.toString()));
-				query.append(Tokens.LABEL, new BsonString(label));
-				query.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
-
-				BsonDocument projection = new BsonDocument();
-				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
-				projection.append(Tokens.IN_VERTEX, new BsonBoolean(true));
-				projection.append("action", new BsonBoolean(true));
-				projection.append(Tokens.ID, new BsonBoolean(false));
+				BsonDocument query = new BsonDocument(Tokens.OUT_VERTEX, new BsonString(v.toString()))
+						.append(Tokens.LABEL, new BsonString(label))
+						.append(Tokens.TIMESTAMP, new BsonDocument(comparator.toString(), new BsonDateTime(left)));
+				BsonDocument projection = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
+						.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append("action", new BsonBoolean(true))
+						.append(Tokens.ID, new BsonBoolean(false));
 				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
 						.iterator();
 				while (iterator.hasNext()) {
@@ -777,8 +770,6 @@ abstract class ChronoElement implements Element {
 					String inV = doc.getString(Tokens.IN_VERTEX).getValue();
 					long time = doc.getDateTime(Tokens.TIMESTAMP).getValue();
 					String action = doc.getString("action").getValue();
-					// { "_inV" : "urn:epc:id:sgln:0000001.00001.0", "_t" : { "$date" :
-					// 1513079328721 } }
 					if (ret.containsKey(inV)) {
 						TreeMap<Long, String> retVal = ret.get(inV);
 						retVal.put(time, action);

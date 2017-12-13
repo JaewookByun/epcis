@@ -83,6 +83,11 @@ public class PersistentBreadthFirstSearch {
 			}
 		};
 
+		// return new TraversalEngine(g, source, false, true,
+		// VertexEvent.class).as("s").scatter().oute(label, tt)
+		// .filter(exceedBound2).gather().elementDedup(FC.$min).sideEffect(storeGamma)
+		// .loop("s", exitIfEmptyIterator).path();
+
 		TraversalEngine pipeLine = new TraversalEngine(g, source, false, true, VertexEvent.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();

@@ -62,8 +62,8 @@ public class AggregationQueryEmulationTest {
 
 	public static HashMap<HashSet<String>, ArrayList<Long>> ppp = null;
 
-	public int transferCount = 200;
-	public int iterationCount = 100;
+	public int transferCount = 3;
+	public int iterationCount = 1;
 
 	@Test
 	public void test()
@@ -232,10 +232,8 @@ public class AggregationQueryEmulationTest {
 		JSONObject timeNeighbors = new JSONObject();
 
 		NodeList objectEvents = doc.getElementsByTagName("AggregationEvent");
-		// parent, long, action
 		HashMap<String, TreeMap<Long, String>> managing = new HashMap<String, TreeMap<Long, String>>();
 		for (int i = 0; i < objectEvents.getLength(); i++) {
-			// for each event
 			Node objectEvent = objectEvents.item(i);
 			NodeList objectElements = objectEvent.getChildNodes();
 			long eventTimeMil = 0;
@@ -255,7 +253,6 @@ public class AggregationQueryEmulationTest {
 					action = element.getTextContent();
 				}
 			}
-
 			if (managing.containsKey(parentID)) {
 				TreeMap<Long, String> timestampAction = managing.get(parentID);
 				timestampAction.put(eventTimeMil, action);
@@ -266,18 +263,12 @@ public class AggregationQueryEmulationTest {
 				managing.put(parentID, timestampAction);
 			}
 		}
-
-		// {urn:epc:id:sscc:0000001.0000000001={1513138621448=ADD,
-		// 1513238620448=DELETE}}
-
 		Iterator<Entry<String, TreeMap<Long, String>>> manIter = managing.entrySet().iterator();
 		while (manIter.hasNext()) {
 			Entry<String, TreeMap<Long, String>> man = manIter.next();
 			String parentID = man.getKey();
 			TreeMap<Long, String> timestampAction = man.getValue();
-
 			HashSet<LongInterval> rangeSet = new HashSet<LongInterval>();
-
 			Iterator<Entry<Long, String>> taIter = timestampAction.entrySet().iterator();
 			Long temp = null;
 			while (taIter.hasNext()) {
@@ -296,16 +287,12 @@ public class AggregationQueryEmulationTest {
 					continue;
 				}
 			}
-
-			// 각각의 시간 range에 대해 parentID를 child로 갖는 또 다른 호출을 함
 			Iterator<LongInterval> rangeIter = rangeSet.iterator();
 			while (rangeIter.hasNext()) {
 				LongInterval range = rangeIter.next();
-
 				HashSet<String> p = new HashSet<String>();
 				p.add("urn:epc:id:sscc:0000001.0000000000");
 				p.add(parentID);
-
 				if (ppp.containsKey(p)) {
 					ArrayList<Long> pp = ppp.get(p);
 					pp.add(range.getStart());
@@ -317,12 +304,10 @@ public class AggregationQueryEmulationTest {
 					pp.add(range.getEnd());
 					ppp.put(p, pp);
 				}
-
 				recursiveAggregation(parentID, range);
 			}
 		}
 
-		// JSONObject: source-dest : [intervals]
 		JSONObject ret = new JSONObject();
 
 		Iterator<Entry<HashSet<String>, ArrayList<Long>>> iter2 = ppp.entrySet().iterator();
@@ -361,18 +346,14 @@ public class AggregationQueryEmulationTest {
 		String endTime = sdf.format(range.getEnd());
 
 		String url = "http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?eventType=AggregationEvent&orderBy=eventTime&orderDirection=ASC&";
-		url += "MATCH_epc=" + child + "&GE_eventTime=" + startTime + "&LT_eventTime" + endTime;
+		url += "MATCH_epc=" + child + "&GE_eventTime=" + startTime + "&LT_eventTime=" + endTime;
 
 		URL captureURL = new URL(url);
 
-		// optional default is GET
 		HttpURLConnection con = (HttpURLConnection) captureURL.openConnection();
 		con.setRequestMethod("GET");
 
 		int responseCode = con.getResponseCode();
-		// System.out.println("\nSending 'GET' request to URL : " +
-		// captureURL.toString());
-		// System.out.println("Response Code : " + responseCode);
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
@@ -387,19 +368,11 @@ public class AggregationQueryEmulationTest {
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(new ByteArrayInputStream(response.toString().getBytes()));
 
-		// HashMap<String, TreeMap<Long, EdgeEvent>> tNeighbors =
-		// v.getTNeighbors(Direction.OUT, "isPossessed",
-		// startTimeMil, AC.$gte);
-
-		// dest , 시간 , ADD or DELETE
-
 		JSONObject timeNeighbors = new JSONObject();
 
 		NodeList objectEvents = doc.getElementsByTagName("AggregationEvent");
-		// parent, long, action
 		HashMap<String, TreeMap<Long, String>> managing = new HashMap<String, TreeMap<Long, String>>();
 		for (int i = 0; i < objectEvents.getLength(); i++) {
-			// for each event
 			Node objectEvent = objectEvents.item(i);
 			NodeList objectElements = objectEvent.getChildNodes();
 			long eventTimeMil = 0;
@@ -419,7 +392,6 @@ public class AggregationQueryEmulationTest {
 					action = element.getTextContent();
 				}
 			}
-
 			if (managing.containsKey(parentID)) {
 				TreeMap<Long, String> timestampAction = managing.get(parentID);
 				timestampAction.put(eventTimeMil, action);
@@ -430,7 +402,6 @@ public class AggregationQueryEmulationTest {
 				managing.put(parentID, timestampAction);
 			}
 		}
-
 		Iterator<Entry<String, TreeMap<Long, String>>> manIter = managing.entrySet().iterator();
 		while (manIter.hasNext()) {
 			Entry<String, TreeMap<Long, String>> man = manIter.next();
@@ -457,15 +428,12 @@ public class AggregationQueryEmulationTest {
 					continue;
 				}
 			}
-			// 각각의 시간 range에 대해 parentID를 child로 갖는 또 다른 호출을 함
 			Iterator<LongInterval> rangeIter = rangeSet.iterator();
 			while (rangeIter.hasNext()) {
 				LongInterval range2 = rangeIter.next();
-
 				HashSet<String> p = new HashSet<String>();
 				p.add(child);
 				p.add(parentID);
-
 				if (ppp.containsKey(p)) {
 					ArrayList<Long> pp = ppp.get(p);
 					pp.add(range2.getStart());
@@ -477,7 +445,6 @@ public class AggregationQueryEmulationTest {
 					pp.add(range2.getEnd());
 					ppp.put(p, pp);
 				}
-
 				recursiveAggregation(parentID, range2);
 			}
 		}

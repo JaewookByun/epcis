@@ -43,8 +43,8 @@ public class AggregationQueryTest {
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
-	public int transferCount = 300;
-	public int iterationCount = 100;
+	public int transferCount = 3;
+	public int iterationCount = 1;
 
 	@Test
 	public void test() throws IOException, InterruptedException {
