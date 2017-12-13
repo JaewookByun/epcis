@@ -143,10 +143,10 @@ public class TraceabilityQueryService implements ServletContextAware {
 		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
 		Map pathMap = new HashMap();
 		if (order.equals("forward"))
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), "transformsTo",
 					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first, order);
 		else
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), "transformsTo",
 					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
 
 		// JSONarray contains each path

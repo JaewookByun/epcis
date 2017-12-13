@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.bson.BsonArray;
-
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
@@ -37,7 +35,7 @@ public class PersistentBreadthFirstSearch {
 	private ConcurrentHashMap<ChronoVertex, Long> gamma = new ConcurrentHashMap<ChronoVertex, Long>();
 
 	@SuppressWarnings("rawtypes")
-	public Map compute(ChronoGraph g, VertexEvent source, BsonArray labels, TemporalType typeOfEvent, AC tt, AC s, AC e,
+	public Map compute(ChronoGraph g, VertexEvent source, String label, TemporalType typeOfEvent, AC tt, AC s, AC e,
 			AC ss, AC se, AC es, AC ee, Position pos, String order) {
 
 		// order = forward / backward
@@ -89,7 +87,8 @@ public class PersistentBreadthFirstSearch {
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
 		// if (order.equals("forward"))
-		pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
+		pipeLine = pipeLine.oute(label, tt);
+		// pipeLine = pipeLine.oute(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
 		// else
 		// pipeLine = pipeLine.ine(labels, typeOfEvent, tt, s, e, ss, se, es, ee, pos);
 		pipeLine = pipeLine.filter(exceedBound2);

@@ -51,6 +51,10 @@ public class TransformationQueryEmulationTest {
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
+	public static String baseURL = "http://localhost:8080/epcgraph";
+	public int transferCount = 200;
+	public int iterationCount = 100;
+	
 	@Test
 	public void test() throws IOException {
 
@@ -69,7 +73,7 @@ public class TransformationQueryEmulationTest {
 
 		client.close();
 
-		for (int i = 0; i < 300; i++) {
+		for (int i = 0; i < transferCount; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -94,6 +98,9 @@ public class TransformationQueryEmulationTest {
 					+ "						<epc>urn:epc:id:sgtin:0000001.000001." + (2 * i + 2) + "</epc>\n"
 					+ "					</outputEPCList>\n" + "				</TransformationEvent>\n"
 					+ "			</extension>";
+			
+			
+			
 			EventCapture cap = new EventCapture();
 			cap.capture(top + body + bottom);
 
@@ -114,22 +121,20 @@ public class TransformationQueryEmulationTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-12-09T16:17:05.765Z";
 
-		int loopCount = 100;
-
-		for (int i = 0; i < loopCount; i++) {
+		for (int i = 0; i < iterationCount; i++) {
 			long pre = System.currentTimeMillis();
 			JSONArray arr = getTransformationTreeEmulation(source, startTime);
 			long aft = System.currentTimeMillis();
 			long elapsedTime = aft - pre;
 			// System.out.println(arr.toString(2));
-			System.out.println("Elapsed Time: " + elapsedTime);
+			// System.out.println("Elapsed Time: " + elapsedTime);
 			timeList.add(elapsedTime);
 		}
 
 		double total = timeList.parallelStream().mapToDouble(t -> {
 			return t.longValue();
 		}).sum();
-		return total / loopCount;
+		return total / iterationCount;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
