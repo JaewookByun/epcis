@@ -1193,7 +1193,7 @@ public class ExternalTraversalEngine {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String time = sdf.format(new Date(source.time));
 
-		String url = "http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?";
+		String url = "http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?";
 		url += "MATCH_inputEPC=" + source.epc + "&GE_eventTime=" + time;
 
 		URL captureURL = new URL(url);
