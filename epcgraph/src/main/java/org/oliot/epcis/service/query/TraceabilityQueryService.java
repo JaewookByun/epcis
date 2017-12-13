@@ -23,7 +23,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
@@ -363,38 +362,43 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 			@Override
 			public VertexEvent compute(VertexEvent argument) {
-				
+
 				Set<VertexEvent> veSet = argument.getBothVertexEventSet("contains", AC.$gt);
-				if(veSet == null || veSet.isEmpty())
+				if (veSet == null || veSet.isEmpty() || veSet.size() == 0)
 					return null;
-				
-				if(veSet.size() == 1)
+
+				if (veSet.size() == 1)
 					return veSet.iterator().next();
-				
-				
+
 				Iterator<VertexEvent> iter = veSet.iterator();
-				VertexEvent v1 = iter.next();
-				VertexEvent v2 = iter.next();
-				
-				if(v1.getTimestamp() < v2.getTimestamp())
-					return v1;
-				else
-					return v2;
+				VertexEvent v1 = null;
+				VertexEvent v2 = null;
+				if (iter.hasNext())
+					v1 = iter.next();
+				if (iter.hasNext())
+					v2 = iter.next();
+
+				if (v1 != null && v2 != null) {
+					if (v1.getTimestamp() < v2.getTimestamp())
+						return v1;
+					else
+						return v2;
+				}
+				return null;
+
 			}
 		};
 
-		TraversalEngine engine = new TraversalEngine(g, ve, true, true, VertexEvent.class);
+		TraversalEngine engine = new TraversalEngine(g, ve, false, true, VertexEvent.class);
 		engine.as("s");
 		engine.transform(transform, VertexEvent.class);
 		engine.loop("s", loop).toList();
 
-		JSONArray ret = new JSONArray();
-		// TODO:
-		HashMap<SourceDest, LongInterval> ppp = new HashMap<SourceDest, LongInterval>();
-		
+		ArrayList<VertexEvent> refinedPath = new ArrayList<VertexEvent>();
+		HashMap<HashSet<ChronoVertex>, ArrayList<Long>> ppp = new HashMap<HashSet<ChronoVertex>, ArrayList<Long>>();
+
 		Map path = engine.path();
 
-			
 		Iterator iter = path.values().iterator();
 		while (iter.hasNext()) {
 			HashSet next = (HashSet) iter.next();
@@ -406,32 +410,72 @@ public class TraceabilityQueryService implements ServletContextAware {
 					Object elem = elemIter.next();
 					if (elem instanceof VertexEvent) {
 						VertexEvent veElem = (VertexEvent) elem;
-						ret.put(veElem.toString());
+						refinedPath.add(veElem);
 					}
 				}
 			}
 		}
-//		[
-//		  "urn:epc:id:sscc:0000001.0000000000-946652400000",
-//		  "urn:epc:id:sscc:0000001.0000000001-1513128715633",
-//		  "urn:epc:id:sscc:0000001.0000000002-1513128741975",
-//		  "urn:epc:id:sscc:0000001.0000000003-1513128757309",
-//		  "urn:epc:id:sscc:0000001.0000000004-1513128937396",
-//		  "urn:epc:id:sscc:0000001.0000000005-1513128957028",
-//		  "urn:epc:id:sscc:0000001.0000000004-1513228714629",
-//		  "urn:epc:id:sscc:0000001.0000000003-1513228714630",
-//		  "urn:epc:id:sscc:0000001.0000000002-1513228714631",
-//		  "urn:epc:id:sscc:0000001.0000000001-1513228714632",
-//		  "urn:epc:id:sscc:0000001.0000000000-1513228714633"
-//		]
+
+		for (int i = 0; i < refinedPath.size() - 1; i++) {
+			VertexEvent source = refinedPath.get(i);
+			VertexEvent dest = refinedPath.get(i + 1);
+
+			HashSet<ChronoVertex> sd = new HashSet<ChronoVertex>();
+			sd.add(source.getVertex());
+			sd.add(dest.getVertex());
+
+			if (ppp.containsKey(sd)) {
+				ArrayList<Long> series = ppp.get(sd);
+				series.add(dest.getTimestamp());
+				ppp.put(sd, series);
+			} else {
+				ArrayList<Long> series = new ArrayList<Long>();
+				series.add(dest.getTimestamp());
+				ppp.put(sd, series);
+			}
+		}
+
+		// JSONObject: source-dest : [intervals]
+		JSONObject ret = new JSONObject();
+
+		Iterator<Entry<HashSet<ChronoVertex>, ArrayList<Long>>> iter2 = ppp.entrySet().iterator();
+		while (iter2.hasNext()) {
+			Entry<HashSet<ChronoVertex>, ArrayList<Long>> entry = iter2.next();
+			String key = entry.getKey().toString();
+			ArrayList<Long> intvArr = entry.getValue();
+			Long start = null;
+			Iterator<Long> iter3 = intvArr.iterator();
+			JSONArray intvJsonArr = new JSONArray();
+			while (iter3.hasNext()) {
+				Long temp = iter3.next();
+				if (start == null) {
+					start = temp;
+					continue;
+				} else {
+					intvJsonArr.put(start + "-" + temp);
+					start = null;
+					continue;
+				}
+			}
+			ret.put(key, intvJsonArr);
+		}
 
 		return new ResponseEntity<>(ret.toString(2), responseHeaders, HttpStatus.OK);
 
 	}
-	
-	class SourceDest{
+
+	class SourceDest {
 		public ChronoVertex source;
 		public ChronoVertex dest;
+
+		public SourceDest(ChronoVertex source, ChronoVertex dest) {
+			this.source = source;
+			this.dest = dest;
+		}
+
+		public String toString() {
+			return source.toString() + "-" + dest.toString();
+		}
 	}
 
 	/**
