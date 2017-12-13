@@ -52,9 +52,9 @@ public class TransformationQueryEmulationTest {
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
 	public static String baseURL = "http://localhost:8080/epcgraph";
-	public int transferCount = 200;
+	public int transferCount = 10000;
 	public int iterationCount = 100;
-	
+
 	@Test
 	public void test() throws IOException {
 
@@ -98,9 +98,7 @@ public class TransformationQueryEmulationTest {
 					+ "						<epc>urn:epc:id:sgtin:0000001.000001." + (2 * i + 2) + "</epc>\n"
 					+ "					</outputEPCList>\n" + "				</TransformationEvent>\n"
 					+ "			</extension>";
-			
-			
-			
+
 			EventCapture cap = new EventCapture();
 			cap.capture(top + body + bottom);
 
