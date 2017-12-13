@@ -31,7 +31,7 @@ import java.util.Date;
 
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
@@ -43,8 +43,8 @@ public class AggregationQueryTest {
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
-	public int transferCount = 30;
-	public int iterationCount = 1;
+	public int transferCount = 300;
+	public int iterationCount = 100;
 
 	@Test
 	public void test() throws IOException, InterruptedException {
@@ -179,7 +179,7 @@ public class AggregationQueryTest {
 		in.close();
 
 		// print result
-		JSONArray arr = new JSONArray(response.toString());
-		System.out.println(arr.toString(2));
+		JSONObject arr = new JSONObject(response.toString());
+		// System.out.println(arr.toString(2));
 	}
 }
