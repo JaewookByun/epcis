@@ -43,8 +43,12 @@ public class TransformationQueryTest {
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
+	public static String baseURL = "http://localhost:8080/epcgraph";
+	public int transferCount = 200;
+	public int iterationCount = 100;
+	
 	@Test
-	public void test() throws IOException {
+	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");
 		file.createNewFile();
@@ -56,12 +60,11 @@ public class TransformationQueryTest {
 		db.getCollection("EventData").drop();
 		db.getCollection("edges").drop();
 		db.getCollection("vertices").drop();
-		db.getCollection("edges").createIndex(new BsonDocument("_outV", new BsonInt32(1)).append("_t", new BsonInt32(1))
+		db.getCollection("edges").createIndex(new BsonDocument("_outV", new BsonInt32(1)).append("_label", new BsonInt32(1)).append("_t", new BsonInt32(1))
 				.append("_inV", new BsonInt32(1)));
-
 		client.close();
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < transferCount; i++) {
 
 			// Insert Event
 			String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
@@ -89,6 +92,8 @@ public class TransformationQueryTest {
 			EventCapture cap = new EventCapture();
 			cap.capture(top + body + bottom);
 
+			Thread.sleep(2000);
+			
 			double avg = doTransformationQuery();
 
 			System.out.println(i + "\t" + avg);
@@ -105,10 +110,8 @@ public class TransformationQueryTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-01-01T00:00:00";
 
-		int loopCount = 100;
-
-		for (int i = 0; i < loopCount; i++) {
-			String url = "http://localhost:8080/epcis/Service/Transform?startTime=" + startTime + "&epc=" + source
+		for (int i = 0; i < iterationCount; i++) {
+			String url = baseURL+ "/Service/Transform?startTime=" + startTime + "&epc=" + source
 					+ "&order=forward";
 			URL captureURL = new URL(url);
 			long pre = System.currentTimeMillis();
@@ -123,7 +126,7 @@ public class TransformationQueryTest {
 			return t.longValue();
 		}).sum();
 
-		return total / loopCount;
+		return total / iterationCount;
 	}
 
 	/**
