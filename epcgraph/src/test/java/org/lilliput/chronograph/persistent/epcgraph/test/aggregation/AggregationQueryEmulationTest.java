@@ -62,8 +62,8 @@ public class AggregationQueryEmulationTest {
 
 	public static HashMap<HashSet<String>, ArrayList<Long>> ppp = null;
 
-	public int transferCount = 3;
-	public int iterationCount = 1;
+	public int transferCount = 1000;
+	public int iterationCount = 100;
 
 	@Test
 	public void test()

@@ -44,8 +44,8 @@ public class TransformationQueryTest {
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
 	public static String baseURL = "http://localhost:8080/epcgraph";
-	public int transferCount = 2;
-	public int iterationCount = 1;
+	public int transferCount = 308;
+	public int iterationCount = 100;
 	
 	@Test
 	public void test() throws IOException, InterruptedException {
@@ -161,6 +161,6 @@ public class TransformationQueryTest {
 
 		// print result
 		JSONArray arr = new JSONArray(response.toString());
-		System.out.println(arr.toString(2));
+		//System.out.println(arr.toString(2));
 	}
 }

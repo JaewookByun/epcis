@@ -60,7 +60,7 @@ public class OwnershipTransferQueryEmulationTest {
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
-	public int transferCount = 300;
+	public int transferCount = 1000;
 	public int iterationCount = 100;
 
 	@Test
@@ -136,7 +136,7 @@ public class OwnershipTransferQueryEmulationTest {
 
 		for (int i = 0; i < iterationCount; i++) {
 
-			String url = "http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?";
+			String url = "http://localhost:8080/epcgis/Service/Poll/SimpleEventQuery?";
 			url += "MATCH_epc=" + source;
 
 			URL captureURL = new URL(url);
@@ -305,6 +305,6 @@ public class OwnershipTransferQueryEmulationTest {
 			retObj.put(neighbor, ranges);
 		}
 
-		// System.out.println(retObj.toString(2));
+		System.out.println(retObj.toString(2));
 	}
 }
