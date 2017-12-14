@@ -167,6 +167,6 @@ public class OwnershipTransferQueryTest {
 
 		// print result
 		JSONObject arr = new JSONObject(response.toString());
-		// System.out.println(arr.toString(2));
+		System.out.println(arr.toString(2));
 	}
 }
