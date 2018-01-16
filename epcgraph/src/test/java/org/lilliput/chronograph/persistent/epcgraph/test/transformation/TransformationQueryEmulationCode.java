@@ -174,7 +174,6 @@ public class TransformationQueryEmulationCode {
 		this.collection = collection;
 	}
 
-	@SuppressWarnings("unused")
 	private Set<EPCTime> getNextOutSet(EPCTime source)
 			throws IOException, ParserConfigurationException, SAXException, ParseException {
 

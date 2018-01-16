@@ -17,6 +17,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.service.subscription.MongoSubscription;
 
@@ -60,7 +61,7 @@ public class Configuration implements ServletContextListener {
 	public static JSONObject json;
 	public static String ac_api_address;
 	public static String epcis_id;
-	public static ChronoGraph g;
+	public static ChronoGraph persistentGraph;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -78,6 +79,8 @@ public class Configuration implements ServletContextListener {
 
 		// load existing subscription
 		loadExistingSubscription();
+
+		servletContextEvent.getServletContext().setAttribute("cachedGraph", new CachedChronoGraph());
 	}
 
 	private void setLogger() {
@@ -193,16 +196,12 @@ public class Configuration implements ServletContextListener {
 			}
 
 			epcis_id = id.trim();
-			
+
 			// Set Redis Database for caching
-			//11. (Yalew Cache)
-			jedisClient = new Jedis("localhost"); 
-		    System.out.println("Connection to server sucessfully"); 
-		    //set the data in redis string 
-			
-		    
-			
-			
+			// 11. (Yalew Cache)
+			jedisClient = new Jedis("localhost");
+			System.out.println("Connection to server sucessfully");
+			// set the data in redis string
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
@@ -227,8 +226,9 @@ public class Configuration implements ServletContextListener {
 		}
 		mongoClient = new MongoClient(backend_ip, backend_port);
 		mongoDatabase = mongoClient.getDatabase(databaseName);
-		
-		g = new ChronoGraph(backend_ip, backend_port, databaseName);
+
+		persistentGraph = new ChronoGraph(backend_ip, backend_port, databaseName);
+
 	}
 
 	/**

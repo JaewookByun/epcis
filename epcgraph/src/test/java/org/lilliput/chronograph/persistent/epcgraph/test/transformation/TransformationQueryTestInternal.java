@@ -22,7 +22,6 @@ import java.io.FileWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
