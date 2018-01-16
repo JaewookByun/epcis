@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -24,8 +24,8 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoVertex;
-import org.lilliput.chronograph.cache.engine.CachedTraversalEngine;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
+import org.lilliput.chronograph.cache.recipe.InMemoryConcreteBreadthFirstSearch;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
@@ -35,7 +35,6 @@ import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.VertexEvent;
 import org.lilliput.chronograph.persistent.engine.TraversalEngine;
-import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearch;
 import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearchEmulation;
 import org.oliot.epcis.configuration.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ import com.tinkerpop.pipes.util.structures.Tree;
  */
 
 @Controller
-public class TraceabilityQueryService implements ServletContextAware {
+public class CachedTraceabilityQueryService implements ServletContextAware {
 
 	@Autowired
 	ServletContext servletContext;
@@ -97,29 +96,15 @@ public class TraceabilityQueryService implements ServletContextAware {
 	 * 
 	 * @return a list of nodes in graph store
 	 */
-	@RequestMapping(value = "/Resources", method = RequestMethod.GET)
+	@RequestMapping(value = "/Resources2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getAllVertices() {
 
-		ScriptEngineManager man = new ScriptEngineManager();
-		ScriptEngine engine = man.getEngineByName("groovy");
-		engine.put("graph", servletContext.getAttribute("cachedGraph"));
-
-		engine.put("engine", new CachedTraversalEngine());
-		engine.put("CachedChronoVertex_class", CachedChronoVertex.class);
-		try {
-			// CachedChronoGraph g = Configuration.cachedGraph;
-			// g.addEdge("1", "2", "c");
-			// g.getChronoVertex("1");
-			// new CachedTraversalEngine().out(null, Integer.MAX_VALUE);
-			engine.eval("graph.addEdge(\"1\",\"2\",\"c\");"
-					+ "engine = engine.setStartsLazy(graph.getChronoVertex(\"1\"),true,false,CachedChronoVertex_class);"
-					+ "engine.out(null, Integer.MAX_VALUE);" + "System.out.println(engine.toList());");
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
+		CachedChronoGraph g = (CachedChronoGraph) servletContext.getAttribute("cachedGraph");
+		Random r = new Random();
+		g.addEdge(String.valueOf(r.nextInt()), String.valueOf(r.nextInt()), "c");
+		System.out.println(g.getChronoVertexSet().size());
+		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
 
@@ -136,7 +121,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	 * 
 	 * @return remove All vertices for developer
 	 */
-	@RequestMapping(value = "/Resources", method = RequestMethod.DELETE)
+	@RequestMapping(value = "/Resources2", method = RequestMethod.DELETE)
 	@ResponseBody
 	public ResponseEntity<?> deleteAllExistingNodes() {
 		Configuration.persistentGraph.getVertexCollection().drop();
@@ -145,7 +130,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@RequestMapping(value = "/Transform", method = RequestMethod.GET)
+	@RequestMapping(value = "/Transform2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getTransformTree(@RequestParam String epc,
 			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
@@ -160,16 +145,16 @@ public class TraceabilityQueryService implements ServletContextAware {
 		BsonArray transforms = new BsonArray();
 		transforms.add(new BsonString("transformsTo"));
 
-		ChronoGraph g = Configuration.persistentGraph;
+		CachedChronoGraph g = (CachedChronoGraph) servletContext.getAttribute("cachedGraph");
 
-		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
+		InMemoryConcreteBreadthFirstSearch tBFS = new InMemoryConcreteBreadthFirstSearch();
 		Map pathMap = new HashMap();
 		if (order.equals("forward"))
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), "transformsTo",
-					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first, order);
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$gte, null, null, null, null, null, null, Position.first);
 		else
-			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), "transformsTo",
-					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last, order);
+			pathMap = tBFS.compute(g, g.getChronoVertex(epc).setTimestamp(startTimeMil), transforms,
+					TemporalType.TIMESTAMP, AC.$lte, null, null, null, null, null, null, Position.last);
 
 		// JSONarray contains each path
 		// contains time - vertex mapping
@@ -198,7 +183,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@RequestMapping(value = "/TransformE", method = RequestMethod.GET)
+	@RequestMapping(value = "/TransformE2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getTransformTreeEmulation(@RequestParam String epc,
 			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
@@ -252,7 +237,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 	}
 
-	@RequestMapping(value = "/OwnershipTransfer", method = RequestMethod.GET)
+	@RequestMapping(value = "/OwnershipTransfer2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getOwnershipTransferQuery(@RequestParam String epc,
 			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
@@ -317,7 +302,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 
 	}
 
-	@RequestMapping(value = "/Location", method = RequestMethod.GET)
+	@RequestMapping(value = "/Location2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getLocationQuery(@RequestParam String epc,
 			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
@@ -350,7 +335,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@RequestMapping(value = "/Aggregation", method = RequestMethod.GET)
+	@RequestMapping(value = "/Aggregation2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getAggregationQuery(@RequestParam String epc,
 			@RequestParam(required = false) String startTime, @RequestParam(required = false) String order) {
@@ -541,7 +526,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 	 *         form. Also, if recursiveOrder is desc, a sub-document cannot contain
 	 *         older relationship of parent one.
 	 */
-	@RequestMapping(value = "/Resource", method = RequestMethod.GET)
+	@RequestMapping(value = "/Resource2", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<?> getResource(@RequestParam String epc, @RequestParam(required = false) String scope,
 			@RequestParam(required = false) String fromTime, @RequestParam(required = false) String toTime,
@@ -1049,7 +1034,7 @@ public class TraceabilityQueryService implements ServletContextAware {
 		}
 	}
 
-	@RequestMapping(value = "/Resource/{epc}/{relationships}", method = RequestMethod.GET)
+	@RequestMapping(value = "/Resource2/{epc}/{relationships}", method = RequestMethod.GET)
 	@ResponseBody
 	public String getNeighborNodes(@PathVariable String epc, @PathVariable String relationships) {
 		return epc + " : " + relationships;

@@ -10,6 +10,7 @@ import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -41,7 +42,7 @@ import org.oliot.model.epcis.TransactionEventType;
 
 public class TransactionEventWriteConverter {
 
-	public BsonDocument convert(TransactionEventType transactionEventType, Integer gcpLength) {
+	public BsonDocument convert(TransactionEventType transactionEventType, Integer gcpLength, CachedChronoGraph cg) {
 
 		BsonDocument dbo = new BsonDocument();
 
@@ -141,10 +142,10 @@ public class TransactionEventWriteConverter {
 		return dbo;
 	}
 
-	public void capture(TransactionEventType transactionEventType, Integer gcpLength) {
+	public void capture(TransactionEventType transactionEventType, Integer gcpLength, CachedChronoGraph cg) {
 
-		ChronoGraph g = Configuration.g;
-
+		ChronoGraph pg = Configuration.persistentGraph;
+		
 		// Parent ID
 		String parentID = transactionEventType.getParentID();
 
@@ -211,24 +212,28 @@ public class TransactionEventWriteConverter {
 		final BsonDocument extensionf = extension;
 
 		if (parentID != null) {
-			g.getChronoVertex(parentID).setTimestampProperties(t, objProperty);
+			pg.getChronoVertex(parentID).setTimestampProperties(t, objProperty);
+			cg.getChronoVertex(parentID).setTimestampProperties(t, objProperty);
 		}
 
 		objectSet.parallelStream().forEach(object -> {
 			// object = vid
-			g.getChronoVertex(object).setTimestampProperties(t, objProperty);
+			pg.getChronoVertex(object).setTimestampProperties(t, objProperty);
+			cg.getChronoVertex(object).setTimestampProperties(t, objProperty);
 
 			// Read Point
 			if (transactionEventType.getReadPoint() != null) {
 				ReadPointType readPointType = transactionEventType.getReadPoint();
 				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (transactionEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 			if (extensionf != null) {
@@ -237,13 +242,19 @@ public class TransactionEventWriteConverter {
 					sources.parallelStream().forEach(elem -> {
 						BsonDocument sourceDoc = elem.asDocument();
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(object,
+							pg.addTimestampEdgeProperties(object,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+							cg.addTimestampEdgeProperties(object,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
 						}
 
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(object,
+							pg.addTimestampEdgeProperties(object,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+							cg.addTimestampEdgeProperties(object,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("DELETE")));
 						}
@@ -255,13 +266,19 @@ public class TransactionEventWriteConverter {
 					destinations.parallelStream().forEach(elem -> {
 						BsonDocument destDoc = elem.asDocument();
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(object,
+							pg.addTimestampEdgeProperties(object,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+							cg.addTimestampEdgeProperties(object,
 									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
 						}
 
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(object,
+							pg.addTimestampEdgeProperties(object,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+							cg.addTimestampEdgeProperties(object,
 									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("ADD")));
 						}
@@ -283,19 +300,22 @@ public class TransactionEventWriteConverter {
 				classProperty.put("quantity", classDoc.getDouble("quantity"));
 			if (classDoc.containsKey("uom"))
 				classProperty.put("uom", classDoc.getString("uom"));
-			g.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
+			pg.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
+			cg.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
 
 			// Read Point
 			if (transactionEventType.getReadPoint() != null) {
 				ReadPointType readPointType = transactionEventType.getReadPoint();
 				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (transactionEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 			if (extensionf != null) {
@@ -304,13 +324,19 @@ public class TransactionEventWriteConverter {
 					sources.parallelStream().forEach(elem -> {
 						BsonDocument sourceDoc = elem.asDocument();
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(epcClass,
+							pg.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
+							cg.addTimestampEdgeProperties(epcClass,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
 						}
 
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(epcClass,
+							pg.addTimestampEdgeProperties(epcClass,
+									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("DELETE")));
+							cg.addTimestampEdgeProperties(epcClass,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("DELETE")));
 						}
@@ -322,13 +348,19 @@ public class TransactionEventWriteConverter {
 					destinations.parallelStream().forEach(elem -> {
 						BsonDocument destDoc = elem.asDocument();
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
-							g.addTimestampEdgeProperties(epcClass,
+							pg.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
+									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
+							cg.addTimestampEdgeProperties(epcClass,
 									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
 						}
 
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
-							g.addTimestampEdgeProperties(epcClass,
+							pg.addTimestampEdgeProperties(epcClass,
+									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
+									new BsonDocument("action", new BsonString("ADD")));
+							cg.addTimestampEdgeProperties(epcClass,
 									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("ADD")));
 						}

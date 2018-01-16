@@ -6,6 +6,7 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -62,6 +63,8 @@ public class EventCapture implements ServletContextAware {
 			@RequestParam(required = false) Integer gcpLength) {
 		JSONObject retMsg = new JSONObject();
 
+		CachedChronoGraph g = (CachedChronoGraph) servletContext.getAttribute("cachedGraph");
+
 		// Facebook Auth.: Access Token Validation
 		if (userID != null) {
 			ResponseEntity<?> isError = CaptureUtil.checkAccessToken(userID, accessToken, accessModifier);
@@ -95,7 +98,7 @@ public class EventCapture implements ServletContextAware {
 		}
 
 		CaptureService cs = new CaptureService();
-		retMsg = cs.capture(epcisDocument, userID, accessModifier, gcpLength);
+		retMsg = cs.capture(epcisDocument, userID, accessModifier, gcpLength, g);
 		Configuration.logger.info(" EPCIS Document : Captured ");
 
 		if (retMsg.isNull("error") == true)
@@ -114,10 +117,11 @@ public class EventCapture implements ServletContextAware {
 		Configuration.databaseName = "epcis";
 		Configuration.mongoClient = new MongoClient(Configuration.backend_ip, Configuration.backend_port);
 		Configuration.mongoDatabase = Configuration.mongoClient.getDatabase(Configuration.databaseName);
-		Configuration.g = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port, Configuration.databaseName);
+		Configuration.persistentGraph = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName);
 
 		CaptureService cs = new CaptureService();
-		cs.capture(epcisDocument, null, null, null);
+		cs.capture(epcisDocument, null, null, null, null);
 
 		Configuration.mongoClient.close();
 	}
