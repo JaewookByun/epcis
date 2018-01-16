@@ -24,6 +24,7 @@
 	<bean id="namedQueryRegistration" class="org.oliot.epcis.service.admin.NamedQueryRegistration"></bean>
 
 	<bean id="traceabilityQuery" class="org.oliot.epcis.service.query.TraceabilityQueryService"></bean>
+	<bean id="cachedTraceabilityQuery" class="org.oliot.epcis.service.query.CachedTraceabilityQueryService"></bean>
 
 	<bean id="deleteEPCIS" class="org.oliot.epcis.service.capture.secured.DeleteEPCIS"></bean>
 	<bean id="secureEventCapture"

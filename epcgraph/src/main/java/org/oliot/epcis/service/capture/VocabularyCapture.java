@@ -6,6 +6,7 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.EPCISMasterDataDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,8 @@ public class VocabularyCapture implements ServletContextAware {
 	public ResponseEntity<?> post(@RequestBody String inputString, @RequestParam(required = false) Integer gcpLength) {
 		Configuration.logger.info(" EPCIS Masterdata Document Capture Started.... ");
 
+		CachedChronoGraph cg = (CachedChronoGraph) servletContext.getAttribute("cachedGraph");
+
 		JSONObject retMsg = new JSONObject();
 		if (Configuration.isCaptureVerfificationOn == true) {
 			InputStream validateStream = CaptureUtil.getXMLDocumentInputStream(inputString);
@@ -72,7 +75,7 @@ public class VocabularyCapture implements ServletContextAware {
 		EPCISMasterDataDocumentType epcisMasterDataDocument = JAXB.unmarshal(epcisStream,
 				EPCISMasterDataDocumentType.class);
 		CaptureService cs = new CaptureService();
-		retMsg = cs.capture(epcisMasterDataDocument, gcpLength);
+		retMsg = cs.capture(epcisMasterDataDocument, gcpLength, cg);
 		Configuration.logger.info(" EPCIS Masterdata Document : Captured ");
 
 		if (retMsg.isNull("error") == true)

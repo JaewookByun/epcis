@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
 import org.lilliput.chronograph.common.TemporalType;
@@ -121,7 +120,7 @@ public class TransformationQueryOrientDBTest {
 		bw.close();
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "rawtypes" })
 	public double doTransformationQuery(OrientGraphNoTx graph, Vertex source) throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();

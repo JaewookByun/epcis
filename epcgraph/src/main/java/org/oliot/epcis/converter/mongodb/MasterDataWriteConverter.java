@@ -8,6 +8,7 @@ import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AttributeType;
@@ -39,7 +40,7 @@ import com.mongodb.client.MongoCollection;
 
 public class MasterDataWriteConverter {
 
-	public int capture(VocabularyType vocabulary, Integer gcpLength) {
+	public int capture(VocabularyType vocabulary, Integer gcpLength, CachedChronoGraph cg) {
 
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
 				BsonDocument.class);
@@ -97,8 +98,8 @@ public class MasterDataWriteConverter {
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
 
-					ChronoGraph g = Configuration.g;
-
+					ChronoGraph pg = Configuration.persistentGraph;
+					
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
 						// e.g. defnition
@@ -120,8 +121,8 @@ public class MasterDataWriteConverter {
 							eArr.add(bsonVal);
 							attrObj.put(key, eArr);
 							
-							g.getChronoVertex(vocID).setProperty(key, bsonVal);
-
+							pg.getChronoVertex(vocID).setProperty(key, bsonVal);
+							cg.getChronoVertex(vocID).setProperty(key, bsonVal);
 						} else {
 							// ComplexType
 							for (Object value : valueList) {

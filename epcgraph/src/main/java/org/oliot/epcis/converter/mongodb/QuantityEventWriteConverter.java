@@ -11,6 +11,7 @@ import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -40,7 +41,7 @@ import org.oliot.model.epcis.ReadPointType;
 
 public class QuantityEventWriteConverter {
 
-	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength) {
+	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength, CachedChronoGraph cg) {
 
 		BsonDocument dbo = new BsonDocument();
 
@@ -123,14 +124,14 @@ public class QuantityEventWriteConverter {
 		}
 
 		// Build Graph
-		capture(quantityEventType, gcpLength);
+		capture(quantityEventType, gcpLength, cg);
 
 		return dbo;
 	}
 
-	public void capture(QuantityEventType quantityEventType, Integer gcpLength) {
+	public void capture(QuantityEventType quantityEventType, Integer gcpLength, CachedChronoGraph cg) {
 
-		ChronoGraph g = Configuration.g;
+		ChronoGraph pg = Configuration.persistentGraph;
 
 		// EPC List
 
@@ -178,19 +179,22 @@ public class QuantityEventWriteConverter {
 		}
 
 		if (epcClass != null) {
-			g.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
+			pg.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
+			cg.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
 
 			// Read Point
 			if (quantityEventType.getReadPoint() != null) {
 				ReadPointType readPointType = quantityEventType.getReadPoint();
 				String locID = readPointType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (quantityEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				g.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 		}
