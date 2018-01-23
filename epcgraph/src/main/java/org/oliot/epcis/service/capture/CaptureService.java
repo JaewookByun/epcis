@@ -9,7 +9,6 @@ import javax.xml.bind.JAXBElement;
 
 import org.bson.BsonDocument;
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.oliot.epcis.service.capture.mongodb.MongoCaptureUtil;
 
 import org.oliot.model.epcis.EPCISDocumentType;
@@ -38,24 +37,23 @@ import org.oliot.model.epcis.VocabularyType;
 public class CaptureService implements CoreCaptureService {
 
 	// Return null -> Succeed, not null --> error message
-	public JSONObject capture(EPCISDocumentType epcisDocument, String userID, String accessModifier, Integer gcpLength,
-			CachedChronoGraph g) {
+	public JSONObject capture(EPCISDocumentType epcisDocument, String userID, String accessModifier,
+			Integer gcpLength) {
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 		// Capture EPCIS Events
-		retMsg.putAll(captureEvents(epcisDocument, userID, accessModifier, gcpLength, g));
+		retMsg.putAll(captureEvents(epcisDocument, userID, accessModifier, gcpLength));
 		// Capture EPCIS Vocabularies
-		retMsg.putAll(captureVocabularies(epcisDocument, userID, accessModifier, gcpLength, g));
+		retMsg.putAll(captureVocabularies(epcisDocument, userID, accessModifier, gcpLength));
 		return new JSONObject(retMsg);
 	}
 
-	public JSONObject capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength,
-			CachedChronoGraph cg) {
+	public JSONObject capture(EPCISMasterDataDocumentType epcisMasterDataDocument, Integer gcpLength) {
 
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 		try {
 			List<VocabularyType> vocabularyTypeList = epcisMasterDataDocument.getEPCISBody().getVocabularyList()
 					.getVocabulary();
-			retMsg.putAll(captureVocabularies(vocabularyTypeList, gcpLength, cg));
+			retMsg.putAll(captureVocabularies(vocabularyTypeList, gcpLength));
 		} catch (NullPointerException ex) {
 
 		}
@@ -63,23 +61,22 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private BsonDocument prepareEvent(Object jaxbEvent, String userID, String accessModifier, Integer gcpLength,
-			CachedChronoGraph cg) {
+	private BsonDocument prepareEvent(Object jaxbEvent, String userID, String accessModifier, Integer gcpLength) {
 		JAXBElement eventElement = (JAXBElement) jaxbEvent;
 		Object event = eventElement.getValue();
 		CaptureUtil.isCorrectEvent(event);
 		MongoCaptureUtil m = new MongoCaptureUtil();
-		BsonDocument doc = m.convert(event, userID, accessModifier, gcpLength, cg);
+		BsonDocument doc = m.convert(event, userID, accessModifier, gcpLength);
 		return doc;
 	}
 
 	private HashMap<String, Object> captureEvents(EPCISDocumentType epcisDocument, String userID, String accessModifier,
-			Integer gcpLength, CachedChronoGraph cg) {
+			Integer gcpLength) {
 		try {
 			List<Object> eventList = epcisDocument.getEPCISBody().getEventList()
 					.getObjectEventOrAggregationEventOrQuantityEvent();
 			List<BsonDocument> bsonDocumentList = eventList.parallelStream().parallel()
-					.map(jaxbEvent -> prepareEvent(jaxbEvent, userID, accessModifier, gcpLength, cg))
+					.map(jaxbEvent -> prepareEvent(jaxbEvent, userID, accessModifier, gcpLength))
 					.filter(doc -> doc != null).collect(Collectors.toList());
 			MongoCaptureUtil util = new MongoCaptureUtil();
 			if (bsonDocumentList != null && bsonDocumentList.size() != 0)
@@ -92,21 +89,20 @@ public class CaptureService implements CoreCaptureService {
 	}
 
 	private HashMap<String, Object> captureVocabularies(EPCISDocumentType epcisDocument, String userID,
-			String accessModifier, Integer gcpLength, CachedChronoGraph cg) {
+			String accessModifier, Integer gcpLength) {
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 		try {
 			// Master Data in the document
 			List<VocabularyType> vocabularyTypeList = epcisDocument.getEPCISHeader().getExtension().getEPCISMasterData()
 					.getVocabularyList().getVocabulary();
-			retMsg = captureVocabularies(vocabularyTypeList, gcpLength, cg);
+			retMsg = captureVocabularies(vocabularyTypeList, gcpLength);
 		} catch (NullPointerException ex) {
 			// No vocabulary in the document
 		}
 		return retMsg;
 	}
 
-	private HashMap<String, Object> captureVocabularies(List<VocabularyType> vocabularyTypeList, Integer gcpLength,
-			CachedChronoGraph cg) {
+	private HashMap<String, Object> captureVocabularies(List<VocabularyType> vocabularyTypeList, Integer gcpLength) {
 
 		HashMap<String, Object> retMsg = new HashMap<String, Object>();
 
@@ -120,7 +116,7 @@ public class CaptureService implements CoreCaptureService {
 				for (int j = 0; j < vetTempList.size(); j++) {
 					vocabulary.getVocabularyElementList().getVocabularyElement().clear();
 					vocabulary.getVocabularyElementList().getVocabularyElement().add(vetTempList.get(j));
-					String message = capture(vocabulary, gcpLength, cg);
+					String message = capture(vocabulary, gcpLength);
 					if (message != null) {
 						retMsg.put("error", message);
 					} else {
@@ -136,18 +132,18 @@ public class CaptureService implements CoreCaptureService {
 		return retMsg;
 	}
 
-	private String capture(VocabularyType vocabulary, Integer gcpLength, CachedChronoGraph cg) {
+	private String capture(VocabularyType vocabulary, Integer gcpLength) {
 		MongoCaptureUtil m = new MongoCaptureUtil();
-		return m.capture(vocabulary, null, null, gcpLength, cg);
+		return m.capture(vocabulary, null, null, gcpLength);
 	}
 
 	@Override
 	public void capture(EPCISDocumentType epcisDocument) {
-		capture(epcisDocument, null, null, null, null);
+		capture(epcisDocument, null, null, null);
 	}
 
 	@Override
 	public void capture(EPCISMasterDataDocumentType epcisMasterDataDocument) {
-		capture(epcisMasterDataDocument, null, null);
+		capture(epcisMasterDataDocument, null);
 	}
 }

@@ -10,7 +10,6 @@ import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.AggregationEventExtensionType;
@@ -42,7 +41,7 @@ import org.oliot.model.epcis.ReadPointType;
 
 public class AggregationEventWriteConverter {
 
-	public BsonDocument convert(AggregationEventType aggregationEventType, Integer gcpLength, CachedChronoGraph cg) {
+	public BsonDocument convert(AggregationEventType aggregationEventType, Integer gcpLength) {
 		BsonDocument dbo = new BsonDocument();
 
 		dbo.put("eventType", new BsonString("AggregationEvent"));
@@ -143,12 +142,12 @@ public class AggregationEventWriteConverter {
 		}
 
 		// Build Graph
-		capture(aggregationEventType, gcpLength, cg);
+		capture(aggregationEventType, gcpLength);
 
 		return dbo;
 	}
 
-	public void capture(AggregationEventType aggregationEventType, Integer gcpLength, CachedChronoGraph cg) {
+	public void capture(AggregationEventType aggregationEventType, Integer gcpLength) {
 
 		ChronoGraph pg = Configuration.persistentGraph;
 
@@ -231,14 +230,12 @@ public class AggregationEventWriteConverter {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
 				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 			if (extensionf != null) {
@@ -250,16 +247,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(parentID,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(parentID,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
 						}
 
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(parentID,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(parentID,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("DELETE")));
 						}
@@ -274,16 +265,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(parentID,
 									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(parentID,
-									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
 						}
 
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(parentID,
-									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(parentID,
 									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("ADD")));
 						}
@@ -298,14 +283,12 @@ public class AggregationEventWriteConverter {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
 				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 			if (extensionf != null) {
@@ -317,16 +300,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(child,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(child,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
 						}
 
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(child,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(child,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("DELETE")));
 						}
@@ -341,16 +318,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(child,
 									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(child,
-									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
 						}
 
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(child,
-									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(child,
 									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("ADD")));
 						}
@@ -372,21 +343,18 @@ public class AggregationEventWriteConverter {
 			if (classDoc.containsKey("uom"))
 				classProperty.put("uom", classDoc.getString("uom"));
 			pg.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
-			cg.getChronoVertex(epcClass).setTimestampProperties(t, classProperty);
 
 			// Read Point
 			if (aggregationEventType.getReadPoint() != null) {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
 				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 			if (extensionf != null) {
@@ -398,16 +366,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(epcClass,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(epcClass,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("DELETE")));
 						}
 
 						if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(epcClass,
-									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("DELETE")));
-							cg.addTimestampEdgeProperties(epcClass,
 									sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("DELETE")));
 						}
@@ -422,16 +384,10 @@ public class AggregationEventWriteConverter {
 							pg.addTimestampEdgeProperties(epcClass,
 									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
 									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(epcClass,
-									destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(),
-									"isPossessed", t, new BsonDocument("action", new BsonString("ADD")));
 						}
 
 						if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
 							pg.addTimestampEdgeProperties(epcClass,
-									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
-									new BsonDocument("action", new BsonString("ADD")));
-							cg.addTimestampEdgeProperties(epcClass,
 									destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", t,
 									new BsonDocument("action", new BsonString("ADD")));
 						}
@@ -443,12 +399,10 @@ public class AggregationEventWriteConverter {
 		if (parentID != null) {
 			childSet.stream().forEach(child -> {
 				pg.addTimestampEdgeProperties(parentID, child, "contains", t, objProperty);
-				cg.addTimestampEdgeProperties(parentID, child, "contains", t, objProperty);
 			});
 			childClassArray.stream().forEach(classElem -> {
 				String epcClass = classElem.asDocument().getString("epcClass").getValue();
 				pg.addTimestampEdgeProperties(parentID, epcClass, "contains", t, objProperty);
-				cg.addTimestampEdgeProperties(parentID, epcClass, "contains", t, objProperty);
 			});
 		}
 
