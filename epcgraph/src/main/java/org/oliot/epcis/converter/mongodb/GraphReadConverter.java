@@ -3,8 +3,11 @@ package org.oliot.epcis.converter.mongodb;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
@@ -91,9 +94,9 @@ public class GraphReadConverter {
 				CachedChronoEdge locEdge = li.next();
 				CachedChronoVertex loc = locEdge.getInVertex();
 
-				if(((BsonBoolean)locEdge.getProperty("isReadPoint")).getValue()) {
+				if (((BsonBoolean) locEdge.getProperty("isReadPoint")).getValue()) {
 					base.put("readPoint", new BsonDocument("id", new BsonString(loc.toString())));
-				}else
+				} else
 					base.put("bizLocation", new BsonDocument("id", new BsonString(loc.toString())));
 			}
 
@@ -145,14 +148,23 @@ public class GraphReadConverter {
 			convertedEvents.add(aggregationEvent);
 
 			System.out.println("Aggregation added");
-
 		}
-		
+
 		// Transformation을 처리
+		Set<CachedChronoEdge> transEdgeSet = g.getEdges("transformsTo");
+		Map<BsonDocument, List<CachedChronoEdge>> groupByDoc = transEdgeSet.parallelStream().map(e -> {
+			BsonDocument doc = e.getProperties();
+			doc.remove("_id");
+			doc.remove("_o");
+			doc.remove("_i");
+			doc.remove("_l");
+			doc.remove("_t");
+			return e;
+		}).collect(Collectors.groupingBy(CachedChronoEdge::getProperties));
+
+		System.out.println(groupByDoc);
 		
-		
-		// Object/Transaction 처리 
-		
+		// Object/Transaction 처리
 
 		return convertedEvents;
 	}

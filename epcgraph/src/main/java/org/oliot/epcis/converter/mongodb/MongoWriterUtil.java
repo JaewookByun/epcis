@@ -21,6 +21,7 @@ import org.bson.BsonInt32;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.gcp.core.AICodeParser;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
@@ -200,10 +201,9 @@ public class MongoWriterUtil {
 		BsonDocument baseExtension = new BsonDocument();
 		/*
 		 * May be deprecated if (baseExtensionType.getAny() != null &&
-		 * baseExtensionType.getAny().isEmpty() == false) { List<Object> objList
-		 * = baseExtensionType.getAny(); BsonDocument map2Save =
-		 * getAnyMap(objList); if (map2Save.isEmpty() == false)
-		 * baseExtension.put("any", map2Save); }
+		 * baseExtensionType.getAny().isEmpty() == false) { List<Object> objList =
+		 * baseExtensionType.getAny(); BsonDocument map2Save = getAnyMap(objList); if
+		 * (map2Save.isEmpty() == false) baseExtension.put("any", map2Save); }
 		 */
 		if (baseExtensionType.getOtherAttributes() != null
 				&& baseExtensionType.getOtherAttributes().isEmpty() == false) {
@@ -222,25 +222,23 @@ public class MongoWriterUtil {
 		// ReadPoint ExtensionType is not currently supported
 		/*
 		 * ReadPointExtensionType readPointExtensionType = readPointType
-		 * .getExtension(); if (readPointExtensionType != null) { DBObject
-		 * extension = new BasicDBObject(); if (readPointExtensionType.getAny()
-		 * != null) { Map<String, String> map2Save = new HashMap<String,
-		 * String>(); List<Object> objList = readPointExtensionType.getAny();
-		 * for (int i = 0; i < objList.size(); i++) { Object obj =
-		 * objList.get(i); if (obj instanceof Element) { Element element =
-		 * (Element) obj; if (element.getFirstChild() != null) { String name =
-		 * element.getLocalName(); String value = element.getFirstChild()
-		 * .getTextContent(); map2Save.put(name, value); } } } if (map2Save !=
-		 * null) extension.put("any", map2Save); }
+		 * .getExtension(); if (readPointExtensionType != null) { DBObject extension =
+		 * new BasicDBObject(); if (readPointExtensionType.getAny() != null) {
+		 * Map<String, String> map2Save = new HashMap<String, String>(); List<Object>
+		 * objList = readPointExtensionType.getAny(); for (int i = 0; i <
+		 * objList.size(); i++) { Object obj = objList.get(i); if (obj instanceof
+		 * Element) { Element element = (Element) obj; if (element.getFirstChild() !=
+		 * null) { String name = element.getLocalName(); String value =
+		 * element.getFirstChild() .getTextContent(); map2Save.put(name, value); } } }
+		 * if (map2Save != null) extension.put("any", map2Save); }
 		 * 
-		 * if (readPointExtensionType.getOtherAttributes() != null) { Map<QName,
-		 * String> map = readPointExtensionType .getOtherAttributes();
-		 * Map<String, String> map2Save = new HashMap<String, String>();
-		 * Iterator<QName> iter = map.keySet().iterator(); while
-		 * (iter.hasNext()) { QName qName = iter.next(); String value =
-		 * map.get(qName); map2Save.put(qName.toString(), value); }
-		 * extension.put("otherAttributes", map2Save); }
-		 * readPoint.put("extension", extension); }
+		 * if (readPointExtensionType.getOtherAttributes() != null) { Map<QName, String>
+		 * map = readPointExtensionType .getOtherAttributes(); Map<String, String>
+		 * map2Save = new HashMap<String, String>(); Iterator<QName> iter =
+		 * map.keySet().iterator(); while (iter.hasNext()) { QName qName = iter.next();
+		 * String value = map.get(qName); map2Save.put(qName.toString(), value); }
+		 * extension.put("otherAttributes", map2Save); } readPoint.put("extension",
+		 * extension); }
 		 */
 		return readPoint;
 	}
@@ -439,7 +437,7 @@ public class MongoWriterUtil {
 		}
 		return extension;
 	}
-	
+
 	static BsonDocument getObjectEventExtensionObject(ObjectEventExtensionType oee, Integer gcpLength,
 			List<EPC> epcList) {
 		BsonDocument extension = new BsonDocument();
@@ -502,13 +500,12 @@ public class MongoWriterUtil {
 			}
 
 			/*
-			 * Deprecated if (ilmd.getExtension() != null) { ILMDExtensionType
-			 * ilmdExtension = ilmd.getExtension(); BsonDocument map2Save =
+			 * Deprecated if (ilmd.getExtension() != null) { ILMDExtensionType ilmdExtension
+			 * = ilmd.getExtension(); BsonDocument map2Save =
 			 * getILMDExtensionMap(ilmdExtension); if (map2Save != null)
 			 * extension.put("ilmd", map2Save); if (epcList != null) {
-			 * MasterDataWriteConverter mdConverter = new
-			 * MasterDataWriteConverter(); mdConverter.capture(epcList,
-			 * map2Save); } }
+			 * MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
+			 * mdConverter.capture(epcList, map2Save); } }
 			 */
 		}
 
@@ -944,5 +941,114 @@ public class MongoWriterUtil {
 	static public String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
+	}
+
+	static public void addBasicTimestampProperties(ChronoGraph pg, Long eventTime, String object, String readPoint,
+			String bizLocation, BsonArray sourceList, BsonArray destinationList) {
+		// Read Point
+		if (readPoint != null) {
+			pg.addTimestampEdgeProperties(object, readPoint, "isLocatedIn", eventTime,
+					new BsonDocument("isReadPoint", new BsonBoolean(true)));
+		}
+		// BizLocation
+		if (bizLocation != null) {
+			pg.addTimestampEdgeProperties(object, bizLocation, "isLocatedIn", eventTime,
+					new BsonDocument("isReadPoint", new BsonBoolean(false)));
+		}
+
+		if (sourceList != null) {
+			sourceList.parallelStream().forEach(elem -> {
+				BsonDocument sourceDoc = elem.asDocument();
+				if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+					pg.addTimestampEdgeProperties(object,
+							sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(), "isPossessed",
+							eventTime, new BsonDocument("action", new BsonString("DELETE")));
+				}
+
+				if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+					pg.addTimestampEdgeProperties(object,
+							sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", eventTime,
+							new BsonDocument("action", new BsonString("DELETE")));
+				}
+			});
+		}
+
+		if (destinationList != null) {
+			destinationList.parallelStream().forEach(elem -> {
+				BsonDocument destDoc = elem.asDocument();
+				if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+					pg.addTimestampEdgeProperties(object,
+							destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(), "isPossessed",
+							eventTime, new BsonDocument("action", new BsonString("ADD")));
+				}
+
+				if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+					pg.addTimestampEdgeProperties(object,
+							destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", eventTime,
+							new BsonDocument("action", new BsonString("ADD")));
+				}
+			});
+		}
+	}
+
+	static public void addBasicTimestampProperties(ChronoGraph pg, Long eventTime, BsonValue classElem,
+			String readPoint, String bizLocation, BsonArray sourceList, BsonArray destinationList) {
+
+		BsonDocument classDoc = classElem.asDocument();
+		String epcClass = classDoc.getString("epcClass").getValue();
+
+		BsonDocument classProperty = new BsonDocument();
+		if (!classDoc.containsKey("epcClass"))
+			return;
+		if (classDoc.containsKey("quantity"))
+			classProperty.put("quantity", classDoc.getDouble("quantity"));
+		if (classDoc.containsKey("uom"))
+			classProperty.put("uom", classDoc.getString("uom"));
+		pg.getChronoVertex(epcClass).setTimestampProperties(eventTime, classProperty);
+
+		// Read Point
+		if (readPoint != null) {
+			pg.addTimestampEdgeProperties(epcClass, readPoint, "isLocatedIn", eventTime,
+					new BsonDocument("isReadPoint", new BsonBoolean(true)));
+		}
+		// BizLocation
+		if (bizLocation != null) {
+			pg.addTimestampEdgeProperties(epcClass, bizLocation, "isLocatedIn", eventTime,
+					new BsonDocument("isReadPoint", new BsonBoolean(false)));
+		}
+
+		if (sourceList != null) {
+			sourceList.parallelStream().forEach(elem -> {
+				BsonDocument sourceDoc = elem.asDocument();
+				if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+					pg.addTimestampEdgeProperties(epcClass,
+							sourceDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(), "isPossessed",
+							eventTime, new BsonDocument("action", new BsonString("DELETE")));
+				}
+
+				if (sourceDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+					pg.addTimestampEdgeProperties(epcClass,
+							sourceDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", eventTime,
+							new BsonDocument("action", new BsonString("DELETE")));
+				}
+			});
+		}
+
+		if (destinationList != null) {
+			destinationList.parallelStream().forEach(elem -> {
+				BsonDocument destDoc = elem.asDocument();
+				if (destDoc.containsKey("urn:epcglobal:cbv:sdt:possessing_party")) {
+					pg.addTimestampEdgeProperties(epcClass,
+							destDoc.getString("urn:epcglobal:cbv:sdt:possessing_party").getValue(), "isPossessed",
+							eventTime, new BsonDocument("action", new BsonString("ADD")));
+				}
+
+				if (destDoc.containsKey("urn:epcglobal:cbv:sdt:owning_party")) {
+					pg.addTimestampEdgeProperties(epcClass,
+							destDoc.getString("urn:epcglobal:cbv:sdt:owning_party").getValue(), "isOwned", eventTime,
+							new BsonDocument("action", new BsonString("ADD")));
+				}
+			});
+		}
 	}
 }

@@ -35,7 +35,7 @@ public class CachedChronoEdge extends CachedChronoElement implements Edge {
 	private final Long labelIdx;
 	private final CachedChronoVertex outVertex;
 	private final CachedChronoVertex inVertex;
-
+	
 	/**
 	 * Create Edge
 	 * 

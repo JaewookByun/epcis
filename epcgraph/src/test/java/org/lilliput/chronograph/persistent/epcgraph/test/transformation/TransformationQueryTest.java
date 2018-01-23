@@ -46,7 +46,7 @@ public class TransformationQueryTest {
 	public static String baseURL = "http://localhost:8080/epcgraph";
 	public int transferCount = 308;
 	public int iterationCount = 100;
-	
+
 	@Test
 	public void test() throws IOException, InterruptedException {
 
@@ -60,8 +60,10 @@ public class TransformationQueryTest {
 		db.getCollection("EventData").drop();
 		db.getCollection("edges").drop();
 		db.getCollection("vertices").drop();
-		db.getCollection("edges").createIndex(new BsonDocument("_outV", new BsonInt32(1)).append("_label", new BsonInt32(1)).append("_t", new BsonInt32(1))
-				.append("_inV", new BsonInt32(1)));
+		db.getCollection("tEdgeEvents").drop();
+		db.getCollection("tVertexEvents").drop();
+		MongoDatabase db2 = client.getDatabase("epcis-data");
+		db2.getCollection("vertices").drop();
 		client.close();
 
 		for (int i = 0; i < transferCount; i++) {
@@ -93,7 +95,7 @@ public class TransformationQueryTest {
 			cap.capture(top + body + bottom);
 
 			Thread.sleep(2000);
-			
+
 			double avg = doTransformationQuery();
 
 			System.out.println(i + "\t" + avg);
@@ -111,8 +113,7 @@ public class TransformationQueryTest {
 		String startTime = "2000-01-01T00:00:00";
 
 		for (int i = 0; i < iterationCount; i++) {
-			String url = baseURL+ "/Service/Transform?startTime=" + startTime + "&epc=" + source
-					+ "&order=forward";
+			String url = baseURL + "/Service/Transform?startTime=" + startTime + "&epc=" + source + "&order=forward";
 			URL captureURL = new URL(url);
 			long pre = System.currentTimeMillis();
 			sendPost(captureURL, null);
