@@ -61,6 +61,7 @@ public class Configuration implements ServletContextListener {
 	public static String ac_api_address;
 	public static String epcis_id;
 	public static ChronoGraph persistentGraph;
+	public static ChronoGraph persistentGraphData;
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -225,7 +226,7 @@ public class Configuration implements ServletContextListener {
 		mongoDatabase = mongoClient.getDatabase(databaseName);
 
 		persistentGraph = new ChronoGraph(backend_ip, backend_port, databaseName);
-
+		persistentGraphData = new ChronoGraph(backend_ip, backend_port, databaseName+"-data");
 	}
 
 	/**
