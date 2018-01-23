@@ -161,6 +161,6 @@ public class TransformationQueryTest {
 
 		// print result
 		JSONArray arr = new JSONArray(response.toString());
-		//System.out.println(arr.toString(2));
+		System.out.println(arr.toString(2));
 	}
 }

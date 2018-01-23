@@ -3,7 +3,6 @@ package org.lilliput.chronograph.persistent;
 import com.mongodb.Function;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoWriteException;
 import com.mongodb.WriteConcern;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -18,6 +17,7 @@ import com.tinkerpop.blueprints.Parameter;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.DefaultGraphQuery;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -30,11 +30,12 @@ import org.bson.BsonArray;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonDouble;
+import org.bson.BsonInt32;
 import org.bson.BsonNull;
 import org.bson.BsonString;
 import org.bson.BsonValue;
+import org.bson.Document;
 import org.lilliput.chronograph.common.ExceptionFactory;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.Tokens;
 import org.lilliput.chronograph.persistent.util.Converter;
 
@@ -61,50 +62,39 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	private MongoDatabase mongoDatabase = null;
 	private MongoCollection<BsonDocument> edges = null;
 	private MongoCollection<BsonDocument> vertices = null;
+	private MongoCollection<BsonDocument> edgeEvents = null;
+	private MongoCollection<BsonDocument> vertexEvents = null;
 	private String id;
 
 	private static Features FEATURES = new Features();
 	private static Features PERSISTENT_FEATURES;
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void createBasicIndex() {
 		// outE, out
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.OUT_VERTEX, 1), new Parameter(Tokens.ID, 1));
-		// outE(label), out(label)
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.OUT_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
-				new Parameter(Tokens.ID, 1));
-		// inE, in
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.IN_VERTEX, 1), new Parameter(Tokens.ID, 1));
-		// inE(label), in(label)
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.IN_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
-				new Parameter(Tokens.ID, 1));
-		// g.getEdges()
-		createKeyIndex(null, ChronoVertex.class, new Parameter(Tokens.TYPE, 1), new Parameter(Tokens.ID, 1));
-		// edges.getTimestamps, edges.getTimestamps(timestamps),
-		// getFirstTimestamp, getLastTimestamp, getCeilingTimestamp,
-		// getHigherTimestamp, getFloorTimestamp, getLowerTimestamp
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.EDGE, 1), new Parameter(Tokens.TYPE, 1),
-				new Parameter(Tokens.TIMESTAMP, 1));
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.EDGE, 1), new Parameter(Tokens.TYPE, 1),
-				new Parameter(Tokens.START, 1), new Parameter(Tokens.END, 1));
 
-		// vertices.getTimestamps, vertices.getTimestamps(timestamps),
-		// getFirstTimestamp, getLastTimestamp, getCeilingTimestamp,
-		// getHigherTimestamp, getFloorTimestamp, getLowerTimestamp
-		createKeyIndex(null, ChronoVertex.class, new Parameter(Tokens.VERTEX, 1), new Parameter(Tokens.TYPE, 1),
-				new Parameter(Tokens.TIMESTAMP, 1));
-		createKeyIndex(null, ChronoVertex.class, new Parameter(Tokens.VERTEX, 1), new Parameter(Tokens.TYPE, 1),
-				new Parameter(Tokens.START, 1), new Parameter(Tokens.END, 1));
-		// g.getChronoVertices()
-		createKeyIndex(null, ChronoVertex.class, new Parameter(Tokens.TYPE, 1), new Parameter(Tokens.ID, 1));
+		Document isNull = edges.listIndexes().first();
+		if (isNull == null) {
+			edges.createIndex(new BsonDocument(Tokens.OUT_VERTEX, new BsonInt32(1))
+					.append(Tokens.LABEL, new BsonInt32(1)).append(Tokens.IN_VERTEX, new BsonInt32(1)));
+			edges.createIndex(new BsonDocument(Tokens.IN_VERTEX, new BsonInt32(1))
+					.append(Tokens.LABEL, new BsonInt32(1)).append(Tokens.OUT_VERTEX, new BsonInt32(1)));
+		}
 
-		// outv label t inv
-		// inv label t outv
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.OUT_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
-				new Parameter(Tokens.TIMESTAMP, 1), new Parameter(Tokens.IN_VERTEX, 1));
-		createKeyIndex(null, ChronoEdge.class, new Parameter(Tokens.IN_VERTEX, 1), new Parameter(Tokens.LABEL, 1),
-				new Parameter(Tokens.TIMESTAMP, 1), new Parameter(Tokens.OUT_VERTEX, 1));
+		isNull = edgeEvents.listIndexes().first();
+		if (isNull == null) {
+			edgeEvents.createIndex(
+					new BsonDocument(Tokens.OUT_VERTEX, new BsonInt32(1)).append(Tokens.LABEL, new BsonInt32(1))
+							.append(Tokens.TIMESTAMP, new BsonInt32(1)).append(Tokens.IN_VERTEX, new BsonInt32(1)));
+			edgeEvents.createIndex(
+					new BsonDocument(Tokens.IN_VERTEX, new BsonInt32(1)).append(Tokens.LABEL, new BsonInt32(1))
+							.append(Tokens.TIMESTAMP, new BsonInt32(1)).append(Tokens.OUT_VERTEX, new BsonInt32(1)));
+		}
 
+		isNull = vertexEvents.listIndexes().first();
+		if (isNull == null) {
+			vertexEvents.createIndex(
+					new BsonDocument(Tokens.VERTEX, new BsonInt32(1)).append(Tokens.TIMESTAMP, new BsonInt32(1)));
+		}
 	}
 
 	public ChronoGraph() {
@@ -114,6 +104,10 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		edges = mongoDatabase.getCollection(Tokens.EDGE_COLLECTION, BsonDocument.class)
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		vertices = mongoDatabase.getCollection(Tokens.VERTEX_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		edgeEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_EDGE_EVENT_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		vertexEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_VERTEX_EVENT_COLLECTION, BsonDocument.class)
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		createBasicIndex();
 		id = "chronograph";
@@ -127,6 +121,10 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		vertices = mongoDatabase.getCollection(Tokens.VERTEX_COLLECTION, BsonDocument.class)
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		edgeEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_EDGE_EVENT_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		vertexEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_VERTEX_EVENT_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		createBasicIndex();
 		id = databaseName;
 	}
@@ -139,6 +137,10 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		vertices = mongoDatabase.getCollection(Tokens.VERTEX_COLLECTION, BsonDocument.class)
 				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		edgeEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_EDGE_EVENT_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
+		vertexEvents = mongoDatabase.getCollection(Tokens.TIMESTAMP_VERTEX_EVENT_COLLECTION, BsonDocument.class)
+				.withWriteConcern(WriteConcern.UNACKNOWLEDGED);
 		createBasicIndex();
 		id = databaseName;
 	}
@@ -149,6 +151,14 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 
 	public MongoCollection<BsonDocument> getVertexCollection() {
 		return vertices;
+	}
+
+	public MongoCollection<BsonDocument> getEdgeEvents() {
+		return edgeEvents;
+	}
+
+	public MongoCollection<BsonDocument> getVertexEvents() {
+		return vertexEvents;
 	}
 
 	public MongoDatabase getMongoDatabase() {
@@ -179,13 +189,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 
 	public EdgeEvent getEdgeEvent(String id) {
 		String[] arr = id.split("-");
-		if (arr[1].contains("(")) {
-			String[] intvString = arr[1].substring(1, arr[1].length() - 1).split(",");
-			return new EdgeEvent(this, new ChronoEdge(arr[0], this),
-					new LongInterval(Long.parseLong(intvString[0]), Long.parseLong(intvString[1])));
-		} else {
-			return new EdgeEvent(this, new ChronoEdge(arr[0], this), Long.parseLong(arr[1]));
-		}
+		return new EdgeEvent(this, new ChronoEdge(arr[0], this), Long.parseLong(arr[1]));
 	}
 
 	/**
@@ -265,24 +269,24 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 */
 	public Set<ChronoVertex> getChronoVertexSet() {
 		HashSet<String> idSet = new HashSet<String>();
-		Function<BsonString, String> mapper = new Function<BsonString, String>() {
+		Function<BsonDocument, String> mapper = new Function<BsonDocument, String>() {
 			@Override
-			public String apply(BsonString val) {
-				return val.getValue();
+			public String apply(BsonDocument val) {
+				return val.getString(Tokens.ID).getValue();
 			}
 
 		};
 		HashSet<String> outV = new HashSet<String>();
-		edges.distinct(Tokens.OUT_VERTEX, BsonString.class)
-				.filter(new BsonDocument(Tokens.OUT_VERTEX, new BsonDocument(Tokens.FC.$ne.toString(), new BsonNull())))
-				.map(mapper).into(outV);
-		idSet.addAll(outV);
-		HashSet<String> inV = new HashSet<String>();
-		edges.distinct(Tokens.IN_VERTEX, BsonString.class)
-				.filter(new BsonDocument(Tokens.IN_VERTEX, new BsonDocument(Tokens.FC.$ne.toString(), new BsonNull())))
-				.map(mapper).into(inV);
-		idSet.addAll(inV);
+		ArrayList<BsonDocument> outVQuery = new ArrayList<BsonDocument>();
+		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.OUT_VERTEX))));
+		edges.aggregate(outVQuery).map(mapper).into(outV);
 
+		HashSet<String> inV = new HashSet<String>();
+		ArrayList<BsonDocument> inVQuery = new ArrayList<BsonDocument>();
+		inVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.IN_VERTEX))));
+		edges.aggregate(inVQuery).map(mapper).into(inV);
+		idSet.addAll(inV);
+		
 		MongoCursor<BsonDocument> vi = vertices.find(Tokens.FLT_VERTEX_FIELD_NOT_INCLUDED)
 				.projection(Tokens.PRJ_ONLY_ID).iterator();
 		while (vi.hasNext()) {
@@ -290,13 +294,23 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 			idSet.add(d.getString(Tokens.ID).getValue());
 		}
 
-		HashSet<String> vertex = new HashSet<String>();
-		vertices.distinct(Tokens.VERTEX, BsonString.class)
-				.filter(new BsonDocument(Tokens.VERTEX, new BsonDocument(Tokens.FC.$ne.toString(), new BsonNull())))
-				.map(mapper).into(vertex);
-		idSet.addAll(vertex);
-
 		return idSet.parallelStream().map(s -> new ChronoVertex(s, this)).collect(Collectors.toSet());
+	}
+	
+	public Set<ChronoVertex> getOutVertexSet() {
+		Function<BsonDocument, String> mapper = new Function<BsonDocument, String>() {
+			@Override
+			public String apply(BsonDocument val) {
+				return val.getString(Tokens.ID).getValue();
+			}
+
+		};
+		HashSet<String> outV = new HashSet<String>();
+		ArrayList<BsonDocument> outVQuery = new ArrayList<BsonDocument>();
+		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.OUT_VERTEX))));
+		edges.aggregate(outVQuery).map(mapper).into(outV);
+
+		return outV.parallelStream().map(s -> new ChronoVertex(s, this)).collect(Collectors.toSet());
 	}
 
 	/**
@@ -532,18 +546,17 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		if (label == null)
 			throw ExceptionFactory.edgeLabelCanNotBeNull();
 		String edgeID = Converter.getEdgeID(outVertexID, label, inVertexID);
-		try {
+		BsonDocument doc = edges.find(new BsonDocument(Tokens.OUT_VERTEX, new BsonString(outVertexID))
+				.append(Tokens.LABEL, new BsonString(label)).append(Tokens.IN_VERTEX, new BsonString(inVertexID)))
+				.projection(new BsonDocument(Tokens.ID, new BsonInt32(0))).first();
+		if (doc == null) {
 			BsonDocument e = new BsonDocument();
-			e.put(Tokens.ID, new BsonString(edgeID));
 			e.put(Tokens.OUT_VERTEX, new BsonString(outVertexID));
 			e.put(Tokens.IN_VERTEX, new BsonString(inVertexID));
 			e.put(Tokens.LABEL, new BsonString(label));
 			edges.insertOne(e);
-			return new ChronoEdge(edgeID, outVertexID, inVertexID, label, this);
-		} catch (MongoWriteException e) {
-			// CODE: 11000, Duplicated _ID = (edge)
-			return new ChronoEdge(edgeID, outVertexID, inVertexID, label, this);
 		}
+		return new ChronoEdge(edgeID, outVertexID, inVertexID, label, this);
 	}
 
 	/**
@@ -581,10 +594,17 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	public ChronoEdge getEdge(String id) {
 		if (id == null)
 			throw ExceptionFactory.edgeIdCanNotBeNull();
-		BsonString bsonID = new BsonString(id.toString());
-		if (edges.find(new BsonDocument(Tokens.ID, bsonID)).first() != null)
-			return new ChronoEdge(id.toString(), this);
-		return null;
+
+		String[] idArr = id.split("\\|");
+		if (idArr.length != 3)
+			return null;
+		BsonDocument edgeDoc = edges.find(new BsonDocument(Tokens.OUT_VERTEX, new BsonString(idArr[0]))
+				.append(Tokens.LABEL, new BsonString(idArr[1])).append(Tokens.IN_VERTEX, new BsonString(idArr[2])))
+				.projection(new BsonDocument(Tokens.ID, new BsonInt32(0))).first();
+		if (edgeDoc == null)
+			return null;
+		else
+			return new ChronoEdge(id, this);
 	}
 
 	/**
@@ -639,12 +659,15 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 */
 	public Iterable<ChronoEdge> getChronoEdges() {
 		HashSet<ChronoEdge> ret = new HashSet<ChronoEdge>();
-		MongoCursor<BsonDocument> cursor = edges.find(Tokens.FLT_EDGE_FIELD_NOT_INCLUDED).projection(Tokens.PRJ_ONLY_ID)
-				.iterator();
+		MongoCursor<BsonDocument> cursor = edges.find().projection(Tokens.PRJ_ONLY_OUTV_LABEL_INV).iterator();
 
 		while (cursor.hasNext()) {
 			BsonDocument v = cursor.next();
-			ret.add(new ChronoEdge(v.getString(Tokens.ID).getValue(), this));
+			String outV = v.getString(Tokens.OUT_VERTEX).getValue();
+			String label = v.getString(Tokens.LABEL).getValue();
+			String inV = v.getString(Tokens.IN_VERTEX).getValue();
+			String id = outV + "|" + label + "|" + inV;
+			ret.add(new ChronoEdge(id, outV, inV, label, this));
 		}
 		return ret;
 	}
@@ -657,12 +680,15 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 */
 	public Set<ChronoEdge> getChronoEdgeSet() {
 		HashSet<ChronoEdge> ret = new HashSet<ChronoEdge>();
-		MongoCursor<BsonDocument> cursor = edges.find(Tokens.FLT_EDGE_FIELD_NOT_INCLUDED).projection(Tokens.PRJ_ONLY_ID)
-				.iterator();
+		MongoCursor<BsonDocument> cursor = edges.find().projection(Tokens.PRJ_ONLY_OUTV_LABEL_INV).iterator();
 
 		while (cursor.hasNext()) {
 			BsonDocument v = cursor.next();
-			ret.add(new ChronoEdge(v.getString(Tokens.ID).getValue(), this));
+			String outV = v.getString(Tokens.OUT_VERTEX).getValue();
+			String label = v.getString(Tokens.LABEL).getValue();
+			String inV = v.getString(Tokens.IN_VERTEX).getValue();
+			String id = outV + "|" + label + "|" + inV;
+			ret.add(new ChronoEdge(id, outV, inV, label, this));
 		}
 		return ret;
 	}
@@ -677,12 +703,15 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 */
 	public Stream<ChronoEdge> getChronoEdgeStream(boolean isParallel) {
 		HashSet<ChronoEdge> ret = new HashSet<ChronoEdge>();
-		MongoCursor<BsonDocument> cursor = edges.find(Tokens.FLT_EDGE_FIELD_NOT_INCLUDED).projection(Tokens.PRJ_ONLY_ID)
-				.iterator();
+		MongoCursor<BsonDocument> cursor = edges.find().projection(Tokens.PRJ_ONLY_OUTV_LABEL_INV).iterator();
 
 		while (cursor.hasNext()) {
 			BsonDocument v = cursor.next();
-			ret.add(new ChronoEdge(v.getString(Tokens.ID).getValue(), this));
+			String outV = v.getString(Tokens.OUT_VERTEX).getValue();
+			String label = v.getString(Tokens.LABEL).getValue();
+			String inV = v.getString(Tokens.IN_VERTEX).getValue();
+			String id = outV + "|" + label + "|" + inV;
+			ret.add(new ChronoEdge(id, outV, inV, label, this));
 		}
 		if (isParallel)
 			return ret.parallelStream();
@@ -877,27 +906,6 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	}
 
 	/**
-	 * Extension: only support ChronoEdge add interval property into the vertex for
-	 * same interval & key to the existing property, replace the value
-	 * 
-	 * @param id:
-	 *            unique vertex id
-	 * @param interval:
-	 *            interval
-	 * @param key:
-	 *            property key for the given interval
-	 * @param value:
-	 *            property value for the given interval
-	 * @return updated Vertex
-	 */
-	public ChronoVertex addIntervalVertexProperty(final String id, final LongInterval interval, final String key,
-			final BsonValue value) {
-		ChronoVertex v = getChronoVertex(id);
-		v.setIntervalProperty(interval, key, value);
-		return v;
-	}
-
-	/**
 	 * Extension: only support ChronoEdge, add temporal property into the edge for
 	 * same timestamp & key to the existing property, replace the value
 	 * 
@@ -926,38 +934,6 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 			final Long timestamp, final BsonDocument properties) {
 		ChronoEdge e = addEdge(outVertexID, inVertexID, label);
 		e.setTimestampProperties(timestamp, properties);
-		return e;
-	}
-
-	/**
-	 * Extension: only support ChronoEdge, add temporal property into the edge for
-	 * same timestamp & key to the existing property, replace the value
-	 * 
-	 * @param outVertexID:
-	 *            unique out vertex id
-	 * @param inVertexID:
-	 *            unique in vertex id
-	 * @param label:
-	 *            edge label
-	 * @param interval:
-	 *            interval
-	 * @param key:
-	 *            property key for the given interval
-	 * @param value:
-	 *            property value for the given interval
-	 * @return updated edge
-	 */
-	public ChronoEdge addIntervalEdgeProperty(final String outVertexID, final String inVertexID, final String label,
-			final LongInterval interval, final String key, final BsonValue value) {
-		ChronoEdge e = addEdge(outVertexID, inVertexID, label);
-		e.setIntervalProperty(interval, key, value);
-		return e;
-	}
-
-	public ChronoEdge addIntervalEdgeProperties(final String outVertexID, final String inVertexID, final String label,
-			final LongInterval interval, final BsonDocument properties) {
-		ChronoEdge e = addEdge(outVertexID, inVertexID, label);
-		e.setIntervalProperties(interval, properties);
 		return e;
 	}
 

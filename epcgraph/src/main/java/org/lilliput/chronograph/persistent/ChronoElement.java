@@ -23,7 +23,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonNull;
 import org.bson.BsonString;
 import org.bson.BsonValue;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.Tokens;
 import org.lilliput.chronograph.common.Tokens.AC;
 import org.lilliput.chronograph.persistent.util.Converter;
@@ -71,7 +70,12 @@ abstract class ChronoElement implements Element {
 		if (this instanceof ChronoVertex) {
 			doc = graph.getVertexCollection().find(new BsonDocument(Tokens.ID, new BsonString(this.id))).first();
 		} else {
-			doc = graph.getEdgeCollection().find(new BsonDocument(Tokens.ID, new BsonString(this.id))).first();
+			ChronoEdge e = (ChronoEdge)this;
+			BsonDocument query = new BsonDocument();
+			query.put(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()));
+			query.put(Tokens.LABEL, new BsonString(e.getLabel()));
+			query.put(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString()));
+			doc = graph.getEdgeCollection().find(query).first();
 		}
 		return doc;
 	}
@@ -122,13 +126,21 @@ abstract class ChronoElement implements Element {
 	@Override
 	public void setProperty(final String key, final Object value) {
 		ElementHelper.validateProperty(this, key, value);
-		BsonDocument filter = new BsonDocument();
-		filter.put(Tokens.ID, new BsonString(this.id));
-		BsonDocument update = new BsonDocument();
-		update.put("$set", new BsonDocument(Tokens.TYPE, Tokens.TYPE_STATIC).append(key, (BsonValue) value));
+		
 		if (this instanceof ChronoVertex) {
+			BsonDocument filter = new BsonDocument();
+			filter.put(Tokens.ID, new BsonString(this.id));
+			BsonDocument update = new BsonDocument();
+			update.put("$set", new BsonDocument(key, (BsonValue) value));
 			graph.getVertexCollection().updateOne(filter, update, new UpdateOptions().upsert(true));
 		} else {
+			BsonDocument filter = new BsonDocument();
+			ChronoEdge e = (ChronoEdge)this;
+			filter.put(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()));
+			filter.put(Tokens.LABEL, new BsonString(e.getLabel()));
+			filter.put(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString()));
+			BsonDocument update = new BsonDocument();
+			update.put("$set", new BsonDocument(key, (BsonValue) value));			
 			graph.getEdgeCollection().updateOne(filter, update, new UpdateOptions().upsert(true));
 		}
 	}
@@ -241,14 +253,18 @@ abstract class ChronoElement implements Element {
 		if (timestampProperties == null)
 			timestampProperties = new BsonDocument();
 		if (this instanceof ChronoVertex) {
-			BsonString idKey = new BsonString(this.id + "-" + timestamp);
-
-			graph.getVertexCollection().findOneAndReplace(new BsonDocument(Tokens.ID, idKey),
+			graph.getVertexEvents().findOneAndReplace(
+					new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TIMESTAMP,
+							new BsonDateTime(timestamp)),
 					Converter.makeTimestampVertexEventDocumentWithoutID(timestampProperties, this.id, timestamp),
 					new FindOneAndReplaceOptions().upsert(true));
 		} else {
-			graph.getEdgeCollection().findOneAndReplace(
-					new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)),
+			ChronoEdge e = (ChronoEdge) this;
+			graph.getEdgeEvents().findOneAndReplace(
+					new BsonDocument(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()))
+							.append(Tokens.LABEL, new BsonString(e.getLabel()))
+							.append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))
+							.append(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString())),
 					Converter.makeTimestampEdgeEventDocumentWithoutID(timestampProperties, this.id, timestamp),
 					new FindOneAndReplaceOptions().upsert(true));
 		}
@@ -264,35 +280,58 @@ abstract class ChronoElement implements Element {
 	public void setTimestampProperty(final Long timestamp, String key, BsonValue value) {
 		ElementHelper.validateTimestampProperty(this, timestamp, key, value);
 
-		BsonDocument exist = getTimestampProperties(timestamp);
-		if (exist == null || exist.size() == 0) {
-			BsonDocument timestampProperties = new BsonDocument(key, value);
-			if (this instanceof ChronoVertex)
-				graph.getVertexCollection().findOneAndReplace(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)).append(Tokens.VERTEX,
-								new BsonString(this.id)),
-						Converter.makeTimestampVertexEventDocument(timestampProperties, this.id, timestamp),
-						new FindOneAndReplaceOptions().upsert(true));
-			else
-				graph.getEdgeCollection().findOneAndReplace(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)).append(Tokens.VERTEX,
-								new BsonString(this.id)),
-						Converter.makeTimestampEdgeEventDocument(timestampProperties, this.id, timestamp),
-						new FindOneAndReplaceOptions().upsert(true));
-		} else {
-			if (this instanceof ChronoVertex)
-				graph.getVertexCollection()
-						.updateOne(
-								new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))
-										.append(Tokens.VERTEX, new BsonString(this.id)),
-								new BsonDocument("$set", new BsonDocument(key, value)));
-			else
-				graph.getEdgeCollection()
-						.updateOne(
-								new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))
-										.append(Tokens.VERTEX, new BsonString(this.id)),
-								new BsonDocument("$set", new BsonDocument(key, value)));
+		if (this instanceof ChronoVertex)
+			graph.getVertexEvents().updateOne(
+					new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TIMESTAMP,
+							new BsonDateTime(timestamp)),
+					new BsonDocument("$set", new BsonDocument(key, value)), new UpdateOptions().upsert(true));
+		else {
+			ChronoEdge e = (ChronoEdge) this;
+			graph.getEdgeEvents().updateOne(
+					new BsonDocument(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()))
+							.append(Tokens.LABEL, new BsonString(e.getLabel()))
+							.append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))
+							.append(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString())),
+					new BsonDocument("$set", new BsonDocument(key, value)), new UpdateOptions().upsert(true));
 		}
+		//
+		// BsonDocument exist = getTimestampProperties(timestamp);
+		// if (exist == null || exist.size() == 0) {
+		// BsonDocument timestampProperties = new BsonDocument(key, value);
+		// if (this instanceof ChronoVertex)
+		// graph.getVertexEvents().findOneAndReplace(
+		// new BsonDocument(Tokens.VERTEX, new
+		// BsonString(this.id)).append(Tokens.TIMESTAMP,
+		// new BsonDateTime(timestamp)),
+		// Converter.makeTimestampVertexEventDocument(timestampProperties, this.id,
+		// timestamp),
+		// new FindOneAndReplaceOptions().upsert(true));
+		// else {
+		// ChronoEdge e = (ChronoEdge) this;
+		// graph.getEdgeEvents().findOneAndReplace(
+		// new BsonDocument(Tokens.OUT_VERTEX, new
+		// BsonString(e.getOutVertex().toString()))
+		// .append(Tokens.LABEL, new BsonString(e.getLabel()))
+		// .append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))
+		// .append(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString())),
+		// Converter.makeTimestampEdgeEventDocument(timestampProperties, this.id,
+		// timestamp),
+		// new FindOneAndReplaceOptions().upsert(true));
+		// }
+		// } else {
+		// if (this instanceof ChronoVertex)
+		// graph.getVertexCollection()
+		// .updateOne(
+		// new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))
+		// .append(Tokens.VERTEX, new BsonString(this.id)),
+		// new BsonDocument("$set", new BsonDocument(key, value)));
+		// else
+		// graph.getEdgeCollection()
+		// .updateOne(
+		// new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))
+		// .append(Tokens.VERTEX, new BsonString(this.id)),
+		// new BsonDocument("$set", new BsonDocument(key, value)));
+		// }
 	}
 
 	/**
@@ -356,88 +395,22 @@ abstract class ChronoElement implements Element {
 	}
 
 	/**
-	 *
-	 * @param interval
-	 * @return
-	 */
-	public TreeSet<Long> getTimestamps(LongInterval interval) {
-		TreeSet<Long> timestampPropertyKeys = new TreeSet<Long>();
-
-		BsonArray bsonInterval = new BsonArray();
-		bsonInterval.add(new BsonDocument(Tokens.TIMESTAMP,
-				new BsonDocument(Tokens.FC.$gte.toString(), new BsonDateTime(interval.getStart()))));
-		bsonInterval.add(new BsonDocument(Tokens.TIMESTAMP,
-				new BsonDocument(Tokens.FC.$lte.toString(), new BsonDateTime(interval.getEnd()))));
-
-		if (this instanceof ChronoVertex) {
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.C.$and.toString(), bsonInterval))
-					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				timestampPropertyKeys.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
-			}
-		} else {
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.C.$and.toString(), bsonInterval))
-					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				timestampPropertyKeys.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
-			}
-		}
-		return timestampPropertyKeys;
-	}
-
-	/**
-	 *
-	 * @param interval
-	 * @return
-	 */
-	public TreeSet<Long> getTimestamps(LongInterval interval, AC s, AC e) {
-		TreeSet<Long> timestampPropertyKeys = new TreeSet<Long>();
-
-		BsonArray bsonInterval = new BsonArray();
-		bsonInterval.add(new BsonDocument(Tokens.TIMESTAMP,
-				new BsonDocument(s.toString(), new BsonDateTime(interval.getStart()))));
-		bsonInterval.add(new BsonDocument(Tokens.TIMESTAMP,
-				new BsonDocument(e.toString(), new BsonDateTime(interval.getEnd()))));
-
-		if (this instanceof ChronoVertex) {
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.C.$and.toString(), bsonInterval))
-					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				timestampPropertyKeys.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
-			}
-		} else {
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP).append(Tokens.C.$and.toString(), bsonInterval))
-					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				timestampPropertyKeys.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
-			}
-		}
-		return timestampPropertyKeys;
-	}
-
-	/**
 	 * @param timestamp
 	 * @return TimestampProperties BsonDocument
 	 */
 	public BsonDocument getTimestampProperties(final Long timestamp) {
 		if (this instanceof ChronoVertex)
-			return graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))).first();
-		else
-			return graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp))).first();
+			return graph.getVertexEvents().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
+					.append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))).first();
+		else {
+			String[] idArr = this.id.split("\\|");
+			String outV = idArr[0];
+			String label = idArr[1];
+			String inV = idArr[2];
+			return graph.getEdgeEvents().find(new BsonDocument(Tokens.OUT_VERTEX, new BsonString(outV))
+					.append(Tokens.LABEL, new BsonString(label)).append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))
+					.append(Tokens.IN_VERTEX, new BsonString(inV))).projection(Tokens.PRJ_NOT_ID).first();
+		}
 	}
 
 	/**
@@ -1085,105 +1058,6 @@ abstract class ChronoElement implements Element {
 	}
 
 	/**
-	 * @param interval
-	 * @param properties
-	 */
-	public void setIntervalProperties(final LongInterval interval, BsonDocument intervalProperties) {
-		if (intervalProperties == null)
-			intervalProperties = new BsonDocument();
-
-		if (this instanceof ChronoVertex) {
-			graph.getVertexCollection().findOneAndReplace(
-					new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-					Converter.makeIntervalVertexEventDocument(intervalProperties, this.id, interval),
-					new FindOneAndReplaceOptions().upsert(true));
-		} else {
-			graph.getEdgeCollection().findOneAndReplace(
-					new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-					Converter.makeIntervalEdgeEventDocument(intervalProperties, this.id, interval),
-					new FindOneAndReplaceOptions().upsert(true));
-		}
-	}
-
-	/**
-	 * @param timestamp
-	 * @param key
-	 * @param value
-	 */
-	public void setIntervalProperty(final LongInterval interval, final String key, final BsonValue value) {
-		ElementHelper.validateIntervalProperty(this, interval, key, value);
-
-		BsonDocument exist = getIntervalProperties(interval);
-		if (exist == null || exist.size() == 0) {
-			BsonDocument intervalProperties = new BsonDocument(key, value);
-			if (this instanceof ChronoVertex)
-				graph.getVertexCollection().findOneAndReplace(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-						Converter.makeIntervalVertexEventDocument(intervalProperties, this.id, interval),
-						new FindOneAndReplaceOptions().upsert(true));
-			else
-				graph.getEdgeCollection().findOneAndReplace(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-						Converter.makeIntervalEdgeEventDocument(intervalProperties, this.id, interval),
-						new FindOneAndReplaceOptions().upsert(true));
-		} else {
-			if (this instanceof ChronoVertex)
-				graph.getVertexCollection().updateOne(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-						new BsonDocument("$set", new BsonDocument(key, value)));
-			else
-				graph.getEdgeCollection().updateOne(
-						new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())),
-						new BsonDocument("$set", new BsonDocument(key, value)));
-		}
-	}
-
-	/**
-	 * @param interval
-	 * @return interval properties for the given interval or null
-	 */
-	public BsonDocument getIntervalProperties(LongInterval interval) {
-		if (this instanceof ChronoVertex)
-			return graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString()))).first();
-		else
-			return graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString()))).first();
-	}
-
-	/**
-	 * @param interval
-	 * @return interval properties for the given interval or null
-	 */
-	public BsonDocument getIntervalProperties(LongInterval interval, String[] projection) {
-		BsonDocument bsonProjection = new BsonDocument();
-		if (projection != null) {
-			for (String string : projection) {
-				bsonProjection.append(string, new BsonBoolean(true));
-			}
-		}
-
-		if (this instanceof ChronoVertex)
-			return graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())))
-					.projection(bsonProjection).first();
-		else
-			return graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + interval.toString())))
-					.projection(bsonProjection).first();
-	}
-
-	/**
-	 * @param interval
-	 * @param key
-	 * @return interval property value for the given interval and key
-	 */
-	public BsonValue getIntervalPropertyValue(LongInterval interval, String key) {
-		BsonDocument intervalProperties = getIntervalProperties(interval, new String[] { key });
-		return intervalProperties.get(key);
-	}
-
-	/**
 	 * Remove All Interval Properties
 	 */
 	public void clearIntervalProperties() {
@@ -1197,409 +1071,11 @@ abstract class ChronoElement implements Element {
 	}
 
 	/**
-	 * Remain only timestamp property related to the given key
-	 * 
-	 * @param timestamp
-	 * @return null or remaining timestamp property
-	 */
-	public BsonDocument retainIntervalProperties(final LongInterval interval) {
-		BsonDocument intervalProperties = getIntervalProperties(interval);
-		clearIntervalProperties();
-		setIntervalProperties(interval, intervalProperties);
-		return intervalProperties;
-	}
-
-	/**
 	 * Remove All Temporal Properties
 	 */
 	public void clearTemporalProperties() {
 		clearIntervalProperties();
 		clearStaticProperties();
-	}
-
-	/**
-	 * FIRST: interval event which has earliest start time
-	 * 
-	 * @return first existing interval
-	 */
-	public LongInterval getFirstInterval() {
-		if (this instanceof ChronoVertex) {
-			BsonDocument first = graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-							Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).sort(Tokens.SORT_START_ASC).limit(1).first();
-			if (first == null)
-				return null;
-			else
-				return new LongInterval(first.getDateTime(Tokens.START).getValue(),
-						first.getDateTime(Tokens.END).getValue());
-		} else {
-			BsonDocument first = graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-							Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).sort(Tokens.SORT_START_ASC).limit(1).first();
-			if (first == null)
-				return null;
-			else
-				return new LongInterval(first.getDateTime(Tokens.START).getValue(),
-						first.getDateTime(Tokens.END).getValue());
-		}
-	}
-
-	/**
-	 * LAST: interval event which has latest start time
-	 * 
-	 * @return last existing interval
-	 */
-	public LongInterval getLastInterval() {
-		if (this instanceof ChronoVertex) {
-			BsonDocument last = graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-							Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).sort(Tokens.SORT_START_DESC).limit(1).first();
-			if (last == null)
-				return null;
-			else
-				return new LongInterval(last.getDateTime(Tokens.START).getValue(),
-						last.getDateTime(Tokens.END).getValue());
-		} else {
-			BsonDocument last = graph.getEdgeCollection()
-					.find(new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-							Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).sort(Tokens.SORT_START_DESC).limit(1).first();
-			if (last == null)
-				return null;
-			else
-				return new LongInterval(last.getDateTime(Tokens.START).getValue(),
-						last.getDateTime(Tokens.END).getValue());
-		}
-	}
-
-	/**
-	 * 
-	 * @return treeSet of temporalProperty key set
-	 */
-	public TreeSet<LongInterval> getIntervals() {
-		TreeSet<LongInterval> intervalPropertyKeys = new TreeSet<LongInterval>();
-		if (this instanceof ChronoVertex) {
-			MongoCursor<BsonDocument> cursor = graph
-					.getVertexCollection().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		} else {
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(
-					new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE, Tokens.TYPE_INTERVAL))
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		}
-		return intervalPropertyKeys;
-	}
-
-	/**
-	 * 
-	 * @return treeSet of temporalProperty key set
-	 */
-	public TreeSet<LongInterval> getIntervals(Long[] timestamps, AC s, AC e) {
-		TreeSet<LongInterval> intervalPropertyKeys = new TreeSet<LongInterval>();
-
-		if (this instanceof ChronoVertex) {
-			BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			BsonArray bsonInterval = new BsonArray();
-			for (Long timestamp : timestamps) {
-				bsonInterval
-						.add(new BsonDocument(Tokens.START, new BsonDocument(s.toString(), new BsonDateTime(timestamp)))
-								.append(Tokens.END, new BsonDocument(e.toString(), new BsonDateTime(timestamp))));
-			}
-			filter.append(Tokens.C.$or.toString(), bsonInterval);
-
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		} else {
-			BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			BsonArray bsonInterval = new BsonArray();
-			for (Long timestamp : timestamps) {
-				bsonInterval
-						.add(new BsonDocument(Tokens.START, new BsonDocument(s.toString(), new BsonDateTime(timestamp)))
-								.append(Tokens.END, new BsonDocument(e.toString(), new BsonDateTime(timestamp))));
-			}
-			filter.append(Tokens.C.$or.toString(), bsonInterval);
-
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		}
-		return intervalPropertyKeys;
-	}
-
-	/**
-	 *
-	 * @return treeSet of temporalProperty key set
-	 */
-	public TreeSet<LongInterval> getIntervals(LongInterval[] intervals, AC ss, AC se, AC es, AC ee) {
-		TreeSet<LongInterval> intervalPropertyKeys = new TreeSet<LongInterval>();
-
-		if (this instanceof ChronoVertex) {
-			BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			BsonArray bsonInterval = new BsonArray();
-			for (LongInterval interval : intervals) {
-				bsonInterval.add(LongInterval.getTemporalRelationFilterQuery(interval, ss, se, es, ee));
-			}
-			filter.append(Tokens.C.$or.toString(), bsonInterval);
-
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		} else {
-			BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			BsonArray bsonInterval = new BsonArray();
-			for (LongInterval interval : intervals) {
-				bsonInterval.add(LongInterval.getTemporalRelationFilterQuery(interval, ss, se, es, ee));
-			}
-			filter.append(Tokens.C.$or.toString(), bsonInterval);
-
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		}
-		return intervalPropertyKeys;
-	}
-
-	/**
-	 * 
-	 * @param left
-	 * @param ss:
-	 *            left <ss> intervalInDB.start
-	 * @param se:
-	 *            left <se> intervalInDB.end
-	 *
-	 * @return TreeSet<LongInterval>
-	 */
-	public TreeSet<LongInterval> getIntervals(long left, AC ss, AC se) {
-		TreeSet<LongInterval> intervalPropertyKeys = new TreeSet<LongInterval>();
-
-		if (this instanceof ChronoVertex) {
-			BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		} else {
-			BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		}
-		return intervalPropertyKeys;
-	}
-
-	/**
-	 * 
-	 * @param left
-	 * @param ss:
-	 *            left.start <ss> intervalInDB.start
-	 * @param se:
-	 *            left.start <se> intervalInDB.end
-	 * @param es:
-	 *            left.end <es> intervalInDB.start
-	 * @param ee:
-	 *            left.end <ee> intervalInDB.end
-	 * @return TreeSet<LongInterval>
-	 */
-	public TreeSet<LongInterval> getIntervals(LongInterval left, AC ss, AC se, AC es, AC ee) {
-		TreeSet<LongInterval> intervalPropertyKeys = new TreeSet<LongInterval>();
-
-		if (this instanceof ChronoVertex) {
-			BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-			MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		} else {
-			BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-					Tokens.TYPE_INTERVAL);
-			filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(filter)
-					.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-			while (cursor.hasNext()) {
-				BsonDocument doc = cursor.next();
-				intervalPropertyKeys.add(new LongInterval(doc.getDateTime(Tokens.START).getValue(),
-						doc.getDateTime(Tokens.END).getValue()));
-			}
-		}
-		return intervalPropertyKeys;
-	}
-
-	/**
-	 * 
-	 * @param left
-	 * @param ss:
-	 *            left <ss> intervalInDB.start
-	 * @param se:
-	 *            left <se> intervalInDB.end
-	 *
-	 * @return TreeSet<LongInterval>
-	 */
-	public LongInterval getInterval(long left, AC ss, AC se) {
-		BsonDocument matched = null;
-		if (ss != null && (ss.equals(AC.$gte) || ss.equals(AC.$gt))) {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_ASC).limit(1).first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_ASC).limit(1).first();
-			}
-		} else if (se != null && (se.equals(AC.$lte) || se.equals(AC.$lt))) {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_DESC).limit(1).first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_DESC).limit(1).first();
-			}
-		} else {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END).limit(1)
-						.first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END).limit(1)
-						.first();
-			}
-		}
-		if (matched != null) {
-			return new LongInterval(matched.getDateTime(Tokens.START).getValue(),
-					matched.getDateTime(Tokens.END).getValue());
-		} else
-			return null;
-	}
-
-	/**
-	 * 
-	 * @param left
-	 * @param ss:
-	 *            left.start <ss> intervalInDB.start
-	 * @param se:
-	 *            left.start <se> intervalInDB.end
-	 * @param es:
-	 *            left.end <es> intervalInDB.start
-	 * @param ee:
-	 *            left.end <ee> intervalInDB.end
-	 * @return LongInterval
-	 */
-	public LongInterval getInterval(LongInterval left, AC ss, AC se, AC es, AC ee) {
-		BsonDocument matched = null;
-		if (ss != null && (ss.equals(AC.$gte) || ss.equals(AC.$gt))) {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_ASC).limit(1).first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_ASC).limit(1).first();
-			}
-		} else if (se != null && (se.equals(AC.$lte) || se.equals(AC.$lt))) {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_DESC).limit(1).first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END)
-						.sort(Tokens.SORT_START_DESC).limit(1).first();
-			}
-		} else {
-			if (this instanceof ChronoVertex) {
-				BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getVertexCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END).limit(1)
-						.first();
-			} else {
-				BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-						Tokens.TYPE_INTERVAL);
-				filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-				matched = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_START_AND_END).limit(1)
-						.first();
-			}
-		}
-		if (matched != null) {
-			return new LongInterval(matched.getDateTime(Tokens.START).getValue(),
-					matched.getDateTime(Tokens.END).getValue());
-		} else
-			return null;
 	}
 
 	/**

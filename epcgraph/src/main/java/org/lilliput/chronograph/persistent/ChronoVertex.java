@@ -1,6 +1,6 @@
 package org.lilliput.chronograph.persistent;
 
-import com.mongodb.client.MongoCursor;
+import com.mongodb.MongoCursorNotFoundException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -16,13 +16,11 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.lilliput.chronograph.common.ExceptionFactory;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.Tokens;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.common.Tokens.Position;
 import org.lilliput.chronograph.persistent.util.Converter;
 
 /**
@@ -271,30 +269,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Return timestampVertexEvent with given timestamp
-	 * 
-	 * @param interval
-	 * @param pos
-	 * @return
-	 */
-	public VertexEvent setTimestamp(LongInterval interval, Position pos) {
-		return new VertexEvent(this.graph, this, interval.getTimestamp(pos));
-	}
-
-	/**
-	 * Return intervalVertexEvent with the given interval (No interaction with DB)
-	 * 
-	 * @param interval
-	 * @return intervalVertexEvent
-	 */
-	public VertexEvent setInterval(LongInterval interval) {
-		if (interval == null)
-			throw ExceptionFactory.intervalCanNotBeNull();
-
-		return new VertexEvent(this.graph, this, interval);
-	}
-
-	/**
 	 * Return timestampVertexEvent with the existing timestamp
 	 * 
 	 * @param timestamp
@@ -302,21 +276,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	 * @return timestampVertexEvent or null
 	 */
 	public VertexEvent pickTimestamp(Long timestamp) {
-		if (this.getTimestampProperties(timestamp) != null) {
-			return new VertexEvent(this.graph, this, timestamp);
-		}
-		return null;
-	}
-
-	/**
-	 * Return timestampVertexEvent with the existing timestamp
-	 * 
-	 * @param timestamp
-	 *            existing timestamp property key
-	 * @return timestampVertexEvent or null
-	 */
-	public VertexEvent pickTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
 		if (this.getTimestampProperties(timestamp) != null) {
 			return new VertexEvent(this.graph, this, timestamp);
 		}
@@ -346,94 +305,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * Return intervalVertexEvent with the existing interval
-	 * 
-	 * @param interval
-	 * @return intervalVertexEvent or null
-	 */
-	public VertexEvent pickInterval(LongInterval interval) {
-		if (this.getIntervalProperties(interval) != null) {
-			return new VertexEvent(this.graph, this, interval);
-		}
-		return null;
-	}
-
-	/**
-	 * @return intervalVertexEvent with the first interval or null
-	 */
-	public VertexEvent pickFirstInterval() {
-		LongInterval i = this.getFirstInterval();
-		if (i == null)
-			return null;
-		else
-			return new VertexEvent(this.graph, this, i);
-	}
-
-	/**
-	 * @return intervalVertexEvent with the last interval or null
-	 */
-	public VertexEvent pickLastInterval() {
-		LongInterval i = this.getLastInterval();
-		if (i == null)
-			return null;
-		else
-			return new VertexEvent(this.graph, this, i);
-	}
-
-	/**
-	 * Pick the existing intervalVertexEvents where each of their interval has
-	 * temporal relationship with the given timestamp
-	 * 
-	 * @param left
-	 * @param ss
-	 * @param se
-	 * @return HashSet<VertexEvent>
-	 */
-	public Iterable<VertexEvent> pickInterval(long left, AC ss, AC se) {
-		HashSet<VertexEvent> eventSet = new HashSet<VertexEvent>();
-
-		BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-				Tokens.TYPE_INTERVAL);
-		filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-		MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-				.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-		while (cursor.hasNext()) {
-			BsonDocument matched = cursor.next();
-			eventSet.add(new VertexEvent(this.getGraph(), this, new LongInterval(
-					matched.getDateTime(Tokens.START).getValue(), matched.getDateTime(Tokens.END).getValue())));
-		}
-		return eventSet;
-	}
-
-	/**
-	 * Pick the existing intervalVertexEvents where each of their interval has
-	 * temporal relationship with the given interval
-	 * 
-	 * @param left
-	 * @param ss
-	 * @param se
-	 * @param es
-	 * @param ee
-	 * @return HashSet<VertexEvent>
-	 */
-	public Iterable<VertexEvent> pickInterval(LongInterval left, AC ss, AC se, AC es, AC ee) {
-		HashSet<VertexEvent> eventSet = new HashSet<VertexEvent>();
-
-		BsonDocument filter = new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE,
-				Tokens.TYPE_INTERVAL);
-		filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-
-		MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-				.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-		while (cursor.hasNext()) {
-			BsonDocument matched = cursor.next();
-			eventSet.add(new VertexEvent(this.getGraph(), this, new LongInterval(
-					matched.getDateTime(Tokens.START).getValue(), matched.getDateTime(Tokens.END).getValue())));
-		}
-		return eventSet;
-	}
-
-	/**
 	 * Ceiling: greater than or equal to the given timestamp
 	 * 
 	 * @param timestamp
@@ -449,16 +320,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	/**
 	 * @param timestamp
-	 * @return timestampVertexEvent with the ceiling timestamp of the given
-	 *         timestamp or null
-	 */
-	public VertexEvent pickCeilingTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickCeilingTimestamp(timestamp);
-	}
-
-	/**
-	 * @param timestamp
 	 * @return timestampVertexEvent with the higher timestamp of the given timestamp
 	 *         or null
 	 */
@@ -467,16 +328,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 		if (higherTimestamp != null)
 			return new VertexEvent(this.graph, this, higherTimestamp);
 		return null;
-	}
-
-	/**
-	 * @param timestamp
-	 * @return timestampVertexEvent with the higher timestamp of the given timestamp
-	 *         or null
-	 */
-	public VertexEvent pickHigherTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickHigherTimestamp(timestamp);
 	}
 
 	/**
@@ -494,16 +345,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 	}
 
 	/**
-	 * @param timestamp
-	 * @return timestampVertexEvent with the floor timestamp of the given timestamp
-	 *         or null
-	 */
-	public VertexEvent pickFloorTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickFloorTimestamp(timestamp);
-	}
-
-	/**
 	 * Lower: less than or equal to the given timestamp
 	 * 
 	 * @param timestamp
@@ -515,16 +356,6 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 		if (lowerTimestamp != null)
 			return new VertexEvent(this.graph, this, lowerTimestamp);
 		return null;
-	}
-
-	/**
-	 * @param timestamp
-	 * @return timestampVertexEvent with the lower timestamp of the given timestamp
-	 *         or null
-	 */
-	public VertexEvent pickLowerTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickLowerTimestamp(timestamp);
 	}
 
 	/**
@@ -660,29 +491,61 @@ public class ChronoVertex extends ChronoElement implements Vertex {
 
 	private Stream<ChronoEdge> getOutChronoEdgeStream(final BsonArray labels, final int branchFactor,
 			final boolean setParallel) {
-		HashSet<ChronoEdge> edgeSet = new HashSet<ChronoEdge>();
-		BsonDocument filter = new BsonDocument();
-		BsonDocument inner = new BsonDocument();
-		filter.put(Tokens.OUT_VERTEX, new BsonString(this.toString()));
-		if (labels != null && labels.size() != 0) {
-			inner.put(Tokens.FC.$in.toString(), labels);
-			filter.put(Tokens.LABEL, inner);
+
+		while (true) {
+			try {
+				HashSet<ChronoEdge> edgeSet = new HashSet<ChronoEdge>();
+				BsonDocument filter = new BsonDocument();
+				filter.append(Tokens.OUT_VERTEX, new BsonString(this.toString()));
+
+				Iterator<BsonDocument> it = graph.getEdgeCollection()
+						.find(new BsonDocument(Tokens.OUT_VERTEX, new BsonString(this.toString())))
+						.projection(new BsonDocument(Tokens.LABEL, new BsonBoolean(true))
+								.append(Tokens.IN_VERTEX, new BsonBoolean(true))
+								.append(Tokens.ID, new BsonBoolean(false)))
+						.iterator();
+				while (it.hasNext()) {
+					BsonDocument doc = it.next();
+					String inV = doc.getString(Tokens.IN_VERTEX).getValue();
+					String label = doc.getString(Tokens.LABEL).getValue();
+					edgeSet.add(new ChronoEdge(this.toString() + "|" + label + "|" + inV, this.toString(), inV, label,
+							graph));
+				}
+
+				if (setParallel)
+					return edgeSet.parallelStream();
+				else
+					return edgeSet.stream();
+			} catch (MongoCursorNotFoundException e1) {
+				System.out.println(e1.getErrorMessage());
+			}
 		}
 
-		Iterator<BsonDocument> it = null;
-		if (branchFactor == Integer.MAX_VALUE)
-			it = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_ID).iterator();
-		else
-			it = graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_ID).limit(branchFactor).iterator();
-
-		while (it.hasNext()) {
-			BsonDocument d = it.next();
-			edgeSet.add(new ChronoEdge(d.getString(Tokens.ID).getValue(), this.graph));
-		}
-		if (setParallel)
-			return edgeSet.parallelStream();
-		else
-			return edgeSet.stream();
+		// HashSet<ChronoEdge> edgeSet = new HashSet<ChronoEdge>();
+		// BsonDocument filter = new BsonDocument();
+		// BsonDocument inner = new BsonDocument();
+		// filter.put(Tokens.OUT_VERTEX, new BsonString(this.toString()));
+		// if (labels != null && labels.size() != 0) {
+		// inner.put(Tokens.FC.$in.toString(), labels);
+		// filter.put(Tokens.LABEL, inner);
+		// }
+		//
+		// Iterator<BsonDocument> it = null;
+		// if (branchFactor == Integer.MAX_VALUE)
+		// it =
+		// graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_ID).iterator();
+		// else
+		// it =
+		// graph.getEdgeCollection().find(filter).projection(Tokens.PRJ_ONLY_ID).limit(branchFactor).iterator();
+		//
+		// while (it.hasNext()) {
+		// BsonDocument d = it.next();
+		// edgeSet.add(new ChronoEdge(d.getString(Tokens.ID).getValue(), this.graph));
+		// }
+		// if (setParallel)
+		// return edgeSet.parallelStream();
+		// else
+		// return edgeSet.stream();
 	}
 
 	private Iterable<ChronoVertex> getOutChronoVertices(BsonArray labels, final int branchFactor) {

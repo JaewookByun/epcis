@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.bson.BsonValue;
 import org.lilliput.chronograph.common.ExceptionFactory;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.Tokens;
 
 /**
@@ -17,9 +16,9 @@ import org.lilliput.chronograph.common.Tokens;
 public class ElementHelper {
 
 	/**
-	 * Determines whether the property key/value for the specified element can
-	 * be legally set. This is typically used as a pre-condition check prior to
-	 * setting a property.
+	 * Determines whether the property key/value for the specified element can be
+	 * legally set. This is typically used as a pre-condition check prior to setting
+	 * a property.
 	 *
 	 * @param element
 	 *            the element for the property to be set
@@ -28,8 +27,8 @@ public class ElementHelper {
 	 * @param value
 	 *            the value of the property
 	 * @throws IllegalArgumentException
-	 *             whether the triple is legal and if not, a clear reason
-	 *             message is provided
+	 *             whether the triple is legal and if not, a clear reason message is
+	 *             provided
 	 */
 	public static final void validateProperty(final ChronoElement element, final String key, final Object value)
 			throws IllegalArgumentException {
@@ -58,20 +57,6 @@ public class ElementHelper {
 	public static final void validateTimestampProperty(final ChronoElement element, final Long timestamp,
 			final String key, final Object value) throws IllegalArgumentException {
 		if (null == timestamp)
-			throw ExceptionFactory.propertyKeyCanNotBeNull();
-	}
-
-	/**
-	 * Extension
-	 * 
-	 * @param element
-	 * @param key
-	 * @param value
-	 * @throws IllegalArgumentException
-	 */
-	public static final void validateIntervalProperty(final ChronoElement element, final LongInterval interval,
-			final String key, final Object value) throws IllegalArgumentException {
-		if (null == interval)
 			throw ExceptionFactory.propertyKeyCanNotBeNull();
 	}
 
@@ -122,8 +107,8 @@ public class ElementHelper {
 	}
 
 	/**
-	 * Renames a property by removing the old key and adding the stored value to
-	 * the new key. If property does not exist, nothing occurs.
+	 * Renames a property by removing the old key and adding the stored value to the
+	 * new key. If property does not exist, nothing occurs.
 	 *
 	 * @param oldKey
 	 *            the key to rename
@@ -142,10 +127,10 @@ public class ElementHelper {
 	}
 
 	/**
-	 * Typecasts a property value. This only works for casting to a class that
-	 * has a constructor of the for new X(String). If no such constructor
-	 * exists, a RuntimeException is thrown and the original element property is
-	 * left unchanged.
+	 * Typecasts a property value. This only works for casting to a class that has a
+	 * constructor of the for new X(String). If no such constructor exists, a
+	 * RuntimeException is thrown and the original element property is left
+	 * unchanged.
 	 *
 	 * @param key
 	 *            the key for the property value to typecast
@@ -171,9 +156,8 @@ public class ElementHelper {
 	}
 
 	/**
-	 * Determines whether two elements have the same properties. To be true,
-	 * both must have the same property keys and respective values must be
-	 * equals().
+	 * Determines whether two elements have the same properties. To be true, both
+	 * must have the same property keys and respective values must be equals().
 	 *
 	 * @param a
 	 *            an element
@@ -229,8 +213,8 @@ public class ElementHelper {
 
 	/**
 	 * Set the properties of the provided element using the provided key value
-	 * pairs. The var args of Objects must be divisible by 2. All odd elements
-	 * in the array must be a String key.
+	 * pairs. The var args of Objects must be divisible by 2. All odd elements in
+	 * the array must be a String key.
 	 *
 	 * @param element
 	 *            the element to set the properties of
@@ -247,8 +231,8 @@ public class ElementHelper {
 
 	/**
 	 * A standard method for determining if two elements are equal. This method
-	 * should be used by any Element.equals() implementation to ensure
-	 * consistent behavior.
+	 * should be used by any Element.equals() implementation to ensure consistent
+	 * behavior.
 	 *
 	 * @param a
 	 *            The first element
