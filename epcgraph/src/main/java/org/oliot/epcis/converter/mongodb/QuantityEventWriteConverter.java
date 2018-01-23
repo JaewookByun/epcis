@@ -11,7 +11,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonDouble;
 import org.bson.BsonInt64;
 import org.bson.BsonString;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
@@ -41,7 +40,7 @@ import org.oliot.model.epcis.ReadPointType;
 
 public class QuantityEventWriteConverter {
 
-	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength, CachedChronoGraph cg) {
+	public BsonDocument convert(QuantityEventType quantityEventType, Integer gcpLength) {
 
 		BsonDocument dbo = new BsonDocument();
 
@@ -124,12 +123,12 @@ public class QuantityEventWriteConverter {
 		}
 
 		// Build Graph
-		capture(quantityEventType, gcpLength, cg);
+		capture(quantityEventType, gcpLength);
 
 		return dbo;
 	}
 
-	public void capture(QuantityEventType quantityEventType, Integer gcpLength, CachedChronoGraph cg) {
+	public void capture(QuantityEventType quantityEventType, Integer gcpLength) {
 
 		ChronoGraph pg = Configuration.persistentGraph;
 
@@ -180,21 +179,18 @@ public class QuantityEventWriteConverter {
 
 		if (epcClass != null) {
 			pg.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
-			cg.getChronoVertex(epcClass).setTimestampProperties(t, objProperty);
 
 			// Read Point
 			if (quantityEventType.getReadPoint() != null) {
 				ReadPointType readPointType = quantityEventType.getReadPoint();
 				String locID = readPointType.getId();
 				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 			// BizLocation
 			if (quantityEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = quantityEventType.getBizLocation();
 				String locID = bizLocationType.getId();
 				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
-				cg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
 			}
 
 		}

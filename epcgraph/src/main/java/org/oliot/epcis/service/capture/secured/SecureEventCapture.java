@@ -148,7 +148,7 @@ public class SecureEventCapture implements ServletContextAware {
 			}
 
 			CaptureService cs = new CaptureService();
-			retMsg = cs.capture(epcisDocument, userID, accessModifierString, gcpLength, null);
+			retMsg = cs.capture(epcisDocument, userID, accessModifierString, gcpLength);
 			Configuration.logger.info(" EPCIS Document : Captured ");
 		} else {
 			retMsg.put("Authorized", "no");
