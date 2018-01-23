@@ -116,6 +116,8 @@ public class EventCapture implements ServletContextAware {
 		Configuration.mongoDatabase = Configuration.mongoClient.getDatabase(Configuration.databaseName);
 		Configuration.persistentGraph = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
 				Configuration.databaseName);
+		Configuration.persistentGraphData = new ChronoGraph(Configuration.backend_ip, Configuration.backend_port,
+				Configuration.databaseName+"-data");
 
 		CaptureService cs = new CaptureService();
 		cs.capture(epcisDocument, null, null, null);

@@ -3,15 +3,17 @@ package org.oliot.epcis.converter.mongodb;
 import static org.oliot.epcis.converter.mongodb.MongoWriterUtil.*;
 
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bson.BsonArray;
-import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.lilliput.chronograph.persistent.ChronoGraph;
+import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
@@ -54,9 +56,14 @@ public class TransformationEventWriteConverter {
 
 		dbo.put("eventType", new BsonString("TransformationEvent"));
 		// Event Time
-		if (transformationEventType.getEventTime() != null)
-			dbo.put("eventTime",
-					new BsonDateTime(transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+		Long eventTime = null;
+		if (transformationEventType.getEventTime() != null) {
+			eventTime = transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis();
+			dbo.put("eventTime", new BsonDateTime(eventTime));
+		} else {
+			eventTime = System.currentTimeMillis();
+			dbo.put("eventTime", new BsonDateTime(eventTime));
+		}
 		// Event Time Zone
 		if (transformationEventType.getEventTimeZoneOffset() != null)
 			dbo.put("eventTimeZoneOffset", new BsonString(transformationEventType.getEventTimeZoneOffset()));
@@ -64,32 +71,28 @@ public class TransformationEventWriteConverter {
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
 		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
+
 		// Input EPCList
+		Set<String> inputSet = null;
 		if (transformationEventType.getInputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getInputEPCList();
 			List<EPC> epcList = epcs.getEpc();
-			BsonArray epcDBList = new BsonArray();
-
-			for (int i = 0; i < epcList.size(); i++) {
-				BsonDocument epcDB = new BsonDocument();
-				epcDB.put("epc", new BsonString(MongoWriterUtil.getInstanceEPC(epcList.get(i).getValue(), gcpLength)));
-				epcDBList.add(epcDB);
-			}
+			inputSet = epcList.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
+			List<BsonString> bEPC = inputSet.parallelStream().map(sepc -> new BsonString(sepc))
+					.collect(Collectors.toList());
+			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("inputEPCList", epcDBList);
 		}
 		// Output EPCList
+		Set<String> outputSet = null;
 		List<EPC> outputList = null;
 		if (transformationEventType.getOutputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getOutputEPCList();
 			outputList = epcs.getEpc();
-			BsonArray epcDBList = new BsonArray();
-
-			for (int i = 0; i < outputList.size(); i++) {
-				BsonDocument epcDB = new BsonDocument();
-				epcDB.put("epc",
-						new BsonString(MongoWriterUtil.getInstanceEPC(outputList.get(i).getValue(), gcpLength)));
-				epcDBList.add(epcDB);
-			}
+			outputSet = outputList.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
+			List<BsonString> bEPC = outputSet.parallelStream().map(sepc -> new BsonString(sepc))
+					.collect(Collectors.toList());
+			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("outputEPCList", epcDBList);
 		}
 		// TransformationID
@@ -103,16 +106,18 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getDisposition() != null)
 			dbo.put("disposition", new BsonString(transformationEventType.getDisposition()));
 		// ReadPoint
+		String readPoint = null;
 		if (transformationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transformationEventType.getReadPoint();
-			BsonDocument readPoint = getReadPointObject(readPointType, gcpLength);
-			dbo.put("readPoint", readPoint);
+			readPoint = readPointType.getId();
+			dbo.put("readPoint", new BsonString(readPoint));
 		}
 		// BizLocation
+		String bizLocation = null;
 		if (transformationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-			BsonDocument bizLocation = getBizLocationObject(bizLocationType, gcpLength);
-			dbo.put("bizLocation", bizLocation);
+			bizLocation = bizLocationType.getId();
+			dbo.put("bizLocation", new BsonString(bizLocation));
 		}
 		// BizTransaction
 		if (transformationEventType.getBizTransactionList() != null) {
@@ -122,18 +127,20 @@ public class TransformationEventWriteConverter {
 			dbo.put("bizTransactionList", bizTranList);
 		}
 		// Input Quantity List
+		BsonArray inputClassSet = null;
 		if (transformationEventType.getInputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getInputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = getQuantityObjectList(qetList, gcpLength);
-			dbo.put("inputQuantityList", quantityList);
+			inputClassSet = getQuantityObjectList(qetList, gcpLength);
+			dbo.put("inputQuantityList", inputClassSet);
 		}
 		// Output Quantity List
+		BsonArray outputClassSet = null;
 		if (transformationEventType.getOutputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getOutputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = getQuantityObjectList(qetList, gcpLength);
-			dbo.put("outputQuantityList", quantityList);
+			outputClassSet = getQuantityObjectList(qetList, gcpLength);
+			dbo.put("outputQuantityList", outputClassSet);
 		}
 		// Source List
 		if (transformationEventType.getSourceList() != null) {
@@ -175,9 +182,13 @@ public class TransformationEventWriteConverter {
 		}
 
 		// Extension
+		BsonArray sourceList = null;
+		BsonArray destinationList = null;
 		if (transformationEventType.getExtension() != null) {
 			TransformationEventExtensionType oee = transformationEventType.getExtension();
 			BsonDocument extension = getTransformationEventExtensionObject(oee);
+			sourceList = extension.getArray("sourceList");
+			destinationList = extension.getArray("destinationList");
 			dbo.put("extension", extension);
 		}
 
@@ -200,232 +211,73 @@ public class TransformationEventWriteConverter {
 			}
 		}
 
+		BsonObjectId dataID = new BsonObjectId();
+		ChronoVertex dataVertex = Configuration.persistentGraphData.getChronoVertex(dataID.toString());
+		dataVertex.setProperties(dbo);
+
 		// Build Graph
-		capture(transformationEventType, gcpLength);
+		capture(dataID, eventTime, inputSet, outputSet, inputClassSet, outputClassSet, readPoint, bizLocation,
+				sourceList, destinationList);
 
 		return dbo;
 	}
 
-	public void capture(TransformationEventType transformationEventType, Integer gcpLength) {
+	public void capture(BsonObjectId dataID, Long eventTime, Set<String> inputSet, Set<String> outputSet,
+			BsonArray inputClassSet, BsonArray outputClassSet, String readPoint, String bizLocation,
+			BsonArray sourceList, BsonArray destinationList) {
 
 		ChronoGraph pg = Configuration.persistentGraph;
 
-		// input EPC list
-		HashSet<String> inputSet = new HashSet<String>();
-		if (transformationEventType.getInputEPCList() != null) {
-			EPCListType epcs = transformationEventType.getInputEPCList();
-			List<EPC> epcList = epcs.getEpc();
-			for (int i = 0; i < epcList.size(); i++) {
-				inputSet.add(epcList.get(i).getValue());
-			}
-		}
-
-		// Output EPCList
-		HashSet<String> outputSet = new HashSet<String>();
-		if (transformationEventType.getOutputEPCList() != null) {
-			EPCListType epcs = transformationEventType.getOutputEPCList();
-			List<EPC> epcList = epcs.getEpc();
-			for (int i = 0; i < epcList.size(); i++) {
-				outputSet.add(epcList.get(i).getValue());
-			}
-		}
-
-		// Input Quantity List
-		BsonArray inputClassSet = null;
-		if (transformationEventType.getInputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType.getInputQuantityList();
-			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			inputClassSet = getQuantityObjectList(qetList, gcpLength);
-		}
-		// Output Quantity List
-		BsonArray outputClass = null;
-		if (transformationEventType.getOutputQuantityList() != null) {
-			QuantityListType qetl = transformationEventType.getOutputQuantityList();
-			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			outputClass = getQuantityObjectList(qetList, gcpLength);
-		}
-		final BsonArray outputClassSet = outputClass;
-
-		Long eventTime = null;
-		if (transformationEventType.getEventTime() != null)
-			eventTime = transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis();
-		else
-			eventTime = System.currentTimeMillis();
-
-		final long t = eventTime;
-
-		BsonDocument objProperty = new BsonDocument();
-
-		// Event Time Zone
-		if (transformationEventType.getEventTimeZoneOffset() != null)
-			objProperty.put("eventTimeZoneOffset", new BsonString(transformationEventType.getEventTimeZoneOffset()));
-		// Record Time : according to M5
-		GregorianCalendar recordTime = new GregorianCalendar();
-		long recordTimeMilis = recordTime.getTimeInMillis();
-		objProperty.put("recordTime", new BsonDateTime(recordTimeMilis));
-
-		// TransformationID
-		if (transformationEventType.getTransformationID() != null) {
-			objProperty.put("transformationID", new BsonString(transformationEventType.getTransformationID()));
-		}
-		// BizStep
-		if (transformationEventType.getBizStep() != null)
-			objProperty.put("bizStep", new BsonString(transformationEventType.getBizStep()));
-		// Disposition
-		if (transformationEventType.getDisposition() != null)
-			objProperty.put("disposition", new BsonString(transformationEventType.getDisposition()));
-		// BizTransaction
-		if (transformationEventType.getBizTransactionList() != null) {
-			BusinessTransactionListType bizListType = transformationEventType.getBizTransactionList();
-			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
-			BsonArray bizTranList = getBizTransactionObjectList(bizList);
-			objProperty.put("bizTransactionList", bizTranList);
-		}
-
-		// Source List
-		if (transformationEventType.getSourceList() != null) {
-			SourceListType sdtl = transformationEventType.getSourceList();
-			List<SourceDestType> sdtList = sdtl.getSource();
-			BsonArray dbList = getSourceDestObjectList(sdtList, gcpLength);
-			objProperty.put("sourceList", dbList);
-		}
-		// Dest List
-		if (transformationEventType.getDestinationList() != null) {
-			DestinationListType sdtl = transformationEventType.getDestinationList();
-			List<SourceDestType> sdtList = sdtl.getDestination();
-			BsonArray dbList = getSourceDestObjectList(sdtList, gcpLength);
-			objProperty.put("destinationList", dbList);
-		}
-		// Vendor Extension
-		if (transformationEventType.getAny() != null) {
-			List<Object> objList = transformationEventType.getAny();
-			BsonDocument map2Save = getAnyMap(objList);
-			if (map2Save != null && map2Save.isEmpty() == false)
-				objProperty.put("any", map2Save);
-		}
-
-		// Extension
-		if (transformationEventType.getExtension() != null) {
-			TransformationEventExtensionType oee = transformationEventType.getExtension();
-			BsonDocument extension = getTransformationEventExtensionObject(oee);
-			objProperty.put("extension", extension);
-		}
-
 		if (inputSet != null)
 			inputSet.stream().forEach(input -> {
-
-				// Read Point
-				if (transformationEventType.getReadPoint() != null) {
-					ReadPointType readPointType = transformationEventType.getReadPoint();
-					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t,
-							new BsonDocument("isReadPoint", new BsonBoolean(true)));
-				}
-				// BizLocation
-				if (transformationEventType.getBizLocation() != null) {
-					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t,
-							new BsonDocument("isReadPoint", new BsonBoolean(false)));
-				}
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, input, readPoint, bizLocation, sourceList,
+						destinationList);
 
 				if (outputSet != null)
 					outputSet.stream().forEach(output -> {
-						pg.addTimestampEdgeProperties(input, output, "transformsTo", t, objProperty);
+						pg.addTimestampEdgeProperties(input, output, "transformsTo", eventTime,
+								new BsonDocument("data", dataID));
 					});
 
 				if (outputClassSet != null)
 					outputClassSet.stream().forEach(classElem -> {
 						String epcClass = classElem.asDocument().getString("epcClass").getValue();
-						pg.addTimestampEdgeProperties(input, epcClass, "transformsTo", t, objProperty);
+						pg.addTimestampEdgeProperties(input, epcClass, "transformsTo", eventTime,
+								new BsonDocument("data", dataID));
 					});
+
 			});
 
 		if (inputClassSet != null)
 			inputClassSet.stream().forEach(inputClassElem -> {
-				BsonDocument classDoc = inputClassElem.asDocument();
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, inputClassElem, readPoint, bizLocation,
+						sourceList, destinationList);
+
 				String inputClassID = inputClassElem.asDocument().getString("epcClass").getValue();
-				BsonDocument classProperty = new BsonDocument();
-				if (!classDoc.containsKey("epcClass"))
-					return;
-				if (classDoc.containsKey("quantity"))
-					classProperty.put("quantity", classDoc.getDouble("quantity"));
-				if (classDoc.containsKey("uom"))
-					classProperty.put("uom", classDoc.getString("uom"));
-
-				// Read Point
-				if (transformationEventType.getReadPoint() != null) {
-					ReadPointType readPointType = transformationEventType.getReadPoint();
-					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t,
-							new BsonDocument("isReadPoint", new BsonBoolean(true)));
-				}
-				// BizLocation
-				if (transformationEventType.getBizLocation() != null) {
-					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t,
-							new BsonDocument("isReadPoint", new BsonBoolean(false)));
-				}
-
 				if (outputSet != null)
 					outputSet.stream().forEach(output -> {
-						pg.addTimestampEdgeProperties(inputClassID, output, "transformsTo", t, objProperty);
+						pg.addTimestampEdgeProperties(inputClassID, output, "transformsTo", eventTime,
+								new BsonDocument("data", dataID));
 					});
 
 				if (outputClassSet != null)
 					outputClassSet.stream().forEach(classElem -> {
 						String epcClass = classElem.asDocument().getString("epcClass").getValue();
-						pg.addTimestampEdgeProperties(inputClassID, epcClass, "transformsTo", t, objProperty);
+						pg.addTimestampEdgeProperties(inputClassID, epcClass, "transformsTo", eventTime,
+								new BsonDocument("data", dataID));
 					});
-
-				pg.getChronoVertex(inputClassID).setTimestampProperties(t, classProperty);
 			});
 
 		if (outputSet != null)
 			outputSet.stream().forEach(output -> {
-
-				// Read Point
-				if (transformationEventType.getReadPoint() != null) {
-					ReadPointType readPointType = transformationEventType.getReadPoint();
-					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(true)));
-				}
-				// BizLocation
-				if (transformationEventType.getBizLocation() != null) {
-					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(false)));
-				}
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, output, readPoint, bizLocation, sourceList,
+						destinationList);
 			});
 
 		if (outputClassSet != null)
 			outputClassSet.stream().forEach(outputClassElem -> {
-
-				BsonDocument classDoc = outputClassElem.asDocument();
-				String outputClassID = outputClassElem.asDocument().getString("epcClass").getValue();
-				BsonDocument classProperty = new BsonDocument();
-				if (!classDoc.containsKey("epcClass"))
-					return;
-				if (classDoc.containsKey("quantity"))
-					classProperty.put("quantity", classDoc.getDouble("quantity"));
-				if (classDoc.containsKey("uom"))
-					classProperty.put("uom", classDoc.getString("uom"));
-
-				// Read Point
-				if (transformationEventType.getReadPoint() != null) {
-					ReadPointType readPointType = transformationEventType.getReadPoint();
-					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
-				}
-				// BizLocation
-				if (transformationEventType.getBizLocation() != null) {
-					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(outputClassID, locID, "isLocatedIn", t, new BsonDocument());
-				}
-
-				pg.getChronoVertex(outputClassID).setTimestampProperties(t, classProperty);
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, outputClassElem, readPoint, bizLocation,
+						sourceList, destinationList);
 			});
 
 		return;
