@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,6 +36,8 @@ import org.bson.BsonNull;
 import org.bson.BsonString;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.lilliput.chronograph.cache.CachedChronoEdge;
+import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.common.ExceptionFactory;
 import org.lilliput.chronograph.common.Tokens;
 import org.lilliput.chronograph.persistent.util.Converter;
@@ -278,15 +281,15 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		};
 		HashSet<String> outV = new HashSet<String>();
 		ArrayList<BsonDocument> outVQuery = new ArrayList<BsonDocument>();
-		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.OUT_VERTEX))));
+		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$" + Tokens.OUT_VERTEX))));
 		edges.aggregate(outVQuery).map(mapper).into(outV);
 
 		HashSet<String> inV = new HashSet<String>();
 		ArrayList<BsonDocument> inVQuery = new ArrayList<BsonDocument>();
-		inVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.IN_VERTEX))));
+		inVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$" + Tokens.IN_VERTEX))));
 		edges.aggregate(inVQuery).map(mapper).into(inV);
 		idSet.addAll(inV);
-		
+
 		MongoCursor<BsonDocument> vi = vertices.find(Tokens.FLT_VERTEX_FIELD_NOT_INCLUDED)
 				.projection(Tokens.PRJ_ONLY_ID).iterator();
 		while (vi.hasNext()) {
@@ -296,7 +299,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 
 		return idSet.parallelStream().map(s -> new ChronoVertex(s, this)).collect(Collectors.toSet());
 	}
-	
+
 	public Set<ChronoVertex> getOutVertexSet() {
 		Function<BsonDocument, String> mapper = new Function<BsonDocument, String>() {
 			@Override
@@ -307,7 +310,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		};
 		HashSet<String> outV = new HashSet<String>();
 		ArrayList<BsonDocument> outVQuery = new ArrayList<BsonDocument>();
-		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$"+Tokens.OUT_VERTEX))));
+		outVQuery.add(new BsonDocument("$group", new BsonDocument(Tokens.ID, new BsonString("$" + Tokens.OUT_VERTEX))));
 		edges.aggregate(outVQuery).map(mapper).into(outV);
 
 		return outV.parallelStream().map(s -> new ChronoVertex(s, this)).collect(Collectors.toSet());
@@ -1068,9 +1071,42 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 			}
 
 		};
-		edges.distinct(Tokens.TIMESTAMP, BsonDateTime.class)
+		edgeEvents.distinct(Tokens.TIMESTAMP, BsonDateTime.class)
 				.filter(new BsonDocument(Tokens.TIMESTAMP, new BsonDocument(Tokens.FC.$ne.toString(), new BsonNull())))
 				.map(mapper).into(timestampSet);
+		Set<Long> vtSet = new TreeSet<Long>();
+
+		vertexEvents.distinct(Tokens.TIMESTAMP, BsonDateTime.class)
+				.filter(new BsonDocument(Tokens.TIMESTAMP, new BsonDocument(Tokens.FC.$ne.toString(), new BsonNull())))
+				.map(mapper).into(vtSet);
+		timestampSet.addAll(vtSet);
+
+		return timestampSet;
+	}
+
+	public TreeSet<Long> getTimestamps(Long startTime, Long endTime) {
+		TreeSet<Long> timestampSet = new TreeSet<Long>();
+
+		Function<BsonDateTime, Long> mapper = new Function<BsonDateTime, Long>() {
+			@Override
+			public Long apply(BsonDateTime val) {
+				return val.getValue();
+			}
+
+		};
+		edgeEvents.distinct(Tokens.TIMESTAMP, BsonDateTime.class)
+				.filter(new BsonDocument(Tokens.TIMESTAMP,
+						new BsonDocument(Tokens.FC.$gt.toString(), new BsonDateTime(startTime))
+								.append(Tokens.FC.$lt.toString(), new BsonDateTime(endTime))))
+				.map(mapper).into(timestampSet);
+		Set<Long> vtSet = new TreeSet<Long>();
+
+		vertexEvents.distinct(Tokens.TIMESTAMP, BsonDateTime.class)
+				.filter(new BsonDocument(Tokens.TIMESTAMP,
+						new BsonDocument(Tokens.FC.$gt.toString(), new BsonDateTime(startTime))
+								.append(Tokens.FC.$lt.toString(), new BsonDateTime(endTime))))
+				.map(mapper).into(timestampSet);
+		timestampSet.addAll(vtSet);
 
 		return timestampSet;
 	}
@@ -1260,4 +1296,33 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 		return ret;
 	}
 
+	public TreeMap<Long, CachedChronoGraph> getSnapshots(Long startTime, Long endTime) {
+		
+		TreeMap<Long, CachedChronoGraph> snapshots = new TreeMap<Long, CachedChronoGraph>();
+		TreeSet<Long> eventTimeSet = getTimestamps(startTime, endTime);
+
+		Iterator<Long> tIter = eventTimeSet.iterator();
+		while(tIter.hasNext()) {
+			Long t = tIter.next();
+			CachedChronoGraph g = getSnapshot(t);
+			snapshots.put(t, g);
+		}
+		
+		return snapshots;		
+	}
+
+	public CachedChronoGraph getSnapshot(Long t) {
+		CachedChronoGraph g = new CachedChronoGraph();
+		MongoCursor<BsonDocument> c = this.getEdgeEvents().find(new BsonDocument(Tokens.TIMESTAMP, new BsonDateTime(t)))
+				.iterator();
+		while (c.hasNext()) {
+			BsonDocument doc = c.next();
+			String outV = doc.getString(Tokens.OUT_VERTEX).getValue();
+			String label = doc.getString(Tokens.LABEL).getValue();
+			String inV = doc.getString(Tokens.IN_VERTEX).getValue();
+			CachedChronoEdge e = g.addEdge(outV, inV, label);
+			e.setProperties(doc);
+		}
+		return g;
+	}
 }

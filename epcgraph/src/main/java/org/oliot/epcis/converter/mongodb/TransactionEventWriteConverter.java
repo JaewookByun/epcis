@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -222,13 +223,13 @@ public class TransactionEventWriteConverter {
 			if (transactionEventType.getReadPoint() != null) {
 				ReadPointType readPointType = transactionEventType.getReadPoint();
 				String locID = readPointType.getId();
-				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(true)));
 			}
 			// BizLocation
 			if (transactionEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(object, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(false)));
 			}
 
 			if (extensionf != null) {
@@ -289,13 +290,13 @@ public class TransactionEventWriteConverter {
 			if (transactionEventType.getReadPoint() != null) {
 				ReadPointType readPointType = transactionEventType.getReadPoint();
 				String locID = readPointType.getId();
-				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(true)));
 			}
 			// BizLocation
 			if (transactionEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(false)));
 			}
 
 			if (extensionf != null) {

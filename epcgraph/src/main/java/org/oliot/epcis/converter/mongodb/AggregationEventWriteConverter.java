@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -229,13 +230,15 @@ public class AggregationEventWriteConverter {
 			if (aggregationEventType.getReadPoint() != null) {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
-				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(true)));
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(parentID, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(false)));
 			}
 
 			if (extensionf != null) {
@@ -282,13 +285,15 @@ public class AggregationEventWriteConverter {
 			if (aggregationEventType.getReadPoint() != null) {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
-				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(true)));
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(child, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(false)));
 			}
 
 			if (extensionf != null) {
@@ -348,13 +353,15 @@ public class AggregationEventWriteConverter {
 			if (aggregationEventType.getReadPoint() != null) {
 				ReadPointType readPointType = aggregationEventType.getReadPoint();
 				String locID = readPointType.getId();
-				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(true)));
 			}
 			// BizLocation
 			if (aggregationEventType.getBizLocation() != null) {
 				BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 				String locID = bizLocationType.getId();
-				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t, new BsonDocument());
+				pg.addTimestampEdgeProperties(epcClass, locID, "isLocatedIn", t,
+						new BsonDocument("isReadPoint", new BsonBoolean(false)));
 			}
 
 			if (extensionf != null) {
