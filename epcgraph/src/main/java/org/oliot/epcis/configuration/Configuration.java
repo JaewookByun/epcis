@@ -17,7 +17,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.service.subscription.MongoSubscription;
 
@@ -79,8 +78,6 @@ public class Configuration implements ServletContextListener {
 
 		// load existing subscription
 		loadExistingSubscription();
-
-		servletContextEvent.getServletContext().setAttribute("cachedGraph", new CachedChronoGraph());
 	}
 
 	private void setLogger() {

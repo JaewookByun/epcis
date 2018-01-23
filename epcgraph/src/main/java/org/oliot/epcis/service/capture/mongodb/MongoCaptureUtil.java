@@ -3,7 +3,6 @@ package org.oliot.epcis.service.capture.mongodb;
 import java.util.HashMap;
 import java.util.List;
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
 import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -61,30 +60,29 @@ public class MongoCaptureUtil {
 		return retMsg;
 	}
 
-	public BsonDocument convert(Object event, String userID, String accessModifier, Integer gcpLength,
-			CachedChronoGraph cg) {
+	public BsonDocument convert(Object event, String userID, String accessModifier, Integer gcpLength) {
 		BsonDocument object2Save = null;
 		String type = null;
 		if (event instanceof AggregationEventType) {
 			type = "AggregationEvent";
 			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
-			object2Save = wc.convert((AggregationEventType) event, gcpLength, cg);
+			object2Save = wc.convert((AggregationEventType) event, gcpLength);
 		} else if (event instanceof ObjectEventType) {
 			type = "ObjectEvent";
 			ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
-			object2Save = wc.convert((ObjectEventType) event, gcpLength, cg);
+			object2Save = wc.convert((ObjectEventType) event, gcpLength);
 		} else if (event instanceof QuantityEventType) {
 			type = "QuantityEvent";
 			QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
-			object2Save = wc.convert((QuantityEventType) event, gcpLength, cg);
+			object2Save = wc.convert((QuantityEventType) event, gcpLength);
 		} else if (event instanceof TransactionEventType) {
 			type = "TransactionEvent";
 			TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
-			object2Save = wc.convert((TransactionEventType) event, gcpLength, cg);
+			object2Save = wc.convert((TransactionEventType) event, gcpLength);
 		} else if (event instanceof EPCISEventListExtensionType) {
 			type = "TransformationEvent";
 			TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
-			object2Save = wc.convert(((EPCISEventListExtensionType) event).getTransformationEvent(), gcpLength, cg);
+			object2Save = wc.convert(((EPCISEventListExtensionType) event).getTransformationEvent(), gcpLength);
 		}
 
 		if (object2Save == null)
@@ -115,7 +113,7 @@ public class MongoCaptureUtil {
 	}
 	/* added for JSONcapture */
 
-	public String capture(Object event, String userID, String accessModifier, Integer gcpLength, CachedChronoGraph cg) {
+	public String capture(Object event, String userID, String accessModifier, Integer gcpLength) {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
 				BsonDocument.class);
 		BsonDocument object2Save = null;
@@ -123,23 +121,23 @@ public class MongoCaptureUtil {
 		if (event instanceof AggregationEventType) {
 			type = "AggregationEvent";
 			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
-			object2Save = wc.convert((AggregationEventType) event, gcpLength, cg);
+			object2Save = wc.convert((AggregationEventType) event, gcpLength);
 		} else if (event instanceof ObjectEventType) {
 			type = "ObjectEvent";
 			ObjectEventWriteConverter wc = new ObjectEventWriteConverter();
-			object2Save = wc.convert((ObjectEventType) event, gcpLength, cg);
+			object2Save = wc.convert((ObjectEventType) event, gcpLength);
 		} else if (event instanceof QuantityEventType) {
 			type = "QuantityEvent";
 			QuantityEventWriteConverter wc = new QuantityEventWriteConverter();
-			object2Save = wc.convert((QuantityEventType) event, gcpLength, cg);
+			object2Save = wc.convert((QuantityEventType) event, gcpLength);
 		} else if (event instanceof TransactionEventType) {
 			type = "TransactionEvent";
 			TransactionEventWriteConverter wc = new TransactionEventWriteConverter();
-			object2Save = wc.convert((TransactionEventType) event, gcpLength, cg);
+			object2Save = wc.convert((TransactionEventType) event, gcpLength);
 		} else if (event instanceof TransformationEventType) {
 			type = "TransformationEvent";
 			TransformationEventWriteConverter wc = new TransformationEventWriteConverter();
-			object2Save = wc.convert((TransformationEventType) event, gcpLength, cg);
+			object2Save = wc.convert((TransformationEventType) event, gcpLength);
 		}
 
 		if (object2Save == null)
@@ -197,10 +195,9 @@ public class MongoCaptureUtil {
 		return isReplacing;
 	}
 
-	public String capture(VocabularyType vocabulary, String userID, String accessModifier, Integer gcpLength,
-			CachedChronoGraph cg) {
+	public String capture(VocabularyType vocabulary, String userID, String accessModifier, Integer gcpLength) {
 		MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
-		if (mdConverter.capture(vocabulary, gcpLength, cg) != 0) {
+		if (mdConverter.capture(vocabulary, gcpLength) != 0) {
 			return "[ERROR] Vocabulary Capture Failed";
 		} else {
 			return null;

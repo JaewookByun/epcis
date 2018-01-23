@@ -13,7 +13,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -24,8 +23,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonString;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoVertex;
-import org.lilliput.chronograph.cache.engine.CachedTraversalEngine;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
 import org.lilliput.chronograph.common.Tokens.AC;
@@ -101,24 +98,26 @@ public class TraceabilityQueryService implements ServletContextAware {
 	@ResponseBody
 	public ResponseEntity<?> getAllVertices() {
 
-		ScriptEngineManager man = new ScriptEngineManager();
-		ScriptEngine engine = man.getEngineByName("groovy");
-		engine.put("graph", servletContext.getAttribute("cachedGraph"));
-
-		engine.put("engine", new CachedTraversalEngine());
-		engine.put("CachedChronoVertex_class", CachedChronoVertex.class);
-		try {
-			// CachedChronoGraph g = Configuration.cachedGraph;
-			// g.addEdge("1", "2", "c");
-			// g.getChronoVertex("1");
-			// new CachedTraversalEngine().out(null, Integer.MAX_VALUE);
-			engine.eval("graph.addEdge(\"1\",\"2\",\"c\");"
-					+ "engine = engine.setStartsLazy(graph.getChronoVertex(\"1\"),true,false,CachedChronoVertex_class);"
-					+ "engine.out(null, Integer.MAX_VALUE);" + "System.out.println(engine.toList());");
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		// ScriptEngineManager man = new ScriptEngineManager();
+		// ScriptEngine engine = man.getEngineByName("groovy");
+		// engine.put("graph", servletContext.getAttribute("cachedGraph"));
+		//
+		// engine.put("engine", new CachedTraversalEngine());
+		// engine.put("CachedChronoVertex_class", CachedChronoVertex.class);
+		// try {
+		// // CachedChronoGraph g = Configuration.cachedGraph;
+		// // g.addEdge("1", "2", "c");
+		// // g.getChronoVertex("1");
+		// // new CachedTraversalEngine().out(null, Integer.MAX_VALUE);
+		// engine.eval("graph.addEdge(\"1\",\"2\",\"c\");"
+		// + "engine =
+		// engine.setStartsLazy(graph.getChronoVertex(\"1\"),true,false,CachedChronoVertex_class);"
+		// + "engine.out(null, Integer.MAX_VALUE);" +
+		// "System.out.println(engine.toList());");
+		// } catch (ScriptException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.add("Content-Type", "application/json; charset=utf-8");
