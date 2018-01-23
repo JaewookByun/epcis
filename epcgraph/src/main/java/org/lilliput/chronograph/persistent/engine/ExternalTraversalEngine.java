@@ -31,7 +31,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bson.BsonArray;
-import org.lilliput.chronograph.common.LongInterval;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.Step;
 import org.lilliput.chronograph.common.TemporalType;
@@ -981,58 +980,6 @@ public class ExternalTraversalEngine {
 		final Class[] args = new Class[1];
 		args[0] = Long.class;
 		final Step step = new Step(this.getClass().getName(), "toEvent", args, timestamp);
-		stepList.add(step);
-
-		// Set Class
-		if (elementClass == ChronoVertex.class)
-			elementClass = VertexEvent.class;
-		else
-			elementClass = EdgeEvent.class;
-		return this;
-	}
-
-	public ExternalTraversalEngine toEvent(final LongInterval interval) {
-		// Check Input element class
-		checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
-
-		// Pipeline Update
-
-		if (isPathEnabled) {
-			// Get Sub-Path
-			Map intermediate = (Map) stream.map(element -> {
-				if (element instanceof ChronoVertex) {
-					ChronoVertex cv = (ChronoVertex) element;
-					return new AbstractMap.SimpleImmutableEntry(cv, cv.setInterval(interval));
-				} else if (element instanceof ChronoEdge) {
-					ChronoEdge ce = (ChronoEdge) element;
-					EdgeEvent cee = ce.setInterval(interval);
-					if (cee == null)
-						return null;
-					return new AbstractMap.SimpleImmutableEntry(ce, cee);
-				} else {
-					return null;
-				}
-			}).filter(e -> e != null).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
-
-			// Update Path
-			updateTransformationPath(intermediate);
-
-			// Make stream again
-			stream = getStream(intermediate, isParallel);
-		} else {
-			stream = stream.map(element -> {
-				if (element instanceof ChronoVertex) {
-					return ((ChronoVertex) element).setInterval(interval);
-				} else {
-					// EdgeEvent can be null
-					return ((ChronoEdge) element).setInterval(interval);
-				}
-			}).filter(e -> e != null);
-		}
-		// Step Update
-		final Class[] args = new Class[1];
-		args[0] = LongInterval.class;
-		final Step step = new Step(this.getClass().getName(), "toEvent", args, interval);
 		stepList.add(step);
 
 		// Set Class

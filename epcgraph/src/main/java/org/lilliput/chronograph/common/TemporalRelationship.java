@@ -20,18 +20,6 @@ import org.lilliput.chronograph.common.Tokens.AC;
  */
 public class TemporalRelationship {
 
-	public static boolean isPassingComparator(LongInterval left, AC ss, AC se, AC es, AC ee, LongInterval right) {
-		if (ss != null && !isPassingComparator(left.getStart(), ss, right.getStart()))
-			return false;
-		if (se != null && !isPassingComparator(left.getStart(), se, right.getEnd()))
-			return false;
-		if (es != null && !isPassingComparator(left.getEnd(), es, right.getStart()))
-			return false;
-		if (ee != null && !isPassingComparator(left.getEnd(), ee, right.getEnd()))
-			return false;
-		return true;
-	}
-
 	public static boolean isPassingComparator(long left, AC comparator, long right) {
 		if (comparator == null)
 			return true;

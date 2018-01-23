@@ -1,21 +1,13 @@
 package org.lilliput.chronograph.persistent;
 
-import com.mongodb.client.MongoCursor;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.lilliput.chronograph.common.ExceptionFactory;
-import org.lilliput.chronograph.common.LongInterval;
-import org.lilliput.chronograph.common.Tokens;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.common.Tokens.Position;
 
 /**
  * Copyright (C) 2016-2017 Jaewook Byun
@@ -154,28 +146,6 @@ public class ChronoEdge extends ChronoElement implements Edge {
 	}
 
 	/**
-	 * Return timestampEdgeEvent with given timestamp
-	 * 
-	 * @param interval
-	 * @param pos
-	 * @return
-	 */
-	public EdgeEvent setTimestamp(LongInterval interval, Position pos) {
-		return new EdgeEvent(this.graph, this, interval.getTimestamp(pos));
-	}
-
-	/**
-	 * Return intervalEdgeEvent with given interval
-	 * 
-	 * @param interval
-	 *            can be null
-	 * @return intervalEdgeEvent
-	 */
-	public EdgeEvent setInterval(LongInterval interval) {
-		return new EdgeEvent(this.graph, this, interval);
-	}
-
-	/**
 	 * Return timestampEdgeEvent with existing given timestamp
 	 * 
 	 * @param timestamp
@@ -183,21 +153,6 @@ public class ChronoEdge extends ChronoElement implements Edge {
 	 * @return timestampEdgeEvent or null
 	 */
 	public EdgeEvent pickTimestamp(Long timestamp) {
-		if (this.getTimestampProperties(timestamp) != null) {
-			return new EdgeEvent(this.graph, this, timestamp);
-		}
-		return null;
-	}
-
-	/**
-	 * Return timestampEdgeEvent with existing given timestamp
-	 * 
-	 * @param interval
-	 * @param pos
-	 * @return
-	 */
-	public EdgeEvent pickTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
 		if (this.getTimestampProperties(timestamp) != null) {
 			return new EdgeEvent(this.graph, this, timestamp);
 		}
@@ -231,104 +186,11 @@ public class ChronoEdge extends ChronoElement implements Edge {
 	}
 
 	/**
-	 * Return intervalEdgeEvent with existing given interval
-	 * 
-	 * @param interval
-	 * @return intervalEdgeEvent or null
-	 */
-	public EdgeEvent pickInterval(LongInterval interval) {
-		if (this.getIntervalProperties(interval) != null) {
-			return new EdgeEvent(this.graph, this, interval);
-		}
-		return null;
-	}
-
-	/**
-	 * Return timestampEdgeEvent having existing first timestamp or null
-	 * 
-	 * @return timestampEdgeEvent or null
-	 */
-	public EdgeEvent pickFirstInterval() {
-		LongInterval i = this.getFirstInterval();
-		if (i == null)
-			return null;
-		else
-			return new EdgeEvent(this.graph, this, i);
-	}
-
-	/**
-	 * Return timestampEdgeEvent having existing last timestamp or null
-	 * 
-	 * @return timestampEdgeEvent or null
-	 */
-	public EdgeEvent pickLastInterval() {
-		LongInterval i = this.getLastInterval();
-		if (i == null)
-			return null;
-		else
-			return new EdgeEvent(this.graph, this, i);
-	}
-
-	/**
-	 * Pick the existing intervalEdgeEvents where each of their interval has
-	 * temporal relationship with the given timestamp
-	 * 
-	 * @param left
-	 * @param ss
-	 * @param se
-	 * @return HashSet<EdgeEvent>
-	 */
-	public Iterable<EdgeEvent> pickInterval(long left, AC ss, AC se) {
-		HashSet<EdgeEvent> eventSet = new HashSet<EdgeEvent>();
-
-		BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-				Tokens.TYPE_INTERVAL);
-		filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se);
-		MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-				.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-		while (cursor.hasNext()) {
-			BsonDocument matched = cursor.next();
-			eventSet.add(new EdgeEvent(this.getGraph(), this, new LongInterval(
-					matched.getDateTime(Tokens.START).getValue(), matched.getDateTime(Tokens.END).getValue())));
-		}
-		return eventSet;
-	}
-
-	/**
-	 * Pick the existing intervalVertexEvents where each of their interval has
-	 * temporal relationship between the given interval
-	 * 
-	 * @param left
-	 * @param ss
-	 * @param se
-	 * @param es
-	 * @param ee
-	 * @return HashSet<VertexEvent>
-	 */
-	public Iterable<EdgeEvent> pickInterval(LongInterval left, AC ss, AC se, AC es, AC ee) {
-		HashSet<EdgeEvent> eventSet = new HashSet<EdgeEvent>();
-
-		BsonDocument filter = new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE,
-				Tokens.TYPE_INTERVAL);
-		filter = LongInterval.addTemporalRelationFilterQuery(filter, left, ss, se, es, ee);
-
-		MongoCursor<BsonDocument> cursor = graph.getVertexCollection().find(filter)
-				.projection(Tokens.PRJ_ONLY_START_AND_END).iterator();
-
-		while (cursor.hasNext()) {
-			BsonDocument matched = cursor.next();
-			eventSet.add(new EdgeEvent(this.getGraph(), this, new LongInterval(
-					matched.getDateTime(Tokens.START).getValue(), matched.getDateTime(Tokens.END).getValue())));
-		}
-		return eventSet;
-	}
-
-	/**
 	 * Ceiling: greater than or equal to the given timestamp
 	 * 
 	 * @param timestamp
-	 * @return timestampEdgeEvent with the ceiling timestamp of the given
-	 *         timestamp or null
+	 * @return timestampEdgeEvent with the ceiling timestamp of the given timestamp
+	 *         or null
 	 */
 	public EdgeEvent pickCeilingTimestamp(Long timestamp) {
 		Long ceilingTimestamp = this.getCeilingTimestamp(timestamp);
@@ -339,18 +201,8 @@ public class ChronoEdge extends ChronoElement implements Edge {
 
 	/**
 	 * @param timestamp
-	 * @return timestampEdgeEvent with the ceiling timestamp of the given
-	 *         timestamp or null
-	 */
-	public EdgeEvent pickCeilingTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickCeilingTimestamp(timestamp);
-	}
-
-	/**
-	 * @param timestamp
-	 * @return timestampEdgeEvent with the higher timestamp of the given
-	 *         timestamp or null
+	 * @return timestampEdgeEvent with the higher timestamp of the given timestamp
+	 *         or null
 	 */
 	public EdgeEvent pickHigherTimestamp(Long timestamp) {
 		Long higherTimestamp = this.getHigherTimestamp(timestamp);
@@ -360,21 +212,11 @@ public class ChronoEdge extends ChronoElement implements Edge {
 	}
 
 	/**
-	 * @param timestamp
-	 * @return timestampEdgeEvent with the higher timestamp of the given
-	 *         timestamp or null
-	 */
-	public EdgeEvent pickHigherTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickHigherTimestamp(timestamp);
-	}
-
-	/**
 	 * Floor: less than or equal to the given timestamp
 	 * 
 	 * @param timestamp
-	 * @return timestampEdgeEvent with the floor timestamp of the given
-	 *         timestamp or null
+	 * @return timestampEdgeEvent with the floor timestamp of the given timestamp or
+	 *         null
 	 */
 	public EdgeEvent pickFloorTimestamp(Long timestamp) {
 		Long floorTimestamp = this.getFloorTimestamp(timestamp);
@@ -384,37 +226,17 @@ public class ChronoEdge extends ChronoElement implements Edge {
 	}
 
 	/**
-	 * @param timestamp
-	 * @return timestampEdgeEvent with the floor timestamp of the given
-	 *         timestamp or null
-	 */
-	public EdgeEvent pickFloorTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickFloorTimestamp(timestamp);
-	}
-
-	/**
 	 * Lower: less than or equal to the given timestamp
 	 * 
 	 * @param timestamp
-	 * @return timestampEdgeEvent with the lower timestamp of the given
-	 *         timestamp or null
+	 * @return timestampEdgeEvent with the lower timestamp of the given timestamp or
+	 *         null
 	 */
 	public EdgeEvent pickLowerTimestamp(Long timestamp) {
 		Long lowerTimestamp = this.getLowerTimestamp(timestamp);
 		if (lowerTimestamp != null)
 			return new EdgeEvent(this.graph, this, lowerTimestamp);
 		return null;
-	}
-
-	/**
-	 * @param timestamp
-	 * @return timestampVertexEvent with the lower timestamp of the given
-	 *         timestamp or null
-	 */
-	public EdgeEvent pickLowerTimestamp(LongInterval interval, Position pos) {
-		long timestamp = interval.getTimestamp(pos);
-		return pickLowerTimestamp(timestamp);
 	}
 
 	/**
