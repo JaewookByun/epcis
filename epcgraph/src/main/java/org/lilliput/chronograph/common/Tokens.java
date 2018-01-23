@@ -24,17 +24,19 @@ public class Tokens {
 	/**
 	 * _label
 	 */
-	public static final String LABEL = "_label";
+	public static final String LABEL = "_l";
 	public static final String ID = "_id";
 	public static final String EDGE_COLLECTION = "edges";
+	public static final String TIMESTAMP_EDGE_EVENT_COLLECTION = "tEdgeEvents";
+	public static final String TIMESTAMP_VERTEX_EVENT_COLLECTION = "tVertexEvents";
 	public static final String VERTEX_COLLECTION = "vertices";
 	public static final String TYPE = "_type";
 	public static final BsonString TYPE_STATIC = new BsonString("s");
 	public static final BsonString TYPE_TIMESTAMP = new BsonString("t");
 	public static final BsonString TYPE_INTERVAL = new BsonString("i");
-	public static final String OUT_VERTEX = "_outV";
-	public static final String IN_VERTEX = "_inV";
-	public static final String VERTEX = "_vertex";
+	public static final String OUT_VERTEX = "_o";
+	public static final String IN_VERTEX = "_i";
+	public static final String VERTEX = "_v";
 	/**
 	 * _edge
 	 */
@@ -55,6 +57,10 @@ public class Tokens {
 	public static final BsonDocument SORT_TIMESTAMP_ASC = new BsonDocument(TIMESTAMP, new BsonInt32(1));
 	public static final BsonDocument SORT_TIMESTAMP_DESC = new BsonDocument(TIMESTAMP, new BsonInt32(-1));
 	public static final BsonDocument PRJ_ONLY_ID = new BsonDocument(Tokens.ID, new BsonBoolean(true));
+	public static final BsonDocument PRJ_NOT_ID = new BsonDocument(Tokens.ID, new BsonBoolean(false));
+	public static final BsonDocument PRJ_ONLY_OUTV_LABEL_INV = new BsonDocument(Tokens.OUT_VERTEX,
+			new BsonBoolean(true)).append(Tokens.LABEL, new BsonBoolean(true))
+					.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
 	public static final BsonDocument PRJ_ONLY_START = new BsonDocument(START, new BsonBoolean(true));
 	public static final BsonDocument PRJ_ONLY_TIMESTAMP = new BsonDocument(TIMESTAMP, new BsonBoolean(true))
 			.append(Tokens.ID, new BsonBoolean(false));

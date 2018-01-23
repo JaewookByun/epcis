@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bson.BsonArray;
-import org.lilliput.chronograph.common.LongInterval;
+import org.lilliput.chronograph.common.HistoryPipeFunction;
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.Step;
 import org.lilliput.chronograph.common.TemporalType;
@@ -970,58 +970,6 @@ public class TraversalEngine {
 		return this;
 	}
 
-	public TraversalEngine toEvent(final LongInterval interval) {
-		// Check Input element class
-		checkInputElementClass(ChronoVertex.class, ChronoEdge.class);
-
-		// Pipeline Update
-
-		if (isPathEnabled) {
-			// Get Sub-Path
-			Map intermediate = (Map) stream.map(element -> {
-				if (element instanceof ChronoVertex) {
-					ChronoVertex cv = (ChronoVertex) element;
-					return new AbstractMap.SimpleImmutableEntry(cv, cv.setInterval(interval));
-				} else if (element instanceof ChronoEdge) {
-					ChronoEdge ce = (ChronoEdge) element;
-					EdgeEvent cee = ce.setInterval(interval);
-					if (cee == null)
-						return null;
-					return new AbstractMap.SimpleImmutableEntry(ce, cee);
-				} else {
-					return null;
-				}
-			}).filter(e -> e != null).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
-
-			// Update Path
-			updateTransformationPath(intermediate);
-
-			// Make stream again
-			stream = getStream(intermediate, isParallel);
-		} else {
-			stream = stream.map(element -> {
-				if (element instanceof ChronoVertex) {
-					return ((ChronoVertex) element).setInterval(interval);
-				} else {
-					// EdgeEvent can be null
-					return ((ChronoEdge) element).setInterval(interval);
-				}
-			}).filter(e -> e != null);
-		}
-		// Step Update
-		final Class[] args = new Class[1];
-		args[0] = LongInterval.class;
-		final Step step = new Step(this.getClass().getName(), "toEvent", args, interval);
-		stepList.add(step);
-
-		// Set Class
-		if (elementClass == ChronoVertex.class)
-			elementClass = VertexEvent.class;
-		else
-			elementClass = EdgeEvent.class;
-		return this;
-	}
-
 	public TraversalEngine toElement() {
 		// Check Input element class
 		checkInputElementClass(VertexEvent.class, EdgeEvent.class);
@@ -1165,6 +1113,41 @@ public class TraversalEngine {
 
 	// Vertex Events to Vertex Events //
 
+	public TraversalEngine oute(final AC tt) {
+		// Check Input element class
+		checkInputElementClass(VertexEvent.class);
+
+		// Pipeline Update
+
+		if (isPathEnabled) {
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(ve -> {
+				VertexEvent cve = (VertexEvent) ve;
+
+				return new AbstractMap.SimpleImmutableEntry(cve, cve.getOutVertexEventSet(tt));
+			}).collect(Collectors.toMap(entry -> ((Entry) entry).getKey(), entry -> ((Entry) entry).getValue()));
+
+			// Update Path
+			updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+		} else {
+			stream = stream.flatMap(ve -> {
+				return ((VertexEvent) ve).getOutVertexEventSet(tt).stream();
+			});
+		}
+		// Step Update
+		final Class[] args = new Class[1];
+		args[0] = AC.class;
+		final Step step = new Step(this.getClass().getName(), "oute", args, tt);
+		stepList.add(step);
+
+		// Set Class
+		elementClass = VertexEvent.class;
+		return this;
+	}
+
 	public TraversalEngine oute(final BsonArray labels, final TemporalType typeOfVertexEvent, final AC tt, final AC s,
 			final AC e, final AC ss, final AC se, final AC es, final AC ee, final Position pos) {
 		// Check Input element class
@@ -1188,8 +1171,9 @@ public class TraversalEngine {
 			stream = getStream(intermediate, isParallel);
 		} else {
 			stream = stream.flatMap(ve -> {
-				return ((VertexEvent) ve).getVertexEventStream(Direction.OUT, labels, typeOfVertexEvent, tt, s, e, ss,
-						se, es, ee, pos, isParallel);
+				return ((VertexEvent) ve)
+						.getVertexEventSet(Direction.OUT, labels, typeOfVertexEvent, tt, s, e, ss, se, es, ee, pos)
+						.parallelStream();
 			});
 		}
 		// Step Update
@@ -1611,12 +1595,45 @@ public class TraversalEngine {
 			stream = stream.map(e -> {
 				return function.compute(e);
 			});
+			// stream = stream.flatMap(e -> {
+			// return function.compute(e);
+			// });
 		}
 		// Step Update
 		final Class[] args = new Class[2];
 		args[0] = PipeFunction.class;
 		args[1] = Class.class;
 		final Step step = new Step(this.getClass().getName(), "transform", args, function, outputClass);
+		stepList.add(step);
+
+		// Set Class
+		elementClass = outputClass;
+		return this;
+	}
+
+	public TraversalEngine pathEnabledTransform(final HistoryPipeFunction function, final Class outputClass) {
+		// Stream Update
+		if (isPathEnabled) {
+			// Get Sub-Path
+			Map intermediate = (Map) stream.map(e -> {
+				return new AbstractMap.SimpleImmutableEntry(e, function.compute(e, currentPath));
+			}).collect(Collectors.toMap(e -> ((Entry) e).getKey(), e -> ((Entry) e).getValue()));
+
+			// Update Path
+			if (elementClass != List.class)
+				updateTransformationPath(intermediate);
+
+			// Make stream again
+			stream = getStream(intermediate, isParallel);
+		} else {
+			// Not available
+			throw new UnsupportedOperationException();
+		}
+		// Step Update
+		final Class[] args = new Class[2];
+		args[0] = HistoryPipeFunction.class;
+		args[1] = Class.class;
+		final Step step = new Step(this.getClass().getName(), "pathEnabledTransform", args, function, outputClass);
 		stepList.add(step);
 
 		// Set Class
@@ -1881,20 +1898,19 @@ public class TraversalEngine {
 
 				if (e instanceof List) {
 
-					// System.out.println(((List) e).size());
+					System.out.println(((List) e).size());
 					Map<String, Set<VertexEvent>> group = (Map<String, Set<VertexEvent>>) ((List) e).parallelStream()
 							.collect(Collectors.groupingBy(VertexEvent::getVertexID,
 									Collectors.mapping(VertexEvent::getThis, Collectors.toSet())));
 
 					List<VertexEvent> dedup = group.entrySet().parallelStream().map(e1 -> {
-
 						VertexEvent min = e1.getValue().parallelStream()
 								.min(Comparator.comparing(ve -> ve.getTimestamp())).get();
 						return min;
 
 					}).collect(Collectors.toList());
 
-					// System.out.println(dedup.size());
+					System.out.println(dedup.size());
 					return dedup;
 				} else {
 					return e;
@@ -2081,6 +2097,9 @@ public class TraversalEngine {
 				stream = intermediate.stream();
 			}
 		} else {
+			if(stream == null) {
+				System.out.println();
+			}
 			stream = stream.map(e -> {
 				sideEffectFunction.compute(e);
 				return e;

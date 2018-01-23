@@ -183,8 +183,9 @@ public class Converter {
 		base.put(Tokens.TYPE, Tokens.TYPE_TIMESTAMP);
 		return base;
 	}
-	
-	public static BsonDocument makeTimestampVertexEventDocumentWithoutID(BsonDocument base, String vID, long timestamp) {
+
+	public static BsonDocument makeTimestampVertexEventDocumentWithoutID(BsonDocument base, String vID,
+			long timestamp) {
 		if (base == null)
 			base = new BsonDocument();
 		base.put(Tokens.VERTEX, new BsonString(vID));
@@ -210,7 +211,7 @@ public class Converter {
 		base.put(Tokens.TYPE, Tokens.TYPE_TIMESTAMP);
 		return base;
 	}
-	
+
 	public static BsonDocument makeTimestampEdgeEventDocumentWithoutID(BsonDocument base, String eID, long timestamp) {
 		if (base == null)
 			base = new BsonDocument();
@@ -222,9 +223,9 @@ public class Converter {
 		base.put(Tokens.OUT_VERTEX, new BsonString(outV));
 		base.put(Tokens.LABEL, new BsonString(label));
 		base.put(Tokens.IN_VERTEX, new BsonString(inV));
-		base.put(Tokens.EDGE, new BsonString(eID));
+		// base.put(Tokens.EDGE, new BsonString(eID));
 		base.put(Tokens.TIMESTAMP, new BsonDateTime(timestamp));
-		base.put(Tokens.TYPE, Tokens.TYPE_TIMESTAMP);
+		// base.put(Tokens.TYPE, Tokens.TYPE_TIMESTAMP);
 		return base;
 	}
 
