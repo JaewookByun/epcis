@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.bson.BsonArray;
+import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
@@ -317,13 +318,15 @@ public class TransformationEventWriteConverter {
 				if (transformationEventType.getReadPoint() != null) {
 					ReadPointType readPointType = transformationEventType.getReadPoint();
 					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t,
+							new BsonDocument("isReadPoint", new BsonBoolean(true)));
 				}
 				// BizLocation
 				if (transformationEventType.getBizLocation() != null) {
 					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
 					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(input, locID, "isLocatedIn", t,
+							new BsonDocument("isReadPoint", new BsonBoolean(false)));
 				}
 
 				if (outputSet != null)
@@ -354,13 +357,15 @@ public class TransformationEventWriteConverter {
 				if (transformationEventType.getReadPoint() != null) {
 					ReadPointType readPointType = transformationEventType.getReadPoint();
 					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t,
+							new BsonDocument("isReadPoint", new BsonBoolean(true)));
 				}
 				// BizLocation
 				if (transformationEventType.getBizLocation() != null) {
 					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
 					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(inputClassID, locID, "isLocatedIn", t,
+							new BsonDocument("isReadPoint", new BsonBoolean(false)));
 				}
 
 				if (outputSet != null)
@@ -384,13 +389,13 @@ public class TransformationEventWriteConverter {
 				if (transformationEventType.getReadPoint() != null) {
 					ReadPointType readPointType = transformationEventType.getReadPoint();
 					String locID = readPointType.getId();
-					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(true)));
 				}
 				// BizLocation
 				if (transformationEventType.getBizLocation() != null) {
 					BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
 					String locID = bizLocationType.getId();
-					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument());
+					pg.addTimestampEdgeProperties(output, locID, "isLocatedIn", t, new BsonDocument("isReadPoint", new BsonBoolean(false)));
 				}
 			});
 
