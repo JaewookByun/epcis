@@ -29,8 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.bson.BsonDocument;
-import org.bson.BsonInt32;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;

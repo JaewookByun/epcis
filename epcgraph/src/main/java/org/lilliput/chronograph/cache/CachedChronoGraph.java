@@ -99,7 +99,14 @@ public class CachedChronoGraph implements Graph {
 	 */
 	public CachedChronoVertex getChronoVertex(String id) {
 		try {
-			return this.vertices.get(vertexIndex.get(id));
+			if(	vertexIndex.containsKey(id))
+				return this.vertices.get(vertexIndex.get(id));
+			else {
+				long vid = vCnt.incrementAndGet();
+				vertexIndex.put(id, vid);
+				vertices.put(vid, new CachedChronoVertex(vid, this));
+				return this.vertices.get(vertexIndex.get(id));
+			}
 		} catch (NullPointerException e) {
 			return null;
 		}
