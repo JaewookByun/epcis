@@ -83,7 +83,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 
 import static org.oliot.epcis.service.query.mongodb.MongoQueryUtil.*;
 import static org.quartz.CronScheduleBuilder.cronSchedule;
