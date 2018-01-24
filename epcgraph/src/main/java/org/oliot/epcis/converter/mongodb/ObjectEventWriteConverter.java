@@ -71,7 +71,7 @@ public class ObjectEventWriteConverter {
 			epcsL = epcs.getEpc();
 
 			epcList = epcsL.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
-			List<BsonString> bEPC = epcList.parallelStream().map(sepc -> new BsonString(sepc))
+			List<BsonDocument> bEPC = epcList.parallelStream().map(sepc -> new BsonDocument("epc", new BsonString(sepc)))
 					.collect(Collectors.toList());
 			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("epcList", epcDBList);
@@ -90,14 +90,14 @@ public class ObjectEventWriteConverter {
 		if (objectEventType.getReadPoint() != null) {
 			ReadPointType readPointType = objectEventType.getReadPoint();
 			readPoint = readPointType.getId();
-			dbo.put("readPoint", new BsonString(readPoint));
+			dbo.put("readPoint", new BsonDocument("id", new BsonString(readPoint)));
 		}
 		// BizLocation
 		String bizLocation = null;
 		if (objectEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = objectEventType.getBizLocation();
 			bizLocation = bizLocationType.getId();
-			dbo.put("bizLocation", new BsonString(bizLocation));
+			dbo.put("bizLocation", new BsonDocument("id", new BsonString(bizLocation)));
 		}
 		// BizTransaction
 		if (objectEventType.getBizTransactionList() != null) {
@@ -132,9 +132,12 @@ public class ObjectEventWriteConverter {
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
 			BsonDocument extension = getObjectEventExtensionObject(oee, gcpLength, epcsL);
-			epcQuantities = extension.getArray("quantityList");
-			sourceList = extension.getArray("sourceList");
-			destinationList = extension.getArray("destinationList");
+			if (extension.containsKey("quantityList"))
+				epcQuantities = extension.getArray("quantityList");
+			if (extension.containsKey("sourceList"))
+				sourceList = extension.getArray("sourceList");
+			if (extension.containsKey("destinationList"))
+				destinationList = extension.getArray("destinationList");
 			dbo.put("extension", extension);
 		}
 
@@ -158,6 +161,7 @@ public class ObjectEventWriteConverter {
 		}
 
 		BsonObjectId dataID = new BsonObjectId();
+		dbo.put("_id", dataID);
 		ChronoVertex dataVertex = Configuration.persistentGraphData.getChronoVertex(dataID.toString());
 		dataVertex.setProperties(dbo);
 

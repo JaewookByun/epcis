@@ -121,7 +121,7 @@ public class MongoReaderUtil {
 			eeet.setEventID(dbObject.getString("eventID").getValue());
 		} else {
 			if (dbObject.containsKey("_id")) {
-				eeet.setEventID(dbObject.getObjectId("_id").getValue().toHexString());
+				eeet.setEventID(dbObject.getString("_id").getValue());
 			}
 		}
 		if (dbObject.get("errorDeclaration") != null) {

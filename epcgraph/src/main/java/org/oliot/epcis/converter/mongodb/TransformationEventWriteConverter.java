@@ -78,8 +78,8 @@ public class TransformationEventWriteConverter {
 			EPCListType epcs = transformationEventType.getInputEPCList();
 			List<EPC> epcList = epcs.getEpc();
 			inputSet = epcList.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
-			List<BsonString> bEPC = inputSet.parallelStream().map(sepc -> new BsonString(sepc))
-					.collect(Collectors.toList());
+			List<BsonDocument> bEPC = inputSet.parallelStream()
+					.map(sepc -> new BsonDocument("epc", new BsonString(sepc))).collect(Collectors.toList());
 			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("inputEPCList", epcDBList);
 		}
@@ -90,8 +90,8 @@ public class TransformationEventWriteConverter {
 			EPCListType epcs = transformationEventType.getOutputEPCList();
 			outputList = epcs.getEpc();
 			outputSet = outputList.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
-			List<BsonString> bEPC = outputSet.parallelStream().map(sepc -> new BsonString(sepc))
-					.collect(Collectors.toList());
+			List<BsonDocument> bEPC = outputSet.parallelStream()
+					.map(sepc -> new BsonDocument("epc", new BsonString(sepc))).collect(Collectors.toList());
 			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("outputEPCList", epcDBList);
 		}
@@ -110,14 +110,14 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transformationEventType.getReadPoint();
 			readPoint = readPointType.getId();
-			dbo.put("readPoint", new BsonString(readPoint));
+			dbo.put("readPoint", new BsonDocument("id", new BsonString(readPoint)));
 		}
 		// BizLocation
 		String bizLocation = null;
 		if (transformationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
 			bizLocation = bizLocationType.getId();
-			dbo.put("bizLocation", new BsonString(bizLocation));
+			dbo.put("bizLocation", new BsonDocument("id", new BsonString(bizLocation)));
 		}
 		// BizTransaction
 		if (transformationEventType.getBizTransactionList() != null) {
@@ -187,8 +187,10 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getExtension() != null) {
 			TransformationEventExtensionType oee = transformationEventType.getExtension();
 			BsonDocument extension = getTransformationEventExtensionObject(oee);
-			sourceList = extension.getArray("sourceList");
-			destinationList = extension.getArray("destinationList");
+			if (extension.containsKey("sourceList"))
+				sourceList = extension.getArray("sourceList");
+			if (extension.containsKey("destinationList"))
+				destinationList = extension.getArray("destinationList");
 			dbo.put("extension", extension);
 		}
 
@@ -212,6 +214,7 @@ public class TransformationEventWriteConverter {
 		}
 
 		BsonObjectId dataID = new BsonObjectId();
+		dbo.put("_id", dataID);
 		ChronoVertex dataVertex = Configuration.persistentGraphData.getChronoVertex(dataID.toString());
 		dataVertex.setProperties(dbo);
 
