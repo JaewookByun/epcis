@@ -948,12 +948,12 @@ public class MongoWriterUtil {
 		// Read Point
 		if (readPoint != null) {
 			pg.addTimestampEdgeProperties(object, readPoint, "isLocatedIn", eventTime,
-					new BsonDocument("isReadPoint", new BsonBoolean(true)));
+					new BsonDocument());
 		}
 		// BizLocation
 		if (bizLocation != null) {
 			pg.addTimestampEdgeProperties(object, bizLocation, "isLocatedIn", eventTime,
-					new BsonDocument("isReadPoint", new BsonBoolean(false)));
+					new BsonDocument());
 		}
 
 		if (sourceList != null) {
