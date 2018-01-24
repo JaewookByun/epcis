@@ -72,8 +72,8 @@ public class TransactionEventWriteConverter {
 			EPCListType epcs = transactionEventType.getEpcList();
 			epcListObject = epcs.getEpc();
 			epcList = epcListObject.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
-			List<BsonString> bEPC = epcList.parallelStream().map(sepc -> new BsonString(sepc))
-					.collect(Collectors.toList());
+			List<BsonDocument> bEPC = epcList.parallelStream()
+					.map(sepc -> new BsonDocument("epc", new BsonString(sepc))).collect(Collectors.toList());
 			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("epcList", epcDBList);
 		}
@@ -99,14 +99,14 @@ public class TransactionEventWriteConverter {
 		if (transactionEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transactionEventType.getReadPoint();
 			readPoint = readPointType.getId();
-			dbo.put("readPoint", new BsonString(readPoint));
+			dbo.put("readPoint", new BsonDocument("id", new BsonString(readPoint)));
 		}
 		// BizLocation
 		String bizLocation = null;
 		if (transactionEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transactionEventType.getBizLocation();
 			bizLocation = bizLocationType.getId();
-			dbo.put("bizLocation", new BsonString(bizLocation));
+			dbo.put("bizLocation", new BsonDocument("id", new BsonString(bizLocation)));
 		}
 
 		if (transactionEventType.getBizTransactionList() != null) {
@@ -133,9 +133,12 @@ public class TransactionEventWriteConverter {
 		if (transactionEventType.getExtension() != null) {
 			TransactionEventExtensionType oee = transactionEventType.getExtension();
 			BsonDocument extension = getTransactionEventExtensionObject(oee, gcpLength);
-			epcQuantities = extension.getArray("quantityList");
-			sourceList = extension.getArray("sourceList");
-			destinationList = extension.getArray("destinationList");
+			if (extension.containsKey("quantityList"))
+				epcQuantities = extension.getArray("quantityList");
+			if (extension.containsKey("sourceList"))
+				sourceList = extension.getArray("sourceList");
+			if (extension.containsKey("destinationList"))
+				destinationList = extension.getArray("destinationList");
 			dbo.put("extension", extension);
 		}
 
@@ -159,6 +162,7 @@ public class TransactionEventWriteConverter {
 		}
 
 		BsonObjectId dataID = new BsonObjectId();
+		dbo.put("_id", dataID);
 		ChronoVertex dataVertex = Configuration.persistentGraphData.getChronoVertex(dataID.toString());
 		dataVertex.setProperties(dbo);
 

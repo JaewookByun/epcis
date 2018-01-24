@@ -369,33 +369,37 @@ public class MongoQueryService {
 			// foramt == JSON -> Do Nothing
 		}
 
-		// TODO:
-		ChronoGraph g = Configuration.persistentGraph;
-	
-		Long startTime = 0l;
-		Long endTime = Long.MAX_VALUE;
-		if(p.getGE_eventTime() != null)
-			startTime = getTimeMillisLong(p.getGE_eventTime());
-		if(p.getLT_eventTime() != null)
-			endTime = getTimeMillisLong(p.getLT_eventTime());
-
-		// 시간과 캐시 그래프로 만듬	
-		TreeMap<Long, CachedChronoGraph> snapshots = g.getSnapshots(startTime, endTime);
-		
-		Iterator<Entry<Long,CachedChronoGraph>> gIter = snapshots.entrySet().iterator();
-		GraphReadConverter rc = new GraphReadConverter();
-		ArrayList<Object> convertedEvents = new ArrayList<Object>();
-		while(gIter.hasNext()) {
-			Entry<Long, CachedChronoGraph> entry = gIter.next();
-			CachedChronoGraph snapshot = entry.getValue();
-			Long t = entry.getKey();
-			ArrayList<Object> intermediate = rc.convert(snapshot,t);
-			convertedEvents.addAll(intermediate);
-		}		
+		// // TODO:
+		// ChronoGraph g = Configuration.persistentGraph;
+		//
+		// Long startTime = 0l;
+		// Long endTime = Long.MAX_VALUE;
+		// if(p.getGE_eventTime() != null)
+		// startTime = getTimeMillisLong(p.getGE_eventTime());
+		// if(p.getLT_eventTime() != null)
+		// endTime = getTimeMillisLong(p.getLT_eventTime());
+		//
+		// // 시간과 캐시 그래프로 만듬
+		// TreeMap<Long, CachedChronoGraph> snapshots = g.getSnapshots(startTime,
+		// endTime);
+		//
+		// Iterator<Entry<Long,CachedChronoGraph>> gIter =
+		// snapshots.entrySet().iterator();
+		// GraphReadConverter rc = new GraphReadConverter();
+		// ArrayList<Object> convertedEvents = new ArrayList<Object>();
+		// while(gIter.hasNext()) {
+		// Entry<Long, CachedChronoGraph> entry = gIter.next();
+		// CachedChronoGraph snapshot = entry.getValue();
+		// Long t = entry.getKey();
+		// ArrayList<Object> intermediate = rc.convert(snapshot,t);
+		// convertedEvents.addAll(intermediate);
+		// }
 		
 		// Event Collection
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
-				BsonDocument.class);
+		//MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
+		//		BsonDocument.class);
+		MongoCollection<BsonDocument> collection = Configuration.persistentGraphData.getVertexCollection();
+		
 		// Queries
 		BsonArray queryList = makeQueryObjects(p, userID, friendList);
 		// Merge All the queries with $and
