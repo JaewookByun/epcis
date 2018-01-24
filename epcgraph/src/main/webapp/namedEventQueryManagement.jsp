@@ -139,20 +139,20 @@
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcis/Service/Admin/NamedEventQuery/{name}?");
+												+ "/epcgraph/Service/Admin/NamedEventQuery/{name}?");
 						$('#getURL')
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcis/Service/Admin/NamedEventQuery");
+												+ "/epcgraph/Service/Admin/NamedEventQuery");
 						$('#deleteURL')
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcis/Service/Admin/NamedEventQuery/{name}?");
+												+ "/epcgraph/Service/Admin/NamedEventQuery/{name}?");
 
 						systemInfoURL = 'http://' + location.host
-								+ '/epcis/Service/Admin/SystemInformation';
+								+ '/epcgraph/Service/Admin/SystemInformation';
 						$
 								.ajax({
 									type : "GET",
@@ -303,8 +303,8 @@
 					<input id="sysInfoResp" type="text" class="form-control" disabled
 						placeholder="System Information..."> <input
 						id="addBaseURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery?"
-						placeholder="http://localhost:8080/epcis/Service/Poll/SimpleEventQuery">
+						value="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?"
+						placeholder="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery">
 					<input id="description" type="text" class="form-control"
 						placeholder="Description for NamedEventQuery to be added">
 					<input id="pollParam" type="text" class="form-control"
@@ -315,14 +315,14 @@
 						Params</button>
 					<br> <br> <input id="getURL" type="text"
 						class="form-control"
-						value="http://localhost:8080/epcis/Service/Admin/NamedEventQuery"
-						placeholder="http://localhost:8080/epcis/Service/Admin/NamedEventQuery">
+						value="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery"
+						placeholder="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery">
 					<button type="button" class="btn btn-success"
 						onclick="getNamedEventQueries()">Get NamedEventQueries</button>
 
 					<input id="deleteURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/Admin/NamedEventQuery"
-						placeholder="http://localhost:8080/epcis/Service/Admin/NamedEventQuery">
+						value="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery"
+						placeholder="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery">
 					<button type="button" class="btn btn-success"
 						onclick="deleteNamedEventQuery()">Delete NamedEventQuery</button>
 				</div>
@@ -351,7 +351,7 @@
 									NamedEventQueries</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>
 									URL:
-									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery</li>
+									http://{base-url}:{base-port}/epcgraph/Service/Admin/NamedEventQuery</li>
 								<li class="list-group-item">Return Type: application/json</li>
 								<li class="list-group-item">No Access Control Needed</li>
 							</ul>
@@ -363,7 +363,7 @@
 							<ul class="list-group">
 								<li class="list-group-item">Delete existing NamedEventQuery</li>
 								<li class="list-group-item"><code>HTTP.DELETE</code><br>URL:
-									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
+									http://{base-url}:{base-port}/epcgraph/Service/Admin/NamedEventQuery/{name}</li>
 								<li class="list-group-item">Return Type: application/text</li>
 								<li class="list-group-item">Administrator method</li>
 							</ul>
@@ -375,7 +375,7 @@
 							<ul class="list-group">
 								<li class="list-group-item">Register NamedEventQuery</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>URL:
-									http://{base-url}:{base-port}/epcis/Service/Admin/NamedEventQuery/{name}</li>
+									http://{base-url}:{base-port}/epcgraph/Service/Admin/NamedEventQuery/{name}</li>
 								<li class="list-group-item">Administrator method</li>
 								<li class="list-group-item">Parameters: <br> <code>List
 										of characters should be encoded: + -> %2B , # -> %23, ^ -> %5E</code><br>

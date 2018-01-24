@@ -78,8 +78,8 @@ public class AggregationEventWriteConverter {
 			EPCListType epcs = aggregationEventType.getChildEPCs();
 			List<EPC> epcList = epcs.getEpc();
 			childEPCs = epcList.parallelStream().map(epc -> epc.getValue()).collect(Collectors.toSet());
-			List<BsonString> bEPC = childEPCs.parallelStream().map(sepc -> new BsonString(sepc))
-					.collect(Collectors.toList());
+			List<BsonDocument> bEPC = childEPCs.parallelStream()
+					.map(sepc -> new BsonDocument("epc", new BsonString(sepc))).collect(Collectors.toList());
 			BsonArray epcDBList = new BsonArray(bEPC);
 			dbo.put("childEPCs", epcDBList);
 		}
@@ -97,14 +97,14 @@ public class AggregationEventWriteConverter {
 		if (aggregationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = aggregationEventType.getReadPoint();
 			readPoint = readPointType.getId();
-			dbo.put("readPoint", new BsonString(readPoint));
+			dbo.put("readPoint", new BsonDocument("id", new BsonString(readPoint)));
 		}
 		// BizLocation
 		String bizLocation = null;
 		if (aggregationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = aggregationEventType.getBizLocation();
 			bizLocation = bizLocationType.getId();
-			dbo.put("bizLocation", new BsonString(bizLocation));
+			dbo.put("bizLocation", new BsonDocument("id", new BsonString(bizLocation)));
 		}
 
 		if (aggregationEventType.getBizTransactionList() != null) {
@@ -131,9 +131,12 @@ public class AggregationEventWriteConverter {
 		if (aggregationEventType.getExtension() != null) {
 			AggregationEventExtensionType aee = aggregationEventType.getExtension();
 			BsonDocument extension = getAggregationEventExtensionObject(aee, gcpLength);
-			childQuantityList = extension.getArray("childQuantityList");
-			sourceList = extension.getArray("sourceList");
-			destinationList = extension.getArray("destinationList");
+			if (extension.containsKey("childQuantityList"))
+				childQuantityList = extension.getArray("childQuantityList");
+			if (extension.containsKey("sourceList"))
+				sourceList = extension.getArray("sourceList");
+			if (extension.containsKey("destinationList"))
+				destinationList = extension.getArray("destinationList");
 			dbo.put("extension", extension);
 
 		}
@@ -158,6 +161,7 @@ public class AggregationEventWriteConverter {
 		}
 
 		BsonObjectId dataID = new BsonObjectId();
+		dbo.put("_id", dataID);
 		ChronoVertex dataVertex = Configuration.persistentGraphData.getChronoVertex(dataID.toString());
 		dataVertex.setProperties(dbo);
 

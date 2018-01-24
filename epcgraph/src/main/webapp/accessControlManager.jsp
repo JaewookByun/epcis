@@ -135,7 +135,7 @@
 		$(".dropdown-menu").on("click", "li a", function(event) {
 			$("#xmlTextArea").load($(this)[0].id);
 		})
-		$('#resetURL').val("http://"+location.host+"/epcis/Service/Admin/ResetDB");
+		$('#resetURL').val("http://"+location.host+"/epcgraph/Service/Admin/ResetDB");
 	});
 	
 	function movePage(page) {
@@ -202,8 +202,8 @@
 					<br>
 					<p>Reset Repository (Change IP or Domain if needed)</p>
 					<input id="resetURL" type="text" class="form-control"
-						value="http://localhost:8080/epcis/Service/Admin/ResetDB"
-						placeholder="http://localhost:8080/epcis/Service/Admin/ResetDB">
+						value="http://localhost:8080/epcgraph/Service/Admin/ResetDB"
+						placeholder="http://localhost:8080/epcgraph/Service/Admin/ResetDB">
 					<br>
 					<button type="button" class="btn btn-danger"
 								onclick="resetDB()">Reset DB</button>	
@@ -227,7 +227,7 @@
 						the login button here.</p>
 					<p>2.2.2. If the application is still 'test' one, the administrator should register friends as tester </p>
 					<p>3. Try
-						http://[URL]:[Port]/epcis/Service/Admin/ResetDB?userID={Your
+						http://[URL]:[Port]/epcgraph/Service/Admin/ResetDB?userID={Your
 						ID}&accessToken={Your Access Token}</p>
 				</div>
 			</div>

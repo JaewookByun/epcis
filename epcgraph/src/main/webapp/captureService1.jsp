@@ -108,7 +108,7 @@
 				 <a href="#" class="list-group-item active"
 					style="text-align: center"> Capture Events </a> <a
 					href="#" class="list-group-item"> Send left EPCIS Document as
-					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcis/Service/EventCapture</code><br>
+					HTTP POST Message to <br> <code>http://{baseURL}:{port}/epcgraph/Service/EventCapture</code><br>
 					<br>
 					<button type="button" class="btn btn-warning" onclick="capture()">Capture
 						this event</button>
