@@ -4,6 +4,7 @@ import com.mongodb.Function;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoClient;
 import com.mongodb.WriteConcern;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
@@ -38,6 +39,7 @@ import org.bson.BsonValue;
 import org.bson.Document;
 import org.lilliput.chronograph.cache.CachedChronoEdge;
 import org.lilliput.chronograph.cache.CachedChronoGraph;
+import org.lilliput.chronograph.cache.CachedChronoVertex;
 import org.lilliput.chronograph.common.ExceptionFactory;
 import org.lilliput.chronograph.common.Tokens;
 import org.lilliput.chronograph.persistent.util.Converter;
@@ -1297,18 +1299,18 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	}
 
 	public TreeMap<Long, CachedChronoGraph> getSnapshots(Long startTime, Long endTime) {
-		
+
 		TreeMap<Long, CachedChronoGraph> snapshots = new TreeMap<Long, CachedChronoGraph>();
 		TreeSet<Long> eventTimeSet = getTimestamps(startTime, endTime);
 
 		Iterator<Long> tIter = eventTimeSet.iterator();
-		while(tIter.hasNext()) {
+		while (tIter.hasNext()) {
 			Long t = tIter.next();
 			CachedChronoGraph g = getSnapshot(t);
 			snapshots.put(t, g);
 		}
-		
-		return snapshots;		
+
+		return snapshots;
 	}
 
 	public CachedChronoGraph getSnapshot(Long t) {
@@ -1324,5 +1326,40 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 			e.setProperties(doc);
 		}
 		return g;
+	}
+
+	public ArrayList<CachedChronoVertex> getCachedChronoVertices(BsonArray filters, String sortKey, Boolean isDesc,
+			Integer limit) {
+		ArrayList<CachedChronoVertex> vList = new ArrayList<CachedChronoVertex>();
+		// Merge All the queries with $and
+		CachedChronoGraph g = new CachedChronoGraph();
+		BsonDocument baseQuery = new BsonDocument();
+		FindIterable<BsonDocument> cursor;
+		if (filters.isEmpty() == false) {
+			baseQuery.put("$and", filters);
+			cursor = vertices.find(baseQuery);
+		} else {
+			cursor = vertices.find();
+		}
+		if (sortKey != null) {
+			if (isDesc == null)
+				cursor.sort(new BsonDocument(sortKey, new BsonInt32(-1)));
+			else if (isDesc == true) {
+				cursor.sort(new BsonDocument(sortKey, new BsonInt32(-1)));
+			} else
+				cursor.sort(new BsonDocument(sortKey, new BsonInt32(1)));
+		}
+		if (limit != null)
+			cursor.limit(limit);
+
+		MongoCursor<BsonDocument> iter = cursor.iterator();
+		while (iter.hasNext()) {
+			BsonDocument doc = iter.next();
+			String vid = doc.remove("_id").asString().getValue();
+			CachedChronoVertex v = g.getChronoVertex(vid);
+			v.setProperties(doc);
+			vList.add(v);
+		}
+		return vList;
 	}
 }

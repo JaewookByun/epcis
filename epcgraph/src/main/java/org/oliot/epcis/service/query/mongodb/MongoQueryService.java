@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,11 +36,10 @@ import org.bson.BsonValue;
 import org.bson.types.ObjectId;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
+import org.lilliput.chronograph.cache.CachedChronoVertex;
 import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
 import org.oliot.epcis.converter.mongodb.AggregationEventReadConverter;
-import org.oliot.epcis.converter.mongodb.GraphReadConverter;
 import org.oliot.epcis.converter.mongodb.MasterDataReadConverter;
 import org.oliot.epcis.converter.mongodb.MongoWriterUtil;
 import org.oliot.epcis.converter.mongodb.ObjectEventReadConverter;
@@ -331,7 +329,7 @@ public class MongoQueryService {
 
 		return retList;
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID)
 			throws QueryParameterException, QueryTooLargeException {
@@ -394,40 +392,29 @@ public class MongoQueryService {
 		// ArrayList<Object> intermediate = rc.convert(snapshot,t);
 		// convertedEvents.addAll(intermediate);
 		// }
-		
+
 		// Event Collection
-		//MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("EventData",
-		//		BsonDocument.class);
-		MongoCollection<BsonDocument> collection = Configuration.persistentGraphData.getVertexCollection();
-		
-		// Queries
-		BsonArray queryList = makeQueryObjects(p, userID, friendList);
-		// Merge All the queries with $and
-		BsonDocument baseQuery = new BsonDocument();
-		FindIterable<BsonDocument> cursor;
-		if (queryList.isEmpty() == false) {
-			BsonArray aggreQueryList = new BsonArray();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
-			}
-			baseQuery.put("$and", aggreQueryList);
-			// Query
-			cursor = collection.find(baseQuery);
-		} else {
-			cursor = collection.find();
-		}
-		// Sort and Limit
-		cursor = makeProjectSortedLimitedCursor(cursor, p.getParams(), p.getOrderBy(), p.getOrderDirection(),
+		// MongoCollection<BsonDocument> collection =
+		// Configuration.mongoDatabase.getCollection("EventData",
+		// BsonDocument.class);
+
+		ChronoGraph pgd = Configuration.persistentGraphData;
+		BsonArray filters = makeQueryObjects(p, userID, friendList);
+
+		String orderDirection = p.getOrderDirection();
+		Boolean isDesc = true;
+		if (orderDirection != null && orderDirection.equals("ASC"))
+			isDesc = false;
+		ArrayList<CachedChronoVertex> vList = pgd.getCachedChronoVertices(filters, p.getOrderBy(), isDesc,
 				p.getEventCountLimit());
 
 		JSONArray retArray = new JSONArray();
 
-		MongoCursor<BsonDocument> slCursor = cursor.iterator();
-
 		ArrayList<BsonDocument> dbObjectSet = new ArrayList<BsonDocument>();
-
+		Iterator<CachedChronoVertex> slCursor = vList.iterator();
 		while (slCursor.hasNext()) {
-			BsonDocument dbObject = slCursor.next();
+			CachedChronoVertex v = slCursor.next();
+			BsonDocument dbObject = v.getProperties();
 
 			String eventTypeInDoc = dbObject.getString("eventType").getValue();
 
@@ -533,48 +520,41 @@ public class MongoQueryService {
 		}
 
 		/*
-		 * before Parallel conversion while (slCursor.hasNext()) { BsonDocument
-		 * dbObject = slCursor.next();
+		 * before Parallel conversion while (slCursor.hasNext()) { BsonDocument dbObject
+		 * = slCursor.next();
 		 * 
 		 * String eventTypeInDoc = dbObject.getString("eventType").getValue();
 		 * 
 		 * if (OAuthUtil.isAccessible(userID, friendList, dbObject) == false) {
 		 * continue; }
 		 * 
-		 * if (!isPostFilterPassed(eventTypeInDoc, dbObject, p.getParams()))
-		 * continue;
+		 * if (!isPostFilterPassed(eventTypeInDoc, dbObject, p.getParams())) continue;
 		 * 
 		 * if (p.getFormat() == null || p.getFormat().equals("XML")) { if
-		 * (eventTypeInDoc.equals("AggregationEvent")) {
-		 * AggregationEventReadConverter con = new
-		 * AggregationEventReadConverter(); JAXBElement element = new
-		 * JAXBElement(new QName("AggregationEvent"),
-		 * AggregationEventType.class, con.convert(dbObject));
-		 * eventObjects.add(element); } else if
-		 * (eventTypeInDoc.equals("ObjectEvent")) { ObjectEventReadConverter con
-		 * = new ObjectEventReadConverter(); JAXBElement element = new
-		 * JAXBElement(new QName("ObjectEvent"), ObjectEventType.class,
+		 * (eventTypeInDoc.equals("AggregationEvent")) { AggregationEventReadConverter
+		 * con = new AggregationEventReadConverter(); JAXBElement element = new
+		 * JAXBElement(new QName("AggregationEvent"), AggregationEventType.class,
 		 * con.convert(dbObject)); eventObjects.add(element); } else if
-		 * (eventTypeInDoc.equals("QuantityEvent")) { QuantityEventReadConverter
-		 * con = new QuantityEventReadConverter(); JAXBElement element = new
-		 * JAXBElement(new QName("QuantityEvent"), QuantityEventType.class,
-		 * con.convert(dbObject)); eventObjects.add(element); } else if
-		 * (eventTypeInDoc.equals("TransactionEvent")) {
-		 * TransactionEventReadConverter con = new
-		 * TransactionEventReadConverter(); JAXBElement element = new
-		 * JAXBElement(new QName("TransactionEvent"),
+		 * (eventTypeInDoc.equals("ObjectEvent")) { ObjectEventReadConverter con = new
+		 * ObjectEventReadConverter(); JAXBElement element = new JAXBElement(new
+		 * QName("ObjectEvent"), ObjectEventType.class, con.convert(dbObject));
+		 * eventObjects.add(element); } else if (eventTypeInDoc.equals("QuantityEvent"))
+		 * { QuantityEventReadConverter con = new QuantityEventReadConverter();
+		 * JAXBElement element = new JAXBElement(new QName("QuantityEvent"),
+		 * QuantityEventType.class, con.convert(dbObject)); eventObjects.add(element); }
+		 * else if (eventTypeInDoc.equals("TransactionEvent")) {
+		 * TransactionEventReadConverter con = new TransactionEventReadConverter();
+		 * JAXBElement element = new JAXBElement(new QName("TransactionEvent"),
 		 * TransactionEventType.class, con.convert(dbObject));
 		 * eventObjects.add(element); } else if
 		 * (eventTypeInDoc.equals("TransformationEvent")) {
 		 * TransformationEventReadConverter con = new
 		 * TransformationEventReadConverter(); TransformationEventType
-		 * transformationEvent = con.convert(dbObject);
-		 * EPCISEventListExtensionType extension = new
-		 * EPCISEventListExtensionType();
-		 * extension.setTransformationEvent(transformationEvent); JAXBElement
-		 * element = new JAXBElement(new QName("extension"),
-		 * EPCISEventListExtensionType.class, extension);
-		 * eventObjects.add(element); } } else { retArray.put(new
+		 * transformationEvent = con.convert(dbObject); EPCISEventListExtensionType
+		 * extension = new EPCISEventListExtensionType();
+		 * extension.setTransformationEvent(transformationEvent); JAXBElement element =
+		 * new JAXBElement(new QName("extension"), EPCISEventListExtensionType.class,
+		 * extension); eventObjects.add(element); } } else { retArray.put(new
 		 * JSONObject(dbObject.toJson())); } }
 		 */
 
@@ -670,33 +650,21 @@ public class MongoQueryService {
 			// JSON", QueryParameterException.class);
 		}
 
-		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
-				BsonDocument.class);
+		//MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
+		//		BsonDocument.class);
 
 		// Make Query
 		BsonArray queryList = makeMasterQueryObjects(p);
-
-		// Merge All the queries with $and
-		BsonDocument baseQuery = new BsonDocument();
-		FindIterable<BsonDocument> cursor;
-		if (queryList.isEmpty() == false) {
-			BsonArray aggreQueryList = new BsonArray();
-			for (int i = 0; i < queryList.size(); i++) {
-				aggreQueryList.add(queryList.get(i));
-			}
-			baseQuery.put("$and", aggreQueryList);
-			// Query
-			cursor = collection.find(baseQuery);
-		} else {
-			cursor = collection.find();
-		}
+		
+		ArrayList<CachedChronoVertex> vertexList = Configuration.persistentGraph.getCachedChronoVertices(queryList, null, null, null);
 
 		// Cursor needed to ordered
 		List<VocabularyType> vList = new ArrayList<>();
 
-		MongoCursor<BsonDocument> slCursor = cursor.iterator();
+		Iterator<CachedChronoVertex> slCursor = vertexList.iterator();
 		while (slCursor.hasNext()) {
-			BsonDocument dbObject = slCursor.next();
+			CachedChronoVertex v = slCursor.next();
+			BsonDocument dbObject = v.getProperties();
 
 			if (p.getFormat() == null || p.getFormat().equals("XML")) {
 				MasterDataReadConverter con = new MasterDataReadConverter();
@@ -1084,6 +1052,7 @@ public class MongoQueryService {
 		return null;
 	}
 
+	@SuppressWarnings("unused")
 	private FindIterable<BsonDocument> makeProjectSortedLimitedCursor(FindIterable<BsonDocument> cursor,
 			Map<String, String> extParams, String orderBy, String orderDirection, Integer eventCountLimit) {
 

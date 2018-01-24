@@ -44,6 +44,8 @@ public class MasterDataWriteConverter {
 		MongoCollection<BsonDocument> collection = Configuration.mongoDatabase.getCollection("MasterData",
 				BsonDocument.class);
 
+		ChronoGraph pg = Configuration.persistentGraph;
+		
 		// Mongo Initialization
 		if (vocabulary.getVocabularyElementList() != null) {
 			VocabularyElementListType velt = vocabulary.getVocabularyElementList();
@@ -97,7 +99,7 @@ public class MasterDataWriteConverter {
 				if (vocabularyElement.getAttribute() != null) {
 					List<AttributeType> attributeList = vocabularyElement.getAttribute();
 
-					ChronoGraph pg = Configuration.persistentGraph;
+					
 					
 					for (int j = 0; j < attributeList.size(); j++) {
 						AttributeType attribute = attributeList.get(j);
@@ -119,8 +121,7 @@ public class MasterDataWriteConverter {
 							BsonValue bsonVal = MongoWriterUtil.converseType(value);
 							eArr.add(bsonVal);
 							attrObj.put(key, eArr);
-							
-							pg.getChronoVertex(vocID).setProperty(key, bsonVal);
+						
 						} else {
 							// ComplexType
 							for (Object value : valueList) {
@@ -179,6 +180,7 @@ public class MasterDataWriteConverter {
 				} else {
 					collection.findOneAndReplace(new BsonDocument("id", new BsonString(vocID)), voc);
 				}
+				pg.getChronoVertex(vocID).setProperties(voc);
 			}
 		}
 
