@@ -84,8 +84,12 @@ public class AggregationEventWriteConverter {
 			dbo.put("childEPCs", epcDBList);
 		}
 		// Action
-		if (aggregationEventType.getAction() != null)
-			dbo.put("action", new BsonString(aggregationEventType.getAction().name()));
+		String action = null;
+		if (aggregationEventType.getAction() != null) {
+			action = aggregationEventType.getAction().name();
+			dbo.put("action", new BsonString(action));
+		}
+
 		// Biz Step
 		if (aggregationEventType.getBizStep() != null)
 			dbo.put("bizStep", new BsonString(aggregationEventType.getBizStep()));
@@ -167,14 +171,14 @@ public class AggregationEventWriteConverter {
 
 		// Build Graph
 		capture(dataID, eventTime, parentID, childEPCs, childQuantityList, readPoint, bizLocation, sourceList,
-				destinationList);
+				destinationList, action);
 
 		return dbo;
 	}
 
 	public void capture(BsonObjectId dataID, Long eventTime, String parentID, Set<String> childEPCs,
 			BsonArray childQuantities, String readPoint, String bizLocation, BsonArray sourceList,
-			BsonArray destinationList) {
+			BsonArray destinationList, String action) {
 
 		ChronoGraph pg = Configuration.persistentGraph;
 
@@ -184,25 +188,30 @@ public class AggregationEventWriteConverter {
 					destinationList);
 		}
 
-		childEPCs.stream().forEach(child -> {
-			MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, child, readPoint, bizLocation, sourceList,
-					destinationList);
-		});
+		if (childEPCs != null)
+			childEPCs.stream().forEach(child -> {
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, child, readPoint, bizLocation, sourceList,
+						destinationList);
+			});
 
-		childQuantities.stream().forEach(classElem -> {
-			MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, classElem, readPoint, bizLocation, sourceList,
-					destinationList);
-		});
+		if (childQuantities != null)
+			childQuantities.stream().forEach(classElem -> {
+				MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, classElem, readPoint, bizLocation,
+						sourceList, destinationList);
+			});
 
 		if (parentID != null) {
-			childEPCs.stream().forEach(child -> {
-				pg.addTimestampEdgeProperties(parentID, child, "contains", eventTime, new BsonDocument("data", dataID));
-			});
-			childQuantities.stream().forEach(classElem -> {
-				String epcClass = classElem.asDocument().getString("epcClass").getValue();
-				pg.addTimestampEdgeProperties(parentID, epcClass, "contains", eventTime,
-						new BsonDocument("data", dataID));
-			});
+			if (childEPCs != null)
+				childEPCs.stream().forEach(child -> {
+					pg.addTimestampEdgeProperties(parentID, child, "contains", eventTime,
+							new BsonDocument("data", dataID).append("action", new BsonString(action)));
+				});
+			if (childQuantities != null)
+				childQuantities.stream().forEach(classElem -> {
+					String epcClass = classElem.asDocument().getString("epcClass").getValue();
+					pg.addTimestampEdgeProperties(parentID, epcClass, "contains", eventTime,
+							new BsonDocument("data", dataID).append("action", new BsonString(action)));
+				});
 		}
 
 		return;

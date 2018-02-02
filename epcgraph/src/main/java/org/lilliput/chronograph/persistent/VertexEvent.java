@@ -325,7 +325,7 @@ public class VertexEvent implements Element {
 		BsonDocument proj1 = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
 				.append(Tokens.OUT_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
 
-		Iterator<BsonDocument> x1 = vertex.graph.getEdgeCollection().find(query1).projection(proj1).iterator();
+		Iterator<BsonDocument> x1 = vertex.graph.getEdgeEvents().find(query1).projection(proj1).iterator();
 
 		while (x1.hasNext()) {
 			BsonDocument d = x1.next();
@@ -346,7 +346,7 @@ public class VertexEvent implements Element {
 		BsonDocument proj2 = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
 				.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append(Tokens.ID, new BsonBoolean(false));
 
-		Iterator<BsonDocument> x2 = vertex.graph.getEdgeCollection().find(query2).projection(proj2).iterator();
+		Iterator<BsonDocument> x2 = vertex.graph.getEdgeEvents().find(query2).projection(proj2).iterator();
 
 		while (x2.hasNext()) {
 			BsonDocument d = x2.next();
