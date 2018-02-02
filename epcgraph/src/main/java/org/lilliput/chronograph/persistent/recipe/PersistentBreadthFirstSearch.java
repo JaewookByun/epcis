@@ -115,4 +115,70 @@ public class PersistentBreadthFirstSearch {
 		pipeLine = pipeLine.loop("s", exitIfEmptyIterator);
 		return pipeLine.path();
 	}
+
+	@SuppressWarnings("rawtypes")
+	public Map compute(ChronoGraph g, VertexEvent source, String label, String orderDirection) {
+
+		// orderDirection = ASC / DESC
+
+		gamma.put(source.getVertex(), source.getTimestamp());
+
+		PipeFunction<VertexEvent, Boolean> exceedBound2 = new PipeFunction<VertexEvent, Boolean>() {
+			@Override
+			public Boolean compute(VertexEvent ve) {
+				// if (order.equals("forward")) {
+				if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() >= gamma.get(ve.getVertex()))) {
+					return false;
+				}
+				// } else {
+				// if (gamma.containsKey(ve.getVertex()) && (ve.getTimestamp() <=
+				// gamma.get(ve.getVertex()))) {
+				// return false;
+				// }
+				// }
+
+				return true;
+			}
+		};
+
+		PipeFunction<List<VertexEvent>, Object> storeGamma = new PipeFunction<List<VertexEvent>, Object>() {
+			@Override
+			public Object compute(List<VertexEvent> vertexEvents) {
+				vertexEvents.parallelStream().forEach(ve -> {
+					gamma.put(ve.getVertex(), ve.getTimestamp());
+				});
+				return null;
+			}
+		};
+
+		LoopPipeFunction exitIfEmptyIterator = new LoopPipeFunction() {
+			@Override
+			public boolean compute(Object argument, Map<Object, Object> currentPath, int loopCount) {
+
+				List list = (List) argument;
+				// System.out.println(list.size());
+				if (list == null || list.size() == 0)
+					return false;
+
+				return true;
+			}
+		};
+
+		TraversalEngine pipeLine = new TraversalEngine(g, source, false, true, VertexEvent.class);
+		pipeLine = pipeLine.as("s");
+		pipeLine = pipeLine.scatter();
+		if (orderDirection.equals("ASC"))
+			pipeLine = pipeLine.oute(label, AC.$gt);
+		else
+			pipeLine = pipeLine.ine(label, AC.$lt);
+		pipeLine = pipeLine.filter(exceedBound2);
+		pipeLine = pipeLine.gather();
+		if (orderDirection.equals("ASC"))
+			pipeLine = pipeLine.elementDedup(FC.$min);
+		else
+			pipeLine = pipeLine.elementDedup(FC.$max);
+		pipeLine = pipeLine.sideEffect(storeGamma);
+		pipeLine = pipeLine.loop("s", exitIfEmptyIterator);
+		return pipeLine.path();
+	}
 }
