@@ -1,6 +1,10 @@
 package org.oliot.epcis.service.query;
 
+import java.io.StringWriter;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -17,6 +21,16 @@ import javax.script.ScriptException;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
@@ -46,6 +60,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -87,6 +103,316 @@ public class TraceabilityQueryService implements ServletContextAware {
 	@Override
 	public void setServletContext(ServletContext servletContext) {
 		this.servletContext = servletContext;
+	}
+
+	public Document createBaseQueryResults(String traceEPC, String traceTarget, String startTime, String endTime,
+			String orderDirection) {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			Document doc = docBuilder.newDocument();
+			Element queryResults = doc.createElement("QueryResults");
+			doc.appendChild(queryResults);
+			Element queryName = doc.createElement("queryName");
+			queryName.setTextContent("TraceabilityQuery");
+			Element querySpec = doc.createElement("querySpec");
+			Element traceEPCXML = doc.createElement("traceEPC");
+			traceEPCXML.setTextContent(traceEPC);
+			Element traceTargetXML = doc.createElement("traceTarget");
+			traceTargetXML.setTextContent(traceTarget);
+			Element startTimeXML = doc.createElement("startEventTime");
+			startTimeXML.setTextContent(startTime);
+			Element endTimeXML = doc.createElement("endEventTime");
+			endTimeXML.setTextContent(endTime);
+			Element orderDirectionXML = doc.createElement("orderDirection");
+			orderDirectionXML.setTextContent(orderDirection);
+			querySpec.appendChild(traceEPCXML);
+			querySpec.appendChild(traceTargetXML);
+			querySpec.appendChild(startTimeXML);
+			querySpec.appendChild(endTimeXML);
+			querySpec.appendChild(orderDirectionXML);
+			queryResults.appendChild(querySpec);
+
+			return doc;
+
+		} catch (ParserConfigurationException e) {
+			return null;
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public String getTransformation(String traceEPC, String traceTarget, String startTime, String endTime,
+			Long fromTimeMil, Long toTimeMil, String orderDirection) {
+		BsonArray transforms = new BsonArray();
+		transforms.add(new BsonString("transformsTo"));
+
+		ChronoGraph g = Configuration.persistentGraph;
+
+		PersistentBreadthFirstSearch tBFS = new PersistentBreadthFirstSearch();
+		Map pathMap = new HashMap();
+		VertexEvent source;
+		if (orderDirection.equals("ASC"))
+			source = g.getChronoVertex(traceEPC).setTimestamp(fromTimeMil);
+		else
+			source = g.getChronoVertex(traceEPC).setTimestamp(toTimeMil);
+		pathMap = tBFS.compute(g, source, "transformsTo", orderDirection);
+
+		Document doc = createBaseQueryResults(traceEPC, traceTarget, startTime, endTime, orderDirection);
+
+		Element transformationTrace = doc.createElement("transformationTrace");
+		Iterator<Set> pathSetIter = pathMap.values().iterator();
+		while (pathSetIter.hasNext()) {
+			Set pathSet = pathSetIter.next();
+			Iterator<List> pathIter = pathSet.iterator();
+
+			while (pathIter.hasNext()) {
+				List path = pathIter.next();
+				Iterator<VertexEvent> vi = path.iterator();
+				Element transformationPath = doc.createElement("transformationPath");
+				while (vi.hasNext()) {
+					Object ve = vi.next();
+					if (ve != null) {
+						Element pathElement = doc.createElement("pathElement");
+						VertexEvent veObj = (VertexEvent) ve;
+						Element eventTime = doc.createElement("eventTime");
+						Date date = new Date(veObj.getTimestamp());
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+						String dateString = sdf.format(date);
+						eventTime.setTextContent(dateString);
+						Element epc = doc.createElement("epc");
+						epc.setTextContent(veObj.getVertexID());
+						pathElement.appendChild(epc);
+						pathElement.appendChild(eventTime);
+						transformationPath.appendChild(pathElement);
+					}
+				}
+				transformationTrace.appendChild(transformationPath);
+			}
+		}
+
+		Element resultsBody = doc.createElement("resultsBody");
+		resultsBody.appendChild(transformationTrace);
+		doc.getFirstChild().appendChild(resultsBody);
+
+		return toString(doc);
+	}
+
+	public String toString(Document doc) {
+		try {
+			Transformer tf = TransformerFactory.newInstance().newTransformer();
+			tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			tf.setOutputProperty(OutputKeys.INDENT, "yes");
+			Writer out = new StringWriter();
+			tf.transform(new DOMSource(doc), new StreamResult(out));
+			return out.toString();
+		} catch (TransformerConfigurationException e) {
+			return null;
+		} catch (TransformerException e) {
+			return null;
+		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@RequestMapping(value = "/TraceabilityQuery", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<?> traceabilityQuery(@RequestParam String traceEPC, @RequestParam String traceTarget,
+			@RequestParam(required = false) String startTime, @RequestParam(required = false) String endTime,
+			@RequestParam(required = false) String orderDirection) {
+
+		// Time processing
+		long fromTimeMil = 0;
+		long toTimeMil = 0;
+		fromTimeMil = TimeUtil.getTimeMil(startTime);
+		toTimeMil = TimeUtil.getTimeMil(endTime);
+
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.add("Content-Type", "application/xml; charset=utf-8");
+
+		if (traceTarget.equals("transformation")) {
+			String result = getTransformation(traceEPC, traceTarget, startTime, endTime, fromTimeMil, toTimeMil,
+					orderDirection);
+			if (result != null)
+				return new ResponseEntity<>(result, responseHeaders, HttpStatus.OK);
+			else
+				return new ResponseEntity<>(null, responseHeaders, HttpStatus.BAD_REQUEST);
+		} else if (traceTarget.equals("aggregation")) {
+
+			ChronoGraph g = Configuration.persistentGraph;
+			VertexEvent ve = g.getChronoVertex(traceEPC).setTimestamp(fromTimeMil);
+
+			BsonArray contains = new BsonArray();
+			contains.add(new BsonString("contains"));
+
+			LoopPipeFunction loop = new LoopPipeFunction() {
+
+				@Override
+				public boolean compute(Object argument, Map<Object, Object> currentPath, int loopCount) {
+					if (argument == null)
+						return false;
+					else
+						return true;
+				}
+			};
+
+			PipeFunction<VertexEvent, VertexEvent> transform = new PipeFunction<VertexEvent, VertexEvent>() {
+
+				@Override
+				public VertexEvent compute(VertexEvent argument) {
+
+					Set<VertexEvent> veSet = argument.getBothVertexEventSet("contains", AC.$gt);
+					if (veSet == null || veSet.isEmpty() || veSet.size() == 0)
+						return null;
+
+					if (veSet.size() == 1)
+						return veSet.iterator().next();
+
+					Iterator<VertexEvent> iter = veSet.iterator();
+					VertexEvent v1 = null;
+					VertexEvent v2 = null;
+					if (iter.hasNext())
+						v1 = iter.next();
+					if (iter.hasNext())
+						v2 = iter.next();
+
+					if (v1 != null && v2 != null) {
+						if (v1.getTimestamp() < v2.getTimestamp())
+							return v1;
+						else
+							return v2;
+					}
+					return null;
+
+				}
+			};
+
+			TraversalEngine engine = new TraversalEngine(g, ve, false, true, VertexEvent.class);
+			engine.as("s");
+			engine.transform(transform, VertexEvent.class);
+			engine.loop("s", loop).toList();
+
+			ArrayList<VertexEvent> refinedPath = new ArrayList<VertexEvent>();
+			HashMap<HashSet<ChronoVertex>, ArrayList<Long>> ppp = new HashMap<HashSet<ChronoVertex>, ArrayList<Long>>();
+
+			Map path = engine.path();
+
+			Iterator iter = path.values().iterator();
+			while (iter.hasNext()) {
+				HashSet next = (HashSet) iter.next();
+				Iterator<ArrayList> pathIter = next.iterator();
+				while (pathIter.hasNext()) {
+					ArrayList eachPath = pathIter.next();
+					Iterator elemIter = eachPath.iterator();
+					while (elemIter.hasNext()) {
+						Object elem = elemIter.next();
+						if (elem instanceof VertexEvent) {
+							VertexEvent veElem = (VertexEvent) elem;
+							refinedPath.add(veElem);
+						}
+					}
+				}
+			}
+
+			for (int i = 0; i < refinedPath.size() - 1; i++) {
+				VertexEvent source = refinedPath.get(i);
+				VertexEvent dest = refinedPath.get(i + 1);
+
+				HashSet<ChronoVertex> sd = new HashSet<ChronoVertex>();
+				sd.add(source.getVertex());
+				sd.add(dest.getVertex());
+
+				if (ppp.containsKey(sd)) {
+					ArrayList<Long> series = ppp.get(sd);
+					series.add(dest.getTimestamp());
+					ppp.put(sd, series);
+				} else {
+					ArrayList<Long> series = new ArrayList<Long>();
+					series.add(dest.getTimestamp());
+					ppp.put(sd, series);
+				}
+			}
+
+			Document doc = createBaseQueryResults(traceEPC, traceTarget, startTime, endTime, orderDirection);
+
+			Element aggregationTrace = doc.createElement("aggregationTrace");
+
+			// JSONObject: source-dest : [intervals]
+			JSONObject ret = new JSONObject();
+
+			Iterator<Entry<HashSet<ChronoVertex>, ArrayList<Long>>> iter2 = ppp.entrySet().iterator();
+			while (iter2.hasNext()) {
+				Entry<HashSet<ChronoVertex>, ArrayList<Long>> entry = iter2.next();
+
+				Iterator<ChronoVertex> vi = entry.getKey().iterator();
+
+				Element parentID = doc.createElement("parentID");
+				parentID.setTextContent(vi.next().toString());
+				Element childEPC = doc.createElement("childEPC");
+				childEPC.setTextContent(vi.next().toString());
+
+				String key = entry.getKey().toString();
+				ArrayList<Long> intvArr = entry.getValue();
+				Long start = null;
+				Iterator<Long> iter3 = intvArr.iterator();
+				JSONArray intvJsonArr = new JSONArray();
+				while (iter3.hasNext()) {
+					Long temp = iter3.next();
+					if (start == null) {
+						start = temp;
+						continue;
+					} else {
+
+						SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+						
+						Element startEventTime = doc.createElement("startEventTime");
+						Date startDate = new Date(start);
+						String startDateString = sdf.format(startDate);						
+						startEventTime.setTextContent(startDateString);
+						Element endEventTime = doc.createElement("endEventTime");
+						Date endDate = new Date(temp);
+						String endDateString = sdf.format(endDate);
+						endEventTime.setTextContent(endDateString);
+
+						Element aggregationElement = doc.createElement("aggregationElement");
+						aggregationElement.appendChild(parentID);
+						aggregationElement.appendChild(childEPC);
+						aggregationElement.appendChild(startEventTime);
+						aggregationElement.appendChild(endEventTime);
+						aggregationTrace.appendChild(aggregationElement);
+						intvJsonArr.put(start + "-" + temp);
+						start = null;
+						continue;
+					}
+				}
+				ret.put(key, intvJsonArr);
+			}
+
+			Element resultsBody = doc.createElement("resultsBody");
+			resultsBody.appendChild(aggregationTrace);
+			doc.getFirstChild().appendChild(resultsBody);
+
+			// {"[urn:epc:id:sscc:0614141.1234567890,
+			// urn:epc:id:sgtin:0614141.107346.2017]": ["1370703536591-1433775536591"]}
+
+			return new ResponseEntity<>(toString(doc), responseHeaders, HttpStatus.OK);
+
+		} else if (traceTarget.equals("eventType")) {
+
+		} else if (traceTarget.equals("bizStep")) {
+
+		} else if (traceTarget.equals("disposition")) {
+
+		} else if (traceTarget.equals("readPoint")) {
+
+		} else if (traceTarget.equals("bizLocation")) {
+
+		} else if (traceTarget.equals("bizTransactionList")) {
+
+		} else if (traceTarget.equals("ownership")) {
+
+		} else if (traceTarget.equals("quantity")) {
+
+		}
+		return new ResponseEntity<>(null, responseHeaders, HttpStatus.OK);
 	}
 
 	/**
