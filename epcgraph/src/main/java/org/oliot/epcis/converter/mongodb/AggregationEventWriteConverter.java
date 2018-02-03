@@ -185,7 +185,7 @@ public class AggregationEventWriteConverter {
 		// object = vid
 		if (parentID != null) {
 			MongoWriterUtil.addBasicTimestampProperties(pg, eventTime, parentID, readPoint, bizLocation, sourceList,
-					destinationList);
+					destinationList);			
 		}
 
 		if (childEPCs != null)
@@ -201,19 +201,22 @@ public class AggregationEventWriteConverter {
 			});
 
 		if (parentID != null) {
-			if (childEPCs != null)
+			if (childEPCs != null) {
 				childEPCs.stream().forEach(child -> {
 					pg.addTimestampEdgeProperties(parentID, child, "contains", eventTime,
 							new BsonDocument("data", dataID).append("action", new BsonString(action)));
 				});
-			if (childQuantities != null)
+			}
+
+			if (childQuantities != null) {
 				childQuantities.stream().forEach(classElem -> {
 					String epcClass = classElem.asDocument().getString("epcClass").getValue();
 					pg.addTimestampEdgeProperties(parentID, epcClass, "contains", eventTime,
 							new BsonDocument("data", dataID).append("action", new BsonString(action)));
 				});
+			}
+
 		}
 
-		return;
-	}
-}
+	return;
+}}

@@ -70,7 +70,7 @@ abstract class ChronoElement implements Element {
 		if (this instanceof ChronoVertex) {
 			doc = graph.getVertexCollection().find(new BsonDocument(Tokens.ID, new BsonString(this.id))).first();
 		} else {
-			ChronoEdge e = (ChronoEdge)this;
+			ChronoEdge e = (ChronoEdge) this;
 			BsonDocument query = new BsonDocument();
 			query.put(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()));
 			query.put(Tokens.LABEL, new BsonString(e.getLabel()));
@@ -126,7 +126,7 @@ abstract class ChronoElement implements Element {
 	@Override
 	public void setProperty(final String key, final Object value) {
 		ElementHelper.validateProperty(this, key, value);
-		
+
 		if (this instanceof ChronoVertex) {
 			BsonDocument filter = new BsonDocument();
 			filter.put(Tokens.ID, new BsonString(this.id));
@@ -135,12 +135,12 @@ abstract class ChronoElement implements Element {
 			graph.getVertexCollection().updateOne(filter, update, new UpdateOptions().upsert(true));
 		} else {
 			BsonDocument filter = new BsonDocument();
-			ChronoEdge e = (ChronoEdge)this;
+			ChronoEdge e = (ChronoEdge) this;
 			filter.put(Tokens.OUT_VERTEX, new BsonString(e.getOutVertex().toString()));
 			filter.put(Tokens.LABEL, new BsonString(e.getLabel()));
 			filter.put(Tokens.IN_VERTEX, new BsonString(e.getInVertex().toString()));
 			BsonDocument update = new BsonDocument();
-			update.put("$set", new BsonDocument(key, (BsonValue) value));			
+			update.put("$set", new BsonDocument(key, (BsonValue) value));
 			graph.getEdgeCollection().updateOne(filter, update, new UpdateOptions().upsert(true));
 		}
 	}
@@ -343,7 +343,7 @@ abstract class ChronoElement implements Element {
 		TreeSet<Long> timestampPropertyKeys = new TreeSet<Long>();
 		if (this instanceof ChronoVertex) {
 			MongoCursor<BsonDocument> cursor = graph
-					.getVertexCollection().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
+					.getVertexEvents().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
 							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
 			while (cursor.hasNext()) {
@@ -351,7 +351,7 @@ abstract class ChronoElement implements Element {
 				timestampPropertyKeys.add(doc.getDateTime(Tokens.TIMESTAMP).getValue());
 			}
 		} else {
-			MongoCursor<BsonDocument> cursor = graph.getEdgeCollection().find(
+			MongoCursor<BsonDocument> cursor = graph.getEdgeEvents().find(
 					new BsonDocument(Tokens.EDGE, new BsonString(this.id)).append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
 			while (cursor.hasNext()) {
@@ -427,8 +427,8 @@ abstract class ChronoElement implements Element {
 		}
 
 		if (this instanceof ChronoVertex)
-			return graph.getVertexCollection()
-					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)))
+			return graph.getVertexEvents()
+					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TIMESTAMP, new BsonDateTime(timestamp)))
 					.projection(bsonProjection).first();
 		else
 			return graph.getEdgeCollection()
@@ -443,7 +443,10 @@ abstract class ChronoElement implements Element {
 	 */
 	public BsonValue getTimestampPropertyValue(final Long timestamp, final String key) {
 		BsonDocument timestampProperties = getTimestampProperties(timestamp, new String[] { key });
-		return timestampProperties.get(key);
+		if (timestampProperties.containsKey(key))
+			return timestampProperties.get(key);
+		else
+			return null;
 	}
 
 	/**
@@ -736,7 +739,7 @@ abstract class ChronoElement implements Element {
 				BsonDocument projection = new BsonDocument(Tokens.TIMESTAMP, new BsonBoolean(true))
 						.append(Tokens.IN_VERTEX, new BsonBoolean(true)).append("action", new BsonBoolean(true))
 						.append(Tokens.ID, new BsonBoolean(false));
-				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+				MongoCursor<BsonDocument> iterator = graph.getEdgeEvents().find(query).projection(projection)
 						.iterator();
 				while (iterator.hasNext()) {
 					BsonDocument doc = iterator.next();
@@ -766,7 +769,7 @@ abstract class ChronoElement implements Element {
 				projection.append(Tokens.OUT_VERTEX, new BsonBoolean(true));
 				projection.append("action", new BsonBoolean(true));
 				projection.append(Tokens.ID, new BsonBoolean(false));
-				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+				MongoCursor<BsonDocument> iterator = graph.getEdgeEvents().find(query).projection(projection)
 						.iterator();
 				while (iterator.hasNext()) {
 					BsonDocument doc = iterator.next();
@@ -824,7 +827,7 @@ abstract class ChronoElement implements Element {
 				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
 				projection.append(Tokens.IN_VERTEX, new BsonBoolean(true));
 				projection.append(Tokens.ID, new BsonBoolean(false));
-				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+				MongoCursor<BsonDocument> iterator = graph.getEdgeEvents().find(query).projection(projection)
 						.iterator();
 				while (iterator.hasNext()) {
 					BsonDocument doc = iterator.next();
@@ -844,7 +847,7 @@ abstract class ChronoElement implements Element {
 				projection.append(Tokens.TIMESTAMP, new BsonBoolean(true));
 				projection.append(Tokens.OUT_VERTEX, new BsonBoolean(true));
 				projection.append(Tokens.ID, new BsonBoolean(false));
-				MongoCursor<BsonDocument> iterator = graph.getEdgeCollection().find(query).projection(projection)
+				MongoCursor<BsonDocument> iterator = graph.getEdgeEvents().find(query).projection(projection)
 						.iterator();
 				while (iterator.hasNext()) {
 					BsonDocument doc = iterator.next();
