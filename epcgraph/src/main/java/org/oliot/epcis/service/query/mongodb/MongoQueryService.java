@@ -329,6 +329,87 @@ public class MongoQueryService {
 		return retList;
 	}
 
+	@SuppressWarnings("unused")
+	public ArrayList<CachedChronoVertex> pollEventVertices(PollParameters p, String userID, List<String> friendList, String subscriptionID)
+			throws QueryParameterException, QueryTooLargeException {
+
+		// M27 - query params' constraint
+		// M39 - query params' constraint
+		String reason = checkConstraintSimpleEventQuery(p);
+
+		if (reason != null) {
+			throw new QueryParameterException();
+			// return makeErrorResult(reason, QueryParameterException.class);
+		}
+
+		// Make Base Result Document
+		EPCISQueryDocumentType epcisQueryDocumentType = null;
+
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
+			epcisQueryDocumentType = makeBaseResultDocument(p.getQueryName(), subscriptionID);
+		} else if (p.getFormat().equals("JSON")) {
+			// Do Nothing
+		} else {
+			throw new QueryParameterException();
+			// return makeErrorResult("format param should be one of XML or
+			// JSON", QueryParameterException.class);
+		}
+
+		// Prepare container which query results are included
+		// eventObjects : Container which all the query results (events) will be
+		// contained
+		List<Object> eventObjects = null;
+		if (p.getFormat() == null || p.getFormat().equals("XML")) {
+			eventObjects = epcisQueryDocumentType.getEPCISBody().getQueryResults().getResultsBody().getEventList()
+					.getObjectEventOrAggregationEventOrQuantityEvent();
+		} else {
+			// foramt == JSON -> Do Nothing
+		}
+
+		// // TODO:
+		// ChronoGraph g = Configuration.persistentGraph;
+		//
+		// Long startTime = 0l;
+		// Long endTime = Long.MAX_VALUE;
+		// if(p.getGE_eventTime() != null)
+		// startTime = getTimeMillisLong(p.getGE_eventTime());
+		// if(p.getLT_eventTime() != null)
+		// endTime = getTimeMillisLong(p.getLT_eventTime());
+		//
+		// // 시간과 캐시 그래프로 만듬
+		// TreeMap<Long, CachedChronoGraph> snapshots = g.getSnapshots(startTime,
+		// endTime);
+		//
+		// Iterator<Entry<Long,CachedChronoGraph>> gIter =
+		// snapshots.entrySet().iterator();
+		// GraphReadConverter rc = new GraphReadConverter();
+		// ArrayList<Object> convertedEvents = new ArrayList<Object>();
+		// while(gIter.hasNext()) {
+		// Entry<Long, CachedChronoGraph> entry = gIter.next();
+		// CachedChronoGraph snapshot = entry.getValue();
+		// Long t = entry.getKey();
+		// ArrayList<Object> intermediate = rc.convert(snapshot,t);
+		// convertedEvents.addAll(intermediate);
+		// }
+
+		// Event Collection
+		// MongoCollection<BsonDocument> collection =
+		// Configuration.mongoDatabase.getCollection("EventData",
+		// BsonDocument.class);
+
+		ChronoGraph pgd = Configuration.persistentGraphData;
+		BsonArray filters = makeQueryObjects(p, userID, friendList);
+
+		String orderDirection = p.getOrderDirection();
+		Boolean isDesc = true;
+		if (orderDirection != null && orderDirection.equals("ASC"))
+			isDesc = false;
+		ArrayList<CachedChronoVertex> vList = pgd.getCachedChronoVertices(filters, p.getOrderBy(), isDesc,
+				p.getEventCountLimit());
+		
+		return vList;
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String pollEventQuery(PollParameters p, String userID, List<String> friendList, String subscriptionID)
 			throws QueryParameterException, QueryTooLargeException {
