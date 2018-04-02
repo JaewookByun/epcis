@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.BsonArray;
 import org.bson.BsonDocument;
@@ -53,7 +54,7 @@ public class TransformationQueryEmulationTest {
 
 	public static String baseURL = "http://localhost:8080/epcgraph";
 	public int transferCount = 10000;
-	public int iterationCount = 100;
+	public int iterationCount = 1;
 
 	@Test
 	public void test() throws IOException {
@@ -102,10 +103,11 @@ public class TransformationQueryEmulationTest {
 			EventCapture cap = new EventCapture();
 			cap.capture(top + body + bottom);
 
+			PersistentBreadthFirstSearchExternal.length = new AtomicInteger(0);
 			double avg = doTransformationQuery();
 
 			System.out.println(i + "\t" + avg);
-			bw.write(i + "\t" + avg + "\n");
+			bw.write(i + "\t" + PersistentBreadthFirstSearchExternal.length + "\n");
 			bw.flush();
 		}
 		bw.close();
@@ -119,15 +121,15 @@ public class TransformationQueryEmulationTest {
 		String source = "urn:epc:id:sgtin:0000001.000001.0";
 		String startTime = "2000-12-09T16:17:05.765Z";
 
-		for (int i = 0; i < iterationCount; i++) {
-			long pre = System.currentTimeMillis();
-			JSONArray arr = getTransformationTreeEmulation(source, startTime);
-			long aft = System.currentTimeMillis();
-			long elapsedTime = aft - pre;
-			// System.out.println(arr.toString(2));
-			// System.out.println("Elapsed Time: " + elapsedTime);
-			timeList.add(elapsedTime);
-		}
+		// for (int i = 0; i < iterationCount; i++) {
+		long pre = System.currentTimeMillis();
+		JSONArray arr = getTransformationTreeEmulation(source, startTime);
+		long aft = System.currentTimeMillis();
+		long elapsedTime = aft - pre;
+		// System.out.println(arr.toString(2));
+		// System.out.println("Elapsed Time: " + elapsedTime);
+		timeList.add(elapsedTime);
+		// }
 
 		double total = timeList.parallelStream().mapToDouble(t -> {
 			return t.longValue();
@@ -151,6 +153,7 @@ public class TransformationQueryEmulationTest {
 
 		PersistentBreadthFirstSearchExternal tBFS = new PersistentBreadthFirstSearchExternal();
 		Map pathMap = new HashMap();
+		PersistentBreadthFirstSearchExternal.length = new AtomicInteger(0);
 		pathMap = tBFS.compute(epc, startTimeMil, AC.$gte);
 
 		// JSONarray contains each path
