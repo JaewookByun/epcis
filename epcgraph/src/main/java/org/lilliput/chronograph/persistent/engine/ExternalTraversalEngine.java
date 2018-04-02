@@ -42,6 +42,7 @@ import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.lilliput.chronograph.persistent.ChronoVertex;
 import org.lilliput.chronograph.persistent.EdgeEvent;
 import org.lilliput.chronograph.persistent.VertexEvent;
+import org.lilliput.chronograph.persistent.recipe.PersistentBreadthFirstSearchExternal;
 import org.oliot.epcis.service.query.EPCTime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1166,6 +1167,8 @@ public class ExternalTraversalEngine {
 
 		String res = response.toString();
 
+		System.out.println(PersistentBreadthFirstSearchExternal.length.addAndGet(res.getBytes().length));
+		
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(new ByteArrayInputStream(res.getBytes()));
@@ -1245,7 +1248,7 @@ public class ExternalTraversalEngine {
 
 				// et 가 in 에 속한
 				EPCTime et = (EPCTime) ve;
-				Set<EPCTime> outSet = new HashSet<EPCTime>();
+ 				Set<EPCTime> outSet = new HashSet<EPCTime>();
 				try {
 					outSet = getNextOutSet(et);
 				} catch (IOException e1) {
