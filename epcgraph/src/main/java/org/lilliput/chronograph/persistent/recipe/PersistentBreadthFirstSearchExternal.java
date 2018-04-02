@@ -3,6 +3,7 @@ package org.lilliput.chronograph.persistent.recipe;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.lilliput.chronograph.common.LoopPipeFunction;
 import org.lilliput.chronograph.common.TemporalType;
@@ -33,6 +34,8 @@ public class PersistentBreadthFirstSearchExternal {
 
 	private ConcurrentHashMap<String, Long> gamma = new ConcurrentHashMap<String, Long>();
 
+	public static AtomicInteger length;
+	
 	@SuppressWarnings("rawtypes")
 	public Map compute(String epc, Long startTime, AC tt) {
 
@@ -65,7 +68,7 @@ public class PersistentBreadthFirstSearchExternal {
 			public boolean compute(Object argument, Map<Object, Object> currentPath, int loopCount) {
 
 				List list = (List) argument;
-				// System.out.println(list.size());
+				System.out.println(list.size());
 				if (list == null || list.size() == 0)
 					return false;
 
@@ -79,7 +82,7 @@ public class PersistentBreadthFirstSearchExternal {
 
 		// collection.find()
 
-		ExternalTraversalEngine pipeLine = new ExternalTraversalEngine(null, source, true, true, String.class);
+		ExternalTraversalEngine pipeLine = new ExternalTraversalEngine(null, source, false, true, String.class);
 		pipeLine = pipeLine.as("s");
 		pipeLine = pipeLine.scatter();
 		pipeLine = pipeLine.oute(null, TemporalType.TIMESTAMP, tt, null, null, null, null, null, null, Position.first);
