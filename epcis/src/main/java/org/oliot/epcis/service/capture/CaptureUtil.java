@@ -93,7 +93,7 @@ public class CaptureUtil {
 			return e.toString();
 		}
 	}
-	
+
 	public static boolean validate(JSONObject Json, JSONObject schema_obj) {
 		try {
 
@@ -181,9 +181,8 @@ public class CaptureUtil {
 							|| (!docID.getType().equals("Events") && !docID.getType().equals("MasterData"))) {
 						Configuration.logger.error(
 								" DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH ");
-						return new ResponseEntity<>(
-								new String(
-										"Error: DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH"),
+						return new ResponseEntity<>(new String(
+								"Error: DocumentIdentification/Type should Events|MasterData in Capture Method if use SBDH"),
 								HttpStatus.BAD_REQUEST);
 					}
 					if (docID.getTypeVersion() == null | !docID.getTypeVersion().equals("1.2")) {
