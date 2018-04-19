@@ -30,7 +30,7 @@ import com.restfb.types.User;
 public class OAuthUtil {
 	public static boolean isValidated(String accessToken, String userID) {
 		try {
-			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_4);
+			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
 			String id = fc.fetchObject("me", User.class).getId();
 			if (!id.equals(userID)) {
 				return false;
@@ -44,7 +44,7 @@ public class OAuthUtil {
 
 	public static FacebookClient isValidatedFacebookClient(String accessToken, String userID) {
 		try {
-			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_4);
+			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
 			String id = fc.fetchObject("me", User.class).getId();
 			if (!id.equals(userID)) {
 				return null;
