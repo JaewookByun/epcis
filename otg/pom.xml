@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.oliot</groupId>
-	<artifactId>epcgraph</artifactId>
+	<artifactId>otg</artifactId>
 	<packaging>war</packaging>
 	<version>0.0.1</version>
 	<name>epcis Maven Webapp</name>
@@ -180,13 +180,13 @@
 
 	</dependencies>
 	<build>
-		<finalName>epcgraph</finalName>
+		<finalName>otg</finalName>
 	</build>
 
 	<repositories>
 		<repository>
-			<id>epcgraph.local</id>
-			<name>epcgraph</name>
+			<id>otg.local</id>
+			<name>otg</name>
 			<url>file:${project.basedir}/libs</url>
 		</repository>
 	</repositories>
