@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.lilliput.chronograph.common.LoopPipeFunction;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.common.Tokens.FC;
-import org.lilliput.chronograph.persistent.ChronoGraph;
-import org.lilliput.chronograph.persistent.ChronoVertex;
-import org.lilliput.chronograph.persistent.VertexEvent;
-import org.lilliput.chronograph.persistent.engine.TraversalEngine;
+import org.oliot.khronos.common.LoopPipeFunction;
+import org.oliot.khronos.common.Tokens.AC;
+import org.oliot.khronos.common.Tokens.FC;
+import org.oliot.khronos.persistent.ChronoGraph;
+import org.oliot.khronos.persistent.ChronoVertex;
+import org.oliot.khronos.persistent.VertexEvent;
+import org.oliot.khronos.persistent.engine.TraversalEngine;
 
 import com.tinkerpop.pipes.PipeFunction;
 

@@ -27,10 +27,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.Test;
-import org.lilliput.chronograph.common.TemporalType;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.common.Tokens.Position;
-import org.lilliput.chronograph.persistent.recipe.StaticPersistentOrientBreadthFirstSearch;
+import org.oliot.khronos.common.TemporalType;
+import org.oliot.khronos.common.Tokens.AC;
+import org.oliot.khronos.common.Tokens.Position;
+import org.oliot.khronos.persistent.recipe.StaticPersistentOrientBreadthFirstSearch;
 
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
