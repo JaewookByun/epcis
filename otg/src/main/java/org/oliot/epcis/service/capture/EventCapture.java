@@ -6,8 +6,8 @@ import javax.servlet.ServletContext;
 import javax.xml.bind.JAXB;
 
 import org.json.JSONObject;
-import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.khronos.persistent.ChronoGraph;
 import org.oliot.model.epcis.EPCISDocumentType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

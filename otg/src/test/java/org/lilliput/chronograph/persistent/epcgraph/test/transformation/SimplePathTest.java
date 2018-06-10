@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import org.lilliput.chronograph.common.LoopPipeFunction;
-import org.lilliput.chronograph.persistent.ChronoGraph;
-import org.lilliput.chronograph.persistent.ChronoVertex;
-import org.lilliput.chronograph.persistent.engine.TraversalEngine;
+import org.oliot.khronos.common.LoopPipeFunction;
+import org.oliot.khronos.persistent.ChronoGraph;
+import org.oliot.khronos.persistent.ChronoVertex;
+import org.oliot.khronos.persistent.engine.TraversalEngine;
 
 public class SimplePathTest {
 
