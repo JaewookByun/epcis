@@ -8,12 +8,12 @@ import org.bson.BsonArray;
 import org.bson.BsonDouble;
 import org.bson.BsonString;
 import org.junit.Test;
-import org.lilliput.chronograph.common.TemporalType;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.persistent.ChronoGraph;
-import org.lilliput.chronograph.persistent.EdgeEvent;
-import org.lilliput.chronograph.persistent.VertexEvent;
-import org.lilliput.chronograph.persistent.engine.TraversalEngine;
+import org.oliot.khronos.common.TemporalType;
+import org.oliot.khronos.common.Tokens.AC;
+import org.oliot.khronos.persistent.ChronoGraph;
+import org.oliot.khronos.persistent.EdgeEvent;
+import org.oliot.khronos.persistent.VertexEvent;
+import org.oliot.khronos.persistent.engine.TraversalEngine;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import com.tinkerpop.blueprints.Direction;

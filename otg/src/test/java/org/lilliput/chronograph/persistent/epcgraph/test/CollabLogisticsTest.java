@@ -6,13 +6,13 @@ import java.util.stream.Collectors;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.junit.Test;
-import org.lilliput.chronograph.common.TemporalType;
-import org.lilliput.chronograph.common.Tokens.AC;
-import org.lilliput.chronograph.common.Tokens.Position;
-import org.lilliput.chronograph.persistent.ChronoGraph;
-import org.lilliput.chronograph.persistent.ChronoVertex;
-import org.lilliput.chronograph.persistent.EdgeEvent;
-import org.lilliput.chronograph.persistent.engine.TraversalEngine;
+import org.oliot.khronos.common.TemporalType;
+import org.oliot.khronos.common.Tokens.AC;
+import org.oliot.khronos.common.Tokens.Position;
+import org.oliot.khronos.persistent.ChronoGraph;
+import org.oliot.khronos.persistent.ChronoVertex;
+import org.oliot.khronos.persistent.EdgeEvent;
+import org.oliot.khronos.persistent.engine.TraversalEngine;
 
 import com.tinkerpop.pipes.PipeFunction;
 

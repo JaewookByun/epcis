@@ -14,11 +14,11 @@ import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
 import org.bson.BsonString;
-import org.lilliput.chronograph.cache.CachedChronoEdge;
-import org.lilliput.chronograph.cache.CachedChronoGraph;
-import org.lilliput.chronograph.cache.CachedChronoVertex;
-import org.lilliput.chronograph.persistent.ChronoGraph;
 import org.oliot.epcis.configuration.Configuration;
+import org.oliot.khronos.cache.CachedChronoEdge;
+import org.oliot.khronos.cache.CachedChronoGraph;
+import org.oliot.khronos.cache.CachedChronoVertex;
+import org.oliot.khronos.persistent.ChronoGraph;
 import org.oliot.model.epcis.AggregationEventType;
 
 import com.tinkerpop.blueprints.Direction;
