@@ -36,7 +36,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.BsonString;
 import org.json.JSONArray;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 import org.oliot.epcis.service.query.EPCTime;
 import org.oliot.epcis.service.query.TimeUtil;
@@ -56,7 +55,6 @@ public class TransformationQueryEmulationTest {
 	public int transferCount = 10000;
 	public int iterationCount = 1;
 
-	@Test
 	public void test() throws IOException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

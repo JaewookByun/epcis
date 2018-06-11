@@ -24,11 +24,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-import org.junit.Test;
-
 public class TransformationAAEmul {
 
-	@Test
 	public void doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();

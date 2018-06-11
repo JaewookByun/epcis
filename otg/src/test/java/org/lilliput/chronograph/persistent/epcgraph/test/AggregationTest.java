@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.bson.BsonArray;
 import org.bson.BsonDouble;
 import org.bson.BsonString;
-import org.junit.Test;
 import org.oliot.khronos.common.TemporalType;
 import org.oliot.khronos.common.Tokens.AC;
 import org.oliot.khronos.persistent.ChronoGraph;
@@ -24,7 +23,6 @@ public class AggregationTest {
 	// 쿼리1 : 각 중요시간 마다 트럭 안에 있는 물건들의 리스트와 무게를 가져옴
 	// freight, location, vehicle_aggregation 데이터 셋
 	// 운전사가 현재 트럭안의 상태를 알수 있다.
-	@Test
 	public void test() {
 		ChronoGraph g = new ChronoGraph("epcis");
 		// g.getChronoVertexSet().parallelStream().forEach(v -> System.out.println(v));

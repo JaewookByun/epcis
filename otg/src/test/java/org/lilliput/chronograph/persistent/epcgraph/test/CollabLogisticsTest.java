@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import org.bson.BsonArray;
 import org.bson.BsonString;
-import org.junit.Test;
 import org.oliot.khronos.common.TemporalType;
 import org.oliot.khronos.common.Tokens.AC;
 import org.oliot.khronos.common.Tokens.Position;
@@ -28,7 +27,6 @@ public class CollabLogisticsTest {
 	// db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near : { $geometry: { type:
 	// "Point", coordinates: [ -1.1673,52.93]}, $maxDistance: 50000}}})
 
-	@Test
 	public void test() {
 		ChronoGraph g = new ChronoGraph("epcis");
 

@@ -33,7 +33,6 @@ import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
 import org.json.JSONObject;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -47,7 +46,6 @@ public class AggregationQueryTestStorage {
 	public int transferCount = 100;
 	public int iterationCount = 100;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");
