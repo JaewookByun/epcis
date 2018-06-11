@@ -27,7 +27,6 @@ import java.util.Set;
 import org.bson.BsonArray;
 import org.bson.BsonString;
 import org.json.JSONArray;
-import org.junit.Test;
 import org.oliot.epcis.service.query.EPCTime;
 import org.oliot.epcis.service.query.TimeUtil;
 import org.oliot.khronos.common.Tokens.AC;
@@ -40,7 +39,6 @@ public class TransformationAAExisting {
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
 	@SuppressWarnings("unused")
-	@Test
 	public void doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();
@@ -55,7 +53,7 @@ public class TransformationAAExisting {
 			JSONArray arr = getTransformationTreeEmulation(source, startTime);
 			long aft = System.currentTimeMillis();
 			long elapsedTime = aft - pre;
-			//System.out.println(arr.toString(2));
+			// System.out.println(arr.toString(2));
 			System.out.println("Elapsed Time: " + elapsedTime);
 			timeList.add(elapsedTime);
 		}
@@ -68,7 +66,7 @@ public class TransformationAAExisting {
 		// 10: 144.3
 		// 100: 888.55
 		// 1000: 7441.24
-		
+
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })

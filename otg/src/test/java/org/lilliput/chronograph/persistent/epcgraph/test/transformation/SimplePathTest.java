@@ -3,7 +3,6 @@ package org.lilliput.chronograph.persistent.epcgraph.test.transformation;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
 import org.oliot.khronos.common.LoopPipeFunction;
 import org.oliot.khronos.persistent.ChronoGraph;
 import org.oliot.khronos.persistent.ChronoVertex;
@@ -11,7 +10,6 @@ import org.oliot.khronos.persistent.engine.TraversalEngine;
 
 public class SimplePathTest {
 
-	@Test
 	public void test() {
 		ChronoGraph g = new ChronoGraph("test1");
 		g.addEdge("0", "1", "c");

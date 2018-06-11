@@ -32,7 +32,6 @@ import java.util.Date;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.json.JSONObject;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -46,7 +45,6 @@ public class OwnershipTransferQueryTest {
 	public int transferCount = 300;
 	public int iterationCount = 100;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

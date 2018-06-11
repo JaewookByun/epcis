@@ -31,7 +31,6 @@ import java.util.Date;
 
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -44,7 +43,6 @@ public class AggregationQueryTest2 {
 
 	public int transferCount = 300;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");
