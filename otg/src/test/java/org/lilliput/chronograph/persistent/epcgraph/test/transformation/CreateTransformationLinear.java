@@ -3,12 +3,10 @@ package org.lilliput.chronograph.persistent.epcgraph.test.transformation;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 public class CreateTransformationLinear {
 
-	@Test
 	public void test() {
 		String top = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" + "<!DOCTYPE project>\n"
 				+ "<epcis:EPCISDocument schemaVersion=\"1.2\"\n"

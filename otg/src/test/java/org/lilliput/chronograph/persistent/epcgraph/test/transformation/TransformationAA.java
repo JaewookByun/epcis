@@ -25,14 +25,12 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
-import org.junit.Test;
 
 public class TransformationAA {
 
 	// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 	// db.EventData.createIndex({"inputEPCList.epc":1})
 
-	@Test
 	public void doTransformationQuery() throws IOException {
 
 		ArrayList<Long> timeList = new ArrayList<Long>();

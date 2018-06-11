@@ -29,7 +29,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -44,7 +43,6 @@ public class TransformationQueryTest {
 	public int transferCount = 308;
 	public int iterationCount = 1;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

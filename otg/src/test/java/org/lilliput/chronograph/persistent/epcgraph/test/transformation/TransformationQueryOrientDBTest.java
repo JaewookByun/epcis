@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.junit.Test;
 import org.oliot.khronos.common.TemporalType;
 import org.oliot.khronos.common.Tokens.AC;
 import org.oliot.khronos.common.Tokens.Position;
@@ -47,7 +46,6 @@ public class TransformationQueryOrientDBTest {
 
 	public HashMap<String, Vertex> idVMap = new HashMap<String, Vertex>();
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

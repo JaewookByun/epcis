@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.bson.Document;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -45,7 +44,6 @@ public class TransformationQueryTestStoage2 {
 	public int transferCount = 108;
 	public int iterationCount = 1;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

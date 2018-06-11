@@ -25,7 +25,6 @@ import java.util.ArrayList;
 
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.junit.Test;
 import org.oliot.khronos.common.TemporalType;
 import org.oliot.khronos.common.Tokens.AC;
 import org.oliot.khronos.common.Tokens.Position;
@@ -45,7 +44,6 @@ public class TransformationQueryTestInternal {
 	public int transferCount = 308;
 	public int iterationCount = 100;
 
-	@Test
 	public void test() throws IOException, InterruptedException {
 
 		File file = new File(fileBaseLoc + this.getClass().getSimpleName() + "-cache-bfs");

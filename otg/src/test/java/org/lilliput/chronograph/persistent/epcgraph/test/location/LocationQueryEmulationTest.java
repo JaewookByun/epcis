@@ -38,7 +38,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.json.JSONObject;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,7 +56,6 @@ public class LocationQueryEmulationTest {
 	public int transferCount = 300;
 	public int iterationCount = 100;
 
-	@Test
 	public void test()
 			throws IOException, InterruptedException, ParserConfigurationException, SAXException, ParseException {
 

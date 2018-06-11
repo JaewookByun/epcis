@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
-import org.junit.Test;
 import org.oliot.epcis.service.capture.EventCapture;
 
 import com.mongodb.MongoClient;
@@ -13,7 +12,6 @@ import com.mongodb.client.MongoDatabase;
 
 public class CreateOwnership {
 	
-	@Test
 	public void test() throws InterruptedException {
 		
 
