@@ -47,12 +47,12 @@
 
 > Maintainer:
 
->> Jaewook Byun, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+>> Jaewook Byun, KAIST, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
 
 > MySQL Backend Extension:
 
->> Yalew Kidane, Ph.D. student : yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
+>> Yalew Kidane, KAIST, Ph.D. student : yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
 
 > Capture Interface Extension:
 
->> Sungpil Woo, Master student : woosungpil@kaist.ac.kr, woosungpil7@gmail.com
+>> Sungpil Woo, Electronics and Telecommunication Research Institute (ETRI) : woosungpil7@gmail.com
