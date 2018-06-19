@@ -47,7 +47,7 @@
 
 > Maintainer:
 
->> Jaewook Byun, Ph.D. student : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+>> Jaewook Byun, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
 
 > MySQL Backend Extension:
 
