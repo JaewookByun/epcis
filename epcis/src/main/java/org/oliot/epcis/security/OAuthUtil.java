@@ -28,6 +28,7 @@ import com.restfb.types.User;
  */
 
 public class OAuthUtil {
+	@SuppressWarnings("deprecation")
 	public static boolean isValidated(String accessToken, String userID) {
 		try {
 			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
@@ -42,6 +43,7 @@ public class OAuthUtil {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static FacebookClient isValidatedFacebookClient(String accessToken, String userID) {
 		try {
 			FacebookClient fc = new DefaultFacebookClient(accessToken, Version.VERSION_2_5);
