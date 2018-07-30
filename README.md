@@ -38,9 +38,9 @@
 
 > Maven
 
-> Spring Framework
+> Spring Framework v5.x
 
-> MongoDB v3.4
+> MongoDB v4.0
 
 ### Contact ###
 > Auto-ID Labs, KAIST
