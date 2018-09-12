@@ -47,7 +47,7 @@
 
 > Maintainer:
 
->> Jaewook Byun, Assistant Professor, Halla University, Republic of Korea, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+>> Jaewook Byun, Assistant Professor, Halla University, Republic of Korea, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com, jaewook.byun@halla.ac.kr
 
 > MySQL Backend Extension:
 
