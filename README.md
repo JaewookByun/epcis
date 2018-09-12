@@ -47,7 +47,7 @@
 
 > Maintainer:
 
->> Jaewook Byun, KAIST, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
+>> Jaewook Byun, Assistant Professor, Halla University, Republic of Korea, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com
 
 > MySQL Backend Extension:
 
@@ -55,4 +55,4 @@
 
 > Capture Interface Extension:
 
->> Sungpil Woo, Electronics and Telecommunication Research Institute (ETRI) : woosungpil7@gmail.com
+>> Sungpil Woo, Electronics and Telecommunication Research Institute (ETRI), Researcher : woosungpil7@gmail.com
