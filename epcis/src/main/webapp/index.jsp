@@ -30,7 +30,7 @@
 
 	<div class="panel panel-info">
 		<div class="panel-heading">
-			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.10</h3>
+			<h3 class="panel-title">Welcome to Oliot EPCIS v1.2.11</h3>
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
@@ -45,17 +45,20 @@
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> Specification </a> <a
 					href="#" class="list-group-item">EPCIS v1.2 compliance<br>
-					Java Web Service (Java v8, Tomcat v8, Servlet v3.1)<br>
-					MongoDB v3.4<br>Maven v3, Spring Framework v4.3.6
+					Java Web Service (Java v8, Tomcat v8, Servlet v4.x)<br>
+					MongoDB v4.0.x<br>Maven v3, Spring Framework v5.1.1
 				</a>
 			</div>
 			<div class="list-group">
-				<a href="#" class="list-group-item active"> Contact </a> <a href="#"
-					class="list-group-item">Jaewook Byun, Ph.D student<br>
-					Korea Advanced Institute of Science and Technology (KAIST)<br>
-					Real-time and Embedded Systems Laboratory(RESL)<br>
-					bjw0829@kaist.ac.kr<br> GitHub:
+				<a href="#" class="list-group-item active"> Contact </a>
+				<a href="#"
+					class="list-group-item">Jaewook Byun<br>Assistant Professor, Halla University<br>
+					Data Framework and Platforms Laboratory (DFPL)<br>
+					Auto-ID Labs, KAIST<br>
+					jaewook.byun@halla.ac.kr , bjw0829@kaist.ac.kr<br> GitHub:
 					https://github.com/JaewookByun/epcis
+					<br> Homepage of DFPL: https://sites.google.com/view/jack-dfpl
+					<br> Homepage of Auto-ID Labs, KAIST: http://autoidlab.kaist.ac.kr/
 				</a>
 			</div>
 		</div>
@@ -67,7 +70,7 @@
 		</div>
 		<div class="panel-body">
 			<div class="list-group">
-				<a href="#" class="list-group-item active"> SOAP Web Service (CXF v3.1.10) </a> <a
+				<a href="#" class="list-group-item active"> SOAP Web Service (CXF v3.2.6) </a> <a
 					href="./webservice" class="list-group-item">EPCIS v1.2
 					SOAP/HTTP Web Service</a>
 			</div>
@@ -92,7 +95,7 @@
 		</div>
 	</div>
 	<footer>
-		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2017</code>
+		<code style="font-size: 12pt">&copy; Auto-ID Labs, KAIST 2018</code>
 	</footer>
 </body>
 </html>
