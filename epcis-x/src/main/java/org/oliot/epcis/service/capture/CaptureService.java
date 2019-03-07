@@ -2,12 +2,10 @@ package org.oliot.epcis.service.capture;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBElement;
 
-import org.bson.BsonDocument;
 import org.oliot.epcis.converter.mongodb.AggregationEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.ObjectEventWriteConverter;
 import org.oliot.epcis.converter.mongodb.TransactionEventWriteConverter;
@@ -19,8 +17,7 @@ import org.oliot.model.epcis.EPCISEventListExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.TransactionEventType;
 
-import com.mongodb.MongoBulkWriteException;
-import com.mongodb.client.model.InsertManyOptions;
+import io.vertx.core.json.JsonObject;
 
 public class CaptureService {
 
@@ -35,25 +32,32 @@ public class CaptureService {
 		try {
 			List<Object> eventList = epcisDocument.getEPCISBody().getEventList()
 					.getObjectEventOrAggregationEventOrQuantityEvent();
-			List<BsonDocument> bsonDocumentList = eventList.parallelStream().parallel()
-					.map(jaxbEvent -> prepareEvent(jaxbEvent)).filter(doc -> doc != null).collect(Collectors.toList());
-			if (bsonDocumentList != null && bsonDocumentList.size() != 0)
-				capture(bsonDocumentList);
+			eventList.parallelStream().parallel().map(jaxbEvent -> prepareEvent(jaxbEvent)).filter(doc -> doc != null)
+					.forEach(doc -> {
+						EPCISServer.mClient.insert("EventData", doc, res -> {
+							if (res.succeeded()) {
+								String id = res.result();
+								System.out.println("Inserted event with id " + id);
+							} else {
+								res.cause().printStackTrace();
+							}
+						});
+					});
 		} catch (NullPointerException ex) {
 			// No Event
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	private BsonDocument prepareEvent(Object jaxbEvent) {
+	private JsonObject prepareEvent(Object jaxbEvent) {
 		JAXBElement eventElement = (JAXBElement) jaxbEvent;
 		Object event = eventElement.getValue();
-		BsonDocument doc = convert(event);
+		JsonObject doc = convert(event);
 		return doc;
 	}
 
-	public BsonDocument convert(Object event) {
-		BsonDocument object2Save = null;
+	public JsonObject convert(Object event) {
+		JsonObject object2Save = null;
 		if (event instanceof AggregationEventType) {
 			AggregationEventWriteConverter wc = new AggregationEventWriteConverter();
 			object2Save = wc.convert((AggregationEventType) event);
@@ -72,15 +76,5 @@ public class CaptureService {
 			return null;
 
 		return object2Save;
-	}
-
-	public void capture(List<BsonDocument> bsonDocumentList) {
-		try {
-			InsertManyOptions option = new InsertManyOptions();
-			option.ordered(false);
-			EPCISServer.eventCollection.insertMany(bsonDocumentList, option);
-		} catch (MongoBulkWriteException e) {
-			e.printStackTrace();
-		}
 	}
 }
