@@ -42,6 +42,11 @@
 
 > MongoDB v4.0
 
+### Organizations and Projects disclosing their usage ###
+> BIBA - Bremer Institut für Produktion und Logistik GmbH (an affiliate institute of the University of Bremen, Germany)
+
+> IoF 2020 (EU Horizon 2020 Project) [Link](https://www.iof2020.eu/)
+
 ### Contact ###
 > Auto-ID Labs, KAIST
 
