@@ -9,15 +9,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.bson.BsonArray;
-import org.bson.BsonBoolean;
-import org.bson.BsonDateTime;
-import org.bson.BsonDocument;
-import org.bson.BsonDouble;
-import org.bson.BsonInt32;
-import org.bson.BsonInt64;
-import org.bson.BsonString;
-import org.bson.BsonValue;
 import org.oliot.model.epcis.AggregationEventExtension2Type;
 import org.oliot.model.epcis.AggregationEventExtensionType;
 import org.oliot.model.epcis.BusinessLocationExtensionType;
@@ -45,6 +36,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
  *
@@ -63,8 +57,8 @@ import org.w3c.dom.Text;
 
 public class MongoWriterUtil {
 
-	static BsonDocument getBaseExtensionObject(EPCISEventExtensionType baseExtensionType) {
-		BsonDocument baseExtension = new BsonDocument();
+	static JsonObject getBaseExtensionObject(EPCISEventExtensionType baseExtensionType) {
+		JsonObject baseExtension = new JsonObject();
 		/*
 		 * May be deprecated if (baseExtensionType.getAny() != null &&
 		 * baseExtensionType.getAny().isEmpty() == false) { List<Object> objList =
@@ -74,30 +68,30 @@ public class MongoWriterUtil {
 		if (baseExtensionType.getOtherAttributes() != null
 				&& baseExtensionType.getOtherAttributes().isEmpty() == false) {
 			Map<QName, String> map = baseExtensionType.getOtherAttributes();
-			BsonDocument map2Save = getOtherAttributesMap(map);
+			JsonObject map2Save = getOtherAttributesMap(map);
 			if (map2Save.isEmpty() == false)
 				baseExtension.put("otherAttributes", map2Save);
 		}
 		return baseExtension;
 	}
 
-	static BsonDocument getReadPointObject(ReadPointType readPointType) {
-		BsonDocument readPoint = new BsonDocument();
+	static JsonObject getReadPointObject(ReadPointType readPointType) {
+		JsonObject readPoint = new JsonObject();
 		if (readPointType.getId() != null)
-			readPoint.put("id", new BsonString(readPointType.getId()));
+			readPoint.put("id", readPointType.getId());
 		return readPoint;
 	}
 
-	static BsonDocument getBizLocationObject(BusinessLocationType bizLocationType) {
-		BsonDocument bizLocation = new BsonDocument();
+	static JsonObject getBizLocationObject(BusinessLocationType bizLocationType) {
+		JsonObject bizLocation = new JsonObject();
 		if (bizLocationType.getId() != null)
-			bizLocation.put("id", new BsonString(bizLocationType.getId()));
+			bizLocation.put("id", bizLocationType.getId());
 
 		BusinessLocationExtensionType bizLocationExtensionType = bizLocationType.getExtension();
 		if (bizLocationExtensionType != null) {
-			BsonDocument extension = new BsonDocument();
+			JsonObject extension = new JsonObject();
 			if (bizLocationExtensionType.getAny() != null) {
-				BsonDocument map2Save = new BsonDocument();
+				JsonObject map2Save = new JsonObject();
 				List<Object> objList = bizLocationExtensionType.getAny();
 				for (int i = 0; i < objList.size(); i++) {
 					Object obj = objList.get(i);
@@ -106,7 +100,7 @@ public class MongoWriterUtil {
 						if (element.getFirstChild() != null) {
 							String name = element.getLocalName();
 							String value = element.getFirstChild().getTextContent();
-							map2Save.put(name, new BsonString(value));
+							map2Save.put(name, value);
 						}
 					}
 				}
@@ -116,12 +110,12 @@ public class MongoWriterUtil {
 
 			if (bizLocationExtensionType.getOtherAttributes() != null) {
 				Map<QName, String> map = bizLocationExtensionType.getOtherAttributes();
-				BsonDocument map2Save = new BsonDocument();
+				JsonObject map2Save = new JsonObject();
 				Iterator<QName> iter = map.keySet().iterator();
 				while (iter.hasNext()) {
 					QName qName = iter.next();
 					String value = map.get(qName);
-					map2Save.put(qName.toString(), new BsonString(value));
+					map2Save.put(qName.toString(), value);
 				}
 				extension.put("otherAttributes", map2Save);
 			}
@@ -131,36 +125,36 @@ public class MongoWriterUtil {
 		return bizLocation;
 	}
 
-	static BsonArray getBizTransactionObjectList(List<BusinessTransactionType> bizList) {
-		BsonArray bizTranList = new BsonArray();
+	static JsonArray getBizTransactionObjectList(List<BusinessTransactionType> bizList) {
+		JsonArray bizTranList = new JsonArray();
 		for (int i = 0; i < bizList.size(); i++) {
 			BusinessTransactionType bizTranType = bizList.get(i);
 			if (bizTranType.getType() != null && bizTranType.getValue() != null) {
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(bizTranType.getType(), new BsonString(
-						bizTranType.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", "")));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(bizTranType.getType(),
+						bizTranType.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", ""));
 				bizTranList.add(dbObj);
 			}
 		}
 		return bizTranList;
 	}
 
-	static BsonDocument getAggregationEventExtensionObject(AggregationEventExtensionType oee) {
-		BsonDocument extension = new BsonDocument();
+	static JsonObject getAggregationEventExtensionObject(AggregationEventExtensionType oee) {
+		JsonObject extension = new JsonObject();
 		if (oee.getChildQuantityList() != null) {
 			QuantityListType qetl = oee.getChildQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = new BsonArray();
+			JsonArray quantityList = new JsonArray();
 			for (int i = 0; i < qetList.size(); i++) {
-				BsonDocument quantity = new BsonDocument();
+				JsonObject quantity = new JsonObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", new BsonString(qet.getEpcClass().toString()));
+					quantity.put("epcClass", qet.getEpcClass().toString());
 				if (qet.getQuantity().doubleValue() != 0) {
-					quantity.put("quantity", new BsonDouble(qet.getQuantity().doubleValue()));
+					quantity.put("quantity", qet.getQuantity().doubleValue());
 				}
 				if (qet.getUom() != null)
-					quantity.put("uom", new BsonString(qet.getUom().toString()));
+					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
 			}
 			extension.put("childQuantityList", quantityList);
@@ -169,11 +163,11 @@ public class MongoWriterUtil {
 		if (oee.getSourceList() != null) {
 			SourceListType sdtl = oee.getSourceList();
 			List<SourceDestType> sdtList = sdtl.getSource();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -181,28 +175,28 @@ public class MongoWriterUtil {
 		if (oee.getDestinationList() != null) {
 			DestinationListType sdtl = oee.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
 		}
 		if (oee.getExtension() != null) {
 			AggregationEventExtension2Type extension2Type = oee.getExtension();
-			BsonDocument extension2 = new BsonDocument();
+			JsonObject extension2 = new JsonObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				BsonDocument map2Save = getAnyMap(objList);
+				JsonObject map2Save = getAnyMap(objList);
 				if (map2Save.isEmpty() == false)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
 				Map<QName, String> map = extension2Type.getOtherAttributes();
-				BsonDocument map2Save = getOtherAttributesMap(map);
+				JsonObject map2Save = getOtherAttributesMap(map);
 				if (map2Save.isEmpty() == false)
 					extension2.put("otherAttributes", map2Save);
 			}
@@ -211,28 +205,28 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static BsonDocument getILMDExtensionMap(ILMDExtensionType ilmdExtension) {
+	static JsonObject getILMDExtensionMap(ILMDExtensionType ilmdExtension) {
 		List<Object> objList = ilmdExtension.getAny();
-		BsonDocument map2Save = getAnyMap(objList);
+		JsonObject map2Save = getAnyMap(objList);
 		return map2Save;
 	}
 
-	static BsonDocument getObjectEventExtensionObject(ObjectEventExtensionType oee, List<EPC> epcList) {
-		BsonDocument extension = new BsonDocument();
+	static JsonObject getObjectEventExtensionObject(ObjectEventExtensionType oee, List<EPC> epcList) {
+		JsonObject extension = new JsonObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = new BsonArray();
+			JsonArray quantityList = new JsonArray();
 			for (int i = 0; i < qetList.size(); i++) {
-				BsonDocument quantity = new BsonDocument();
+				JsonObject quantity = new JsonObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", new BsonString(qet.getEpcClass().toString()));
+					quantity.put("epcClass", qet.getEpcClass().toString());
 				if (qet.getQuantity().doubleValue() != 0) {
-					quantity.put("quantity", new BsonDouble(qet.getQuantity().doubleValue()));
+					quantity.put("quantity", qet.getQuantity().doubleValue());
 				}
 				if (qet.getUom() != null)
-					quantity.put("uom", new BsonString(qet.getUom().toString()));
+					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
 			}
 			extension.put("quantityList", quantityList);
@@ -240,11 +234,11 @@ public class MongoWriterUtil {
 		if (oee.getSourceList() != null) {
 			SourceListType sdtl = oee.getSourceList();
 			List<SourceDestType> sdtList = sdtl.getSource();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -252,11 +246,11 @@ public class MongoWriterUtil {
 		if (oee.getDestinationList() != null) {
 			DestinationListType sdtl = oee.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
@@ -267,9 +261,9 @@ public class MongoWriterUtil {
 			ILMDType ilmd = oee.getIlmd();
 
 			if (ilmd.getAny() != null) {
-				BsonDocument map2Save = getAnyMap(ilmd.getAny());
+				JsonObject map2Save = getAnyMap(ilmd.getAny());
 				if (map2Save != null && map2Save.isEmpty() == false) {
-					extension.put("ilmd", new BsonDocument("any", map2Save));
+					extension.put("ilmd", new JsonObject().put("any", map2Save));
 				}
 //				if (epcList != null) {
 //					MasterDataWriteConverter mdConverter = new MasterDataWriteConverter();
@@ -289,17 +283,17 @@ public class MongoWriterUtil {
 
 		if (oee.getExtension() != null) {
 			ObjectEventExtension2Type extension2Type = oee.getExtension();
-			BsonDocument extension2 = new BsonDocument();
+			JsonObject extension2 = new JsonObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				BsonDocument map2Save = getAnyMap(objList);
+				JsonObject map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
 				Map<QName, String> map = extension2Type.getOtherAttributes();
-				BsonDocument map2Save = getOtherAttributesMap(map);
+				JsonObject map2Save = getOtherAttributesMap(map);
 				if (map2Save.isEmpty() == false)
 					extension2.put("otherAttributes", map2Save);
 			}
@@ -308,40 +302,40 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static BsonDocument getQuantityEventExtensionObject(QuantityEventExtensionType oee) {
-		BsonDocument extension = new BsonDocument();
+	static JsonObject getQuantityEventExtensionObject(QuantityEventExtensionType oee) {
+		JsonObject extension = new JsonObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
-			BsonDocument map2Save = getAnyMap(objList);
+			JsonObject map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
 
 		if (oee.getOtherAttributes() != null) {
 			Map<QName, String> map = oee.getOtherAttributes();
-			BsonDocument map2Save = getOtherAttributesMap(map);
+			JsonObject map2Save = getOtherAttributesMap(map);
 			if (map2Save.isEmpty() == false)
 				extension.put("otherAttributes", map2Save);
 		}
 		return extension;
 	}
 
-	static BsonDocument getTransactionEventExtensionObject(TransactionEventExtensionType oee) {
-		BsonDocument extension = new BsonDocument();
+	static JsonObject getTransactionEventExtensionObject(TransactionEventExtensionType oee) {
+		JsonObject extension = new JsonObject();
 		if (oee.getQuantityList() != null) {
 			QuantityListType qetl = oee.getQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = new BsonArray();
+			JsonArray quantityList = new JsonArray();
 			for (int i = 0; i < qetList.size(); i++) {
-				BsonDocument quantity = new BsonDocument();
+				JsonObject quantity = new JsonObject();
 				QuantityElementType qet = qetList.get(i);
 				if (qet.getEpcClass() != null)
-					quantity.put("epcClass", new BsonString(qet.getEpcClass().toString()));
+					quantity.put("epcClass", qet.getEpcClass().toString());
 				if (qet.getQuantity().doubleValue() != 0) {
-					quantity.put("quantity", new BsonDouble(qet.getQuantity().doubleValue()));
+					quantity.put("quantity", qet.getQuantity().doubleValue());
 				}
 				if (qet.getUom() != null)
-					quantity.put("uom", new BsonString(qet.getUom().toString()));
+					quantity.put("uom", qet.getUom().toString());
 				quantityList.add(quantity);
 			}
 			extension.put("quantityList", quantityList);
@@ -349,11 +343,11 @@ public class MongoWriterUtil {
 		if (oee.getSourceList() != null) {
 			SourceListType sdtl = oee.getSourceList();
 			List<SourceDestType> sdtList = sdtl.getSource();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("sourceList", dbList);
@@ -361,28 +355,28 @@ public class MongoWriterUtil {
 		if (oee.getDestinationList() != null) {
 			DestinationListType sdtl = oee.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
-			BsonArray dbList = new BsonArray();
+			JsonArray dbList = new JsonArray();
 			for (int i = 0; i < sdtList.size(); i++) {
 				SourceDestType sdt = sdtList.get(i);
-				BsonDocument dbObj = new BsonDocument();
-				dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+				JsonObject dbObj = new JsonObject();
+				dbObj.put(sdt.getType(), sdt.getValue());
 				dbList.add(dbObj);
 			}
 			extension.put("destinationList", dbList);
 		}
 		if (oee.getExtension() != null) {
 			TransactionEventExtension2Type extension2Type = oee.getExtension();
-			BsonDocument extension2 = new BsonDocument();
+			JsonObject extension2 = new JsonObject();
 			if (extension2Type.getAny() != null) {
 				List<Object> objList = extension2Type.getAny();
-				BsonDocument map2Save = getAnyMap(objList);
+				JsonObject map2Save = getAnyMap(objList);
 				if (map2Save != null)
 					extension2.put("any", map2Save);
 			}
 
 			if (extension2Type.getOtherAttributes() != null) {
 				Map<QName, String> map = extension2Type.getOtherAttributes();
-				BsonDocument map2Save = getOtherAttributesMap(map);
+				JsonObject map2Save = getOtherAttributesMap(map);
 				if (map2Save.isEmpty() == false)
 					extension2.put("otherAttributes", map2Save);
 			}
@@ -391,54 +385,54 @@ public class MongoWriterUtil {
 		return extension;
 	}
 
-	static BsonArray getQuantityObjectList(List<QuantityElementType> qetList) {
-		BsonArray quantityList = new BsonArray();
+	static JsonArray getQuantityObjectList(List<QuantityElementType> qetList) {
+		JsonArray quantityList = new JsonArray();
 		for (int i = 0; i < qetList.size(); i++) {
-			BsonDocument quantity = new BsonDocument();
+			JsonObject quantity = new JsonObject();
 			QuantityElementType qet = qetList.get(i);
 			if (qet.getEpcClass() != null)
-				quantity.put("epcClass", new BsonString(qet.getEpcClass().toString()));
+				quantity.put("epcClass", qet.getEpcClass().toString());
 			if (qet.getQuantity().doubleValue() != 0) {
-				quantity.put("quantity", new BsonDouble(qet.getQuantity().doubleValue()));
+				quantity.put("quantity", qet.getQuantity().doubleValue());
 			}
 			if (qet.getUom() != null)
-				quantity.put("uom", new BsonString(qet.getUom().toString()));
+				quantity.put("uom", qet.getUom().toString());
 			quantityList.add(quantity);
 		}
 		return quantityList;
 	}
 
-	static BsonArray getSourceDestObjectList(List<SourceDestType> sdtList) {
-		BsonArray dbList = new BsonArray();
+	static JsonArray getSourceDestObjectList(List<SourceDestType> sdtList) {
+		JsonArray dbList = new JsonArray();
 		for (int i = 0; i < sdtList.size(); i++) {
 			SourceDestType sdt = sdtList.get(i);
-			BsonDocument dbObj = new BsonDocument();
-			dbObj.put(sdt.getType(), new BsonString(sdt.getValue()));
+			JsonObject dbObj = new JsonObject();
+			dbObj.put(sdt.getType(), sdt.getValue());
 			dbList.add(dbObj);
 		}
 		return dbList;
 	}
 
-	static BsonDocument getTransformationEventExtensionObject(TransformationEventExtensionType oee) {
-		BsonDocument extension = new BsonDocument();
+	static JsonObject getTransformationEventExtensionObject(TransformationEventExtensionType oee) {
+		JsonObject extension = new JsonObject();
 		if (oee.getAny() != null) {
 			List<Object> objList = oee.getAny();
-			BsonDocument map2Save = getAnyMap(objList);
+			JsonObject map2Save = getAnyMap(objList);
 			if (map2Save != null)
 				extension.put("any", map2Save);
 		}
 
 		if (oee.getOtherAttributes() != null) {
 			Map<QName, String> map = oee.getOtherAttributes();
-			BsonDocument map2Save = getOtherAttributesMap(map);
+			JsonObject map2Save = getOtherAttributesMap(map);
 			if (map2Save != null)
 				extension.put("otherAttributes", map2Save);
 		}
 		return extension;
 	}
 
-	static BsonDocument getAnyMap(List<Object> objList) {
-		BsonDocument map2Save = new BsonDocument();
+	static JsonObject getAnyMap(List<Object> objList) {
+		JsonObject map2Save = new JsonObject();
 		for (int i = 0; i < objList.size(); i++) {
 			Object obj = objList.get(i);
 			if (obj instanceof Element) {
@@ -456,7 +450,7 @@ public class MongoWriterUtil {
 				String qnameKey = encodeMongoObjectKey(namespaceURI + "#" + localName);
 				// checkArr[0] : example1
 				// getNamespaceURI : http
-				map2Save.put("@" + namespaceURI, new BsonString(prefix));
+				map2Save.put("@" + namespaceURI, prefix);
 
 				Node firstChildNode = element.getFirstChild();
 				if (firstChildNode != null) {
@@ -466,7 +460,7 @@ public class MongoWriterUtil {
 						map2Save.put(qnameKey, converseType(value));
 					} else if (firstChildNode instanceof Element) {
 						Element childNode = null;
-						BsonDocument sub2Save = new BsonDocument();
+						JsonObject sub2Save = new JsonObject();
 						do {
 							if (firstChildNode instanceof Element) {
 								childNode = (Element) firstChildNode;
@@ -478,7 +472,7 @@ public class MongoWriterUtil {
 								String childPrefix = childCheckArr[0];
 								String childNamespaceURI = encodeMongoObjectKey(childNode.getNamespaceURI());
 
-								sub2Save.put("@" + childNamespaceURI, new BsonString(childPrefix));
+								sub2Save.put("@" + childNamespaceURI, childPrefix);
 
 								map2Save.put(qnameKey, getAnyMap(childNode, sub2Save));
 							}
@@ -491,7 +485,7 @@ public class MongoWriterUtil {
 	}
 
 	// Inside recursive logic
-	static BsonDocument getAnyMap(Element element, BsonDocument map2Save) {
+	static JsonObject getAnyMap(Element element, JsonObject map2Save) {
 
 		String qname = element.getNodeName();
 		// Process Namespace
@@ -513,7 +507,7 @@ public class MongoWriterUtil {
 		} else if (firstChildNode instanceof Element) {
 			// example1:b, example1:d, example1:b, example1:e
 			Element childNode = null;
-			BsonDocument sub2Save = new BsonDocument();
+			JsonObject sub2Save = new JsonObject();
 			do {
 				if (firstChildNode instanceof Element) {
 					childNode = (Element) firstChildNode;
@@ -523,7 +517,7 @@ public class MongoWriterUtil {
 						continue;
 					String childPrefix = childCheckArr[0];
 					String childNamespaceURI = encodeMongoObjectKey(childNode.getNamespaceURI());
-					sub2Save.put("@" + childNamespaceURI, new BsonString(childPrefix));
+					sub2Save.put("@" + childNamespaceURI, childPrefix);
 					map2Save.put(qnameKey, getAnyMap(childNode, sub2Save));
 				}
 			} while (firstChildNode.getNextSibling() != null && firstChildNode.getNextSibling() instanceof Element
@@ -533,13 +527,13 @@ public class MongoWriterUtil {
 		return map2Save;
 	}
 
-	static BsonDocument getOtherAttributesMap(Map<QName, String> map) {
-		BsonDocument map2Save = new BsonDocument();
+	static JsonObject getOtherAttributesMap(Map<QName, String> map) {
+		JsonObject map2Save = new JsonObject();
 		Iterator<QName> iter = map.keySet().iterator();
 		while (iter.hasNext()) {
 			QName qName = iter.next();
 			String value = map.get(qName);
-			map2Save.put(qName.toString(), new BsonString(value));
+			map2Save.put(qName.toString(), value);
 		}
 		return map2Save;
 	}
@@ -572,68 +566,68 @@ public class MongoWriterUtil {
 		return targetValue;
 	}
 
-	public static BsonValue converseType(String value) {
+	public static Object converseType(String value) {
 		String[] valArr = value.split("\\^");
 		if (valArr.length != 2) {
-			return new BsonString(value);
+			return value;
 		}
 		try {
 			String type = valArr[1];
 			if (type.equals("int")) {
-				return new BsonInt32(Integer.parseInt(valArr[0]));
+				return Integer.parseInt(valArr[0]);
 			} else if (type.equals("long")) {
-				return new BsonInt64(Long.parseLong(valArr[0]));
+				return Long.parseLong(valArr[0]);
 			} else if (type.equals("double")) {
-				return new BsonDouble(Double.parseDouble(valArr[0]));
+				return Double.parseDouble(valArr[0]);
 			} else if (type.equals("boolean")) {
-				return new BsonBoolean(Boolean.parseBoolean(valArr[0]));
+				return Boolean.parseBoolean(valArr[0]);
 			} else if (type.equals("float")) {
-				return new BsonDouble(Double.parseDouble(valArr[0]));
+				return Double.parseDouble(valArr[0]);
 			} else if (type.equals("dateTime")) {
-				BsonDateTime time = getBsonDateTime(valArr[0]);
-				if (time != null)
+				long time = getBsonDateTime(valArr[0]);
+				if (time != 0)
 					return time;
-				return new BsonString(value);
+				return value;
 			} else if (type.equals("geoPoint")) {
-				BsonDocument point = getBsonGeoPoint(valArr[0]);
+				JsonObject point = getBsonGeoPoint(valArr[0]);
 				if (point == null)
-					return new BsonString(value);
+					return value;
 				return point;
 			} else if (type.equals("geoArea")) {
-				BsonDocument area = getBsonGeoArea(valArr[0]);
+				JsonObject area = getBsonGeoArea(valArr[0]);
 				if (area == null)
-					return new BsonString(value);
+					return value;
 				return area;
 			} else {
-				return new BsonString(value);
+				return value;
 			}
 		} catch (NumberFormatException e) {
-			return new BsonString(value);
+			return value;
 		}
 	}
 
-	static BsonDocument getErrorDeclaration(ErrorDeclarationType edt) {
-		BsonDocument errorBson = new BsonDocument();
+	static JsonObject getErrorDeclaration(ErrorDeclarationType edt) {
+		JsonObject errorBson = new JsonObject();
 		long declarationTime = edt.getDeclarationTime().toGregorianCalendar().getTimeInMillis();
-		errorBson.put("declarationTime", new BsonDateTime(declarationTime));
+		errorBson.put("declarationTime", declarationTime);
 		// (Optional) reason
 		if (edt.getReason() != null) {
-			errorBson.put("reason", new BsonString(edt.getReason()));
+			errorBson.put("reason", edt.getReason());
 		}
 		// (Optional) correctiveEventIDs
 		if (edt.getCorrectiveEventIDs() != null) {
 			CorrectiveEventIDsType cIDs = edt.getCorrectiveEventIDs();
 			List<String> cIDStringList = cIDs.getCorrectiveEventID();
-			BsonArray correctiveIDBsonArray = new BsonArray();
+			JsonArray correctiveIDBsonArray = new JsonArray();
 			for (String cIDString : cIDStringList) {
-				correctiveIDBsonArray.add(new BsonString(cIDString));
+				correctiveIDBsonArray.add(cIDString);
 			}
 			if (correctiveIDBsonArray.size() != 0) {
 				errorBson.put("correctiveEventIDs", correctiveIDBsonArray);
 			}
 		}
 		if (edt.getAny() != null) {
-			BsonDocument map2Save = getAnyMap(edt.getAny());
+			JsonObject map2Save = getAnyMap(edt.getAny());
 			if (map2Save != null && map2Save.isEmpty() == false) {
 				errorBson.put("any", map2Save);
 			}
@@ -642,37 +636,36 @@ public class MongoWriterUtil {
 		return errorBson;
 	}
 
-	public static BsonDateTime getBsonDateTime(String standardDateString) {
+	public static long getBsonDateTime(String standardDateString) {
 		try {
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 			GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 			eventTimeCalendar.setTime(sdf.parse(standardDateString));
-			return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
+			return eventTimeCalendar.getTimeInMillis();
 		} catch (ParseException e) {
 			try {
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
 				GregorianCalendar eventTimeCalendar = new GregorianCalendar();
 				eventTimeCalendar.setTime(sdf.parse(standardDateString));
-				return new BsonDateTime(eventTimeCalendar.getTimeInMillis());
+				return eventTimeCalendar.getTimeInMillis();
 			} catch (ParseException e1) {
 				e1.printStackTrace();
 			}
 		}
-		// Never Happened
-		return null;
+		return 0;
 	}
 
-	public static BsonDocument getBsonGeoPoint(String pointString) {
+	public static JsonObject getBsonGeoPoint(String pointString) {
 		try {
-			BsonDocument pointDoc = new BsonDocument();
-			pointDoc.put("type", new BsonString("Point"));
+			JsonObject pointDoc = new JsonObject();
+			pointDoc.put("type", "Point");
 
 			String[] pointArr = pointString.split(",");
 			if (pointArr.length != 2)
 				return null;
-			BsonArray arr = new BsonArray();
-			arr.add(new BsonDouble(Double.parseDouble(pointArr[0])));
-			arr.add(new BsonDouble(Double.parseDouble(pointArr[1])));
+			JsonArray arr = new JsonArray();
+			arr.add(Double.parseDouble(pointArr[0]));
+			arr.add(Double.parseDouble(pointArr[1]));
 			pointDoc.put("coordinates", arr);
 			return pointDoc;
 		} catch (NumberFormatException e) {
@@ -681,30 +674,30 @@ public class MongoWriterUtil {
 		}
 	}
 
-	public static BsonDocument getBsonGeoArea(String areaString) {
+	public static JsonObject getBsonGeoArea(String areaString) {
 		try {
-			BsonDocument areaDoc = new BsonDocument();
-			areaDoc.put("type", new BsonString("Polygon"));
+			JsonObject areaDoc = new JsonObject();
+			areaDoc.put("type", "Polygon");
 
 			String[] areaArr = areaString.split(",");
 			if (areaArr.length < 2)
 				return null;
 
-			BsonArray area = new BsonArray();
-			BsonArray point = null;
+			JsonArray area = new JsonArray();
+			JsonArray point = null;
 			for (String element : areaArr) {
 				Double pointElementDouble = Double.parseDouble(element);
 				if (point == null) {
-					point = new BsonArray();
+					point = new JsonArray();
 				} else if (point.size() == 2) {
 					area.add(point);
-					point = new BsonArray();
+					point = new JsonArray();
 				}
-				point.add(new BsonDouble(pointElementDouble));
+				point.add(pointElementDouble);
 			}
 
 			if (area.size() > 2) {
-				BsonValue first = area.get(0);
+				double first = area.getDouble(0);
 				area.add(first);
 				areaDoc.put("coordinates", area);
 				return areaDoc;

@@ -5,10 +5,6 @@ import static org.oliot.epcis.converter.mongodb.MongoWriterUtil.*;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.bson.BsonArray;
-import org.bson.BsonDateTime;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -24,6 +20,9 @@ import org.oliot.model.epcis.SourceDestType;
 import org.oliot.model.epcis.SourceListType;
 import org.oliot.model.epcis.TransformationEventExtensionType;
 import org.oliot.model.epcis.TransformationEventType;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -43,31 +42,30 @@ import org.oliot.model.epcis.TransformationEventType;
 
 public class TransformationEventWriteConverter {
 
-	public BsonDocument convert(TransformationEventType transformationEventType) {
+	public JsonObject convert(TransformationEventType transformationEventType) {
 
-		BsonDocument dbo = new BsonDocument();
+		JsonObject dbo = new JsonObject();
 
-		dbo.put("eventType", new BsonString("TransformationEvent"));
+		dbo.put("eventType", "TransformationEvent");
 		// Event Time
 		if (transformationEventType.getEventTime() != null)
-			dbo.put("eventTime",
-					new BsonDateTime(transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+			dbo.put("eventTime", transformationEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (transformationEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset", new BsonString(transformationEventType.getEventTimeZoneOffset()));
+			dbo.put("eventTimeZoneOffset", transformationEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
+		dbo.put("recordTime", recordTimeMilis);
 		// Input EPCList
 		if (transformationEventType.getInputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getInputEPCList();
 			List<EPC> epcList = epcs.getEpc();
-			BsonArray epcDBList = new BsonArray();
+			JsonArray epcDBList = new JsonArray();
 
 			for (int i = 0; i < epcList.size(); i++) {
-				BsonDocument epcDB = new BsonDocument();
-				epcDB.put("epc", new BsonString(epcList.get(i).getValue()));
+				JsonObject epcDB = new JsonObject();
+				epcDB.put("epc", epcList.get(i).getValue());
 				epcDBList.add(epcDB);
 			}
 			dbo.put("inputEPCList", epcDBList);
@@ -77,70 +75,70 @@ public class TransformationEventWriteConverter {
 		if (transformationEventType.getOutputEPCList() != null) {
 			EPCListType epcs = transformationEventType.getOutputEPCList();
 			outputList = epcs.getEpc();
-			BsonArray epcDBList = new BsonArray();
+			JsonArray epcDBList = new JsonArray();
 
 			for (int i = 0; i < outputList.size(); i++) {
-				BsonDocument epcDB = new BsonDocument();
-				epcDB.put("epc", new BsonString(outputList.get(i).getValue()));
+				JsonObject epcDB = new JsonObject();
+				epcDB.put("epc", outputList.get(i).getValue());
 				epcDBList.add(epcDB);
 			}
 			dbo.put("outputEPCList", epcDBList);
 		}
 		// TransformationID
 		if (transformationEventType.getTransformationID() != null) {
-			dbo.put("transformationID", new BsonString(transformationEventType.getTransformationID()));
+			dbo.put("transformationID", transformationEventType.getTransformationID());
 		}
 		// BizStep
 		if (transformationEventType.getBizStep() != null)
-			dbo.put("bizStep", new BsonString(transformationEventType.getBizStep()));
+			dbo.put("bizStep", transformationEventType.getBizStep());
 		// Disposition
 		if (transformationEventType.getDisposition() != null)
-			dbo.put("disposition", new BsonString(transformationEventType.getDisposition()));
+			dbo.put("disposition", transformationEventType.getDisposition());
 		// ReadPoint
 		if (transformationEventType.getReadPoint() != null) {
 			ReadPointType readPointType = transformationEventType.getReadPoint();
-			BsonDocument readPoint = getReadPointObject(readPointType);
+			JsonObject readPoint = getReadPointObject(readPointType);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (transformationEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = transformationEventType.getBizLocation();
-			BsonDocument bizLocation = getBizLocationObject(bizLocationType);
+			JsonObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
 		if (transformationEventType.getBizTransactionList() != null) {
 			BusinessTransactionListType bizListType = transformationEventType.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
-			BsonArray bizTranList = getBizTransactionObjectList(bizList);
+			JsonArray bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
 		// Input Quantity List
 		if (transformationEventType.getInputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getInputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = getQuantityObjectList(qetList);
+			JsonArray quantityList = getQuantityObjectList(qetList);
 			dbo.put("inputQuantityList", quantityList);
 		}
 		// Output Quantity List
 		if (transformationEventType.getOutputQuantityList() != null) {
 			QuantityListType qetl = transformationEventType.getOutputQuantityList();
 			List<QuantityElementType> qetList = qetl.getQuantityElement();
-			BsonArray quantityList = getQuantityObjectList(qetList);
+			JsonArray quantityList = getQuantityObjectList(qetList);
 			dbo.put("outputQuantityList", quantityList);
 		}
 		// Source List
 		if (transformationEventType.getSourceList() != null) {
 			SourceListType sdtl = transformationEventType.getSourceList();
 			List<SourceDestType> sdtList = sdtl.getSource();
-			BsonArray dbList = getSourceDestObjectList(sdtList);
+			JsonArray dbList = getSourceDestObjectList(sdtList);
 			dbo.put("sourceList", dbList);
 		}
 		// Dest List
 		if (transformationEventType.getDestinationList() != null) {
 			DestinationListType sdtl = transformationEventType.getDestinationList();
 			List<SourceDestType> sdtList = sdtl.getDestination();
-			BsonArray dbList = getSourceDestObjectList(sdtList);
+			JsonArray dbList = getSourceDestObjectList(sdtList);
 			dbo.put("destinationList", dbList);
 		}
 		// ILMD
@@ -162,7 +160,7 @@ public class TransformationEventWriteConverter {
 		// Vendor Extension
 		if (transformationEventType.getAny() != null) {
 			List<Object> objList = transformationEventType.getAny();
-			BsonDocument map2Save = getAnyMap(objList);
+			JsonObject map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
@@ -171,14 +169,14 @@ public class TransformationEventWriteConverter {
 		// Extension
 		if (transformationEventType.getExtension() != null) {
 			TransformationEventExtensionType oee = transformationEventType.getExtension();
-			BsonDocument extension = getTransformationEventExtensionObject(oee);
+			JsonObject extension = getTransformationEventExtensionObject(oee);
 			dbo.put("extension", extension);
 		}
 
 		// Event ID
 		if (transformationEventType.getBaseExtension() != null) {
 			if (transformationEventType.getBaseExtension().getEventID() != null) {
-				dbo.put("eventID", new BsonString(transformationEventType.getBaseExtension().getEventID()));
+				dbo.put("eventID", transformationEventType.getBaseExtension().getEventID());
 			}
 		}
 

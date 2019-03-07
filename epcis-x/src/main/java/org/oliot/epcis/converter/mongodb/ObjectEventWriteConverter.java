@@ -5,10 +5,6 @@ import static org.oliot.epcis.converter.mongodb.MongoWriterUtil.*;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.bson.BsonArray;
-import org.bson.BsonDateTime;
-import org.bson.BsonDocument;
-import org.bson.BsonString;
 import org.oliot.model.epcis.BusinessLocationType;
 import org.oliot.model.epcis.BusinessTransactionListType;
 import org.oliot.model.epcis.BusinessTransactionType;
@@ -19,6 +15,9 @@ import org.oliot.model.epcis.ErrorDeclarationType;
 import org.oliot.model.epcis.ObjectEventExtensionType;
 import org.oliot.model.epcis.ObjectEventType;
 import org.oliot.model.epcis.ReadPointType;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * Copyright (C) 2014-2016 Jaewook Byun
@@ -38,60 +37,59 @@ import org.oliot.model.epcis.ReadPointType;
 
 public class ObjectEventWriteConverter {
 
-	public BsonDocument convert(ObjectEventType objectEventType) {
-		BsonDocument dbo = new BsonDocument();
-		dbo.put("eventType", new BsonString("ObjectEvent"));
+	public JsonObject convert(ObjectEventType objectEventType) {
+		JsonObject dbo = new JsonObject();
+		dbo.put("eventType", "ObjectEvent");
 		// Event Time
 		if (objectEventType.getEventTime() != null)
-			dbo.put("eventTime",
-					new BsonDateTime(objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis()));
+			dbo.put("eventTime", objectEventType.getEventTime().toGregorianCalendar().getTimeInMillis());
 		// Event Time Zone
 		if (objectEventType.getEventTimeZoneOffset() != null)
-			dbo.put("eventTimeZoneOffset", new BsonString(objectEventType.getEventTimeZoneOffset()));
+			dbo.put("eventTimeZoneOffset", objectEventType.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		GregorianCalendar recordTime = new GregorianCalendar();
 		long recordTimeMilis = recordTime.getTimeInMillis();
-		dbo.put("recordTime", new BsonDateTime(recordTimeMilis));
+		dbo.put("recordTime", recordTimeMilis);
 		// EPC List
 		List<EPC> epcList = null;
 		if (objectEventType.getEpcList() != null) {
 			EPCListType epcs = objectEventType.getEpcList();
 			epcList = epcs.getEpc();
-			BsonArray epcDBList = new BsonArray();
+			JsonArray epcDBList = new JsonArray();
 
 			for (int i = 0; i < epcList.size(); i++) {
-				BsonDocument epcDB = new BsonDocument();
-				epcDB.put("epc", new BsonString(epcList.get(i).getValue()));
+				JsonObject epcDB = new JsonObject();
+				epcDB.put("epc", epcList.get(i).getValue());
 				epcDBList.add(epcDB);
 			}
 			dbo.put("epcList", epcDBList);
 		}
 		// Action
 		if (objectEventType.getAction() != null)
-			dbo.put("action", new BsonString(objectEventType.getAction().name()));
+			dbo.put("action", objectEventType.getAction().name());
 		// Biz Step
 		if (objectEventType.getBizStep() != null)
-			dbo.put("bizStep", new BsonString(objectEventType.getBizStep()));
+			dbo.put("bizStep", objectEventType.getBizStep());
 		// Disposition
 		if (objectEventType.getDisposition() != null)
-			dbo.put("disposition", new BsonString(objectEventType.getDisposition()));
+			dbo.put("disposition", objectEventType.getDisposition());
 		// Read Point
 		if (objectEventType.getReadPoint() != null) {
 			ReadPointType readPointType = objectEventType.getReadPoint();
-			BsonDocument readPoint = getReadPointObject(readPointType);
+			JsonObject readPoint = getReadPointObject(readPointType);
 			dbo.put("readPoint", readPoint);
 		}
 		// BizLocation
 		if (objectEventType.getBizLocation() != null) {
 			BusinessLocationType bizLocationType = objectEventType.getBizLocation();
-			BsonDocument bizLocation = getBizLocationObject(bizLocationType);
+			JsonObject bizLocation = getBizLocationObject(bizLocationType);
 			dbo.put("bizLocation", bizLocation);
 		}
 		// BizTransaction
 		if (objectEventType.getBizTransactionList() != null) {
 			BusinessTransactionListType bizListType = objectEventType.getBizTransactionList();
 			List<BusinessTransactionType> bizList = bizListType.getBizTransaction();
-			BsonArray bizTranList = getBizTransactionObjectList(bizList);
+			JsonArray bizTranList = getBizTransactionObjectList(bizList);
 			dbo.put("bizTransactionList", bizTranList);
 		}
 
@@ -107,7 +105,7 @@ public class ObjectEventWriteConverter {
 		// Vendor Extension
 		if (objectEventType.getAny() != null) {
 			List<Object> objList = objectEventType.getAny();
-			BsonDocument map2Save = getAnyMap(objList);
+			JsonObject map2Save = getAnyMap(objList);
 			if (map2Save != null && map2Save.isEmpty() == false)
 				dbo.put("any", map2Save);
 
@@ -116,14 +114,14 @@ public class ObjectEventWriteConverter {
 		// Extension
 		if (objectEventType.getExtension() != null) {
 			ObjectEventExtensionType oee = objectEventType.getExtension();
-			BsonDocument extension = getObjectEventExtensionObject(oee, epcList);
+			JsonObject extension = getObjectEventExtensionObject(oee, epcList);
 			dbo.put("extension", extension);
 		}
 
 		// Event ID
 		if (objectEventType.getBaseExtension() != null) {
 			if (objectEventType.getBaseExtension().getEventID() != null) {
-				dbo.put("eventID", new BsonString(objectEventType.getBaseExtension().getEventID()));
+				dbo.put("eventID", objectEventType.getBaseExtension().getEventID());
 			}
 		}
 
