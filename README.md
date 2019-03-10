@@ -44,9 +44,11 @@
 
 ### Organizations and Projects disclosing their usage ###
 > Auto-ID Labs, KAIST [Link](http://autoidlab.kaist.ac.kr/)
+
 > BIBA - Bremer Institut für Produktion und Logistik GmbH (an affiliate institute of the University of Bremen, Germany)
 
 > IoF 2020 (EU Horizon 2020 Project) [Link](https://www.iof2020.eu/)
+
 > NIMBLE (EU Horizon 2020 Project) [Link](https://www.nimble-project.org/)
 
 ### Contact ###
