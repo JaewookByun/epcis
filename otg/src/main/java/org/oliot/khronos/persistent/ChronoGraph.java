@@ -179,8 +179,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * is referenced by that identifier, then return null (Not happen in
 	 * ChronoGraph).
 	 *
-	 * @param id
-	 *            the identifier of the vertex to retrieved from the graph v(id)
+	 * @param id the identifier of the vertex to retrieved from the graph v(id)
 	 * @return the vertex referenced by the provided identifier or null when no such
 	 *         vertex exists
 	 */
@@ -201,8 +200,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * Remove the provided vertex from the graph. Upon removing the vertex, all the
 	 * edges by which the vertex is connected must be removed as well.
 	 * 
-	 * @param vertex
-	 *            the vertex to remove from the graph
+	 * @param vertex the vertex to remove from the graph
 	 */
 	public void removeVertex(ChronoVertex vertex) {
 		BsonDocument filter = new BsonDocument();
@@ -370,10 +368,8 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * use indexing structures to make this efficient else a full vertex-filter scan
 	 * is required.
 	 * 
-	 * @param key
-	 *            the key of vertex
-	 * @param value
-	 *            the value of the vertex
+	 * @param key   the key of vertex
+	 * @param value the value of the vertex
 	 * @return an iterable of vertices with provided key and value
 	 */
 	public Iterable<ChronoVertex> getChronoVertices(String key, Object value) {
@@ -398,10 +394,8 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * use indexing structures to make this efficient else a full vertex-filter scan
 	 * is required.
 	 * 
-	 * @param key
-	 *            the key of vertex
-	 * @param value
-	 *            the value of the vertex
+	 * @param key   the key of vertex
+	 * @param value the value of the vertex
 	 * @return an iterable of vertices with provided key and value
 	 */
 	public Set<ChronoVertex> getChronoVertexSet(String key, Object value) {
@@ -422,15 +416,13 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * Geospatial query
 	 * 
-	 * @param key
-	 *            should be indexed by 2dsphere
-	 *            db.vertices.createIndex({"urn:oliot:ubv:mda:gps" : "2dsphere"})
+	 * @param key    should be indexed by 2dsphere
+	 *               db.vertices.createIndex({"urn:oliot:ubv:mda:gps" : "2dsphere"})
 	 * @param lon
 	 * @param lat
-	 * @param radius
-	 *            in metres db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near : {
-	 *            $geometry: { type: "Point", coordinates: [ -1.1673,52.93]},
-	 *            $maxDistance: 50000}}})
+	 * @param radius in metres db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near
+	 *               : { $geometry: { type: "Point", coordinates: [ -1.1673,52.93]},
+	 *               $maxDistance: 50000}}})
 	 * 
 	 * @return
 	 */
@@ -478,15 +470,13 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * Geospatial query
 	 * 
-	 * @param key
-	 *            should be indexed by 2dsphere
-	 *            db.vertices.createIndex({"urn:oliot:ubv:mda:gps" : "2dsphere"})
+	 * @param key    should be indexed by 2dsphere
+	 *               db.vertices.createIndex({"urn:oliot:ubv:mda:gps" : "2dsphere"})
 	 * @param lon
 	 * @param lat
-	 * @param radius
-	 *            in metres db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near : {
-	 *            $geometry: { type: "Point", coordinates: [ -1.1673,52.93]},
-	 *            $maxDistance: 50000}}})
+	 * @param radius in metres db.vertices.find({ "urn:oliot:ubv:mda:gps" : { $near
+	 *               : { $geometry: { type: "Point", coordinates: [ -1.1673,52.93]},
+	 *               $maxDistance: 50000}}})
 	 * 
 	 * @return
 	 */
@@ -539,12 +529,9 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * a tail vertex, an head vertex, and a label. Like adding a vertex, the
 	 * provided object identifier may be ignored by the implementation.
 	 * 
-	 * @param outVertexID:
-	 *            the vertex on the tail of the edge
-	 * @param inVertexID:
-	 *            the vertex on the head of the edge
-	 * @param label:
-	 *            the label associated with the edge
+	 * @param outVertexID: the vertex on the tail of the edge
+	 * @param inVertexID: the vertex on the head of the edge
+	 * @param label: the label associated with the edge
 	 * @return the newly created edge
 	 */
 	public ChronoEdge addEdge(final String outVertexID, final String inVertexID, final String label) {
@@ -569,8 +556,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * 
 	 * @see: outV|label|inV is unique in ChronoGraph. this operation does not permit
 	 *       duplicated edges
-	 * @param edges
-	 *            use with Converter.getBsonDocumentEdge
+	 * @param edges use with Converter.getBsonDocumentEdge
 	 */
 	public void addEdges(List<BsonDocument> edgeArray) {
 		while (true) {
@@ -593,8 +579,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * a tail vertex, an head vertex, and a label. Like adding a vertex, the
 	 * provided object identifier may be ignored by the implementation.
 	 * 
-	 * @param id:
-	 *            outVertexID|label|inVertexID
+	 * @param id: outVertexID|label|inVertexID
 	 */
 	public ChronoEdge getEdge(String id) {
 		if (id == null)
@@ -615,8 +600,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * Remove the provided edge from the graph.
 	 *
-	 * @param edge
-	 *            the edge to remove from the graph
+	 * @param edge the edge to remove from the graph
 	 */
 	public void removeEdge(final String edgeID) {
 		BsonDocument filter = new BsonDocument();
@@ -632,8 +616,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * Remove the provided edge from the graph.
 	 *
-	 * @param edge
-	 *            the edge to remove from the graph
+	 * @param edge the edge to remove from the graph
 	 */
 	public void removeEdge(final ChronoEdge edge) {
 		BsonDocument filter = new BsonDocument();
@@ -731,10 +714,8 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * use indexing structures to make this efficient else a full edge-filter scan
 	 * is required.
 	 * 
-	 * @param key
-	 *            the key of the edge
-	 * @param value
-	 *            the value of the edge
+	 * @param key   the key of the edge
+	 * @param value the value of the edge
 	 * @return an iterable of edges with provided key and value
 	 */
 	public Iterable<ChronoEdge> getChronoEdges(String key, Object value) {
@@ -758,10 +739,8 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * use indexing structures to make this efficient else a full edge-filter scan
 	 * is required.
 	 * 
-	 * @param key
-	 *            the key of the edge
-	 * @param value
-	 *            the value of the edge
+	 * @param key   the key of the edge
+	 * @param value the value of the edge
 	 * @return an iterable of edges with provided key and value
 	 */
 	public Set<ChronoEdge> getChronoEdgeSet(String key, Object value) {
@@ -877,6 +856,7 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * @return readable string
 	 */
+	@SuppressWarnings("deprecation")
 	public String toString() {
 		return this.mongoDatabase.getName() + " database connected to " + this.mongoClient.getAddress();
 	}
@@ -893,14 +873,10 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * Extension: only support ChronoVertex add temporal property into the vertex
 	 * for same timestamp & key to the existing property, replace the value
 	 * 
-	 * @param id:
-	 *            unique vertex id
-	 * @param timestamp:
-	 *            unix epoch
-	 * @param key:
-	 *            property key for the given timestamp
-	 * @param value:
-	 *            property value for the given timestamp
+	 * @param id: unique vertex id
+	 * @param timestamp: unix epoch
+	 * @param key: property key for the given timestamp
+	 * @param value: property value for the given timestamp
 	 * @return updated Vertex
 	 */
 	public ChronoVertex addTimestampVertexProperty(final String id, final Long timestamp, final String key,
@@ -914,18 +890,12 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * Extension: only support ChronoEdge, add temporal property into the edge for
 	 * same timestamp & key to the existing property, replace the value
 	 * 
-	 * @param outVertexID:
-	 *            unique out vertex id
-	 * @param inVertexID:
-	 *            unique in vertex id
-	 * @param label:
-	 *            edge label
-	 * @param timestamp:
-	 *            unix epoch
-	 * @param key:
-	 *            property key for the given timestamp
-	 * @param value:
-	 *            property value for the given timestamp
+	 * @param outVertexID: unique out vertex id
+	 * @param inVertexID: unique in vertex id
+	 * @param label: edge label
+	 * @param timestamp: unix epoch
+	 * @param key: property key for the given timestamp
+	 * @param value: property value for the given timestamp
 	 * @return updated edge
 	 */
 	public ChronoEdge addTimestampEdgeProperty(final String outVertexID, final String inVertexID, final String label,
@@ -976,12 +946,9 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * Remove an automatic indexing structure associated with indexing provided key
 	 * for element class.
 	 *
-	 * @param key
-	 *            the key to drop the index for
-	 * @param elementClass
-	 *            the element class that the index is for
-	 * @param <T>
-	 *            the element class specification
+	 * @param key          the key to drop the index for
+	 * @param elementClass the element class that the index is for
+	 * @param              <T> the element class specification
 	 */
 	@Override
 	public <T extends Element> void dropKeyIndex(String key, Class<T> elementClass) {
@@ -998,17 +965,14 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	 * Create an automatic indexing structure for indexing provided key for element
 	 * class.
 	 *
-	 * @param key
-	 *            the key to create the index for
+	 * @param key             the key to create the index for
 	 * 
-	 *            (auto-generated) _[key]_ or (_[key]_(-1|1))*
+	 *                        (auto-generated) _[key]_ or (_[key]_(-1|1))*
 	 * 
-	 * @param elementClass
-	 *            the element class that the index is for
-	 * @param indexParameters
-	 *            a collection of parameters for the underlying index implementation
-	 * @param <T>
-	 *            the element class specification
+	 * @param elementClass    the element class that the index is for
+	 * @param indexParameters a collection of parameters for the underlying index
+	 *                        implementation
+	 * @param                 <T> the element class specification
 	 */
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -1027,12 +991,10 @@ public class ChronoGraph implements Graph, KeyIndexableGraph {
 	/**
 	 * Return all the index keys associated with a particular element class.
 	 *
-	 * @param elementClass:
-	 *            class that the index is for
-	 *            (ChronoVertex|ChronoEdge|VertexEvent|EdgeEvent) the element
+	 * @param elementClass: class that the index is for
+	 *        (ChronoVertex|ChronoEdge|VertexEvent|EdgeEvent) the element
 	 * 
-	 * @param <T>
-	 *            the element class specification
+	 * @param <T> the element class specification
 	 * @return the indexed keys as a Set in [database].[collection]
 	 * 
 	 *         _[key]_ or (_[key]_(-1|1))*

@@ -332,7 +332,6 @@ public class VertexEvent implements Element {
 			String outV = d.getString(Tokens.OUT_VERTEX).getValue();
 			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
 			if (map.containsKey(outV)) {
-				// TODO:
 				if (map.get(outV) > t)
 					map.put(outV, t);
 			} else
@@ -353,7 +352,6 @@ public class VertexEvent implements Element {
 			String inV = d.getString(Tokens.IN_VERTEX).getValue();
 			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
 			if (map.containsKey(inV)) {
-				// TODO:
 				if (map.get(inV) > t)
 					map.put(inV, t);
 			} else
@@ -384,7 +382,6 @@ public class VertexEvent implements Element {
 			String inV = d.getString(Tokens.IN_VERTEX).getValue();
 			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
 			if (map.containsKey(inV)) {
-				// TODO:
 				if (map.get(inV) > t)
 					map.put(inV, t);
 			} else
@@ -415,7 +412,6 @@ public class VertexEvent implements Element {
 			String outV = d.getString(Tokens.OUT_VERTEX).getValue();
 			Long t = d.getDateTime(Tokens.TIMESTAMP).getValue();
 			if (map.containsKey(outV)) {
-				// TODO:
 				if (map.get(outV) > t)
 					map.put(outV, t);
 			} else
@@ -510,7 +506,6 @@ public class VertexEvent implements Element {
 				vertex.graph.getEdgeEvents().aggregate(aggregateQuery).map(mapper).into(ret);
 				return ret;
 
-				// TODO: PoC
 				// db.edges.createIndex({"_outV" : 1, "_t" : 1, "_inV" : 1})
 				// db.EventData.createIndex({"inputEPCList.epc":1})
 				// BsonDocument query = new BsonDocument(Tokens.OUT_VERTEX, new
@@ -657,7 +652,6 @@ public class VertexEvent implements Element {
 
 	@Override
 	public <T> T removeProperty(String key) {
-		// TODO:
 		return vertex.removeProperty(key);
 	}
 

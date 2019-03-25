@@ -139,10 +139,10 @@
 								.val(
 										'http://'
 												+ location.host
-												+ '/epcgraph/Service/ParameterizedEventCapture?');
+												+ '/otg/Service/ParameterizedEventCapture?');
 
 						systemInfoURL = 'http://' + location.host
-								+ '/epcgraph/Service/Admin/SystemInformation';
+								+ '/otg/Service/Admin/SystemInformation';
 						$
 								.ajax({
 									type : "GET",
@@ -239,8 +239,8 @@
 					<input id="sysInfoResp" type="text" class="form-control" disabled
 						placeholder="System Information..."> <input
 						id="captureURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/ParameterizedEventCapture"
-						placeholder="http://localhost:8080/epcgraph/Service/ParameterizedEventCapture">
+						value="http://localhost:8080/otg/Service/ParameterizedEventCapture"
+						placeholder="http://localhost:8080/otg/Service/ParameterizedEventCapture">
 					<input id="captureParams" type="text" class="form-control"
 						placeholder="Insert a parameterized event...">
 					<h4>Event/Vocabulary Capture</h4>

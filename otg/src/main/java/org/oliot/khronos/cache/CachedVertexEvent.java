@@ -252,7 +252,6 @@ public class CachedVertexEvent implements Element {
 
 	@Override
 	public <T> T removeProperty(String key) {
-		// TODO:
 		return vertex.removeProperty(key);
 	}
 

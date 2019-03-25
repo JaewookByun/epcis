@@ -1498,7 +1498,6 @@ public class OrientTraversalEngine {
 
 			// Update Path ( Filter if any last elements of each path are not
 			// included in intermediate )
-			// TODO:
 			// currentPath.keySet().retainAll(intermediate);
 
 			// Make stream again

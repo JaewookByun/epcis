@@ -41,20 +41,20 @@
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcgraph/Service/Subscribe/SimpleEventQuery/{subscriptionID}?");
+												+ "/otg/Service/Subscribe/SimpleEventQuery/{subscriptionID}?");
 						$('#unsubscribeURL')
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcgraph/Service/Unsubscribe/{subscriptionID}");
+												+ "/otg/Service/Unsubscribe/{subscriptionID}");
 						$('#getSubscriptionIDsURL')
 								.val(
 										"http://"
 												+ location.host
-												+ "/epcgraph/Service/GetSubscriptionIDs/SimpleEventQuery");
+												+ "/otg/Service/GetSubscriptionIDs/SimpleEventQuery");
 
 						systemInfoURL = 'http://' + location.host
-								+ '/epcgraph/Service/Admin/SystemInformation';
+								+ '/otg/Service/Admin/SystemInformation';
 						$
 								.ajax({
 									type : "GET",
@@ -183,22 +183,22 @@
 					<input id="sysInfoResp" type="text" class="form-control" disabled
 						placeholder="System Information..."> <input
 						id="pollBaseURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/Subscribe/SimpleEventQuery/{subscriptionID}?"
-						placeholder="http://localhost:8080/epcgraph/Service/Subscribe/SimpleEventQuery/{subscriptionID}">
+						value="http://localhost:8080/otg/Service/Subscribe/SimpleEventQuery/{subscriptionID}?"
+						placeholder="http://localhost:8080/otg/Service/Subscribe/SimpleEventQuery/{subscriptionID}">
 					<input id="pollParam" type="text" class="form-control"
 						placeholder="SUBSCRIBE + POLL PARAMETERS">
 					<button type="button" class="btn btn-info" onclick="subscribe()">Subscribe
 						SimpleEventQuery</button>
 
 					<input id="unsubscribeURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/Unsubscribe/{subscriptionID}"
-						placeholder="http://localhost:8080/epcgraph/Service/Unsubscribe/{subscriptionID}">
+						value="http://localhost:8080/otg/Service/Unsubscribe/{subscriptionID}"
+						placeholder="http://localhost:8080/otg/Service/Unsubscribe/{subscriptionID}">
 					<button type="button" class="btn btn-success"
 						onclick="unsubscribe()">Unsubscribe</button>
 
 					<input id="getSubscriptionIDsURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/GetSubscriptionIDs/SimpleEventQuery"
-						placeholder="localhost:8080/epcgraph/Service/GetSubscriptionIDs/SimpleEventQuery">
+						value="http://localhost:8080/otg/Service/GetSubscriptionIDs/SimpleEventQuery"
+						placeholder="localhost:8080/otg/Service/GetSubscriptionIDs/SimpleEventQuery">
 					<button type="button" class="btn btn-success"
 						onclick="getSubscriptionIDs()">Get Subscription IDs</button>
 				</div>
@@ -226,14 +226,14 @@
 								<li class="list-group-item">Return events/vocabularies
 									stored in the EPCIS repository in interest immediately</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/Poll/{queryName}</li>
+									http://{base-url}:{base-port}/otg/Service/Poll/{queryName}</li>
 								<li class="list-group-item"><h4>Parameters for
 										subscription :</h4>
 									<button type="button" class="btn btn-warning">{queryName}==SimpleEventQuery</button>
 									<div class="input-group input-group-sm">
 										<span class="input-group-addon" id="basic-addon3">dest</span>
 										<input id="dest" type="text" class="form-control"
-											value="http://localhost:8080/epcgraph/SubscriptionTestServlet"
+											value="http://localhost:8080/otg/SubscriptionTestServlet"
 											placeholder="URL" aria-describedby="basic-addon3"
 											onkeydown="if (event.keyCode == 13) addParam('dest')">
 										<span class="input-group-btn" aria-describedby="basic-addon3">
@@ -789,7 +789,7 @@
 								<li class="list-group-item">Removes a previously registered
 									subscription having the specified subscriptionID.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/Unsubscribe/{subscriptionID}</li>
+									http://{base-url}:{base-port}/otg/Service/Unsubscribe/{subscriptionID}</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
@@ -803,7 +803,7 @@
 									subscriptionIDs currently subscribed to the specified named
 									query.</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/GetSubscriptionIDs/{queryName}</li>
+									http://{base-url}:{base-port}/otg/Service/GetSubscriptionIDs/{queryName}</li>
 								<li class="list-group-item">Return: [ {SubscriptionIDs} ]</li>
 							</ul>
 						</td>

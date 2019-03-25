@@ -1035,7 +1035,6 @@ public class TraceabilityQueryService implements ServletContextAware {
 		// + "engine.out(null, Integer.MAX_VALUE);" +
 		// "System.out.println(engine.toList());");
 		// } catch (ScriptException e) {
-		// // TODO Auto-generated catch block
 		// e.printStackTrace();
 		// }
 
