@@ -1,0 +1,23 @@
+{
+    "epcismd": {
+        "EPCISBody": {
+            "VocabularyList": [{
+                "Vocabulary": [{
+                    "id": "urn:epc:idpat:sgtin:0614141.812345.*",
+                    "type": "urn:epcglobal:epcis:vtype:EPCClass",
+                    "attributes": {
+                        "http://epcis．example．com/mda/kiloweight": "12",
+                        "http://epcis．example．com/mda/price": "15000"
+                    }
+                }, {
+                    "id": "urn:epc:class:lgtin:0614141.812345.4222",
+                    "type": "urn:epcglobal:epcis:vtype:EPCClass",
+                    "attributes": {
+                        "http://epcis．example．com/mda/kiloweight": "35",
+                        "http://epcis．example．com/mda/price": "28000"
+                    }
+                }]
+            }]
+        }
+    }
+}

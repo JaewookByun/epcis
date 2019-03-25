@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<ns2:ECReports terminationCondition="WhenDataAvailable"
+	totalMilliseconds="2076" ALEID="ETHZ-ALE-1579908688" date="2017-01-25T07:46:36.554Z"
+	specName="test" creationDate="2017-01-25T07:46:36.554Z" schemaVersion="1.1"
+	xmlns:ns2="urn:epcglobal:ale:xsd:1">
+	<reports>
+		<report reportName="report1">
+			<group>
+				<groupList>
+					<member>
+						<epc>urn:epc:id:sgtin:0693472.058672.137438953501</epc>
+						<tag>urn:epc:tag:sgtin-96:3.0693472.058672.137438953501</tag>
+						<rawHex>urn:epc:raw:96.x30742A5380394C200000001D</rawHex>
+						<rawDecimal>urn:epc:raw:96.14995715746211398736897114141</rawDecimal>
+						<extension>
+							<fieldList>
+								<field>
+									<name>stringValue</name>
+									<value>YourString</value>
+								</field>
+								<field>
+									<name>integerValue</name>
+									<value>53^int</value>
+								</field>
+								<field>
+									<name>doubleValue</name>
+									<value>53.5^double</value>
+								</field>
+								<field>
+									<name>booleanValue</name>
+									<value>true^boolean</value>
+								</field>
+								<field>
+									<name>dateTimeValue</name>
+									<value>1488512718^dateTime</value>
+								</field>
+							</fieldList>
+						</extension>
+					</member>
+				</groupList>
+			</group>
+		</report>
+	</reports>
+</ns2:ECReports>

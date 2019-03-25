@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE project>
+<epcis:EPCISDocument schemaVersion="1.2"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:demo="http://ns.example.com/epcis" creationDate="2013-06-04T14:59:02.099+02:00"
+	xmlns:epcis="urn:epcglobal:epcis:xsd:1">
+	<EPCISBody>
+		<EventList>
+			<TransactionEvent>
+				<!-- The time when a cow is sold -->
+				<eventTime>2017-01-01T00:00:00.000-08:00</eventTime>
+				<!-- in California time zone -->
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<bizTransactionList>
+					<bizTransaction type="urn:epcglobal:cbv:btt:po">
+						http://transaction.acme.com/po/12345678
+					</bizTransaction>
+				</bizTransactionList>
+				<!-- The cow -->
+				<epcList>
+					<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+				</epcList>
+				<action>OBSERVE</action>
+				<!-- Ranch -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000001.00001.1</id>
+				</bizLocation>
+				<!-- Ownership Transfer from a ranch to a canning factory -->
+				<extension>
+					<sourceList>
+						<source type="urn:epcglobal:cbv:sdt:owning_party">
+							urn:epc:id:sgln:0000001.00001.1</source>
+					</sourceList>
+					<destinationList>
+						<destination type="urn:epcglobal:cbv:sdt:owning_party">
+							urn:epc:id:sgln:0000003.00001.1</destination>
+					</destinationList>
+				</extension>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-112.158897, 34.445473^geoPoint</demo:location>
+			</TransactionEvent>
+			<AggregationEvent>
+				<!-- The time when the cow is locaded into the truck -->
+				<eventTime>2017-01-01T00:01:00.000-08:00</eventTime>
+				<eventTimeZoneOffset>-08:00</eventTimeZoneOffset>
+				<!-- A Truck -->
+				<parentID>urn:epc:id:sscc:0000002.0000000001</parentID>
+				<!-- The cow -->
+				<childEPCs>
+					<epc>urn:epc:id:sgtin:0000001.000001.1</epc>
+				</childEPCs>
+				<action>ADD</action>
+				<!-- The cow is loaded into the truck -->
+				<bizStep>urn:epcglobal:cbv:bizstep:loading</bizStep>
+				<!-- Ranch -->
+				<bizLocation>
+					<id>urn:epc:id:sgln:0000001.00001.1</id>
+				</bizLocation>
+				<!-- Geospatial support of Oliot EPCIS (longitude,latitude^geoPoint) -->
+				<demo:location>-112.158897, 34.445473^geoPoint</demo:location>
+			</AggregationEvent>
+		</EventList>
+	</EPCISBody>
+</epcis:EPCISDocument>
