@@ -366,7 +366,7 @@ public class MongoQueryService {
 			// foramt == JSON -> Do Nothing
 		}
 
-		// // TODO:
+		
 		// ChronoGraph g = Configuration.persistentGraph;
 		//
 		// Long startTime = 0l;
@@ -447,7 +447,6 @@ public class MongoQueryService {
 			// foramt == JSON -> Do Nothing
 		}
 
-		// // TODO:
 		// ChronoGraph g = Configuration.persistentGraph;
 		//
 		// Long startTime = 0l;
@@ -686,16 +685,12 @@ public class MongoQueryService {
 			// System.out.println(out.toString());
 			//
 			// } catch (ParserConfigurationException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// } catch (SAXException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// } catch (TransformerException e) {
-			// // TODO Auto-generated catch block
 			// e.printStackTrace();
 			// }
 

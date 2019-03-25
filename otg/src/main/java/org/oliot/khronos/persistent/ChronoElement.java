@@ -84,8 +84,7 @@ abstract class ChronoElement implements Element {
 	 * Return the object value associated with the provided string key. If no value
 	 * exists for that key, return null.
 	 *
-	 * @param key
-	 *            the key of the key/value property, Tokens.ID, Tokens.LABEL,
+	 * @param key the key of the key/value property, Tokens.ID, Tokens.LABEL,
 	 *            Tokens.OUT_VERTEX, Tokens.IN_VERTEX included
 	 * @return the object value related to the string key
 	 */
@@ -145,6 +144,7 @@ abstract class ChronoElement implements Element {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void setProperties(final BsonDocument properties) {
 		if (properties == null)
 			return;
@@ -164,8 +164,7 @@ abstract class ChronoElement implements Element {
 	 * Un-assigns a key/value property from the element. The object value of the
 	 * removed property is returned.
 	 *
-	 * @param key
-	 *            the key of the property to remove from the element
+	 * @param key the key of the property to remove from the element
 	 * @return the object value associated with that key prior to removal. Should be
 	 *         instance of BsonValue
 	 */
@@ -204,6 +203,7 @@ abstract class ChronoElement implements Element {
 	/**
 	 * Clear Static Properties
 	 */
+	@SuppressWarnings("deprecation")
 	public void clearStaticProperties() {
 		BsonDocument filter = new BsonDocument();
 		filter.put(Tokens.ID, new BsonString(this.id));
@@ -342,9 +342,8 @@ abstract class ChronoElement implements Element {
 	public TreeSet<Long> getTimestamps() {
 		TreeSet<Long> timestampPropertyKeys = new TreeSet<Long>();
 		if (this instanceof ChronoVertex) {
-			MongoCursor<BsonDocument> cursor = graph
-					.getVertexEvents().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
-							.append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP))
+			MongoCursor<BsonDocument> cursor = graph.getVertexEvents().find(
+					new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TYPE, Tokens.TYPE_TIMESTAMP))
 					.projection(Tokens.PRJ_ONLY_TIMESTAMP).iterator();
 			while (cursor.hasNext()) {
 				BsonDocument doc = cursor.next();
@@ -427,9 +426,8 @@ abstract class ChronoElement implements Element {
 		}
 
 		if (this instanceof ChronoVertex)
-			return graph.getVertexEvents()
-					.find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id)).append(Tokens.TIMESTAMP, new BsonDateTime(timestamp)))
-					.projection(bsonProjection).first();
+			return graph.getVertexEvents().find(new BsonDocument(Tokens.VERTEX, new BsonString(this.id))
+					.append(Tokens.TIMESTAMP, new BsonDateTime(timestamp))).projection(bsonProjection).first();
 		else
 			return graph.getEdgeCollection()
 					.find(new BsonDocument(Tokens.ID, new BsonString(this.id + "-" + timestamp)))

@@ -421,7 +421,6 @@ public class EdgeEvent implements Element {
 
 	@Override
 	public <T> T removeProperty(String key) {
-		// TODO:
 		return removeProperty(key);
 	}
 
