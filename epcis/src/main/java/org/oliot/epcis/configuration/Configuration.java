@@ -69,7 +69,7 @@ public class Configuration implements ServletContextListener {
 		} catch (SchedulerException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	@Override
@@ -198,16 +198,12 @@ public class Configuration implements ServletContextListener {
 			}
 
 			epcis_id = id.trim();
-			
+
 			// Set Redis Database for caching
-			//11. (Yalew Cache)
-			jedisClient = new Jedis("localhost"); 
-		    System.out.println("Connection to server sucessfully"); 
-		    //set the data in redis string 
-			
-		    
-			
-			
+			// 11. (Yalew Cache)
+			jedisClient = new Jedis("localhost");
+			System.out.println("Connecting to server is successful");
+			// set the data in redis string
 
 		} catch (Exception ex) {
 			Configuration.logger.error(ex.toString());
@@ -239,6 +235,7 @@ public class Configuration implements ServletContextListener {
 	 * 
 	 * @param dbname
 	 */
+	@SuppressWarnings("deprecation")
 	public static void dropMongoDB() {
 		mongoClient.dropDatabase(databaseName);
 	}
