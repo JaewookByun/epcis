@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.oliot.epcis.service.subscription.MongoSubscription;
 import org.oliot.khronos.persistent.ChronoGraph;
+import org.quartz.SchedulerException;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -65,7 +66,12 @@ public class Configuration implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-
+		mongoClient.close();
+		try {
+			MongoSubscription.sched.shutdown();
+		} catch (SchedulerException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -226,7 +232,7 @@ public class Configuration implements ServletContextListener {
 		mongoDatabase = mongoClient.getDatabase(databaseName);
 
 		persistentGraph = new ChronoGraph(backend_ip, backend_port, databaseName);
-		persistentGraphData = new ChronoGraph(backend_ip, backend_port, databaseName+"-data");
+		persistentGraphData = new ChronoGraph(backend_ip, backend_port, databaseName + "-data");
 	}
 
 	/**
@@ -234,6 +240,7 @@ public class Configuration implements ServletContextListener {
 	 * 
 	 * @param dbname
 	 */
+	@SuppressWarnings("deprecation")
 	public static void dropMongoDB() {
 		mongoClient.dropDatabase(databaseName);
 	}

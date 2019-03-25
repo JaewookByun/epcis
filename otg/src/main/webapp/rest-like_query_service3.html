@@ -35,10 +35,10 @@
 <script>
 
 	$(document).ready(function() {
-		$('#pollBaseURL').val("http://"+location.host+"/epcgraph/Service/Poll/NamedEventQuery/{name}");
-		$('#getNamedEventQueries').val("http://"+location.host+"/epcgraph/Service/Admin/NamedEventQuery");
+		$('#pollBaseURL').val("http://"+location.host+"/otg/Service/Poll/NamedEventQuery/{name}");
+		$('#getNamedEventQueries').val("http://"+location.host+"/otg/Service/Admin/NamedEventQuery");
 		
-		systemInfoURL = 'http://'+location.host+'/epcgraph/Service/Admin/SystemInformation';
+		systemInfoURL = 'http://'+location.host+'/otg/Service/Admin/SystemInformation';
 		$.ajax({
 			type : "GET",
 			url : systemInfoURL
@@ -112,14 +112,14 @@
 					<input id="sysInfoResp" type="text" class="form-control" disabled
 						placeholder="System Information...">
 					<input id="pollBaseURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?"
-						placeholder="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery">
+						value="http://localhost:8080/otg/Service/Poll/SimpleEventQuery?"
+						placeholder="http://localhost:8080/otg/Service/Poll/SimpleEventQuery">
 					<button type="button" class="btn btn-info" onclick="poll()">Poll
 						SimpleEventQuery</button>
 					<br> <br> <input id="getNamedEventQueries" type="text"
 						class="form-control"
-						value="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery"
-						placeholder="http://localhost:8080/epcgraph/Service/Admin/NamedEventQuery">
+						value="http://localhost:8080/otg/Service/Admin/NamedEventQuery"
+						placeholder="http://localhost:8080/otg/Service/Admin/NamedEventQuery">
 					<button type="button" class="btn btn-success"
 						onclick="getNamedEventQueries()">Get NamedEventQueries</button>
 				</div>
@@ -146,7 +146,7 @@
 							<ul class="list-group">
 								<li class="list-group-item">Return events stored in the EPCIS repository in interest immediately</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>URL:
-									http://{base-url}:{base-port}/epcgraph/Service/Poll/SimpleEventQuery/{name}</li>
+									http://{base-url}:{base-port}/otg/Service/Poll/SimpleEventQuery/{name}</li>
 								<li class="list-group-item">Parameters: <br>
 									{name} : The name of NamedEventQuery
 								</li>
@@ -159,7 +159,7 @@
 							<ul class="list-group">
 								<li class="list-group-item">Return existing NamedEventQueries</li>
 								<li class="list-group-item"><code>HTTP.GET</code><br>URL:
-									http://{base-url}:{base-port}/epcgraph/Service/Admin/NamedEventQuery</li>
+									http://{base-url}:{base-port}/otg/Service/Admin/NamedEventQuery</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>

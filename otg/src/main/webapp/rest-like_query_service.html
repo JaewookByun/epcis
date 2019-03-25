@@ -38,19 +38,19 @@
 			function() {
 				$('#pollBaseURL').val(
 						"http://" + location.host
-								+ "/epcgraph/Service/Poll/SimpleEventQuery?");
+								+ "/otg/Service/Poll/SimpleEventQuery?");
 				$('#getStandardVersionURL').val(
 						"http://" + location.host
-								+ "/epcgraph/Service/GetStandardVersion");
+								+ "/otg/Service/GetStandardVersion");
 				$('#getVendorVersionURL').val(
 						"http://" + location.host
-								+ "/epcgraph/Service/GetVendorVersion");
+								+ "/otg/Service/GetVendorVersion");
 				$('#getQueryNamesURL').val(
 						"http://" + location.host
-								+ "/epcgraph/Service/GetQueryNames");
+								+ "/otg/Service/GetQueryNames");
 
 				systemInfoURL = 'http://' + location.host
-						+ '/epcgraph/Service/Admin/SystemInformation';
+						+ '/otg/Service/Admin/SystemInformation';
 				$.ajax({
 					type : "GET",
 					url : systemInfoURL
@@ -185,8 +185,8 @@
 					<input id="sysInfoResp" type="text" class="form-control" disabled
 						placeholder="System Information..."> <input
 						id="pollBaseURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery?"
-						placeholder="http://localhost:8080/epcgraph/Service/Poll/SimpleEventQuery">
+						value="http://localhost:8080/otg/Service/Poll/SimpleEventQuery?"
+						placeholder="http://localhost:8080/otg/Service/Poll/SimpleEventQuery">
 					<input id="pollParam" type="text" class="form-control"
 						placeholder="POLL PARAMETERS">
 					<button type="button" class="btn btn-info" onclick="poll()">Poll
@@ -195,20 +195,20 @@
 						Params</button>
 					<br> <br> <input id="getStandardVersionURL" type="text"
 						class="form-control"
-						value="http://localhost:8080/epcgraph/Service/GetStandardVersion"
-						placeholder="http://localhost:8080/epcgraph/Service/GetStandardVersion">
+						value="http://localhost:8080/otg/Service/GetStandardVersion"
+						placeholder="http://localhost:8080/otg/Service/GetStandardVersion">
 					<button type="button" class="btn btn-success"
 						onclick="getStandardVersion()">Get Standard Version</button>
 
 					<input id="getVendorVersionURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/GetVendorVersion"
-						placeholder="http://localhost:8080/epcgraph/Service/GetVendorVersion">
+						value="http://localhost:8080/otg/Service/GetVendorVersion"
+						placeholder="http://localhost:8080/otg/Service/GetVendorVersion">
 					<button type="button" class="btn btn-success"
 						onclick="getVendorVersion()">Get Vendor Version</button>
 
 					<input id="getQueryNamesURL" type="text" class="form-control"
-						value="http://localhost:8080/epcgraph/Service/GetQueryNames"
-						placeholder="http://localhost:8080/epcgraph/Service/GetQueryNames">
+						value="http://localhost:8080/otg/Service/GetQueryNames"
+						placeholder="http://localhost:8080/otg/Service/GetQueryNames">
 					<button type="button" class="btn btn-success"
 						onclick="getQueryNames()">Get Query Names</button>
 				</div>
@@ -236,7 +236,7 @@
 								<li class="list-group-item">Return events/vocabularies
 									stored in the EPCIS repository in interest immediately</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/Poll/{queryName}</li>
+									http://{base-url}:{base-port}/otg/Service/Poll/{queryName}</li>
 								<li class="list-group-item">Parameters: <br> <code>List
 										of characters should be encoded: + -> %2B , # -> %23, ^ -> %5E</code><br>
 									<button type="button" class="btn btn-warning"
@@ -853,7 +853,7 @@
 								<li class="list-group-item">Return the standard version of
 									EPCIS</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/GetStandardVersion</li>
+									http://{base-url}:{base-port}/otg/Service/GetStandardVersion</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
@@ -865,7 +865,7 @@
 								<li class="list-group-item">Return the vendor specific
 									version of EPCIS</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/GetVendorVersion</li>
+									http://{base-url}:{base-port}/otg/Service/GetVendorVersion</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 							</ul>
 						</td>
@@ -877,7 +877,7 @@
 								<li class="list-group-item">Return a list of all query
 									names available</li>
 								<li class="list-group-item">URL:
-									http://{base-url}:{base-port}/epcgraph/Service/GetQueryNames</li>
+									http://{base-url}:{base-port}/otg/Service/GetQueryNames</li>
 								<li class="list-group-item">Additional Parameters: Null</li>
 								<li class="list-group-item">Return: [ {queryNames} ]</li>
 							</ul>
