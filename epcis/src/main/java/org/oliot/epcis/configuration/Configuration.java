@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import org.json.JSONObject;
 import org.oliot.epcis.service.subscription.MongoSubscription;
+import org.quartz.SchedulerException;
 
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoDatabase;
@@ -62,7 +63,13 @@ public class Configuration implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
-
+		mongoClient.close();
+		try {
+			MongoSubscription.sched.shutdown();
+		} catch (SchedulerException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Override
