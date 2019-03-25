@@ -1,0 +1,43 @@
+{
+  "$schema": "http://oliot.org/general/schema#",
+  "id": "http://oliot.org/general",
+  "type": "object",
+  "properties": {
+    "epcis": {
+      "id": "http://oliot.org/general/epcis",
+      "type": "object",
+      "properties": {
+        "EPCISBody": {
+          "id": "http://oliot.org/general/epcis/EPCISBody",
+          "type": "object",
+          "properties": {
+            "EventList": {
+              "id": "http://oliot.org/general/epcis/EPCISBody/EventList",
+              "type": "array",
+              "items": {
+                "id": "http://oliot.org/general/epcis/EPCISBody/EventList/0",
+                "type": "object",
+                "properties": {}
+              },
+              "required": [
+                "0"
+              ]
+            }
+          },
+          "required": [
+            "EventList"
+          ],
+         "additionalProperties": false
+        }
+      },
+      "required": [
+        "EPCISBody"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "epcis"
+  ],
+  "additionalProperties": false
+}
