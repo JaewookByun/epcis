@@ -10,7 +10,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.apache.axis.message.MessageElement;
 import org.apache.log4j.Level;
 import org.bson.BsonArray;
 import org.bson.BsonBoolean;
@@ -47,9 +46,7 @@ import org.oliot.model.epcis.SourceListType;
 import org.oliot.model.epcis.TransactionEventExtension2Type;
 import org.oliot.model.epcis.TransactionEventExtensionType;
 import org.oliot.model.epcis.TransformationEventExtensionType;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
@@ -182,19 +179,6 @@ public class MongoWriterUtil {
 			}
 		}
 		return code;
-	}
-
-	static BsonDocument getDBObjectFromMessageElement(MessageElement any) {
-		NamedNodeMap attributes = any.getAttributes();
-		BsonDocument attrObject = new BsonDocument();
-		for (int i = 0; i < attributes.getLength(); i++) {
-			Attr attr = (Attr) attributes.item(i);
-
-			String attrName = attr.getNodeName();
-			String attrValue = attr.getNodeValue();
-			attrObject.put(attrName, new BsonString(attrValue));
-		}
-		return attrObject;
 	}
 
 	static BsonDocument getBaseExtensionObject(EPCISEventExtensionType baseExtensionType) {
