@@ -77,7 +77,9 @@
 
 			<div class="list-group">
 				<a href="#" class="list-group-item active"> REST-Like Web
-					Service </a> <a href="./tutorialPage.jsp"
+					Service </a> <a href="./GEODES/"
+					class="list-group-item">Open Data List</a>
+					 <a href="./tutorialPage.jsp"
 					class="list-group-item">Traceability Demonstration</a>  <a href="./mapService2.jsp"
 					class="list-group-item">Traceability Demonstration2</a>  <a href="./rest-like_capture_service.html"
 					class="list-group-item">EPCIS Capture Client</a> <a href="./rest-like_capture_service2.html"
