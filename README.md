@@ -26,8 +26,8 @@
 ### Introduction ###
 > EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
 
-### Tutorial Server for Oliot EPCIS ###
-> [Server](http://14.63.168.75:8080/epcis/)
+### Tutorial Server for Oliot EPCIS at [DFPL Lab.](https://sites.google.com/view/jack-dfpl/home) ###
+> [Server](http://210.93.116.66/epcis/)
 
 > Note: The server couldn't be accessible temporally.
 
