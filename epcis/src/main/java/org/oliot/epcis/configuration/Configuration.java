@@ -84,7 +84,7 @@ public class Configuration implements ServletContextListener {
 		// load existing subscription
 		loadExistingSubscription();
 	}
-
+	
 	private void setLogger() {
 		// Log4j Setting
 		BasicConfigurator.configure();
