@@ -1,3 +1,9 @@
+### NEWS - Oliot EPCIS X ###
+> We join EPCIS v2.0 prototyping and Oliot EPCIS v2.0.x called Oliot EPCIS X
+> Oliot EPCIS X has been developed from scratch again for high performance and retaining core functionality.
+> It is not yet opened but available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
+> Access [Server](http://203.250.148.67/epcis/home/index.html)
+
 ### Oliot EPCIS Repository ###
 > Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
 
@@ -28,11 +34,6 @@
 
 ### Introduction ###
 > EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
-
-### Tutorial Server for Oliot EPCIS at [DFPL Lab.](https://sites.google.com/view/jack-dfpl/home) ###
-> [Server](http://210.93.116.66/epcis/)
-
-> Note: The server couldn't be accessible temporally.
 
 ### Specification ###
 > Java, Web Service (Java v8, Servlet v3.1, Tomcat v8)
