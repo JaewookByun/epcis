@@ -1,7 +1,10 @@
 ### NEWS - Oliot EPCIS X ###
 > We join EPCIS v2.0 prototyping and Oliot EPCIS v2.0.x called Oliot EPCIS X
+
 > Oliot EPCIS X has been developed from scratch again for high performance and retaining core functionality.
+
 > It is not yet opened but available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
+
 > Access [Server](http://203.250.148.67/epcis/home/index.html)
 
 ### Oliot EPCIS Repository ###
