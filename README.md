@@ -5,7 +5,7 @@
 
 > It is not yet opened but available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
 
-> Access [Server](http://203.250.148.67/epcis/home/index.html)
+> Access [Server](http://dfpl.sejong.ac.kr/epcis/home/index.html)
 
 ### Oliot EPCIS Repository ###
 > Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
