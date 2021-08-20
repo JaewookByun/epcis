@@ -7,6 +7,8 @@
 
 > Access [Server](http://dfpl.sejong.ac.kr/epcis/home/index.html)
 
+> if the domain is not working, access to [Server](http://203.250.148.67/epcis/home/index.html)
+
 ### Oliot EPCIS Repository ###
 > Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
 
