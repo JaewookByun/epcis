@@ -1,29 +1,38 @@
-### NEWS - Oliot EPCIS X ###
-> We join EPCIS v2.0 prototyping and Oliot EPCIS v2.0.x called Oliot EPCIS X
+## Oliot EPCIS Second Generation ##
 
-> Oliot EPCIS X has been developed from scratch again for high performance and retaining core functionality.
+EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1. As an Auto-ID Labs. member [Auto-ID Labs.](https://autoidlab.kaist.ac.kr/people.html), we have been developed an open-source implementation of the standard since 2014. Oliot EPCIS v2.* has been developed from scratch again for high performance and retaining core functionality. The initial prototype is already implemented and available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home). The system consists of several independent modules and we are in a finalizing step. The available module(s) is(are) as follows:
 
-> It is not yet opened but available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
+* **epcis-capture-xml**: The server implements a capture interface for Data Capture Applications (DCAs) to store EPCISDocument in a XML format into a persistent storage. 
+* **epcis-query-soap**: The server implements a (part of) SOAP query interface for EPCIS Accessing Applications (EAAs) to retrieve events/master data in order to build applications. 
+* **epcis-subscribe-soap**:The server implements a (part of) SOAP query interface for EPCIS Accessing Applications (EAAs) to subscribe an EPCIS system in order to deliver  events/master data periodically or on-demand.
+* **epcis-capture-json**: The server implements a capture interface for Data Capture Applications (DCAs) to store EPCISDocument in a JSON format into a persistent storage.
+* **epcis-query-rest**: The server implements a REST query interface for EPCIS Accessing Applications (EAAs) to retrieve events/master data in order to build applications or ubscribe an EPCIS system in order to deliver  events/master data periodically or on-demand. 
 
-> Access [Server](http://dfpl.sejong.ac.kr/epcis/home/index.html)
+## Specification ##
 
-> if the domain is not working, access to [Server](http://203.250.148.67/epcis/home/index.html)
+* **Language**: Open JDK 19
+* **Application Framework**: Eclipse Vert.x v4.3.7
+* **Backend Storage**: MongoDB v6.0.3
 
-### Oliot EPCIS Repository ###
-> Note: This Repo could be forked from [URL](https://github.com/JaewookByun/epcis)
+## Open Server ##
 
-> This project is part of Oliot ([Oliot Homepage](http://oliot.org)).
+* Access [Server](http://dfpl.sejong.ac.kr/epcis/home/index.html)
 
-> Oliot epcis is an opensource web serivce implementing EPC Information Service (EPCIS) v1.2 specification.
+## Organizations and Projects disclosing their usage ##
 
-### For Our Community* ###
-> Auto-ID Labs, KAIST is interested in knowing how Oliot EPCIS can be used for different application domains. 
+Auto-ID Labs, Korea is interested in knowing how Oliot EPCIS can be used for different application domains. Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun <jwbyun@sejong.ac.kr>) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.) as follows. 
 
-> Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.)
+* Auto-ID Labs, KAIST [Link](http://autoidlab.kaist.ac.kr/)
 
-> The information will be managed and summarized in Wiki.
+* BIBA - Bremer Institut für Produktion und Logistik GmbH (an affiliate institute of the University of Bremen, Germany) [Link](http://www.biba.uni-bremen.de/en.html)
 
-### Paper Publication* ###
+* IoF 2020 (EU Horizon 2020 Project) [Link](https://www.iof2020.eu/)
+
+* NIMBLE (EU Horizon 2020 Project) [Link](https://www.nimble-project.org/)
+
+* NIRA [Link](https://www.nira-inc.com/technologies)
+
+## Paper Publication* ##
 
 - Jaewook Byun, and Daeyoung Kim. "Object traceability graph: Applying temporal graph traversals for efficient object traceability." Expert Systems with Applications 150 (2020): 113287. [URL](https://www.sciencedirect.com/science/article/pii/S0957417420301123).
 
@@ -35,42 +44,9 @@
 
 - Jaewook Byun, Daeyoung Kim, "EPC Graph Information Service: Enhanced object traceability on unified and linked EPCIS events," The 16th International Conference on Web Information System Engineering (WISE 2015), Miami, Florida, USA, November 1-3, 2015. [URL](http://link.springer.com/chapter/10.1007/978-3-319-26190-4_16)
 
-> Note: if you publish papers using Oliot EPCIS and want to disclose it, let us know.
+## Contact ##
 
-### Introduction ###
-> EPC Information Service (EPCIS) enables to capture and share standardized event/master data ratified by GS1 
-
-### Specification ###
-> Java, Web Service (Java v8, Servlet v3.1, Tomcat v8)
-
-> EPCIS v1.2
-
-> Maven
-
-> Spring Framework v5.x
-
-> MongoDB v4.0
-
-### Organizations and Projects disclosing their usage ###
-> Auto-ID Labs, KAIST [Link](http://autoidlab.kaist.ac.kr/)
-
-> BIBA - Bremer Institut für Produktion und Logistik GmbH (an affiliate institute of the University of Bremen, Germany) [Link](http://www.biba.uni-bremen.de/en.html)
-
-> IoF 2020 (EU Horizon 2020 Project) [Link](https://www.iof2020.eu/)
-
-> NIMBLE (EU Horizon 2020 Project) [Link](https://www.nimble-project.org/)
-
-### Contact ###
-> Auto-ID Labs, KAIST
-
-> Maintainer:
-
->> Jaewook Byun, Assistant Professor, Halla University, Republic of Korea, Ph.D. : bjw0829@kaist.ac.kr, bjw0829@gmail.com, jaewook.byun@halla.ac.kr
-
-> MySQL Backend Extension:
-
->> Yalew Kidane, KAIST, Ph.D. student : yalewkidane@kaist.ac.kr, yalewkidane@gmail.com
-
-> Capture Interface Extension:
-
->> Sungpil Woo, Electronics and Telecommunication Research Institute (ETRI), Researcher : woosungpil7@gmail.com
+* Jaewook Byun, Ph.D.
+* Assistant Professor, Sejong University, Republic of Korea [Link](https://sejong.elsevierpure.com/en/persons/jaewook-byun)
+* Associate Director, Auto-ID Labs. Korea [Link](http://autoidlab.kaist.ac.kr/)
+* YouTube [Link](https://www.youtube.com/channel/UC988e-Y8nto0LXVae0aqaOQ)
