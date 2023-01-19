@@ -50,3 +50,4 @@ Auto-ID Labs, Korea is interested in knowing how Oliot EPCIS can be used for dif
 * Assistant Professor, Sejong University, Republic of Korea [Link](https://sejong.elsevierpure.com/en/persons/jaewook-byun)
 * Associate Director, Auto-ID Labs. Korea [Link](http://autoidlab.kaist.ac.kr/)
 * YouTube [Link](https://www.youtube.com/channel/UC988e-Y8nto0LXVae0aqaOQ)
+* DFPL@Sejong [dfpl](https://sites.google.com/view/jack-dfpl/home)
