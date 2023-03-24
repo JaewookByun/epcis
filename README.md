@@ -34,7 +34,7 @@ Note: if you publish papers using Oliot EPCIS and want to disclose it, let us kn
 - Java, Web Service (JDK 19, Eclipse Vert.X)
 - MongoDB 6.x
 
-### Contact ###
+## Contact
 
 Jaewook Byun, Ph.D. 
 
