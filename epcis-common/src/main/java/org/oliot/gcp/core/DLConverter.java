@@ -2,7 +2,7 @@ package org.oliot.gcp.core;
 
 import java.util.HashMap;
 
-import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.model.exception.ValidationException;
 
 /**
  * Copyright (C) 2020 Jaewook Byun
@@ -77,7 +77,7 @@ public class DLConverter {
 		} else if (s01 != null) {
 			return generateGtin(gcpLengthList, s01);
 		} else {
-			throw new ValidationException("");
+			throw new ValidationException();
 		}
 	}
 
@@ -170,7 +170,7 @@ public class DLConverter {
 		String _01back = code;
 		while (!_01back.equals("")) {
 			if (_01back.length() == 0)
-				throw new ValidationException("");
+				throw new ValidationException();
 
 			gcpLength = gcpLengthList.get(_01back);
 
@@ -277,7 +277,7 @@ public class DLConverter {
 
 		// Validation Check
 		if (!gln.matches("([0-9]{13})")) {
-			throw new ValidationException("");
+			throw new ValidationException();
 		}
 		// TODO: Check digit validation
 		// if (!isGtinCheckDigitCorrect(gtin)) {
@@ -286,7 +286,7 @@ public class DLConverter {
 
 		if (ext != null) {
 			if (!ext.matches("([!%-?A-Z_a-z\"]{1,20})")) {
-				throw new ValidationException("");
+				throw new ValidationException();
 			}
 			ext = applySerialEncoding(ext);
 		}
@@ -311,7 +311,7 @@ public class DLConverter {
 
 		// Validation Check
 		if (!gln.matches("([0-9]{13})")) {
-			throw new ValidationException("");
+			throw new ValidationException();
 		}
 		// TODO: Check digit validation
 		// if (!isGtinCheckDigitCorrect(gtin)) {
@@ -336,7 +336,7 @@ public class DLConverter {
 
 		// Validation Check
 		if (!gdti.matches("([0-9]{13}[!%-?A-Z_a-z\\\"]{1,17})")) {
-			throw new ValidationException("");
+			throw new ValidationException();
 		}
 		// TODO: Check digit validation
 		// if (!isGtinCheckDigitCorrect(gtin)) {

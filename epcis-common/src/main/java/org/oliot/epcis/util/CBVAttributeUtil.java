@@ -4,7 +4,6 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
 import org.bson.Document;
-import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.CountryOfOrigin;
 import org.oliot.epcis.model.cbv.FAO3AlphaCode;
 import org.oliot.epcis.model.cbv.GrowingMethodCode;
@@ -15,6 +14,7 @@ import org.oliot.epcis.model.cbv.SubSiteAttribute;
 import org.oliot.epcis.model.cbv.SubSiteDetail;
 import org.oliot.epcis.model.cbv.TradeItemConditionCode;
 import org.oliot.epcis.model.cbv.UnloadingPort;
+import org.oliot.epcis.model.exception.ValidationException;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -55,10 +55,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (CountryOfOrigin.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#countryOfExport":
 			// Country from which the batch/lot was exported.
 			// Note: This is not the same as the country of origin. In the EU this attribute
@@ -76,10 +78,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (CountryOfOrigin.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#preservationTechniqueCode":
 			// Code value indicating the preservation technique used to preserve the product
 			// from deterioration.
@@ -91,10 +95,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (PreservationTechniqueCode.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#tradeItemConditionCode":
 			// A code depicting the type of preparation that a trade item will have before
 			// being sold to the end consumer (e.g. cut for sale, portioned/pieced). This
@@ -109,10 +115,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (TradeItemConditionCode.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#speciesForFisheryStatisticsPurposesCode":
 			// The FAO 3 Alpha code of the species of fish for fish and seafood.
 			// Example: COD
@@ -121,10 +129,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (!FAO3AlphaCode.codes.contains(text)) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#growingMethodCode":
 			// The process through which fresh produce is grown and cultivated.
 			// The code list for this attribute is defined in GDSN; see
@@ -135,10 +145,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (GrowingMethodCode.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#productionMethodForFishAndSeafoodCode":
 			// A code specifying how the fish had been grown / cultivated.
 			// The code list for this attribute is defined in GS1 EDI; see
@@ -149,10 +161,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (ProductionMethodForFishAndSeaFoodCode.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#storageStateCode":
 			// A code depicting that the referred product was previously frozen or not.
 			// The code list for this attribute is defined in GS1 EDI; see
@@ -163,10 +177,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (StorageStateCode.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#unloadingPort":
 			// Port where the goods were unloaded from a seagoing vessel after having been
 			// transported by it.
@@ -178,10 +194,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (UnloadingPort.codes.contains(text) == false) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda:sst":
 			// Sub-Site Type: describes the primary business function of the sub-site
 			// location. This master data attribute is only applicable to a sub-site
@@ -194,10 +212,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (SubSiteDetail.valueOf("s" + text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda:ssa":
 			// Sub-Site Attribute: further qualifies the business function of the sub-site
 			// location. This master data attribute is only applicable to a sub-site
@@ -212,10 +232,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (SubSiteAttribute.valueOf("s" + text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#countryCode":
 			// The ISO 3166-1 alpha-2 code specifying the country for the address.
 
@@ -224,10 +246,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (CountryOfOrigin.valueOf(text) == null) {
-					throw new ValidationException(attrKey + " violates CBV (not in list)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (not in list)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#descriptionShort":
 			// A free form short length description of the trade item that can be used to
 			// identify the trade item at point of sale.
@@ -237,10 +261,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 35) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#dosageFormType":
 			// A dosage form is the physical form of a medication that identifies the form
 			// of the pharmaceutical item.
@@ -250,10 +276,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 35) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#functionalName":
 			// Describes use of the product or service by the consumer. Should help clarify
 			// the product classification associated with the GTIN.
@@ -263,10 +291,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 35) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#manufacturerOfTradeItemPartyName":
 			// Party name information for the manufacturer of the trade item.
 			// Example: Acme Corporation
@@ -275,10 +305,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 200) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#netContentDescription":
 			// Free text describing the amount of the trade item contained by a package,
 			// usually as claimed on the label.
@@ -288,10 +320,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 500) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#labelDescription":
 			// A literal reproduction of the text featured on a product's label in the same
 			// word-by-word order in which it appears on the front of the product's
@@ -303,10 +337,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 500) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#regulatedProductName":
 			// The prescribed, regulated or generic product name or denomination that
 			// describes the true nature of the product and is sufficiently precise to
@@ -317,10 +353,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 500) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#speciesForFisheryStatisticsPurposesName":
 			// The scientific name associated with the
 			// speciesforFisheryStatisticsPurposesCode.
@@ -330,10 +368,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 500) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#strengthDescription":
 			// Free text describing the strength of the active ingredient(s) of the product
 			// Example: 200mg/100mg
@@ -342,10 +382,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 500) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#tradeItemDescription":
 			// An understandable and useable description of a trade item using brand and
 			// other descriptors. This attribute is filled with as little abbreviation as
@@ -362,10 +404,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 200) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda:site":
 			// Identifies the site in which this location is contained. For a Sub-site
 			// location, this is the identifier of the parent location. For a Site location,
@@ -380,10 +424,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 128) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda:ssd":
 			// Sub-Site Detail: provides additional proprietary information. This master
 			// data attribute is only applicable to a sub-site location.
@@ -396,10 +442,12 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				String text = (String) attrValue.get(0);
 				if (text.length() > 128) {
-					throw new ValidationException(attrKey + " violates CBV (string length)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (string length)");
+					throw e;
 				}
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#name":
 			// Sub-Site Detail: provides additional proprietary information. This master
 			// data attribute is only applicable to a sub-site location.
@@ -412,9 +460,11 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
-
 		case "urn:epcglobal:cbv:mda#streetAddressOne":
 			// The first free form line of an address. This first part is printed on paper
 			// as the first line below the name. For example, the name of the street and the
@@ -424,7 +474,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#streetAddressTwo":
 			// The second free form line of an address. This second part is printed on paper
@@ -435,7 +488,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#streetAddressThree":
 			// The third free form line of an address. This third part is printed on paper
@@ -446,7 +502,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#city":
 			// Text specifying the name of the city.
@@ -455,7 +514,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#state":
 			// One of the constituent units of a nation having a federal government.
@@ -464,7 +526,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#postalCode":
 			// Text specifying the postal code for an address.
@@ -473,7 +538,10 @@ public class CBVAttributeUtil {
 			if (attrValue.size() == 1 && attrValue.get(0) instanceof String) {
 				return;
 			} else {
-				throw new ValidationException(attrKey + " violates CBV (not string text content)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not string text content)");
+				throw e;
 			}
 		case "urn:epcglobal:cbv:mda#drainedWeight":
 			// The weight of the trade item when drained of its liquid. For example 225
@@ -520,11 +588,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#firstFreezeDate":
 			// The date of initial freezing, if different from the date of production.
 			// Example: 2016-03-15
@@ -538,11 +608,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#harvestEndDate":
 			// The date when harvesting ended.
 			// Example: 2016-03-15
@@ -556,11 +628,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#harvestStartDate":
 			// The date when harvesting started.
 			// Example: 2016-03-15
@@ -574,11 +648,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#itemExpirationDate":
 			// The date after which the product should not be used or consumed. Its meaning
 			// is determined based on the trade item context (e.g., for food, the date will
@@ -598,11 +674,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#sellByDate":
 			// The date before or on which, the product should be sold.
 			// Example: 2017-03-15
@@ -616,11 +694,13 @@ public class CBVAttributeUtil {
 					// attrObj.put("attributes." + encodeMongoObjectKey(attrKey),
 					// DatatypeConverter.parseDate(text).getTimeInMillis());
 				} catch (Exception e1) {
-					throw new ValidationException(attrKey + " violates CBV (illegal date format)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal date format)");
+					throw e;
 				}
 			}
 			// putDate(attrKey, attrValue, attrObj);
-			break;
 		case "urn:epcglobal:cbv:mda#geoLocation":
 			// Geo URI as specified in [RFC5870], consisting of the latitude and longitude
 			// of a location, in degrees. Optionally, a Geo URI may also include a
@@ -632,8 +712,10 @@ public class CBVAttributeUtil {
 				String text = (String) attrValue.get(0);
 				String regex = "^geo:[0-9.]+,[0-9.]+$";
 				if (!text.matches(regex)) {
-					throw new ValidationException(
-							attrKey + " violates CBV (illegal geo location format ^geo:[0-9.]+,[0-9.]+$)");
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey + " violates CBV (illegal geo location format ^geo:[0-9.]+,[0-9.]+$)");
+					throw e;
 				}
 			}
 			return;
@@ -665,15 +747,21 @@ public class CBVAttributeUtil {
 				String text = (String) attrValue.get(0);
 				String regex = "^\\[(\\[geo:[0-9.]+,[0-9.]+\\],)*(\\[geo:[0-9.]+,[0-9.]+\\])\\]$";
 				if (!text.matches(regex)) {
-					throw new ValidationException(attrKey
+					ValidationException e = new ValidationException();
+					e.setStackTrace(new StackTraceElement[0]);
+					e.setReason(attrKey
 							+ " violates CBV (illegal geo location format ^\\\\[(\\\\[geo:[0-9.]+,[0-9.]+\\\\],)*(\\\\[geo:[0-9.]+,[0-9.]+\\\\])\\\\]$");
+					throw e;
 				}
 			}
 			return;
 		case "urn:epcglobal:cbv:mda#additionalTradeItemID":
 
 			if (attrValue == null || attrValue.isEmpty()) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
 			boolean isIllegal = false;
 			for (Object obj : attrValue) {
@@ -690,16 +778,21 @@ public class CBVAttributeUtil {
 				}
 			}
 			if (isIllegal == true) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#certificationList":
 			// Information on certification standards to which the trade item, or the
 			// process by which it is manufactured, sourced or supplied complies.
 
 			// List of Certification
 			if (attrValue == null || attrValue.isEmpty()) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
 			isIllegal = false;
 			for (Object obj : attrValue) {
@@ -727,17 +820,22 @@ public class CBVAttributeUtil {
 				}
 			}
 
-			if (isIllegal == true) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+			if (isIllegal = true) {
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#farmList":
 			// List of structures describing farm information; see below
 
 			// List of Farm
 
 			if (attrValue == null || attrValue.isEmpty()) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
 			isIllegal = false;
 			for (Object obj : attrValue) {
@@ -762,16 +860,21 @@ public class CBVAttributeUtil {
 					}
 				}
 			}
-			if (isIllegal == true) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+			if (isIllegal = true) {
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#vesselCatchInformationList":
 			// List of structures describing farm information; see below
 
 			// List of vesselCatchInformationList
 			if (attrValue == null || attrValue.isEmpty()) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
 			isIllegal = false;
 			for (Object obj : attrValue) {
@@ -799,16 +902,21 @@ public class CBVAttributeUtil {
 					}
 				}
 			}
-			if (isIllegal == true) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+			if (isIllegal = true) {
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
-			break;
 		case "urn:epcglobal:cbv:mda#additionalPartyIDList":
 			// List of structures describing farm information; see below
 
 			// List of additionalPartyIDList
 			if (attrValue == null || attrValue.isEmpty()) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
 			isIllegal = false;
 			for (Object obj : attrValue) {
@@ -833,10 +941,12 @@ public class CBVAttributeUtil {
 					}
 				}
 			}
-			if (isIllegal == true) {
-				throw new ValidationException(attrKey + " violates CBV (structure)");
+			if (isIllegal = true) {
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (structure)");
+				throw e;
 			}
-			break;
 		}
 	}
 
@@ -853,7 +963,10 @@ public class CBVAttributeUtil {
 
 			// Code
 			if (CountryOfOrigin.valueOf(attrValue) == null) {
-				throw new ValidationException(attrKey + " violates CBV (not in list)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not in list)");
+				throw e;
 			}
 			break;
 		case "urn:epcglobal:cbv:mda#countryOfExport":
@@ -871,7 +984,10 @@ public class CBVAttributeUtil {
 
 			// Code
 			if (CountryOfOrigin.valueOf(attrValue) == null) {
-				throw new ValidationException(attrKey + " violates CBV (not in list)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (not in list)");
+				throw e;
 			}
 			break;
 		case "urn:epcglobal:cbv:mda#drainedWeight": {
@@ -884,14 +1000,19 @@ public class CBVAttributeUtil {
 			// Measurement
 			String measurementUnitCode = nnm.getNamedItem("measurementUnitCode").getTextContent();
 			if (measurementUnitCode == null) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
 			try {
 				Double.parseDouble(attrValue);
 			} catch (Exception e1) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
-			break;
 		}
 		case "urn:epcglobal:cbv:mda#grossWeight": {
 			// Used to identify the gross weight of the trade item. The gross weight
@@ -904,14 +1025,19 @@ public class CBVAttributeUtil {
 			// Measurement
 			String measurementUnitCode = nnm.getNamedItem("measurementUnitCode").getTextContent();
 			if (measurementUnitCode == null) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
 			try {
 				Double.parseDouble(attrValue);
 			} catch (Exception e1) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
-			break;
 		}
 		case "urn:epcglobal:cbv:mda#netWeight": {
 			// Used to identify the net weight of the trade item. Net weight excludes any
@@ -924,14 +1050,19 @@ public class CBVAttributeUtil {
 			// Measurement
 			String measurementUnitCode = nnm.getNamedItem("measurementUnitCode").getTextContent();
 			if (measurementUnitCode == null) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
 			try {
 				Double.parseDouble(attrValue);
 			} catch (Exception e1) {
-				throw new ValidationException(attrKey + " violates CBV (format)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (format)");
+				throw e;
 			}
-			break;
 		}
 		case "urn:epcglobal:cbv:mda#lotNumber":
 			// Used to identify the net weight of the trade item. Net weight excludes any
@@ -942,9 +1073,16 @@ public class CBVAttributeUtil {
 
 			// String (1-20)
 			if (attrValue.length() > 20) {
-				throw new ValidationException(attrKey + " violates CBV (string length)");
+				ValidationException e = new ValidationException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason(attrKey + " violates CBV (string length)");
+				throw e;
 			}
-			break;
 		}
+	}
+
+	static public String encodeMongoObjectKey(String key) {
+		key = key.replace(".", "\uff0e");
+		return key;
 	}
 }

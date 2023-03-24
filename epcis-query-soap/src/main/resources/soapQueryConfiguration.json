@@ -1,0 +1,24 @@
+{
+	"_log4j_conf_location" : "the file location of log4j properties (e.g., log4j.xml)",
+	"log4j_conf_location" : "/log4j.xml",
+
+	"_log4j_log_level" : "(ALL|DEBUG|INFO|WARN|ERROR|FATAL|OFF|TRACE) e.g., DEBUG (default)",
+	"log4j_log_level" : "DEBUG",
+
+	"_db_name" : "mongodb database name to be used",
+	"db_name" : "epcis",
+
+	"_db_connection_string" : "Mongo connection string",
+	"db_connection_string" : "mongodb://localhost:27017",
+
+	"_xml_schema_location" : "the file location of xml schema (e.g., EPCglobal-epcis-2_0.xsd)",
+	"xml_schema_location" : "/schema/EPCglobal-epcis-2_0.xsd",
+
+	"_xml_master_data_schema_location" : "the file location of master data xml schema (e.g., EPCglobal-epcis-masterdata-1_2.xsd)",
+	"xml_master_data_schema_location" : "/schema/EPCglobal-epcis-masterdata-1_2.xsd",
+
+	"_port" : "an integer value for port (default 8081)",
+	"port" : 8081,
+
+	"_number_of_verticles" : "The number of cores (default is cores + 1) as integer value"
+}

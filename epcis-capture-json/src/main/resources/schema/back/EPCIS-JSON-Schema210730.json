@@ -1,0 +1,1216 @@
+{
+	"$id": "https://ns.gs1.org/epcis-schema.json",
+
+	"definitions": {
+		"uri": {
+			"type": "string",
+			"format": "uri"
+		},
+		"time": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"decimal": {
+			"type": "number"
+		},
+		"boolean": {
+			"type": "boolean"
+		},
+		"hexBinary": {
+			"type": "string",
+			"pattern": "^[A-Fa-f0-9]+$"
+		},
+		"action": {
+			"type": "string",
+			"enum": [
+				"OBSERVE",
+				"ADD",
+				"DELETE"
+			]
+		},
+		"persistentDisposition": {
+			"type": "object",
+			"properties": {
+				"set": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/uri"
+					}
+				},
+				"unset": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/uri"
+					}
+				}
+			}
+		},
+		"epcList": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/uri"
+			}
+		},
+		"quantityList": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/quantityElement"
+			}
+		},
+		"uom": {
+			"type": "string",
+			"pattern": "^[A-Z0-9]{2,3}$"
+		},
+		"eventID": {
+			"$ref": "#/definitions/uri"
+		},
+		"errorDeclaration": {
+			"type": "object",
+			"properties": {
+				"declarationTime": {
+					"$ref": "#/definitions/time"
+				},
+				"reason": {
+					"$ref": "#/definitions/uri"
+				},
+				"correctiveEventIDs": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/eventID"
+					}
+				}
+			},
+			"required": ["declarationTime", "reason", "correctiveEventIDs"]
+		},
+		"quantityElement": {
+			"type": "object",
+			"properties": {
+				"epcClass": {
+					"$ref": "#/definitions/uri"
+				},
+				"quantity": {
+					"$ref": "#/definitions/decimal"
+				},
+				"uom": {
+					"$ref": "#/definitions/uom"
+				}
+			},
+			"required": ["epcClass", "quantity"]
+		},
+		"bizTransaction": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"$ref": "#/definitions/uri"
+				},
+				"bizTransaction": {
+					"$ref": "#/definitions/uri"
+				}
+			},
+			"required": ["bizTransaction"]
+		},
+		"readPoint": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"$ref": "#/definitions/uri"
+				}
+			},
+			"required": ["id"]
+		},
+		"bizLocation": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"$ref": "#/definitions/uri"
+				}
+			},
+			"required": ["id"]
+		},
+		"source": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"$ref": "#/definitions/uri"
+				},
+				"source": {
+					"$ref": "#/definitions/uri"
+				}
+			},
+			"required": ["type", "source"]
+		},
+		"destination": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"$ref": "#/definitions/uri"
+				},
+				"destination": {
+					"$ref": "#/definitions/uri"
+				}
+			},
+			"required": ["type", "destination"]
+		},
+		"sensorElement": {
+			"type": "object",
+			"properties": {
+				"sensorMetadata": {
+					"$ref": "#/definitions/sensorMetadata"
+				},
+				"sensorReport": {
+					"$ref": "#/definitions/sensorReportList"
+				}
+			},
+			"required": ["sensorReport"]
+		},
+		"sensorReportList": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/sensorReport"
+			}
+		},
+		"sensorReport": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"$ref": "#/definitions/uri"
+				},
+				"deviceID": {
+					"$ref": "#/definitions/uri"
+				},
+				"deviceMetadata": {
+					"$ref": "#/definitions/uri"
+				},
+				"rawData": {
+					"$ref": "#/definitions/uri"
+				},
+				"dataProcessingMethod": {
+					"$ref": "#/definitions/uri"
+				},
+				"time": {
+					"$ref": "#/definitions/time"
+				},
+				"microorganism": {
+					"$ref": "#/definitions/uri"
+				},
+				"chemicalSubstance": {
+					"$ref": "#/definitions/uri"
+				},
+				"value": {
+					"$ref": "#/definitions/decimal"
+				},
+				"component": {
+					"$ref": "#/definitions/string"
+				},
+				"stringValue": {
+					"$ref": "#/definitions/string"
+				},
+				"booleanValue": {
+					"$ref": "#/definitions/boolean"
+				},
+				"hexBinaryValue": {
+					"$ref": "#/definitions/hexBinary"
+				},
+				"uriValue": {
+					"$ref": "#/definitions/uri"
+				},
+				"minValue": {
+					"$ref": "#/definitions/decimal"
+				},
+				"maxValue": {
+					"$ref": "#/definitions/decimal"
+				},
+				"meanValue": {
+					"$ref": "#/definitions/decimal"
+				},
+				"sDev": {
+					"$ref": "#/definitions/decimal"
+				},
+				"percRank": {
+					"$ref": "#/definitions/decimal"
+				},
+				"percValue": {
+					"$ref": "#/definitions/decimal"
+				},
+				"uom": {
+					"$ref": "#/definitions/string"
+				}
+			},
+			"required": ["type"]
+		},
+		"sensorMetadata": {
+			"type": "object",
+			"properties": {
+				"time": {
+					"$ref": "#/definitions/time"
+				},
+				"deviceID": {
+					"$ref": "#/definitions/uri"
+				},
+				"deviceMetadata": {
+					"$ref": "#/definitions/uri"
+				},
+				"rawData": {
+					"$ref": "#/definitions/uri"
+				},
+				"startTime": {
+					"$ref": "#/definitions/time"
+				},
+				"endTime": {
+					"$ref": "#/definitions/time"
+				},
+				"dataProcessingMethod": {
+					"$ref": "#/definitions/uri"
+				},
+				"bizRules": {
+					"$ref": "#/definitions/uri"
+				}
+			}
+		},
+		"string": {
+			"type": "string"
+		},
+		"ilmd": {
+			"type": "object"
+		},
+		"event": {
+			"type": "object",
+			"properties": {
+				"eventTime": {
+					"$ref": "#/definitions/time"
+				},
+				"recordTime": {
+					"$ref": "#/definitions/time"
+				},
+				"eventTimeZoneOffset": {
+					"type": "string",
+					"pattern": "^(\\+|\\-)((0[0-9]|1[0-3]):([0-5][0-9])|14:00)$"
+				},
+				"eventID": {
+					"$ref": "#/definitions/eventID"
+				},
+				"errorDeclaration": {
+					"$ref": "#/definitions/errorDeclaration"
+				}
+			},
+			"required": ["eventTime", "eventTimeZoneOffset"]
+		},
+		"objectEvent": {
+			"allOf": [{
+					"$ref": "#/definitions/event"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"isA": {
+							"type": "string",
+							"pattern": "^ObjectEvent$"
+						},
+						"epcList": {
+							"$ref": "#/definitions/epcList"
+						},
+						"quantityList": {
+							"$ref": "#/definitions/quantityList"
+						},
+						"action": {
+							"$ref": "#/definitions/action"
+						},
+						"bizStep": {
+							"$ref": "#/definitions/uri"
+						},
+						"disposition": {
+							"$ref": "#/definitions/uri"
+						},
+						"persistentDisposition": {
+							"$ref": "#/definitions/persistentDisposition"
+						},
+						"readPoint": {
+							"$ref": "#/definitions/readPoint"
+						},
+						"bizLocation": {
+							"$ref": "#/definitions/bizLocation"
+						},
+						"bizTransactionList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bizTransaction"
+							}
+						},
+						"sourceList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/source"
+							}
+						},
+						"destinationList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/destination"
+							}
+						},
+						"sensorElementList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/sensorElement"
+							}
+						},
+						"ilmd": {
+							"$ref": "#/definitions/ilmd"
+						}
+					},
+					"required": ["isA", "action"]
+				},
+				{
+					"anyOf": [{
+							"properties": {
+								"epcList": {
+									"minItems": 0
+								}
+							},
+							"required": ["epcList"]
+						},
+						{
+							"properties": {
+								"quantityList": {
+									"minItems": 1
+								}
+							},
+							"required": ["quantityList"]
+						},
+						{
+							"allOf": [{
+									"properties": {
+										"sensorElementList": {
+											"minItems": 1
+										}
+									},
+									"required": ["sensorElementList"]
+								},
+								{
+									"properties": {
+										"readPoint": {
+											"minItems": 1
+										}
+									},
+									"required": ["readPoint"]
+								}
+							]
+						}
+					]
+				},
+				{
+					"anyOf": [{
+							"properties": {
+								"ilmd": {
+									"not": {}
+								},
+								"action": {
+									"pattern": "^OBSERVE$"
+								}
+							}
+						},
+						{
+							"properties": {
+								"ilmd": {
+									"not": {}
+								},
+								"action": {
+									"pattern": "^DELETE$"
+								}
+							}
+						},
+						{
+							"properties": {
+								"action": {
+									"pattern": "^ADD$"
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		"aggregationEvent": {
+			"allOf": [{
+					"$ref": "#/definitions/event"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"isA": {
+							"type": "string",
+							"pattern": "^AggregationEvent$"
+						},
+						"parentID": {
+							"$ref": "#/definitions/uri"
+						},
+						"childEPCs": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/uri"
+							}
+						},
+						"childQuantityList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/quantityElement"
+							}
+						},
+						"action": {
+							"$ref": "#/definitions/action"
+						},
+						"bizStep": {
+							"$ref": "#/definitions/uri"
+						},
+						"disposition": {
+							"$ref": "#/definitions/uri"
+						},
+						"persistentDisposition": {
+							"$ref": "#/definitions/persistentDisposition"
+						},
+						"readPoint": {
+							"$ref": "#/definitions/readPoint"
+						},
+						"bizLocation": {
+							"$ref": "#/definitions/bizLocation"
+						},
+						"bizTransactionList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bizTransaction"
+							}
+						},
+						"sourceList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/source"
+							}
+						},
+						"destinationList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/destination"
+							}
+						},
+						"sensorElementList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/sensorElement"
+							}
+						}
+					},
+					"required": ["isA", "action"]
+				},
+				{
+					"anyOf": [{
+							"properties": {
+								"childEPCs": {
+									"minItems": 1
+								}
+							},
+							"required": ["childEPCs"]
+						},
+						{
+							"properties": {
+								"childQuantityList": {
+									"minItems": 1
+								}
+							},
+							"required": ["childQuantityList"]
+						},
+						{
+							"properties": {
+								"action": {
+									"pattern": "^DELETE$"
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		"associationEvent": {
+			"allOf": [{
+					"$ref": "#/definitions/event"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"isA": {
+							"type": "string",
+							"pattern": "^AssociationEvent$"
+						},
+						"parentID": {
+							"$ref": "#/definitions/uri"
+						},
+						"childEPCs": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/uri"
+							}
+						},
+						"childQuantityList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/quantityElement"
+							}
+						},
+						"action": {
+							"$ref": "#/definitions/action"
+						},
+						"bizStep": {
+							"$ref": "#/definitions/uri"
+						},
+						"disposition": {
+							"$ref": "#/definitions/uri"
+						},
+						"persistentDisposition": {
+							"$ref": "#/definitions/persistentDisposition"
+						},
+						"readPoint": {
+							"$ref": "#/definitions/readPoint"
+						},
+						"bizLocation": {
+							"$ref": "#/definitions/bizLocation"
+						},
+						"bizTransactionList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bizTransaction"
+							}
+						},
+						"sourceList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/source"
+							}
+						},
+						"destinationList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/destination"
+							}
+						},
+						"sensorElementList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/sensorElement"
+							}
+						}
+					},
+					"required": ["isA", "action", "parentID"]
+				},
+				{
+					"anyOf": [{
+							"properties": {
+								"childEPCs": {
+									"minItems": 1
+								}
+							},
+							"required": ["childEPCs"]
+						},
+						{
+							"properties": {
+								"childQuantityList": {
+									"minItems": 1
+								}
+							},
+							"required": ["childQuantityList"]
+						},
+						{
+							"properties": {
+								"action": {
+									"pattern": "^DELETE$"
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		"transactionEvent": {
+			"allOf": [{
+					"$ref": "#/definitions/event"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"isA": {
+							"type": "string",
+							"pattern": "^TransactionEvent$"
+						},
+						"bizTransactionList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bizTransaction"
+							},
+							"minItems": 1
+						},
+						"parentID": {
+							"$ref": "#/definitions/uri"
+						},
+						"epcList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/uri"
+							}
+						},
+						"quantityList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/quantityElement"
+							}
+						},
+						"action": {
+							"$ref": "#/definitions/action"
+						},
+						"bizStep": {
+							"$ref": "#/definitions/uri"
+						},
+						"disposition": {
+							"$ref": "#/definitions/uri"
+						},
+						"persistentDisposition": {
+							"$ref": "#/definitions/persistentDisposition"
+						},
+						"readPoint": {
+							"$ref": "#/definitions/readPoint"
+						},
+						"bizLocation": {
+							"$ref": "#/definitions/bizLocation"
+						},
+						"sourceList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/source"
+							}
+						},
+						"destinationList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/destination"
+							}
+						},
+						"sensorElementList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/sensorElement"
+							}
+						}
+					},
+					"required": ["isA", "bizTransactionList", "action"]
+				},
+				{
+					"anyOf": [{
+							"properties": {
+								"epcList": {
+									"minItems": 0
+								}
+							},
+							"required": ["epcList"]
+						},
+						{
+							"properties": {
+								"quantityList": {
+									"minItems": 1
+								}
+							},
+							"required": ["quantityList"]
+						},
+						{
+							"properties": {
+								"action": {
+									"pattern": "^DELETE$"
+								}
+							}
+						}
+					]
+				}
+			]
+		},
+		"transformationEvent": {
+			"allOf": [{
+					"$ref": "#/definitions/event"
+				},
+				{
+					"type": "object",
+					"properties": {
+						"isA": {
+							"type": "string",
+							"pattern": "^TransformationEvent$"
+						},
+						"inputEPCList": {
+							"$ref": "#/definitions/epcList"
+						},
+						"inputQuantityList": {
+							"$ref": "#/definitions/quantityList"
+						},
+						"outputEPCList": {
+							"$ref": "#/definitions/epcList"
+						},
+						"outputQuantityList": {
+							"$ref": "#/definitions/quantityList"
+						},
+						"transformationID": {
+							"$ref": "#/definitions/uri"
+						},
+						"bizStep": {
+							"$ref": "#/definitions/uri"
+						},
+						"disposition": {
+							"$ref": "#/definitions/uri"
+						},
+						"persistentDisposition": {
+							"$ref": "#/definitions/persistentDisposition"
+						},
+						"readPoint": {
+							"$ref": "#/definitions/readPoint"
+						},
+						"bizLocation": {
+							"$ref": "#/definitions/bizLocation"
+						},
+						"bizTransactionList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/bizTransaction"
+							}
+						},
+						"sourceList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/source"
+							}
+						},
+						"destinationList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/destination"
+							}
+						},
+						"sensorElementList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/sensorElement"
+							}
+						},
+						"ilmd": {
+							"$ref": "#/definitions/ilmd"
+						}
+					},
+					"required": ["isA"]
+				},
+				{
+					"anyOf": [{
+							"allOf": [{
+									"anyOf": [{
+											"properties": {
+												"inputEPCList": {
+													"minItems": 1
+												}
+											},
+											"required": ["inputEPCList"]
+										},
+										{
+											"properties": {
+												"inputQuantityList": {
+													"minItems": 1
+												}
+											},
+											"required": ["inputQuantityList"]
+										}
+									]
+								},
+								{
+									"anyOf": [{
+											"properties": {
+												"outputEPCList": {
+													"minItems": 1
+												}
+											},
+											"required": ["outputEPCList"]
+										},
+										{
+											"properties": {
+												"outputQuantityList": {
+													"minItems": 1
+												}
+											},
+											"required": ["outputQuantityList"]
+										}
+									]
+								}
+							]
+						},
+						{
+							"anyOf": [{
+									"properties": {
+										"inputEPCList": {
+											"minItems": 1
+										}
+									},
+									"required": ["inputEPCList"]
+								},
+								{
+									"properties": {
+										"inputQuantityList": {
+											"minItems": 1
+										}
+									},
+									"required": ["inputQuantityList"]
+								},
+								{
+									"properties": {
+										"outputEPCList": {
+											"minItems": 1
+										}
+									},
+									"required": ["outputEPCList"]
+								},
+								{
+									"properties": {
+										"outputQuantityList": {
+											"minItems": 1
+										}
+									},
+									"required": ["outputQuantityList"]
+								}
+							],
+							"required": ["transformationID"]
+						}
+					]
+				}
+			]
+		},
+		"onlyValidEvent": {
+			"required": ["isA"],
+			"allOf": [{
+					"if": {
+						"properties": {
+							"isA": {
+								"const": "ObjectEvent"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/objectEvent"
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"isA": {
+								"const": "AggregationEvent"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/aggregationEvent"
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"isA": {
+								"const": "TransactionEvent"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/transactionEvent"
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"isA": {
+								"const": "TransformationEvent"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/transformationEvent"
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"isA": {
+								"const": "AssociationEvent"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/associationEvent"
+					}
+				}
+			],
+			"properties": {
+				"isA": {
+					"type": "string",
+					"enum": [
+						"AssociationEvent",
+						"ObjectEvent",
+						"AggregationEvent",
+						"TransactionEvent",
+						"TransformationEvent"
+					]
+				}
+			}
+		},
+		"vocabulary": {
+			"type": "object",
+			"properties": {
+				"type": {
+					"$ref": "#/definitions/uri"
+				},
+				"vocabularyElementList": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/vocabularyElement"
+					}
+				}
+			},
+			"required": ["type"]
+		},
+		"vocabularyElement": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"$ref": "#/definitions/uri"
+				},
+				"attributes": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/attribute"
+					}
+				},
+				"children": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/uri"
+					}
+				}
+			},
+			"required": ["id"]
+		},
+		"attribute": {
+			"type": "object",
+			"properties": {
+				"id": {
+					"$ref": "#/definitions/uri"
+				},
+				"attribute": {
+					"anyOf": [{
+							"type": "number"
+						},
+						{
+							"type": "string"
+						},
+						{
+							"type": "object"
+						}
+                    ]
+				}
+			},
+			"required": ["id"]
+		},
+		"eventList": {
+			"type": "array",
+			"items": {
+				"anyOf": [{
+					"$ref": "#/definitions/onlyValidEvent"
+				}]
+			}
+		},
+		"vocabularyList": {
+			"type": "array",
+			"items": {
+				"$ref": "#/definitions/vocabulary"
+			}
+		},
+		"resultsBody": {
+			"type": "object",
+			"properties": {
+				"eventList": {
+					"$ref": "#/definitions/eventList"
+				},
+				"vocabularyList": {
+					"$ref": "#/definitions/vocabularyList"
+				}
+			},
+			"required": ["eventList"]
+		},
+
+		"queryResults": {
+			"type": "object",
+			"properties": {
+				"queryName": {
+					"type": "string"
+				},
+				"subscriptionID": {
+					"type": "string"
+				},
+				"resultsBody": {
+					"$ref": "#/definitions/resultsBody"
+				}
+			},
+			"required": ["resultsBody"]
+		},
+		"epcisQueryDocumentBody": {
+			"type": "object",
+			"properties": {
+				"queryResults": {
+					"$ref": "#/definitions/queryResults"
+				}
+			},
+			"required": ["queryResults"]
+		},
+		"epcisHeader": {
+			"type": "object",
+			"properties": {
+				"epcisMasterData": {
+					"type": "object",
+					"properties": {
+						"vocabularyList": {
+							"type": "array",
+							"items": {
+								"$ref": "#/definitions/vocabulary"
+							}
+						}
+					}
+				}
+			}
+
+
+
+		},
+		"epcisDocument": {
+			"type": "object",
+			"properties": {
+				"isA": {
+					"type": "string",
+					"const": "EPCISDocument"
+				},
+				"@context": {
+					"anyOf": [
+						{
+							"type": "string",
+							"format": "uri"
+						},
+						{
+							"type": "object"
+						},
+						{
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"anyOf": [{
+										"type": "string",
+										"format": "uri"
+									},
+									{
+										"type": "object"
+									}
+								]
+							}
+						}
+					]
+				},
+				"schemaVersion": {
+					"type": "string"
+				},
+				"creationDate": {
+					"type": "string",
+					"format": "date-time"
+				},
+				"epcisHeader": {
+					"$ref": "#/definitions/epcisHeader"
+				},
+				"epcisBody": {
+					"type": "object",
+					"properties": {
+						"eventList": {
+							"$ref": "#/definitions/eventList"
+						}					},
+					"required": ["eventList"]
+				}
+			},
+			"required": ["schemaVersion", "creationDate", "epcisBody"]
+		},
+		"epcisQueryDocument": {
+			"type": "object",
+			"properties": {
+				"isA": {
+					"type": "string",
+					"const": "EPCISQueryDocument"
+				},
+				"@context": {
+					"anyOf": [
+						{
+							"type": "string",
+							"format": "uri"
+						},
+						{
+							"type": "object"
+						},
+						{
+							"type": "array",
+							"uniqueItems": true,
+							"items": {
+								"anyOf": [{
+										"type": "string",
+										"format": "uri"
+									},
+									{
+										"type": "object"
+									}
+								]
+							}
+						}
+					]
+				},
+				"epcisBody": {
+					"$ref": "#/definitions/epcisQueryDocumentBody"
+				}
+			},
+			"required": ["epcisBody"]
+		}
+	},
+
+	"required": ["isA"],
+	"properties": {
+		"isA": {
+			"type": "string",
+			"pattern": "^EPCISDocument|EPCISQueryDocument$"
+		}
+	},
+	"allOf": [{
+			"if": {
+				"properties": {
+					"isA": {
+						"const": "EPCISDocument"
+					}
+				}
+			},
+			"then": {
+				"$ref": "#/definitions/epcisDocument"
+			}
+		},
+		{
+			"if": {
+				"properties": {
+					"isA": {
+						"const": "EPCISQueryDocument"
+					}
+				}
+			},
+			"then": {
+				"$ref": "#/definitions/epcisQueryDocument"
+			}
+		}
+
+
+	]
+
+
+}
