@@ -28,10 +28,10 @@ public class HTTPUtil {
 		return HttpClient.newBuilder().build().send(HttpRequest.newBuilder().header("Content-Type", "application/xml")
 				.uri(uri).POST(BodyPublishers.ofString(body)).build(), BodyHandlers.ofString());
 	}
-
+	
 	@SuppressWarnings("rawtypes")
-	public static void sendQueryResults(HttpServerResponse serverResponse, Object result, Document retDoc,
-			Element envelope, Element body, Class resultType, int statusCode) {
+	public static void sendQueryResults(HttpServerResponse serverResponse, Object result, Document retDoc, Element envelope,
+			Element body, Class resultType) {
 		try {
 			if (retDoc == null) {
 				retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -47,7 +47,7 @@ public class HTTPUtil {
 			envelope.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 			retDoc.appendChild(envelope);
 			retDoc.normalize();
-			serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(statusCode)
+			serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200)
 					.end(XMLUtil.toString(retDoc));
 		} catch (JAXBException | ParserConfigurationException | TransformerException e) {
 			e.printStackTrace();

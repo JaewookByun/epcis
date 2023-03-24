@@ -1,0 +1,29 @@
+{
+  "action": "ADD",
+  "bizLocation": "urn:epc:id:sgln:0012345.11111.0",
+  "bizStep": "urn:epcglobal:cbv:bizstep:receiving",
+  "bizTransactionList": "[{\"urn:epcglobal:cbv:btt:po\": \"urn:epc:id:gdti:0614141.00001.1618034\"}]",
+  "destinationList": "[{\"urn:epcglobal:cbv:sdt:location\": \"urn:epc:id:sgln:0614141.00777.0\"}, {\"urn:epcglobal:cbv:sdt:owning_party\": \"urn:epc:id:pgln:0614141.00777\"}, {\"urn:epcglobal:cbv:sdt:possessing_party\": \"urn:epc:id:pgln:0614141.00777\"}]",
+  "disposition": "urn:epcglobal:cbv:disp:in_progress",
+  "epcList": "[urn:epc:id:sgtin:0614141.107346.2016, urn:epc:id:sgtin:0614141.107346.2017, urn:epc:id:sgtin:0614141.107346.2018]",
+  "eventTime": "1112668411116",
+  "extension": {
+    "http://example．com/ext1#default": "stringAsDefaultValue",
+    "http://example．com/ext1#float": "20.0",
+    "http://example．com/ext1#int": "10"
+  },
+  "ilmd": {
+    "http://example．com/ext1#default": "stringAsDefaultValue",
+    "http://example．com/ext1#float": "20.0",
+    "http://example．com/ext1#int": "10"
+  },
+  "persistentDisposition": {
+    "set": "[urn:epcglobal:cbv:disp:completeness_verified]",
+    "unset": "[urn:epcglobal:cbv:disp:completeness_inferred]"
+  },
+  "quantityList": "[{\"epcClass\": \"urn:epc:class:lgtin:4012345.012345.998876\", \"quantity\": \"300.0\", \"uom\": \"KGM\"}, {\"epcClass\": \"urn:epc:class:lgtin:4012345.012345.998877\", \"quantity\": \"200.0\", \"uom\": \"KGM\"}]",
+  "readPoint": "urn:epc:id:sgln:0012345.11111.400",
+  "sensorElementList": "[{\"extension\": {\"http://example．com/ext1#default\": \"stringAsDefaultValue\", \"http://example．com/ext1#float\": \"20.0\", \"http://example．com/ext1#int\": \"10\"}, \"sensorMetadata\": {\"bizRules\": \"https://example.com/253/4012345000054987\", \"dataProcessingMethod\": \"https://example.com/253/4012345000054987\", \"deviceID\": \"urn:epc:id:giai:4000001.111\", \"deviceMetadata\": \"https://id.gs1.org/8004/4000001111\", \"endTime\": \"1554213300000\", \"otherAttributes\": {\"http://example．com/ext1#someFurtherMetadata\": \"someText\"}, \"rawData\": \"https://example.org/8004/401234599999\", \"startTime\": \"1554209701000\", \"time\": \"1554210300000\"}, \"sensorReport\": \"[{\\\"booleanValue\\\": \\\"true\\\", \\\"chemicalSubstance\\\": \\\"https://identifiers.org/inchikey:CZMRCDWAGMRECN-UGDNZRGBSA-N\\\", \\\"component\\\": \\\"example:x\\\", \\\"dataProcessingMethod\\\": \\\"https://example.com/253/4012345000054987\\\", \\\"deviceID\\\": \\\"urn:epc:id:giai:4000001.111\\\", \\\"deviceMetadata\\\": \\\"https://id.gs1.org/8004/4000001111\\\", \\\"hexBinaryValue\\\": \\\"���\\\", \\\"maxValue\\\": \\\"26.2\\\", \\\"meanValue\\\": \\\"13.2\\\", \\\"microorganism\\\": \\\"https://www.ncbi.nlm.nih.gov/taxonomy/1126011\\\", \\\"minValue\\\": \\\"26.0\\\", \\\"otherAttributes\\\": {\\\"http://example．com/ext1#someFurtherReportData\\\": \\\"someText\\\"}, \\\"percRank\\\": \\\"50.0\\\", \\\"percValue\\\": \\\"12.7\\\", \\\"rawData\\\": \\\"https://example.org/8004/401234599999\\\", \\\"sDev\\\": \\\"0.1\\\", \\\"stringValue\\\": \\\"SomeString\\\", \\\"time\\\": \\\"1563541200000\\\", \\\"type\\\": \\\"gs1:Temperature\\\", \\\"uom\\\": \\\"CEL\\\", \\\"uriValue\\\": \\\"https://id.gs1.org/8004/4000001111\\\", \\\"value\\\": \\\"26.0\\\"}]\"}]",
+  "sourceList": "[{\"urn:epcglobal:cbv:sdt:location\": \"urn:epc:id:sgln:4012345.00225.0\"}, {\"urn:epcglobal:cbv:sdt:owning_party\": \"urn:epc:id:pgln:4012345.00225\"}, {\"urn:epcglobal:cbv:sdt:possessing_party\": \"urn:epc:id:pgln:4012345.00225\"}]",
+  "type": "ObjectEvent"
+}

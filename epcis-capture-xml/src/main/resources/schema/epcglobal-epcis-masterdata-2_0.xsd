@@ -10,7 +10,7 @@
    version="2.0">
   <xsd:annotation>
     <xsd:documentation xml:lang="en">
-      <epcglobal:copyright> Copyright (C) 2006-2022 GS1 AISBL, All Rights Reserved.</epcglobal:copyright>
+      <epcglobal:copyright> Copyright (C) 2006-2021 GS1 AISBL, All Rights Reserved.</epcglobal:copyright>
       <epcglobal:disclaimer>
 THIS DOCUMENT IS PROVIDED “AS IS” WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this Standard, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this document.
 GS1 retains the right to make changes to this document at any time, without notice. GS1 makes no warranty for the use of this document and assumes no responsibility for any errors which may appear in the document, nor does it make a commitment to update the information contained herein.
@@ -18,13 +18,13 @@ GS1 retains the right to make changes to this document at any time, without noti
       <epcglobal:specification>EPC INFORMATION SERVICE (EPCIS) Version 2.0</epcglobal:specification>
     </xsd:documentation>
   </xsd:annotation>
-  <xsd:import namespace="urn:epcglobal:xsd:1" schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/epcglobal.xsd"/>
+  <xsd:import namespace="urn:epcglobal:xsd:1" schemaLocation="./EPCglobal.xsd"/>
   <xsd:import 
      namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" 
-     schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/StandardBusinessDocumentHeader.xsd"/>
+     schemaLocation="./StandardBusinessDocumentHeader.xsd"/>
   <xsd:import 
     namespace="urn:epcglobal:epcis:xsd:2" 
-    schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/epcglobal-epcis.xsd"/>
+    schemaLocation="./EPCglobal-epcis-2_0.xsd"/>
 
   <!-- MasterData CORE ELEMENTS -->
   <xsd:element name="EPCISMasterDataDocument" type="epcismd:EPCISMasterDataDocumentType"/>
