@@ -9,6 +9,34 @@ Auto-ID Labs., an association of global laboratories that firstly coins the conc
 oliot-epcis-2.1.0 runs and be available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
 You can access the server [HERE](http://dfpl.sejong.ac.kr/epcis/home/index.html).
 
+## How to use 'as a user'
+In oliot-epcis-2.1.0.zip, there are five runnable jar files and each of their corresponding json configuration file and the 'schema' folder containing schema files. Unzip the compressed file and execute the following runnable jar files as follows:
+
+### epcis-capture-xml.jar 
+```bash
+> java -jar epcis-capture-xml.jar xmlCaptureConfiguration.json
+```
+
+### epcis-query-soap.jar 
+```bash
+> java -jar epcis-query-soap.jar soapQueryConfiguration.json
+```
+
+### epcis-subscribe-soap.jar 
+```bash
+> java -jar epcis-subscribe-soap.jar soapSubscribeConfiguration.json
+```
+
+### epcis-capture-json.jar 
+```bash
+> java -jar epcis-capture-json.jar jsonCaptureConfiguration.json
+```
+
+### epcis-query-rest.jar 
+```bash
+> java -jar epcis-query-rest.jar restQueryConfiguration.json
+```
+
 ## Organizations and Projects disclosing their usage
 
 We are interested in knowing how Oliot EPCIS can be used for different application domains. Thus, if you are to use Oliot EPCIS and can disclose yourself, please send me (Jaewook Byun) your affiliation/organization information (e.g., logo, purpose of use, project name, etc.)
