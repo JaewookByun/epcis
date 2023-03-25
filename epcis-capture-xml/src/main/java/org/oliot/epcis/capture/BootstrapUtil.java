@@ -122,7 +122,7 @@ public class BootstrapUtil {
 			XMLCaptureServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 					.newSchema(XMLCaptureServer.class.getResource("/schema/EPCglobal-epcis-2_0.xsd")).newValidator();
 			XMLCaptureServer.xmlMasterDataValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
-					.newSchema(XMLCaptureServer.class.getResource("/schema/EPCglobal-epcis-masterdata-2_0.xsd"))
+					.newSchema(XMLCaptureServer.class.getResource("/schema/epcglobal-epcis-masterdata-2_0.xsd"))
 					.newValidator();
 			logger.info("Schema Validator configured as a developer mode");
 		} catch (Exception e) {
@@ -132,12 +132,12 @@ public class BootstrapUtil {
 						.newValidator();
 				XMLCaptureServer.xmlMasterDataValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 						.newSchema(XMLCaptureServer.class
-								.getResource("/resources/schema/EPCglobal-epcis-masterdata-2_0.xsd"))
+								.getResource("/resources/schema/epcglobal-epcis-masterdata-2_0.xsd"))
 						.newValidator();
 				logger.info("Schema Validator configured as a user mode");
 			} catch (Exception e1) {
 				logger.info("/schema/* not found");
-				try {
+				try {		
 					XMLCaptureServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 							.newSchema(new File(configuration.getString("xml_schema_location"))).newValidator();
 					XMLCaptureServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
@@ -146,6 +146,8 @@ public class BootstrapUtil {
 					logger.info("Schema Validator configured");
 				} catch (Exception e2) {
 					e.printStackTrace();
+					e1.printStackTrace();
+					e2.printStackTrace();
 					System.exit(1);
 				}
 			}
