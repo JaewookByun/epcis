@@ -45,6 +45,7 @@ We are interested in knowing how Oliot EPCIS can be used for different applicati
 - BIBA - Bremer Institut für Produktion und Logistik GmbH (an affiliate institute of the University of Bremen, Germany) [Link](http://www.biba.uni-bremen.de/en.html)
 - IoF 2020 (EU Horizon 2020 Project) [Link](https://www.iof2020.eu/)
 - NIMBLE (EU Horizon 2020 Project) [Link](https://www.nimble-project.org/)
+- NIRA [Link](https://www.nira-inc.com/technologies)
 
 ## Paper Publication
 - Ahn, Jaehyun, Haifa Gaza, Jincheol Oh, Klaus Fuchs, Jing Wu, Simon Mayer, and Jaewook Byun. "MR-FoodCoach: Enabling a convenience store on mixed reality space for healthier purchases." 2022 IEEE International Symposium on Mixed and Augmented Reality Adjunct (ISMAR-Adjunct) DEMO Session. IEEE, 2022.
