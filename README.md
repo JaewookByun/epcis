@@ -59,7 +59,7 @@ Note: if you publish papers using Oliot EPCIS and want to disclose it, let us kn
 ## Specification 
 
 - EPCIS 2.0
-- Java, Web Service (JDK 19, Eclipse Vert.X)
+- Java, Web Service (JDK 17, Eclipse Vert.X)
 - MongoDB 6.x
 
 ## Contact
