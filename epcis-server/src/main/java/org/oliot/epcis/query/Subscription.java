@@ -37,7 +37,6 @@ public class Subscription {
 	private Long initialRecordTime;
 	private Boolean reportIfEmpty;
 	private QueryDescription queryDescription;
-	@SuppressWarnings("unused")
 	private TriggerDescription triggerDescription;
 
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)
@@ -84,9 +83,17 @@ public class Subscription {
 			}
 		} else {
 			triggerDescription = new TriggerDescription(sub, unmarshaller);
-
 		}
+	}
+	
+	
 
+	public TriggerDescription getTriggerDescription() {
+		return triggerDescription;
+	}
+
+	public void setTriggerDescription(TriggerDescription triggerDescription) {
+		this.triggerDescription = triggerDescription;
 	}
 
 	public Subscription(org.bson.Document doc) {
@@ -114,18 +121,20 @@ public class Subscription {
 		if (initialRecordTime != null)
 			doc.put("initialRecordTime", initialRecordTime);
 		doc.put("reportIfEmpty", reportIfEmpty);
-		if (schedule != null)
+		if (schedule != null) {
 			doc.put("schedule", schedule);
-		if (trigger != null)
-			doc.put("trigger", trigger);
+			doc.put("eventCountLimit", queryDescription.getEventCountLimit());
+			doc.put("maxCount", queryDescription.getMaxCount());
+			doc.put("projection", queryDescription.getMongoProjection());
+			doc.put("query", queryDescription.getMongoQuery());
+			doc.put("sort", queryDescription.getMongoSort());
+			doc.put("queryName", queryDescription.getQueryName());
+		}
 
-		doc.put("eventCountLimit", queryDescription.getEventCountLimit());
-		doc.put("maxCount", queryDescription.getMaxCount());
-		doc.put("projection", queryDescription.getMongoProjection());
-		doc.put("query", queryDescription.getMongoQuery());
-		doc.put("sort", queryDescription.getMongoSort());
-		doc.put("queryName", queryDescription.getQueryName());
-
+		if (trigger != null) {
+			doc.put("trigger", trigger.toString());
+			doc.put("query", triggerDescription.getMongoQueryParameter());
+		}		
 		return doc;
 	}
 

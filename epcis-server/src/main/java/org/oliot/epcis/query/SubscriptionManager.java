@@ -39,17 +39,16 @@ public class SubscriptionManager {
 			SOAPQueryService subscribeService = new SOAPQueryService();
 
 			for (org.bson.Document doc : results) {
+				Subscription s = new Subscription(doc);
 				if (doc.getString("schedule") != null) {
-					Subscription s = new Subscription(doc);
 					subscribeService.addScheduleToQuartz(s);
-					EPCISServer.logger
-							.debug("Existing scheduled subscription " + doc.getString("_id") + " activated");
+					EPCISServer.logger.debug("Existing scheduled subscription " + doc.getString("_id") + " activated");
 				} else if (doc.getString("trigger") != null) {
-
-					// TriggerEngine.addTriggerSubscription(subscription.getSubscriptionID(),
-					// subscription);
-					// SOAPSubscribeServer.logger.debug("Existing trigger subscription " +
-					// subscription.getSubscriptionID() + " activated");
+					// TODO
+					// EPCISServer.triggerEngine.addSubscription(new TriggerDescription(s, new
+					// SOAPQueryUnmarshaller()), s.getDest());
+					// EPCISServer.logger.debug("Existing trigger subscription " +
+					// s.getSubscriptionID() + " activated");
 				}
 			}
 		} catch (SchedulerException e) {

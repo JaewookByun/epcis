@@ -116,7 +116,7 @@ public class EPCISServer extends AbstractVerticle {
 
 		XMLCaptureServiceHandler.registerPostCaptureHandler(router, xmlCaptureCoreService, eventBus);
 		XMLCaptureServiceHandler.registerGetCaptureIDHandler(router, xmlCaptureCoreService);
-		XMLCaptureServiceHandler.registerPostEventsHandler(router, xmlCaptureCoreService);
+		XMLCaptureServiceHandler.registerPostEventsHandler(router, xmlCaptureCoreService, eventBus);
 		XMLCaptureServiceHandler.registerGetCaptureHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerDeletePageToken(router);
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);

@@ -683,18 +683,9 @@ public class SOAPQueryService {
 				return;
 			}
 		} else {
-			try {
-				EPCISServer.triggerEngine.addSubscription(new TriggerDescription(subscribe, soapQueryUnmarshaller),
-						subscription.getDest());
-				addScheduleToDB(subscription);
-				sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
-			} catch (ImplementationException | SubscribeNotPermittedException e) {
-				HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
-				return;
-			} catch (QueryParameterException e) {
-				HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
-				return;
-			}
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
+			addScheduleToDB(subscription);
+			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
 		}
 	}
 

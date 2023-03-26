@@ -49,7 +49,8 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 * @param eventBus          eventBus
 	 */
-	public static void registerPostCaptureHandler(Router router, XMLCaptureService xmlCaptureService, EventBus eventBus) {
+	public static void registerPostCaptureHandler(Router router, XMLCaptureService xmlCaptureService,
+			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/xml").handler(routingContext -> {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
@@ -113,13 +114,14 @@ public class XMLCaptureServiceHandler {
 	 * @param router            router
 	 * @param xmlCaptureService xmlCaptureService
 	 */
-	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService) {
+	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
+			EventBus eventBus) {
 		router.post("/epcis/events").consumes("*/xml").blockingHandler(routingContext -> {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
 				return;
 			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
 				return;
-			xmlCaptureService.postEvent(routingContext);
+			xmlCaptureService.postEvent(routingContext, eventBus);
 		});
 		EPCISServer.logger.info("[POST /epcis/events] - router added");
 	}

@@ -3,6 +3,7 @@ package org.oliot.epcis.query;
 import java.text.ParseException;
 import java.util.List;
 
+import org.bson.Document;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.QueryParam;
@@ -218,10 +219,32 @@ public class TriggerDescription {
 	private Entry<List<String>> HASATTR;
 	private Entry<List<String>> EQ_ATTR;
 
+	private String subscriptionID;
+
+	public boolean isPass(Document doc) {
+		if (eventType != null) {
+			if (!doc.containsKey("type"))
+				return false;
+			else if (!eventType.contains(doc.getString("type")))
+				return false;
+		}
+		return true;
+	}
+
+	public String getSubscriptionID() {
+		return subscriptionID;
+	}
+
+	public void setSubscriptionID(String subscriptionID) {
+		this.subscriptionID = subscriptionID;
+	}
+
 	@SuppressWarnings("unchecked")
 	public TriggerDescription(Subscribe subscribe, SOAPQueryUnmarshaller unmarshaller)
 			throws QueryParameterException, ImplementationException, SubscribeNotPermittedException {
 		this.unmarshaller = unmarshaller;
+
+		this.subscriptionID = subscribe.getSubscriptionID();
 
 		if (subscribe.getQueryName().equals("SimpleMasterDataQuery")) {
 			SubscribeNotPermittedException e = new SubscribeNotPermittedException(
@@ -239,6 +262,14 @@ public class TriggerDescription {
 			if (name.equals("eventType"))
 				eventType = (List<String>) value;
 		}
+	}
+
+	public Document getMongoQueryParameter() {
+		Document doc = new Document();
+		if (eventType != null) {
+			doc.put("eventType", eventType);
+		}
+		return doc;
 	}
 
 	private void convertQueryParams(List<QueryParam> paramList) throws QueryParameterException {

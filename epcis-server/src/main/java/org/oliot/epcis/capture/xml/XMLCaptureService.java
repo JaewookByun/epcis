@@ -154,7 +154,7 @@ public class XMLCaptureService {
 		}
 	}
 
-	public void postEvent(RoutingContext routingContext) {
+	public void postEvent(RoutingContext routingContext, EventBus eventBus) {
 		String inputString = routingContext.body().asString();
 		SOAPMessage message = new SOAPMessage();
 		// payload check
@@ -189,28 +189,28 @@ public class XMLCaptureService {
 		if (type.equals("AggregationEvent")) {
 			AggregationEventType event = JAXB.unmarshal(epcisStream, AggregationEventType.class);
 			EPCISServer.logger.debug("unmarshal - aggregation event");
-			captureEvent(routingContext, event);
+			captureEvent(routingContext, event, eventBus);
 		} else if (type.equals("AssociationEvent")) {
 			AssociationEventType event = JAXB.unmarshal(epcisStream, AssociationEventType.class);
 			EPCISServer.logger.debug("unmarshal - association event");
-			captureEvent(routingContext, event);
+			captureEvent(routingContext, event, eventBus);
 		} else if (type.equals("ObjectEvent")) {
 			ObjectEventType event = JAXB.unmarshal(epcisStream, ObjectEventType.class);
 			EPCISServer.logger.debug("unmarshal - object event");
-			captureEvent(routingContext, event);
+			captureEvent(routingContext, event, eventBus);
 		} else if (type.equals("TransactionEvent")) {
 			TransactionEventType event = JAXB.unmarshal(epcisStream, TransactionEventType.class);
 			EPCISServer.logger.debug("unmarshal - transaction event");
-			captureEvent(routingContext, event);
+			captureEvent(routingContext, event, eventBus);
 		} else if (type.equals("TransformationEvent")) {
 			TransformationEventType event = JAXB.unmarshal(epcisStream, TransformationEventType.class);
 			EPCISServer.logger.debug("unmarshal - transformation event");
-			captureEvent(routingContext, event);
+			captureEvent(routingContext, event, eventBus);
 		}
 
 	}
 
-	private void captureEvent(RoutingContext routingContext, Object jaxbEvent) {
+	private void captureEvent(RoutingContext routingContext, Object jaxbEvent, EventBus eventBus) {
 		Document obj = null;
 		SOAPMessage message = new SOAPMessage();
 		try {
@@ -224,6 +224,7 @@ public class XMLCaptureService {
 
 		if (!obj.containsKey("errorDeclaration")) {
 			try {
+				eventBus.send("trigger", obj);
 				InsertOneResult result = EPCISServer.mEventCollection.insertOne(obj);
 				EPCISServer.logger.debug("event captured: " + result);
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
@@ -283,10 +284,10 @@ public class XMLCaptureService {
 						return null;
 					}
 				}
-
 				if (!obj.containsKey("errorDeclaration")) {
 					return new InsertOneModel<Document>(obj);
 				} else {
+					eventBus.send("trigger", obj);
 					Document filter = new Document("eventID", obj.getString("eventID"));
 					return new ReplaceOneModel<Document>(filter, obj);
 				}
