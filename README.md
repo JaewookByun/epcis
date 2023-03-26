@@ -1,6 +1,8 @@
 # Oliot EPCIS 2.0
 Version: _oliot-epcis-2.2.0_
 
+_Note: change branch to oliot-epcis-2.1.0 for using the latest release_
+
 An international standard, GS1 EPCIS, has enabled standardized information integration and sharing for supply chains and logistics, and  takes a new turn in the era of the Internet of Things by ratifying the major release v2.0 since the last ratification in 2016.  The official support for sensor data and Semantic Web technologies of the release as well as the legacy of GS1 would be the cornerstone for information systems that seek interoperability of data in the era. 
 
 Auto-ID Labs., an association of global laboratories that firstly coins the concept of the Internet of Things, closely cooperate with GS1 in leading prior research. [Auto-ID Labs. Korea](https://autoidlab.kaist.ac.kr/) at Sejong University develops and maintains open-sources for GS1 standards. Oliot EPCIS has been developed and maintained since 2014 and now initiates the second generation of the system. The second generation is developed from scratch again with the standard development process called GSMP EPCIS/CBV 2.0 MSWG.
