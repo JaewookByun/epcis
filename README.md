@@ -1,4 +1,5 @@
 # Oliot EPCIS 2.0
+Version: _oliot-epcis-2.2.0_
 
 An international standard, GS1 EPCIS, has enabled standardized information integration and sharing for supply chains and logistics, and  takes a new turn in the era of the Internet of Things by ratifying the major release v2.0 since the last ratification in 2016.  The official support for sensor data and Semantic Web technologies of the release as well as the legacy of GS1 would be the cornerstone for information systems that seek interoperability of data in the era. 
 
@@ -10,31 +11,14 @@ oliot-epcis-2.1.0 runs and be available on a server at DFPL Lab. at Sejong Unive
 You can access the server [HERE](http://dfpl.sejong.ac.kr/epcis/home/index.html).
 
 ## How to use 'as a user'
-In oliot-epcis-2.1.0.zip, there are five runnable jar files and each of their corresponding json configuration file and the 'schema' folder containing schema files. Unzip the compressed file and execute the following runnable jar files as follows:
+In oliot-epcis-2.2.0.zip, there would be a single runnable file, its json configuration file and the 'schema' folder containing schema files. 
+It would be available when v2.2.0 is released. But, you can export the system to a runnable jar file from org.oliot.epcis.server.EPCISServer.java
 
-### epcis-capture-xml.jar 
-```bash
-> java -jar epcis-capture-xml.jar xmlCaptureConfiguration.json
-```
+The command would be 
 
-### epcis-query-soap.jar 
+### epcis.jar 
 ```bash
-> java -jar epcis-query-soap.jar soapQueryConfiguration.json
-```
-
-### epcis-subscribe-soap.jar 
-```bash
-> java -jar epcis-subscribe-soap.jar soapSubscribeConfiguration.json
-```
-
-### epcis-capture-json.jar 
-```bash
-> java -jar epcis-capture-json.jar jsonCaptureConfiguration.json
-```
-
-### epcis-query-rest.jar 
-```bash
-> java -jar epcis-query-rest.jar restQueryConfiguration.json
+> java -jar epcis.jar configuration.json
 ```
 
 ## Organizations and Projects disclosing their usage
@@ -60,7 +44,7 @@ Note: if you publish papers using Oliot EPCIS and want to disclose it, let us kn
 ## Specification 
 
 - EPCIS 2.0
-- Java, Web Service (JDK 17, Eclipse Vert.X)
+- Java, Web Service (JDK 19, Eclipse Vert.X)
 - MongoDB 6.x
 
 ## Contact
