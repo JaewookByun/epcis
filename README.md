@@ -9,7 +9,7 @@ Auto-ID Labs., an association of global laboratories that firstly coins the conc
 
 ## Open Service 
 
-oliot-epcis-2.1.0 runs and be available on a server at DFPL Lab. at Sejong University [DFPL Lab.] (https://sites.google.com/view/jack-dfpl/home)
+oliot-epcis-2.1.0 runs and be available on a server at DFPL Lab. at Sejong University [DFPL Lab.](https://sites.google.com/view/jack-dfpl/home)
 You can access the server [HERE](http://dfpl.sejong.ac.kr/epcis/home/index.html).
 
 ## How to use 'as a user'
