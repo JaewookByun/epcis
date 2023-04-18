@@ -297,6 +297,7 @@ public class XMLCaptureService {
 			return;
 		}
 		EPCISServer.logger.debug("ready to capture events");
+		
 		try {
 			BulkWriteResult result = EPCISServer.mEventCollection.bulkWrite(bulk);
 			EPCISServer.logger.debug("event captured: " + result);

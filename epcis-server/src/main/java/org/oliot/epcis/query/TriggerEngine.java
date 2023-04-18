@@ -91,4 +91,5 @@ public class TriggerEngine {
 		HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, uri, EPCISServer.logger, message,
 				queryResults, QueryResults.class);
 	}
+
 }

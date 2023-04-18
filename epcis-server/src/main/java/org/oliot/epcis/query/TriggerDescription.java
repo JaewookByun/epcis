@@ -1,7 +1,12 @@
 package org.oliot.epcis.query;
 
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.bson.Document;
 import org.oliot.epcis.model.ArrayOfString;
@@ -221,6 +226,9 @@ public class TriggerDescription {
 
 	private String subscriptionID;
 
+	private String triggerKey;
+
+	// TODO:
 	public boolean isPass(Document doc) {
 		if (eventType != null) {
 			if (!doc.containsKey("type"))
@@ -228,6 +236,52 @@ public class TriggerDescription {
 			else if (!eventType.contains(doc.getString("type")))
 				return false;
 		}
+		if (GE_eventTime != null) {
+			if (!doc.containsKey("eventTime"))
+				return false;
+			else if (doc.getLong("eventTime") < GE_eventTime)
+				return false;
+		}
+		if (LT_eventTime != null) {
+			if (!doc.containsKey("eventTime"))
+				return false;
+			else if (doc.getLong("eventTime") >= LT_eventTime)
+				return false;
+		}
+		if (GE_recordTime != null) {
+			if (!doc.containsKey("recordTime"))
+				return false;
+			else if (doc.getLong("recordTime") < GE_recordTime)
+				return false;
+		}
+		if (LT_recordTime != null) {
+			if (!doc.containsKey("recordTime"))
+				return false;
+			else if (doc.getLong("recordTime") >= LT_recordTime)
+				return false;
+		}
+		
+		if (EQ_action != null) {
+			if (!doc.containsKey("action"))
+				return false;
+			else if (!EQ_action.contains(doc.getString("action")))
+				return false;
+		}
+		
+		if (EQ_bizStep != null) {
+			if (!doc.containsKey("bizStep"))
+				return false;
+			else if (!EQ_bizStep.contains(doc.getString("bizStep")))
+				return false;
+		}
+		
+		if (EQ_disposition != null) {
+			if (!doc.containsKey("disposition"))
+				return false;
+			else if (!EQ_disposition.contains(doc.getString("disposition")))
+				return false;
+		}
+
 		return true;
 	}
 
@@ -255,19 +309,66 @@ public class TriggerDescription {
 		List<QueryParam> paramList = subscribe.getParams().getParam();
 		convertQueryParams(paramList);
 
+		// TODO:
 		for (QueryParam param : paramList) {
 			String name = param.getName();
 			Object value = param.getValue();
 
 			if (name.equals("eventType"))
 				eventType = (List<String>) value;
+
+			if (name.equals("GE_eventTime"))
+				GE_eventTime = (long) value;
+
+			if (name.equals("LT_eventTime"))
+				LT_eventTime = (long) value;
+
+			if (name.equals("GE_recordTime"))
+				GE_recordTime = (long) value;
+
+			if (name.equals("LT_recordTime"))
+				LT_recordTime = (long) value;
+			
+			if (name.equals("EQ_action"))
+				EQ_action = (List<String>) value;
+			
+			if (name.equals("EQ_bizStep"))
+				EQ_bizStep = (List<String>) value;
+			
+			if (name.equals("EQ_disposition"))
+				EQ_disposition = (List<String>) value;
 		}
 	}
 
+	// TODO:
 	public Document getMongoQueryParameter() {
 		Document doc = new Document();
 		if (eventType != null) {
 			doc.put("eventType", eventType);
+		}
+		if (GE_eventTime != null) {
+			doc.put("GE_eventTime", GE_eventTime);
+		}
+		if (LT_eventTime != null) {
+			doc.put("LT_eventTime", LT_eventTime);
+		}
+		if (GE_recordTime != null) {
+			doc.put("GE_recordTime", GE_recordTime);
+		}
+		if (LT_recordTime != null) {
+			doc.put("LT_recordTime", LT_recordTime);
+		}
+		
+		if (EQ_action != null) {
+			doc.put("EQ_action", EQ_action);
+		}
+		
+		if (EQ_bizStep != null) {
+			doc.put("EQ_bizStep", EQ_bizStep);
+		}
+		
+		if (EQ_disposition != null) {
+			doc.put("EQ_disposition", EQ_disposition);
 		}
 		return doc;
 	}
