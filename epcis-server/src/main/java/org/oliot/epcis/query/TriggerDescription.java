@@ -237,35 +237,43 @@ public class TriggerDescription {
 		}
 		return true;
 	}
+	
+	public boolean isPassGELong(Long query, Document doc, String key) {
+		try {
+			if (doc.getLong(key) < query)
+				return false;
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
+	
+	public boolean isPassLTLong(Long query, Document doc, String key) {
+		try {
+			if (doc.getLong(key) >= query)
+				return false;
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+	}
 
 	// TODO:
 	public boolean isPass(Document doc) {
 		if (eventType != null && isPassString(eventType, doc, "type") == false) {
 			return false;
 		}
-		if (GE_eventTime != null) {
-			if (!doc.containsKey("eventTime"))
-				return false;
-			else if (doc.getLong("eventTime") < GE_eventTime)
-				return false;
+		if (GE_eventTime != null && !isPassGELong(GE_eventTime, doc, "eventTime")) {
+			return false;
 		}
-		if (LT_eventTime != null) {
-			if (!doc.containsKey("eventTime"))
-				return false;
-			else if (doc.getLong("eventTime") >= LT_eventTime)
-				return false;
+		if (LT_eventTime != null && !isPassLTLong(LT_eventTime, doc, "eventTime")) {
+			return false;
 		}
-		if (GE_recordTime != null) {
-			if (!doc.containsKey("recordTime"))
-				return false;
-			else if (doc.getLong("recordTime") < GE_recordTime)
-				return false;
+		if (GE_recordTime != null && !isPassGELong(GE_recordTime, doc, "recordTime")) {
+			return false;
 		}
-		if (LT_recordTime != null) {
-			if (!doc.containsKey("recordTime"))
-				return false;
-			else if (doc.getLong("recordTime") >= LT_recordTime)
-				return false;
+		if (LT_recordTime != null && !isPassLTLong(LT_recordTime, doc, "recordTime")) {
+			return false;
 		}
 
 		if (EQ_action != null) {
