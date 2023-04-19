@@ -230,7 +230,7 @@ public class TriggerDescription {
 
 	public boolean isPassString(List<String> query, Document doc, String key) {
 		try {
-			if (!eventType.contains(doc.getString("type")))
+			if (!query.contains(doc.getString(key)))
 				return false;
 		} catch (NullPointerException e) {
 			return false;
@@ -276,25 +276,16 @@ public class TriggerDescription {
 			return false;
 		}
 
-		if (EQ_action != null) {
-			if (!doc.containsKey("action"))
-				return false;
-			else if (!EQ_action.contains(doc.getString("action")))
-				return false;
+		if (EQ_action != null && !isPassString(EQ_action, doc, "action")) {
+			return false;
 		}
 
-		if (EQ_bizStep != null) {
-			if (!doc.containsKey("bizStep"))
-				return false;
-			else if (!EQ_bizStep.contains(doc.getString("bizStep")))
-				return false;
+		if (EQ_bizStep != null && !isPassString(EQ_bizStep, doc, "bizStep")) {
+			return false;
 		}
-
-		if (EQ_disposition != null) {
-			if (!doc.containsKey("disposition"))
-				return false;
-			else if (!EQ_disposition.contains(doc.getString("disposition")))
-				return false;
+		
+		if (EQ_disposition != null && !isPassString(EQ_disposition, doc, "disposition")) {
+			return false;
 		}
 
 		if (EQ_persistentDisposition_set != null) {
