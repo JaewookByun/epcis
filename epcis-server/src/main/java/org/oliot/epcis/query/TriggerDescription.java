@@ -228,84 +228,72 @@ public class TriggerDescription {
 
 	private String triggerKey;
 
-	public boolean isPassString(List<String> query, Document doc, String key) {
-		try {
-			if (!query.contains(doc.getString(key)))
-				return false;
-		} catch (NullPointerException e) {
+	public boolean isPassString(List<String> query, String value) {
+		if (!query.contains(value))
 			return false;
-		}
 		return true;
 	}
-	
-	public boolean isPassGELong(Long query, Document doc, String key) {
-		try {
-			if (doc.getLong(key) < query)
-				return false;
-		} catch (Exception e) {
+
+	public boolean isPassListOfString(List<String> query, List<String> value) {
+		if (Collections.disjoint(query, value))
 			return false;
-		}
 		return true;
 	}
-	
-	public boolean isPassLTLong(Long query, Document doc, String key) {
-		try {
-			if (doc.getLong(key) >= query)
-				return false;
-		} catch (Exception e) {
+
+	public boolean isPassGELong(Long query, Long value) {
+		if (value < query)
 			return false;
-		}
+		return true;
+	}
+
+	public boolean isPassLTLong(Long query, Long value) {
+		if (value >= query)
+			return false;
 		return true;
 	}
 
 	// TODO:
 	public boolean isPass(Document doc) {
-		if (eventType != null && isPassString(eventType, doc, "type") == false) {
-			return false;
-		}
-		if (GE_eventTime != null && !isPassGELong(GE_eventTime, doc, "eventTime")) {
-			return false;
-		}
-		if (LT_eventTime != null && !isPassLTLong(LT_eventTime, doc, "eventTime")) {
-			return false;
-		}
-		if (GE_recordTime != null && !isPassGELong(GE_recordTime, doc, "recordTime")) {
-			return false;
-		}
-		if (LT_recordTime != null && !isPassLTLong(LT_recordTime, doc, "recordTime")) {
-			return false;
-		}
-
-		if (EQ_action != null && !isPassString(EQ_action, doc, "action")) {
-			return false;
-		}
-
-		if (EQ_bizStep != null && !isPassString(EQ_bizStep, doc, "bizStep")) {
-			return false;
-		}
-		
-		if (EQ_disposition != null && !isPassString(EQ_disposition, doc, "disposition")) {
-			return false;
-		}
-
-		if (EQ_persistentDisposition_set != null) {
-			try {
-				if (Collections.disjoint(EQ_persistentDisposition_set,
-						doc.get("persistentDisposition", Document.class).getList("set", String.class)))
-					return false;
-			} catch (NullPointerException e) {
+		try {
+			if (eventType != null && isPassString(eventType, doc.getString("type"))) {
 				return false;
 			}
-		}
-
-		if (EQ_persistentDisposition_unset != null) {
-			try {
-				if (Collections.disjoint(EQ_persistentDisposition_unset,
-						doc.get("persistentDisposition", Document.class).getList("unset", String.class)))
-					return false;
-			} catch (NullPointerException e) {
+			if (GE_eventTime != null && !isPassGELong(GE_eventTime, doc.getLong("eventTime"))) {
 				return false;
 			}
+			if (LT_eventTime != null && !isPassLTLong(LT_eventTime, doc.getLong("eventTime"))) {
+				return false;
+			}
+			if (GE_recordTime != null && !isPassGELong(GE_recordTime, doc.getLong("recordTime"))) {
+				return false;
+			}
+			if (LT_recordTime != null && !isPassLTLong(LT_recordTime, doc.getLong("recordTime"))) {
+				return false;
+			}
+
+			if (EQ_action != null && !isPassString(EQ_action, doc.getString("action"))) {
+				return false;
+			}
+
+			if (EQ_bizStep != null && !isPassString(EQ_bizStep, doc.getString("bizStep"))) {
+				return false;
+			}
+
+			if (EQ_disposition != null && !isPassString(EQ_disposition, doc.getString("disposition"))) {
+				return false;
+			}
+
+			if (EQ_persistentDisposition_set != null && !isPassListOfString(EQ_persistentDisposition_set,
+					doc.get("persistentDisposition", Document.class).getList("set", String.class))) {
+				return false;
+			}
+
+			if (EQ_persistentDisposition_unset != null && !isPassListOfString(EQ_persistentDisposition_unset,
+					doc.get("persistentDisposition", Document.class).getList("unset", String.class))) {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
 		}
 
 		return true;
