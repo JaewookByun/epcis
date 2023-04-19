@@ -260,26 +260,46 @@ public class TriggerDescription {
 			else if (doc.getLong("recordTime") >= LT_recordTime)
 				return false;
 		}
-		
+
 		if (EQ_action != null) {
 			if (!doc.containsKey("action"))
 				return false;
 			else if (!EQ_action.contains(doc.getString("action")))
 				return false;
 		}
-		
+
 		if (EQ_bizStep != null) {
 			if (!doc.containsKey("bizStep"))
 				return false;
 			else if (!EQ_bizStep.contains(doc.getString("bizStep")))
 				return false;
 		}
-		
+
 		if (EQ_disposition != null) {
 			if (!doc.containsKey("disposition"))
 				return false;
 			else if (!EQ_disposition.contains(doc.getString("disposition")))
 				return false;
+		}
+
+		if (EQ_persistentDisposition_set != null) {
+			try {
+				if (Collections.disjoint(EQ_persistentDisposition_set,
+						doc.get("persistentDisposition", Document.class).getList("set", String.class)))
+					return false;
+			} catch (NullPointerException e) {
+				return false;
+			}
+		}
+
+		if (EQ_persistentDisposition_unset != null) {
+			try {
+				if (Collections.disjoint(EQ_persistentDisposition_unset,
+						doc.get("persistentDisposition", Document.class).getList("unset", String.class)))
+					return false;
+			} catch (NullPointerException e) {
+				return false;
+			}
 		}
 
 		return true;
@@ -328,15 +348,21 @@ public class TriggerDescription {
 
 			if (name.equals("LT_recordTime"))
 				LT_recordTime = (long) value;
-			
+
 			if (name.equals("EQ_action"))
 				EQ_action = (List<String>) value;
-			
+
 			if (name.equals("EQ_bizStep"))
 				EQ_bizStep = (List<String>) value;
-			
+
 			if (name.equals("EQ_disposition"))
 				EQ_disposition = (List<String>) value;
+
+			if (name.equals("EQ_persistentDisposition_set"))
+				EQ_persistentDisposition_set = (List<String>) value;
+
+			if (name.equals("EQ_persistentDisposition_unset"))
+				EQ_persistentDisposition_unset = (List<String>) value;
 		}
 	}
 
@@ -358,17 +384,25 @@ public class TriggerDescription {
 		if (LT_recordTime != null) {
 			doc.put("LT_recordTime", LT_recordTime);
 		}
-		
+
 		if (EQ_action != null) {
 			doc.put("EQ_action", EQ_action);
 		}
-		
+
 		if (EQ_bizStep != null) {
 			doc.put("EQ_bizStep", EQ_bizStep);
 		}
-		
+
 		if (EQ_disposition != null) {
 			doc.put("EQ_disposition", EQ_disposition);
+		}
+
+		if (EQ_persistentDisposition_set != null) {
+			doc.put("EQ_persistentDisposition_set", EQ_persistentDisposition_set);
+		}
+
+		if (EQ_persistentDisposition_unset != null) {
+			doc.put("EQ_persistentDisposition_unset", EQ_persistentDisposition_unset);
 		}
 		return doc;
 	}

@@ -206,8 +206,12 @@ public class BSONReadUtil {
 					if (r.containsKey("booleanValue"))
 						srt.setBooleanValue(r.getBoolean("booleanValue"));
 					if (r.containsKey("hexBinaryValue")) {
-						byte[] x = r.get("hexBinaryValue", Binary.class).getData();
-						srt.setHexBinaryValue(x);
+						try {
+							byte[] x = r.get("hexBinaryValue", Binary.class).getData();
+							srt.setHexBinaryValue(x);
+						} catch (ClassCastException e) {
+							srt.setHexBinaryValue((byte[]) r.get("hexBinary"));
+						}
 					}
 					if (r.containsKey("uriValue"))
 						srt.setUriValue(r.getString("uriValue"));
