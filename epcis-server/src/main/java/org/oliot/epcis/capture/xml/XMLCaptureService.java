@@ -221,10 +221,11 @@ public class XMLCaptureService {
 			return;
 		}
 		EPCISServer.logger.debug("ready to capture");
-
+		// send to trigger event bus
+		eventBus.send("trigger", obj);
 		if (!obj.containsKey("errorDeclaration")) {
 			try {
-				eventBus.send("trigger", obj);
+
 				InsertOneResult result = EPCISServer.mEventCollection.insertOne(obj);
 				EPCISServer.logger.debug("event captured: " + result);
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
@@ -284,10 +285,11 @@ public class XMLCaptureService {
 						return null;
 					}
 				}
+				// send to trigger event bus
+				eventBus.send("trigger", obj);
 				if (!obj.containsKey("errorDeclaration")) {
 					return new InsertOneModel<Document>(obj);
 				} else {
-					eventBus.send("trigger", obj);
 					Document filter = new Document("eventID", obj.getString("eventID"));
 					return new ReplaceOneModel<Document>(filter, obj);
 				}
@@ -297,7 +299,7 @@ public class XMLCaptureService {
 			return;
 		}
 		EPCISServer.logger.debug("ready to capture events");
-		
+
 		try {
 			BulkWriteResult result = EPCISServer.mEventCollection.bulkWrite(bulk);
 			EPCISServer.logger.debug("event captured: " + result);
