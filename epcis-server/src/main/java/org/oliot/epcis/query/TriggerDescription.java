@@ -228,13 +228,20 @@ public class TriggerDescription {
 
 	private String triggerKey;
 
+	public boolean isPassString(List<String> query, Document doc, String key) {
+		try {
+			if (!eventType.contains(doc.getString("type")))
+				return false;
+		} catch (NullPointerException e) {
+			return false;
+		}
+		return true;
+	}
+
 	// TODO:
 	public boolean isPass(Document doc) {
-		if (eventType != null) {
-			if (!doc.containsKey("type"))
-				return false;
-			else if (!eventType.contains(doc.getString("type")))
-				return false;
+		if (eventType != null && isPassString(eventType, doc, "type") == false) {
+			return false;
 		}
 		if (GE_eventTime != null) {
 			if (!doc.containsKey("eventTime"))
