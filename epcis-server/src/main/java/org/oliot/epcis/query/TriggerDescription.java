@@ -292,6 +292,20 @@ public class TriggerDescription {
 					doc.get("persistentDisposition", Document.class).getList("unset", String.class))) {
 				return false;
 			}
+			
+			if (EQ_readPoint != null && !isPassString(EQ_readPoint, doc.getString("readPoint"))) {
+				return false;
+			}
+			
+			if (EQ_bizLocation != null && !isPassString(EQ_bizLocation, doc.getString("bizLocation"))) {
+				return false;
+			}
+			
+			if (EQ_transformationID != null && !isPassString(EQ_transformationID, doc.getString("transformationID"))) {
+				return false;
+			}
+
+			
 		} catch (Exception e) {
 			return false;
 		}
@@ -357,6 +371,15 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_persistentDisposition_unset"))
 				EQ_persistentDisposition_unset = (List<String>) value;
+			
+			if (name.equals("EQ_readPoint"))
+				EQ_readPoint = (List<String>) value;
+			
+			if (name.equals("EQ_bizLocation"))
+				EQ_bizLocation = (List<String>) value;
+			
+			if (name.equals("EQ_transformationID"))
+				EQ_transformationID = (List<String>) value;
 		}
 	}
 
@@ -398,6 +421,19 @@ public class TriggerDescription {
 		if (EQ_persistentDisposition_unset != null) {
 			doc.put("EQ_persistentDisposition_unset", EQ_persistentDisposition_unset);
 		}
+		
+		if (EQ_readPoint != null) {
+			doc.put("EQ_readPoint", EQ_readPoint);
+		}
+		
+		if (EQ_bizLocation != null) {
+			doc.put("EQ_bizLocation", EQ_bizLocation);
+		}
+		
+		if (EQ_transformationID != null) {
+			doc.put("EQ_transformationID", EQ_transformationID);
+		}
+		
 		return doc;
 	}
 
