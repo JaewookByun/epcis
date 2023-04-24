@@ -3,10 +3,12 @@ package org.oliot.epcis.query;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.bson.Document;
 import org.oliot.epcis.model.ArrayOfString;
@@ -246,6 +248,27 @@ public class TriggerDescription {
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
+	public boolean isPassListOfMatchString(List<String> query, List<String>... value) {
+		List<String> values = Arrays.asList(value).parallelStream().flatMap(e -> e.parallelStream()).toList();
+		for (String q : query) {
+			if (q.contains("*")) {
+				q = q.replaceAll("\\.", "[.]");
+				q = q.replaceAll("\\*", "(.)*");
+			}
+			for (String v : values) {		
+				boolean tt = Pattern.matches(q, v);
+				System.out.println("urn:epc:id:sgtin:0614141[.](.)*[.]2020".equals(q));
+				System.out.println("urn:epc:id:sgtin:0616141.107346.2020".equals(v));
+				tt = Pattern.matches("urn:epc:id:sgtin:0614141[.](.)*[.]2020", "urn:epc:id:sgtin:0614141.107346.2020");
+				if (tt) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	public boolean isPassGELong(Long query, Long value) {
 		if (value < query)
 			return false;
@@ -259,6 +282,7 @@ public class TriggerDescription {
 	}
 
 	// TODO:
+	@SuppressWarnings("unchecked")
 	public boolean isPass(Document doc) {
 		try {
 			if (eventType != null && isPassString(eventType, doc.getString("type"))) {
@@ -333,6 +357,9 @@ public class TriggerDescription {
 			}
 			if (EQ_correctiveEventID != null && !isPassListOfString(EQ_correctiveEventID,
 					doc.get("errorDeclaration", Document.class).getList("correctiveEventIDs", String.class))) {
+				return false;
+			}
+			if (MATCH_epc != null && !isPassListOfMatchString(MATCH_epc, doc.getList("epcList", String.class))) {
 				return false;
 			}
 
@@ -428,6 +455,9 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_correctiveEventID"))
 				EQ_correctiveEventID = (List<String>) value;
+			
+			if (name.equals("MATCH_epc"))
+				MATCH_epc = (List<String>) value;
 		}
 	}
 
@@ -503,6 +533,10 @@ public class TriggerDescription {
 
 		if (EQ_correctiveEventID != null) {
 			doc.put("EQ_correctiveEventID", EQ_correctiveEventID);
+		}
+		
+		if (MATCH_epc != null) {
+			doc.put("MATCH_epc", MATCH_epc);
 		}
 
 		return doc;
