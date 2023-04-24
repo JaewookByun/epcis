@@ -228,6 +228,12 @@ public class TriggerDescription {
 
 	private String triggerKey;
 
+	public boolean isPassVoidHolder(Object value) {
+		if (value == null)
+			return false;
+		return true;
+	}
+
 	public boolean isPassString(List<String> query, String value) {
 		if (!query.contains(value))
 			return false;
@@ -292,20 +298,44 @@ public class TriggerDescription {
 					doc.get("persistentDisposition", Document.class).getList("unset", String.class))) {
 				return false;
 			}
-			
+
 			if (EQ_readPoint != null && !isPassString(EQ_readPoint, doc.getString("readPoint"))) {
 				return false;
 			}
-			
+
 			if (EQ_bizLocation != null && !isPassString(EQ_bizLocation, doc.getString("bizLocation"))) {
 				return false;
 			}
-			
+
 			if (EQ_transformationID != null && !isPassString(EQ_transformationID, doc.getString("transformationID"))) {
 				return false;
 			}
 
-			
+			if (EQ_eventID != null && !isPassString(EQ_eventID, doc.getString("eventID"))) {
+				return false;
+			}
+
+			if (EXISTS_errorDeclaration != null && !isPassVoidHolder(doc.get("errorDeclaration"))) {
+				return false;
+			}
+
+			if (GE_errorDeclarationTime != null && !isPassGELong(GE_errorDeclarationTime,
+					doc.get("errorDeclaration", Document.class).getLong("declarationTime"))) {
+				return false;
+			}
+			if (LT_errorDeclarationTime != null && !isPassLTLong(LT_errorDeclarationTime,
+					doc.get("errorDeclaration", Document.class).getLong("declarationTime"))) {
+				return false;
+			}
+			if (EQ_errorReason != null
+					&& !isPassString(EQ_errorReason, doc.get("errorDeclaration", Document.class).getString("reason"))) {
+				return false;
+			}
+			if (EQ_correctiveEventID != null && !isPassListOfString(EQ_correctiveEventID,
+					doc.get("errorDeclaration", Document.class).getList("correctiveEventIDs", String.class))) {
+				return false;
+			}
+
 		} catch (Exception e) {
 			return false;
 		}
@@ -371,15 +401,33 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_persistentDisposition_unset"))
 				EQ_persistentDisposition_unset = (List<String>) value;
-			
+
 			if (name.equals("EQ_readPoint"))
 				EQ_readPoint = (List<String>) value;
-			
+
 			if (name.equals("EQ_bizLocation"))
 				EQ_bizLocation = (List<String>) value;
-			
+
 			if (name.equals("EQ_transformationID"))
 				EQ_transformationID = (List<String>) value;
+
+			if (name.equals("EQ_eventID"))
+				EQ_eventID = (List<String>) value;
+
+			if (name.equals("EXISTS_errorDeclaration"))
+				EXISTS_errorDeclaration = (VoidHolder) value;
+
+			if (name.equals("GE_errorDeclarationTime"))
+				GE_errorDeclarationTime = (long) value;
+
+			if (name.equals("LT_errorDeclarationTime"))
+				LT_errorDeclarationTime = (long) value;
+
+			if (name.equals("EQ_errorReason"))
+				EQ_errorReason = (List<String>) value;
+
+			if (name.equals("EQ_correctiveEventID"))
+				EQ_correctiveEventID = (List<String>) value;
 		}
 	}
 
@@ -421,19 +469,42 @@ public class TriggerDescription {
 		if (EQ_persistentDisposition_unset != null) {
 			doc.put("EQ_persistentDisposition_unset", EQ_persistentDisposition_unset);
 		}
-		
+
 		if (EQ_readPoint != null) {
 			doc.put("EQ_readPoint", EQ_readPoint);
 		}
-		
+
 		if (EQ_bizLocation != null) {
 			doc.put("EQ_bizLocation", EQ_bizLocation);
 		}
-		
+
 		if (EQ_transformationID != null) {
 			doc.put("EQ_transformationID", EQ_transformationID);
 		}
-		
+
+		if (EQ_eventID != null) {
+			doc.put("EQ_eventID", EQ_eventID);
+		}
+
+		if (EXISTS_errorDeclaration != null) {
+			doc.put("EXISTS_errorDeclaration", "VoidHolder");
+		}
+
+		if (GE_errorDeclarationTime != null) {
+			doc.put("GE_errorDeclarationTime", GE_errorDeclarationTime);
+		}
+		if (LT_errorDeclarationTime != null) {
+			doc.put("LT_errorDeclarationTime", LT_errorDeclarationTime);
+		}
+
+		if (EQ_errorReason != null) {
+			doc.put("EQ_errorReason", EQ_errorReason);
+		}
+
+		if (EQ_correctiveEventID != null) {
+			doc.put("EQ_correctiveEventID", EQ_correctiveEventID);
+		}
+
 		return doc;
 	}
 
