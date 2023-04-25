@@ -250,19 +250,18 @@ public class TriggerDescription {
 
 	@SuppressWarnings("unchecked")
 	public boolean isPassListOfMatchString(List<String> query, List<String>... value) {
-		List<String> values = Arrays.asList(value).parallelStream().flatMap(e -> e.parallelStream()).toList();
 		for (String q : query) {
 			if (q.contains("*")) {
 				q = q.replaceAll("\\.", "[.]");
 				q = q.replaceAll("\\*", "(.)*");
 			}
-			for (String v : values) {		
-				boolean tt = Pattern.matches(q, v);
-				System.out.println("urn:epc:id:sgtin:0614141[.](.)*[.]2020".equals(q));
-				System.out.println("urn:epc:id:sgtin:0616141.107346.2020".equals(v));
-				tt = Pattern.matches("urn:epc:id:sgtin:0614141[.](.)*[.]2020", "urn:epc:id:sgtin:0614141.107346.2020");
-				if (tt) {
-					return true;
+			for (List<String> v : value) {
+				if (v == null)
+					continue;
+				for (String vv : v) {
+					if (Pattern.matches(q, vv)) {
+						return true;
+					}
 				}
 			}
 		}
@@ -362,6 +361,23 @@ public class TriggerDescription {
 			if (MATCH_epc != null && !isPassListOfMatchString(MATCH_epc, doc.getList("epcList", String.class))) {
 				return false;
 			}
+			if (MATCH_parentID != null
+					&& !isPassListOfMatchString(MATCH_parentID, List.of(doc.getString("parentID")))) {
+				return false;
+			}
+			if (MATCH_inputEPC != null
+					&& !isPassListOfMatchString(MATCH_inputEPC, doc.getList("inputEPCList", String.class))) {
+				return false;
+			}
+			if (MATCH_outputEPC != null
+					&& !isPassListOfMatchString(MATCH_outputEPC, doc.getList("outputEPCList", String.class))) {
+				return false;
+			}
+			if (MATCH_anyEPC != null && !isPassListOfMatchString(MATCH_anyEPC, List.of(doc.getString("parentID")),
+					doc.getList("epcList", String.class), doc.getList("inputEPCList", String.class),
+					doc.getList("outputEPCList", String.class))) {
+				return false;
+			}
 
 		} catch (Exception e) {
 			return false;
@@ -455,9 +471,17 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_correctiveEventID"))
 				EQ_correctiveEventID = (List<String>) value;
-			
+
 			if (name.equals("MATCH_epc"))
 				MATCH_epc = (List<String>) value;
+			if (name.equals("MATCH_parentID"))
+				MATCH_parentID = (List<String>) value;
+			if (name.equals("MATCH_inputEPC"))
+				MATCH_inputEPC = (List<String>) value;
+			if (name.equals("MATCH_outputEPC"))
+				MATCH_outputEPC = (List<String>) value;
+			if (name.equals("MATCH_anyEPC"))
+				MATCH_anyEPC = (List<String>) value;
 		}
 	}
 
@@ -534,9 +558,25 @@ public class TriggerDescription {
 		if (EQ_correctiveEventID != null) {
 			doc.put("EQ_correctiveEventID", EQ_correctiveEventID);
 		}
-		
+
 		if (MATCH_epc != null) {
 			doc.put("MATCH_epc", MATCH_epc);
+		}
+
+		if (MATCH_parentID != null) {
+			doc.put("MATCH_parentID", MATCH_parentID);
+		}
+
+		if (MATCH_inputEPC != null) {
+			doc.put("MATCH_inputEPC", MATCH_inputEPC);
+		}
+
+		if (MATCH_outputEPC != null) {
+			doc.put("MATCH_outputEPC", MATCH_outputEPC);
+		}
+
+		if (MATCH_anyEPC != null) {
+			doc.put("MATCH_anyEPC", MATCH_anyEPC);
 		}
 
 		return doc;
