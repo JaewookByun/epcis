@@ -7,7 +7,7 @@ An international standard, GS1 EPCIS, has enabled standardized information integ
 
 Auto-ID Labs., an association of global laboratories that firstly coins the concept of the Internet of Things, closely cooperate with GS1 in leading prior research. [Auto-ID Labs. Korea](https://autoidlab.kaist.ac.kr/) at Sejong University develops and maintains open-sources for GS1 standards. Oliot EPCIS has been developed and maintained since 2014 and now initiates the second generation of the system. The second generation is developed from scratch again with the standard development process called GSMP EPCIS/CBV 2.0 MSWG.
 
-[![GitHub stats](https://github-readme-stats.vercel.app/api?username=bjw0829)](https://github.com/anuraghazra/github-readme-stats)
+[![GitHub stats](https://github-readme-stats.vercel.app/api?username=JaewookByun)](https://github.com/anuraghazra/github-readme-stats)
 
 ## Open Service 
 
