@@ -1166,7 +1166,7 @@ public class QueryDescription {
 			 */
 			if (name.equals("EQ_eventID")) {
 				checkParameterValueType(value, listTester);
-				putEQListOfStringQuery(mongoQueryElements, "_id", (List<String>) value);
+				putEQListOfStringQuery(mongoQueryElements, "eventID", (List<String>) value);
 				continue;
 			}
 
