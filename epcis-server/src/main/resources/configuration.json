@@ -1,0 +1,36 @@
+{
+	"_log4j_conf_location" : "the file location of log4j properties (e.g., log4j.xml)",
+	"log4j_conf_location" : "/resources/log4j.xml",
+
+	"_db_name" : "mongodb database name to be used",
+	"db_name" : "epcis",
+
+	"_db_connection_string" : "Mongo connection string",
+	"db_connection_string" : "mongodb://localhost:27017",
+
+	"_xml_schema_location" : "the file location of xml schema (e.g., EPCglobal-epcis-2_0.xsd)",
+	"xml_schema_location" : "/schema/epcglobal-epcis-2_0.xsd",
+
+	"_port" : "an integer value for port (default 8080)",
+	"port" : 8080,
+
+	"_number_of_verticles" : "The number of cores (default is cores + 1) as integer value",
+
+	"_GS1-EPCIS-Capture-Limit" : "The number of events that CaptureService allows capturing as an integer value. (e.g., 500)",
+	"GS1-EPCIS-Capture-Limit" : 300,
+
+	"_GS1-EPCIS-Capture-File-Size-Limit" : "The size (bytes) of EPCISDocument that CaptureService allows capturing as an integer value. (e.g., 1024)",
+	"GS1-EPCIS-Capture-File-Size-Limit" : 204800,
+
+	"_GS1-EPCIS-Capture-Error-Behaviour" : "The way to resolve Capture Error. (one of 'rollback' or 'proceed')",
+	"GS1-EPCIS-Capture-Error-Behaviour" : "rollback",
+
+	"_GS1-Next-Page-Token-Expires" : "milliseconds to expire the next page as long value",
+	"GS1-Next-Page-Token-Expires" : 300000,
+	
+	"_max_capture_job_size" : "The number of latest capture jobs (e.g., 500) (note: '-1' indicates infinite)",
+	"max_capture_job_size" : 500,
+	
+	"_gcp_source" : "(local|web)",
+	"gcp_source" : "local"
+}
