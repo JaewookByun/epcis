@@ -300,14 +300,14 @@ public class TriggerDescription {
 			if (eventType != null && isPassString(eventType, doc.getString("type"))) {
 				return false;
 			}
-			
-			if(GE_eventTime != null || LT_eventTime != null) {
-				if(!isPassLong(GE_eventTime, LT_eventTime, doc.getLong("eventTime")))
+
+			if (GE_eventTime != null || LT_eventTime != null) {
+				if (!isPassLong(GE_eventTime, LT_eventTime, doc.getLong("eventTime")))
 					return false;
 			}
-			
-			if(GE_recordTime != null || LT_recordTime != null) {
-				if(!isPassLong(GE_recordTime, LT_recordTime, doc.getLong("recordTime")))
+
+			if (GE_recordTime != null || LT_recordTime != null) {
+				if (!isPassLong(GE_recordTime, LT_recordTime, doc.getLong("recordTime")))
 					return false;
 			}
 
@@ -353,14 +353,12 @@ public class TriggerDescription {
 				return false;
 			}
 
-			if (GE_errorDeclarationTime != null && !isPassGELong(GE_errorDeclarationTime,
-					doc.get("errorDeclaration", Document.class).getLong("declarationTime"))) {
-				return false;
+			if (GE_errorDeclarationTime != null || LT_errorDeclarationTime != null) {
+				if (!isPassLong(GE_errorDeclarationTime, LT_errorDeclarationTime,
+						doc.get("errorDeclaration", Document.class).getLong("declarationTime")))
+					return false;
 			}
-			if (LT_errorDeclarationTime != null && !isPassLTLong(LT_errorDeclarationTime,
-					doc.get("errorDeclaration", Document.class).getLong("declarationTime"))) {
-				return false;
-			}
+
 			if (EQ_errorReason != null
 					&& !isPassString(EQ_errorReason, doc.get("errorDeclaration", Document.class).getString("reason"))) {
 				return false;
