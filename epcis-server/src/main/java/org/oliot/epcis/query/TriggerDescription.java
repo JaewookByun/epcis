@@ -407,7 +407,7 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
+
 			if (GE_endTime != null || LT_endTime != null) {
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
@@ -423,6 +423,48 @@ public class TriggerDescription {
 						continue;
 					if (isPassLong(GE_endTime, LT_endTime, endTime))
 						isPartialPass = true;
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			if (GE_SENSORMETADATA_time != null || LT_SENSORMETADATA_time != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata == null)
+						continue;
+					Long time = sensorMetadata.getLong("time");
+					if (time == null)
+						continue;
+					if (isPassLong(GE_SENSORMETADATA_time, LT_SENSORMETADATA_time, time))
+						isPartialPass = true;
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			if (GE_SENSORREPORT_time != null || LT_SENSORREPORT_time != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for(Document sensorReport : sensorReports) {
+						Long time = sensorReport.getLong("time");
+						if (time == null)
+							continue;
+						if (isPassLong(GE_SENSORREPORT_time, LT_SENSORREPORT_time, time))
+							isPartialPass = true;
+					}
 				}
 				if (!isPartialPass)
 					return false;
