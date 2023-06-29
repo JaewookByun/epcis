@@ -407,14 +407,25 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
+			
+			if (GE_endTime != null || LT_endTime != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
 
-			if (GE_endTime != null && !isPassGELong(GE_endTime, doc.get("sensorElementList", Document.class)
-					.get("sensorMetadata", Document.class).getLong("endTime"))) {
-				return false;
-			}
-			if (LT_endTime != null && !isPassLTLong(LT_endTime, doc.get("sensorElementList", Document.class)
-					.get("sensorMetadata", Document.class).getLong("endTime"))) {
-				return false;
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata == null)
+						continue;
+					Long endTime = sensorMetadata.getLong("endTime");
+					if (endTime == null)
+						continue;
+					if (isPassLong(GE_endTime, LT_endTime, endTime))
+						isPartialPass = true;
+				}
+				if (!isPartialPass)
+					return false;
 			}
 
 		} catch (Exception e) {
