@@ -281,7 +281,6 @@ public class TriggerDescription {
 	}
 
 	public boolean isPassLong(Long ge, Long lt, Long value) {
-
 		if (ge != null && lt != null) {
 			return value >= ge && value < lt;
 		} else if (ge != null) {
@@ -301,12 +300,13 @@ public class TriggerDescription {
 			if (eventType != null && isPassString(eventType, doc.getString("type"))) {
 				return false;
 			}
-			if (GE_eventTime != null && !isPassGELong(GE_eventTime, doc.getLong("eventTime"))) {
-				return false;
+			
+			if(GE_eventTime != null || LT_eventTime != null) {
+				if(!isPassLong(GE_eventTime, LT_eventTime, doc.getLong("eventTime")))
+					return false;
 			}
-			if (LT_eventTime != null && !isPassLTLong(LT_eventTime, doc.getLong("eventTime"))) {
-				return false;
-			}
+			
+	
 			if (GE_recordTime != null && !isPassGELong(GE_recordTime, doc.getLong("recordTime"))) {
 				return false;
 			}
@@ -394,7 +394,6 @@ public class TriggerDescription {
 			}
 
 			if (GE_startTime != null || LT_startTime != null) {
-				// if any sensorMetadata meets GE_startTime, triggered
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
 					return false;
