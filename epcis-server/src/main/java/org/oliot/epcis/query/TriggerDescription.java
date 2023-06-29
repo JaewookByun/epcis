@@ -306,12 +306,9 @@ public class TriggerDescription {
 					return false;
 			}
 			
-	
-			if (GE_recordTime != null && !isPassGELong(GE_recordTime, doc.getLong("recordTime"))) {
-				return false;
-			}
-			if (LT_recordTime != null && !isPassLTLong(LT_recordTime, doc.getLong("recordTime"))) {
-				return false;
+			if(GE_recordTime != null || LT_recordTime != null) {
+				if(!isPassLong(GE_recordTime, LT_recordTime, doc.getLong("recordTime")))
+					return false;
 			}
 
 			if (EQ_action != null && !isPassString(EQ_action, doc.getString("action"))) {
