@@ -31,7 +31,7 @@ import javax.xml.validation.SchemaFactory;
 
 import java.io.*;
 import java.net.Inet4Address;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Timer;
@@ -296,8 +296,8 @@ public class BootstrapUtil {
 			logger.info("Access to official GCP Length List");
 			try {
 				BufferedInputStream in = new BufferedInputStream(
-						new URL("https://www.gs1.org/sites/default/files/docs/gcp_length/gcpprefixformatlist.json")
-								.openStream());
+						new URI("https://www.gs1.org/sites/default/files/docs/gcp_length/gcpprefixformatlist.json")
+								.toURL().openStream());
 				gcpPrefixFormatList = new JsonObject(new String(in.readAllBytes()))
 						.getJsonObject("GCPPrefixFormatList");
 				logger.info("Access to official GCP Length List: succeed");

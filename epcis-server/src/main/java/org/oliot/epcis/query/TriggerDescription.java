@@ -280,6 +280,20 @@ public class TriggerDescription {
 		return true;
 	}
 
+	public boolean isPassLong(Long ge, Long lt, Long value) {
+
+		if (ge != null && lt != null) {
+			return value >= ge && value < lt;
+		} else if (ge != null) {
+			return value >= ge;
+		} else if (lt != null) {
+			return value < lt;
+		} else {
+			// not happen
+			return false;
+		}
+	}
+
 	// TODO:
 	@SuppressWarnings("unchecked")
 	public boolean isPass(Document doc) {
@@ -376,6 +390,36 @@ public class TriggerDescription {
 			if (MATCH_anyEPC != null && !isPassListOfMatchString(MATCH_anyEPC, List.of(doc.getString("parentID")),
 					doc.getList("epcList", String.class), doc.getList("inputEPCList", String.class),
 					doc.getList("outputEPCList", String.class))) {
+				return false;
+			}
+
+			if (GE_startTime != null || LT_startTime != null) {
+				// if any sensorMetadata meets GE_startTime, triggered
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata == null)
+						continue;
+					Long startTime = sensorMetadata.getLong("startTime");
+					if (startTime == null)
+						continue;
+					if (isPassLong(GE_startTime, LT_startTime, startTime))
+						isPartialPass = true;
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			if (GE_endTime != null && !isPassGELong(GE_endTime, doc.get("sensorElementList", Document.class)
+					.get("sensorMetadata", Document.class).getLong("endTime"))) {
+				return false;
+			}
+			if (LT_endTime != null && !isPassLTLong(LT_endTime, doc.get("sensorElementList", Document.class)
+					.get("sensorMetadata", Document.class).getLong("endTime"))) {
 				return false;
 			}
 
@@ -482,6 +526,24 @@ public class TriggerDescription {
 				MATCH_outputEPC = (List<String>) value;
 			if (name.equals("MATCH_anyEPC"))
 				MATCH_anyEPC = (List<String>) value;
+			if (name.equals("GE_startTime"))
+				GE_startTime = (long) value;
+			if (name.equals("LT_startTime"))
+				LT_startTime = (long) value;
+			if (name.equals("GE_endTime"))
+				GE_endTime = (long) value;
+			if (name.equals("LT_endTime"))
+				LT_endTime = (long) value;
+
+			if (name.equals("GE_SENSORMETADATA_time"))
+				GE_SENSORMETADATA_time = (long) value;
+			if (name.equals("LT_SENSORMETADATA_time"))
+				LT_SENSORMETADATA_time = (long) value;
+
+			if (name.equals("GE_SENSORREPORT_time"))
+				GE_SENSORREPORT_time = (long) value;
+			if (name.equals("LT_SENSORREPORT_time"))
+				LT_SENSORREPORT_time = (long) value;
 		}
 	}
 
@@ -577,6 +639,34 @@ public class TriggerDescription {
 
 		if (MATCH_anyEPC != null) {
 			doc.put("MATCH_anyEPC", MATCH_anyEPC);
+		}
+
+		if (GE_startTime != null) {
+			doc.put("GE_startTime", GE_startTime);
+		}
+		if (LT_startTime != null) {
+			doc.put("LT_startTime", LT_startTime);
+		}
+
+		if (GE_endTime != null) {
+			doc.put("GE_endTime", GE_endTime);
+		}
+		if (LT_endTime != null) {
+			doc.put("LT_endTime", LT_endTime);
+		}
+
+		if (GE_SENSORMETADATA_time != null) {
+			doc.put("GE_SENSORMETADATA_time", GE_SENSORMETADATA_time);
+		}
+		if (LT_SENSORMETADATA_time != null) {
+			doc.put("LT_SENSORMETADATA_time", LT_SENSORMETADATA_time);
+		}
+
+		if (GE_SENSORREPORT_time != null) {
+			doc.put("GE_SENSORREPORT_time", GE_SENSORREPORT_time);
+		}
+		if (LT_SENSORREPORT_time != null) {
+			doc.put("LT_SENSORREPORT_time", LT_SENSORREPORT_time);
 		}
 
 		return doc;
