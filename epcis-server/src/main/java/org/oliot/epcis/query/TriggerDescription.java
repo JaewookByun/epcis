@@ -77,7 +77,6 @@ public class TriggerDescription {
 	private List<String> EQ_SENSORMETADATA_dataProcessingMethod;
 	private List<String> EQ_SENSORREPORT_dataProcessingMethod;
 
-	private List<String> EQ_type;
 	private List<String> EQ_microorganism;
 	private List<String> EQ_chemicalSubstance;
 	private List<String> EQ_bizRules;
@@ -185,6 +184,7 @@ public class TriggerDescription {
 	private Entry<Object> LE_extension;
 	private String EXISTS_extension;
 
+	private List<String> EQ_type;
 	private Double EQ_value;
 	private Double GT_value;
 	private Double GE_value;
@@ -665,8 +665,30 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// dataProcessingMethod
-			// type
+			if (EQ_microorganism != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String mo = sensorReport.getString("microorganism");
+						if ( mo == null)
+							continue;
+						if (isPassString(EQ_microorganism, mo)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+			
 			// microorganism
 			// chemicalSubstance
 			// bizRules
@@ -819,6 +841,9 @@ public class TriggerDescription {
 				EQ_SENSORMETADATA_dataProcessingMethod = (List<String>) value;
 			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod"))
 				EQ_SENSORREPORT_dataProcessingMethod = (List<String>) value;
+			
+			if (name.equals("EQ_microorganism"))
+				EQ_microorganism = (List<String>) value;
 		}
 	}
 
@@ -982,6 +1007,10 @@ public class TriggerDescription {
 
 		if (EQ_SENSORREPORT_dataProcessingMethod != null) {
 			doc.put("EQ_SENSORREPORT_dataProcessingMethod", EQ_SENSORREPORT_dataProcessingMethod);
+		}
+		
+		if (EQ_microorganism != null) {
+			doc.put("EQ_microorganism", EQ_microorganism);
 		}
 
 		return doc;
