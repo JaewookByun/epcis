@@ -523,7 +523,52 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// deviceID
+			if (EQ_SENSORMETADATA_deviceMetadata != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata != null) {
+						String dmd = sensorMetadata.getString("deviceMetadata");
+						if (dmd == null)
+							continue;
+						if (isPassString(EQ_SENSORMETADATA_deviceMetadata, dmd)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			if (EQ_SENSORREPORT_deviceMetadata != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String dmd = sensorReport.getString("deviceMetadata");
+						if (dmd == null)
+							continue;
+						if (isPassString(EQ_SENSORREPORT_deviceMetadata, dmd)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
 			// deviceMetadata
 			// rawData
 			// dataProcessingMethod
@@ -665,7 +710,10 @@ public class TriggerDescription {
 				EQ_SENSORMETADATA_deviceID = (List<String>) value;
 			if (name.equals("EQ_SENSORREPORT_deviceID"))
 				EQ_SENSORREPORT_deviceID = (List<String>) value;
-
+			if (name.equals("EQ_SENSORMETADATA_deviceMetadata"))
+				EQ_SENSORMETADATA_deviceMetadata = (List<String>) value;
+			if (name.equals("EQ_SENSORREPORT_deviceMetadata"))
+				EQ_SENSORREPORT_deviceMetadata = (List<String>) value;
 		}
 	}
 
@@ -801,6 +849,14 @@ public class TriggerDescription {
 
 		if (EQ_SENSORREPORT_deviceID != null) {
 			doc.put("EQ_SENSORREPORT_deviceID", EQ_SENSORREPORT_deviceID);
+		}
+		
+		if (EQ_SENSORMETADATA_deviceMetadata != null) {
+			doc.put("EQ_SENSORMETADATA_deviceMetadata", EQ_SENSORMETADATA_deviceMetadata);
+		}
+		
+		if (EQ_SENSORREPORT_deviceMetadata != null) {
+			doc.put("EQ_SENSORREPORT_deviceMetadata", EQ_SENSORREPORT_deviceMetadata);
 		}
 
 		return doc;
