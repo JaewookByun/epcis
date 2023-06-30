@@ -713,8 +713,29 @@ public class TriggerDescription {
 					return false;
 			}
 			
+			if (EQ_bizRules != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata != null) {
+						String br = sensorMetadata.getString("bizRules");
+						if (br != null) {
+							if (isPassString(EQ_bizRules, br)) {
+								isPartialPass = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
 			
-			// chemicalSubstance
+			
 			// bizRules
 			// stringValue
 			// booleanValue
@@ -871,6 +892,9 @@ public class TriggerDescription {
 			
 			if (name.equals("EQ_chemicalSubstance"))
 				EQ_chemicalSubstance = (List<String>) value;
+			
+			if (name.equals("EQ_bizRules"))
+				EQ_bizRules = (List<String>) value;
 		}
 	}
 
@@ -1042,6 +1066,10 @@ public class TriggerDescription {
 		
 		if (EQ_chemicalSubstance != null) {
 			doc.put("EQ_chemicalSubstance", EQ_chemicalSubstance);
+		}
+		
+		if (EQ_bizRules != null) {
+			doc.put("EQ_bizRules", EQ_bizRules);
 		}
 
 		return doc;
