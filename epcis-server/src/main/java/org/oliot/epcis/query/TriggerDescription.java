@@ -677,7 +677,7 @@ public class TriggerDescription {
 						continue;
 					for (Document sensorReport : sensorReports) {
 						String mo = sensorReport.getString("microorganism");
-						if ( mo == null)
+						if (mo == null)
 							continue;
 						if (isPassString(EQ_microorganism, mo)) {
 							isPartialPass = true;
@@ -688,7 +688,7 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
+
 			if (EQ_chemicalSubstance != null) {
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
@@ -701,7 +701,7 @@ public class TriggerDescription {
 						continue;
 					for (Document sensorReport : sensorReports) {
 						String cs = sensorReport.getString("chemicalSubstance");
-						if ( cs == null)
+						if (cs == null)
 							continue;
 						if (isPassString(EQ_chemicalSubstance, cs)) {
 							isPartialPass = true;
@@ -712,7 +712,7 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
+
 			if (EQ_bizRules != null) {
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
@@ -734,9 +734,31 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
-			
-			// bizRules
+
+			if (EQ_stringValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String s = sensorReport.getString("stringValue");
+						if (s == null)
+							continue;
+						if (isPassString(EQ_stringValue, s)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
 			// stringValue
 			// booleanValue
 			// hexBinaryValue
@@ -886,15 +908,18 @@ public class TriggerDescription {
 				EQ_SENSORMETADATA_dataProcessingMethod = (List<String>) value;
 			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod"))
 				EQ_SENSORREPORT_dataProcessingMethod = (List<String>) value;
-			
+
 			if (name.equals("EQ_microorganism"))
 				EQ_microorganism = (List<String>) value;
-			
+
 			if (name.equals("EQ_chemicalSubstance"))
 				EQ_chemicalSubstance = (List<String>) value;
-			
+
 			if (name.equals("EQ_bizRules"))
 				EQ_bizRules = (List<String>) value;
+
+			if (name.equals("EQ_stringValue"))
+				EQ_stringValue = (List<String>) value;
 		}
 	}
 
@@ -1059,17 +1084,21 @@ public class TriggerDescription {
 		if (EQ_SENSORREPORT_dataProcessingMethod != null) {
 			doc.put("EQ_SENSORREPORT_dataProcessingMethod", EQ_SENSORREPORT_dataProcessingMethod);
 		}
-		
+
 		if (EQ_microorganism != null) {
 			doc.put("EQ_microorganism", EQ_microorganism);
 		}
-		
+
 		if (EQ_chemicalSubstance != null) {
 			doc.put("EQ_chemicalSubstance", EQ_chemicalSubstance);
 		}
-		
+
 		if (EQ_bizRules != null) {
 			doc.put("EQ_bizRules", EQ_bizRules);
+		}
+
+		if (EQ_stringValue != null) {
+			doc.put("EQ_stringValue", EQ_stringValue);
 		}
 
 		return doc;
