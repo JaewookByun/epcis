@@ -10,7 +10,10 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.QueryParam;
@@ -789,8 +792,34 @@ public class TriggerDescription {
 					return false;
 			}
 			
+			if (EQ_hexBinaryValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						// TODO: 
+						Object obj = sensorReport.get("hexBinaryValue", Binary.class);
+						if(obj == null)
+							continue;
+						byte[] hbv = (byte[]) obj;
+						if (isPassString(EQ_hexBinaryValue, hbv.toString())) {
+							isPartialPass = true;
+							break;
+						}
+
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
 			
-			// booleanValue
+			
 			// hexBinaryValue
 			// uriValue
 			// percRank
@@ -953,6 +982,9 @@ public class TriggerDescription {
 			
 			if (name.equals("EQ_booleanValue"))
 				EQ_booleanValue = (Boolean) value;
+			
+			if (name.equals("EQ_hexBinaryValue"))
+				EQ_hexBinaryValue = (List<String>) value;
 		}
 	}
 
@@ -1136,6 +1168,10 @@ public class TriggerDescription {
 		
 		if (EQ_booleanValue != null) {
 			doc.put("EQ_booleanValue", EQ_booleanValue);
+		}
+		
+		if (EQ_hexBinaryValue != null) {
+			doc.put("EQ_hexBinaryValue", EQ_hexBinaryValue);
 		}
 
 		return doc;
