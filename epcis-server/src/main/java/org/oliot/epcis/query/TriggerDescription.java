@@ -401,8 +401,11 @@ public class TriggerDescription {
 					Long startTime = sensorMetadata.getLong("startTime");
 					if (startTime == null)
 						continue;
-					if (isPassLong(GE_startTime, LT_startTime, startTime))
+					if (isPassLong(GE_startTime, LT_startTime, startTime)) {
 						isPartialPass = true;
+						break;
+					}
+
 				}
 				if (!isPartialPass)
 					return false;
@@ -421,8 +424,11 @@ public class TriggerDescription {
 					Long endTime = sensorMetadata.getLong("endTime");
 					if (endTime == null)
 						continue;
-					if (isPassLong(GE_endTime, LT_endTime, endTime))
+					if (isPassLong(GE_endTime, LT_endTime, endTime)) {
 						isPartialPass = true;
+						break;
+					}
+
 				}
 				if (!isPartialPass)
 					return false;
@@ -441,8 +447,11 @@ public class TriggerDescription {
 					Long time = sensorMetadata.getLong("time");
 					if (time == null)
 						continue;
-					if (isPassLong(GE_SENSORMETADATA_time, LT_SENSORMETADATA_time, time))
+					if (isPassLong(GE_SENSORMETADATA_time, LT_SENSORMETADATA_time, time)) {
 						isPartialPass = true;
+						break;
+					}
+
 				}
 				if (!isPartialPass)
 					return false;
@@ -458,17 +467,76 @@ public class TriggerDescription {
 					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
 					if (sensorReports == null || sensorReports.isEmpty())
 						continue;
-					for(Document sensorReport : sensorReports) {
+					for (Document sensorReport : sensorReports) {
 						Long time = sensorReport.getLong("time");
 						if (time == null)
 							continue;
-						if (isPassLong(GE_SENSORREPORT_time, LT_SENSORREPORT_time, time))
+						if (isPassLong(GE_SENSORREPORT_time, LT_SENSORREPORT_time, time)) {
 							isPartialPass = true;
+							break;
+						}
 					}
 				}
 				if (!isPartialPass)
 					return false;
 			}
+
+			if (EQ_deviceID != null || EQ_SENSORMETADATA_deviceID != null || EQ_SENSORREPORT_deviceID != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata != null) {
+						String did = sensorMetadata.getString("deviceID");
+						if (did != null) {
+							if (EQ_deviceID != null && isPassString(EQ_deviceID, did)) {
+								isPartialPass = true;
+								break;
+							} else if (EQ_SENSORMETADATA_deviceID != null
+									&& isPassString(EQ_SENSORMETADATA_deviceID, did)) {
+								isPartialPass = true;
+								break;
+							}
+						}
+					}
+
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String did2 = sensorReport.getString("deviceID");
+						if (did2 == null)
+							continue;
+						if (EQ_deviceID != null && isPassString(EQ_deviceID, did2)) {
+							isPartialPass = true;
+							break;
+						} else if (EQ_SENSORREPORT_deviceID != null && isPassString(EQ_SENSORREPORT_deviceID, did2)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			// deviceID
+			// deviceMetadata
+			// rawData
+			// dataProcessingMethod
+			// type
+			// microorganism
+			// chemicalSubstance
+			// bizRules
+			// stringValue
+			// booleanValue
+			// hexBinaryValue
+			// uriValue
+			// percRank
+			// bizTransaction
 
 		} catch (Exception e) {
 			return false;
@@ -591,6 +659,13 @@ public class TriggerDescription {
 				GE_SENSORREPORT_time = (long) value;
 			if (name.equals("LT_SENSORREPORT_time"))
 				LT_SENSORREPORT_time = (long) value;
+			if (name.equals("EQ_deviceID"))
+				EQ_deviceID = (List<String>) value;
+			if (name.equals("EQ_SENSORMETADATA_deviceID"))
+				EQ_SENSORMETADATA_deviceID = (List<String>) value;
+			if (name.equals("EQ_SENSORREPORT_deviceID"))
+				EQ_SENSORREPORT_deviceID = (List<String>) value;
+
 		}
 	}
 
@@ -714,6 +789,18 @@ public class TriggerDescription {
 		}
 		if (LT_SENSORREPORT_time != null) {
 			doc.put("LT_SENSORREPORT_time", LT_SENSORREPORT_time);
+		}
+
+		if (EQ_deviceID != null) {
+			doc.put("EQ_deviceID", EQ_deviceID);
+		}
+
+		if (EQ_SENSORMETADATA_deviceID != null) {
+			doc.put("EQ_SENSORMETADATA_deviceID", EQ_SENSORMETADATA_deviceID);
+		}
+
+		if (EQ_SENSORREPORT_deviceID != null) {
+			doc.put("EQ_SENSORREPORT_deviceID", EQ_SENSORREPORT_deviceID);
 		}
 
 		return doc;
