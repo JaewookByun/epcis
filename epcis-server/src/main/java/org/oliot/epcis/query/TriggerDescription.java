@@ -241,6 +241,12 @@ public class TriggerDescription {
 			return false;
 		return true;
 	}
+	
+	public boolean isPassBoolean(Boolean query, Boolean value) {
+		if(query.equals(value))
+			return true;
+		return false;
+	}
 
 	public boolean isPassListOfString(List<String> query, List<String> value) {
 		if (Collections.disjoint(query, value))
@@ -759,7 +765,31 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// stringValue
+			if (EQ_booleanValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						Boolean s = sensorReport.getBoolean("booleanValue");
+						if (s == null)
+							continue;
+						if (isPassBoolean(EQ_booleanValue, s)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+			
+			
 			// booleanValue
 			// hexBinaryValue
 			// uriValue
@@ -920,6 +950,9 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_stringValue"))
 				EQ_stringValue = (List<String>) value;
+			
+			if (name.equals("EQ_booleanValue"))
+				EQ_booleanValue = (Boolean) value;
 		}
 	}
 
@@ -1099,6 +1132,10 @@ public class TriggerDescription {
 
 		if (EQ_stringValue != null) {
 			doc.put("EQ_stringValue", EQ_stringValue);
+		}
+		
+		if (EQ_booleanValue != null) {
+			doc.put("EQ_booleanValue", EQ_booleanValue);
 		}
 
 		return doc;
