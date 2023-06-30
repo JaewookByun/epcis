@@ -615,7 +615,53 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// rawData
+			if (EQ_dataProcessingMethod != null || EQ_SENSORMETADATA_dataProcessingMethod != null
+					|| EQ_SENSORREPORT_dataProcessingMethod != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass1 = false;
+				boolean isPartialPass2 = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata != null) {
+						String dpm = sensorMetadata.getString("dataProcessingMethod");
+						if (dpm != null) {
+							if (EQ_dataProcessingMethod != null && isPassString(EQ_dataProcessingMethod, dpm)) {
+								isPartialPass1 = true;
+							} else if (EQ_SENSORMETADATA_dataProcessingMethod != null
+									&& isPassString(EQ_SENSORMETADATA_dataProcessingMethod, dpm)) {
+								isPartialPass1 = true;
+							}
+						}
+					}
+
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String dpm2 = sensorReport.getString("dataProcessingMethod");
+						if (dpm2 == null)
+							continue;
+						if (EQ_dataProcessingMethod != null && isPassString(EQ_dataProcessingMethod, dpm2)) {
+							isPartialPass2 = true;
+							break;
+						} else if (EQ_SENSORREPORT_dataProcessingMethod != null
+								&& isPassString(EQ_SENSORREPORT_dataProcessingMethod, dpm2)) {
+							isPartialPass2 = true;
+							break;
+						}
+					}
+				}
+				if (EQ_dataProcessingMethod != null && (!isPartialPass1 && !isPartialPass2))
+					return false;
+				if (EQ_SENSORMETADATA_dataProcessingMethod != null && !isPartialPass1)
+					return false;
+				if (EQ_SENSORREPORT_dataProcessingMethod != null && !isPartialPass2)
+					return false;
+			}
+
 			// dataProcessingMethod
 			// type
 			// microorganism
@@ -759,11 +805,17 @@ public class TriggerDescription {
 				EQ_SENSORMETADATA_deviceMetadata = (List<String>) value;
 			if (name.equals("EQ_SENSORREPORT_deviceMetadata"))
 				EQ_SENSORREPORT_deviceMetadata = (List<String>) value;
-
 			if (name.equals("EQ_SENSORMETADATA_rawData"))
 				EQ_SENSORMETADATA_rawData = (List<String>) value;
 			if (name.equals("EQ_SENSORREPORT_rawData"))
 				EQ_SENSORREPORT_rawData = (List<String>) value;
+
+			if (name.equals("EQ_dataProcessingMethod"))
+				EQ_dataProcessingMethod = (List<String>) value;
+			if (name.equals("EQ_SENSORMETADATA_dataProcessingMethod"))
+				EQ_SENSORMETADATA_dataProcessingMethod = (List<String>) value;
+			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod"))
+				EQ_SENSORREPORT_dataProcessingMethod = (List<String>) value;
 		}
 	}
 
@@ -915,6 +967,18 @@ public class TriggerDescription {
 
 		if (EQ_SENSORREPORT_rawData != null) {
 			doc.put("EQ_SENSORREPORT_rawData", EQ_SENSORREPORT_rawData);
+		}
+
+		if (EQ_dataProcessingMethod != null) {
+			doc.put("EQ_dataProcessingMethod", EQ_dataProcessingMethod);
+		}
+
+		if (EQ_SENSORMETADATA_dataProcessingMethod != null) {
+			doc.put("EQ_SENSORMETADATA_dataProcessingMethod", EQ_SENSORMETADATA_dataProcessingMethod);
+		}
+
+		if (EQ_SENSORREPORT_dataProcessingMethod != null) {
+			doc.put("EQ_SENSORREPORT_dataProcessingMethod", EQ_SENSORREPORT_dataProcessingMethod);
 		}
 
 		return doc;
