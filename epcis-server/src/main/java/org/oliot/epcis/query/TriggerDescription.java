@@ -486,19 +486,18 @@ public class TriggerDescription {
 				if (sensorElementList == null || sensorElementList.isEmpty())
 					return false;
 
-				boolean isPartialPass = false;
+				boolean isPartialPass1 = false;
+				boolean isPartialPass2 = false;
 				for (Document sensorElement : sensorElementList) {
 					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
 					if (sensorMetadata != null) {
 						String did = sensorMetadata.getString("deviceID");
 						if (did != null) {
 							if (EQ_deviceID != null && isPassString(EQ_deviceID, did)) {
-								isPartialPass = true;
-								break;
+								isPartialPass1 = true;
 							} else if (EQ_SENSORMETADATA_deviceID != null
 									&& isPassString(EQ_SENSORMETADATA_deviceID, did)) {
-								isPartialPass = true;
-								break;
+								isPartialPass1 = true;
 							}
 						}
 					}
@@ -511,15 +510,19 @@ public class TriggerDescription {
 						if (did2 == null)
 							continue;
 						if (EQ_deviceID != null && isPassString(EQ_deviceID, did2)) {
-							isPartialPass = true;
+							isPartialPass2 = true;
 							break;
 						} else if (EQ_SENSORREPORT_deviceID != null && isPassString(EQ_SENSORREPORT_deviceID, did2)) {
-							isPartialPass = true;
+							isPartialPass2 = true;
 							break;
 						}
 					}
 				}
-				if (!isPartialPass)
+				if (EQ_deviceID != null && (!isPartialPass1 && !isPartialPass2))
+					return false;
+				if (EQ_SENSORMETADATA_deviceID != null && !isPartialPass1)
+					return false;
+				if (EQ_SENSORREPORT_deviceID != null && !isPartialPass2)
 					return false;
 			}
 
