@@ -689,7 +689,31 @@ public class TriggerDescription {
 					return false;
 			}
 			
-			// microorganism
+			if (EQ_chemicalSubstance != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String cs = sensorReport.getString("chemicalSubstance");
+						if ( cs == null)
+							continue;
+						if (isPassString(EQ_chemicalSubstance, cs)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+			
+			
 			// chemicalSubstance
 			// bizRules
 			// stringValue
@@ -844,6 +868,9 @@ public class TriggerDescription {
 			
 			if (name.equals("EQ_microorganism"))
 				EQ_microorganism = (List<String>) value;
+			
+			if (name.equals("EQ_chemicalSubstance"))
+				EQ_chemicalSubstance = (List<String>) value;
 		}
 	}
 
@@ -1011,6 +1038,10 @@ public class TriggerDescription {
 		
 		if (EQ_microorganism != null) {
 			doc.put("EQ_microorganism", EQ_microorganism);
+		}
+		
+		if (EQ_chemicalSubstance != null) {
+			doc.put("EQ_chemicalSubstance", EQ_chemicalSubstance);
 		}
 
 		return doc;
