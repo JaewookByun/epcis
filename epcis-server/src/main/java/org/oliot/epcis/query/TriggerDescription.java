@@ -8,6 +8,7 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 
@@ -15,6 +16,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.bson.Document;
 import org.bson.types.Binary;
+import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.QueryParam;
@@ -101,92 +103,92 @@ public class TriggerDescription {
 	private HashMap<String, Double> LT_quantity;
 	private HashMap<String, Double> LE_quantity;
 
-	private Entry<Object> EQ_INNER_ILMD;
-	private Entry<Object> GT_INNER_ILMD;
-	private Entry<Object> GE_INNER_ILMD;
-	private Entry<Object> LT_INNER_ILMD;
-	private Entry<Object> LE_INNER_ILMD;
-	private String EXISTS_INNER_ILMD;
+	private HashMap<String, Object> EQ_INNER_ILMD;
+	private HashMap<String, Object> GT_INNER_ILMD;
+	private HashMap<String, Object> GE_INNER_ILMD;
+	private HashMap<String, Object> LT_INNER_ILMD;
+	private HashMap<String, Object> LE_INNER_ILMD;
+	private List<String> EXISTS_INNER_ILMD;
 
-	private Entry<Object> EQ_INNER_SENSORELEMENT;
-	private Entry<Object> GT_INNER_SENSORELEMENT;
-	private Entry<Object> GE_INNER_SENSORELEMENT;
-	private Entry<Object> LT_INNER_SENSORELEMENT;
-	private Entry<Object> LE_INNER_SENSORELEMENT;
+	private HashMap<String, Object> EQ_INNER_SENSORELEMENT;
+	private HashMap<String, Object> GT_INNER_SENSORELEMENT;
+	private HashMap<String, Object> GE_INNER_SENSORELEMENT;
+	private HashMap<String, Object> LT_INNER_SENSORELEMENT;
+	private HashMap<String, Object> LE_INNER_SENSORELEMENT;
 	private String EXISTS_INNER_SENSORELEMENT;
 
-	private Entry<Object> EQ_INNER_readPoint;
-	private Entry<Object> GT_INNER_readPoint;
-	private Entry<Object> GE_INNER_readPoint;
-	private Entry<Object> LT_INNER_readPoint;
-	private Entry<Object> LE_INNER_readPoint;
+	private HashMap<String, Object> EQ_INNER_readPoint;
+	private HashMap<String, Object> GT_INNER_readPoint;
+	private HashMap<String, Object> GE_INNER_readPoint;
+	private HashMap<String, Object> LT_INNER_readPoint;
+	private HashMap<String, Object> LE_INNER_readPoint;
 	private String EXISTS_INNER_readPoint;
 
-	private Entry<Object> EQ_INNER_bizLocation;
-	private Entry<Object> GT_INNER_bizLocation;
-	private Entry<Object> GE_INNER_bizLocation;
-	private Entry<Object> LT_INNER_bizLocation;
-	private Entry<Object> LE_INNER_bizLocation;
+	private HashMap<String, Object> EQ_INNER_bizLocation;
+	private HashMap<String, Object> GT_INNER_bizLocation;
+	private HashMap<String, Object> GE_INNER_bizLocation;
+	private HashMap<String, Object> LT_INNER_bizLocation;
+	private HashMap<String, Object> LE_INNER_bizLocation;
 	private String EXISTS_INNER_bizLocation;
 
-	private Entry<Object> EQ_INNER_ERROR_DECLARATION;
-	private Entry<Object> GT_INNER_ERROR_DECLARATION;
-	private Entry<Object> GE_INNER_ERROR_DECLARATION;
-	private Entry<Object> LT_INNER_ERROR_DECLARATION;
-	private Entry<Object> LE_INNER_ERROR_DECLARATION;
+	private HashMap<String, Object> EQ_INNER_ERROR_DECLARATION;
+	private HashMap<String, Object> GT_INNER_ERROR_DECLARATION;
+	private HashMap<String, Object> GE_INNER_ERROR_DECLARATION;
+	private HashMap<String, Object> LT_INNER_ERROR_DECLARATION;
+	private HashMap<String, Object> LE_INNER_ERROR_DECLARATION;
 	private String EXISTS_INNER_ERROR_DECLARATION;
 
-	private Entry<Object> EQ_INNER;
-	private Entry<Object> GT_INNER;
-	private Entry<Object> GE_INNER;
-	private Entry<Object> LT_INNER;
-	private Entry<Object> LE_INNER;
+	private HashMap<String, Object> EQ_INNER;
+	private HashMap<String, Object> GT_INNER;
+	private HashMap<String, Object> GE_INNER;
+	private HashMap<String, Object> LT_INNER;
+	private HashMap<String, Object> LE_INNER;
 	private String EXISTS_INNER;
 
-	private Entry<Object> EQ_ILMD;
-	private Entry<Object> GT_ILMD;
-	private Entry<Object> GE_ILMD;
-	private Entry<Object> LT_ILMD;
-	private Entry<Object> LE_ILMD;
+	private HashMap<String, Object> EQ_ILMD;
+	private HashMap<String, Object> GT_ILMD;
+	private HashMap<String, Object> GE_ILMD;
+	private HashMap<String, Object> LT_ILMD;
+	private HashMap<String, Object> LE_ILMD;
 	private String EXISTS_ILMD;
 
-	private Entry<Object> EQ_SENSORELEMENT;
-	private Entry<Object> GT_SENSORELEMENT;
-	private Entry<Object> GE_SENSORELEMENT;
-	private Entry<Object> LT_SENSORELEMENT;
-	private Entry<Object> LE_SENSORELEMENT;
+	private HashMap<String, Object> EQ_SENSORELEMENT;
+	private HashMap<String, Object> GT_SENSORELEMENT;
+	private HashMap<String, Object> GE_SENSORELEMENT;
+	private HashMap<String, Object> LT_SENSORELEMENT;
+	private HashMap<String, Object> LE_SENSORELEMENT;
 	private String EXISTS_SENSORELEMENT;
-	private Entry<Object> EQ_SENSORMETADATA;
-	private Entry<Object> EQ_SENSORREPORT;
+	private HashMap<String, Object> EQ_SENSORMETADATA;
+	private HashMap<String, Object> EQ_SENSORREPORT;
 	private String EXISTS_SENSORMETADATA;
 	private String EXISTS_SENSORREPORT;
 
-	private Entry<Object> EQ_readPoint_extension;
-	private Entry<Object> GT_readPoint_extension;
-	private Entry<Object> GE_readPoint_extension;
-	private Entry<Object> LT_readPoint_extension;
-	private Entry<Object> LE_readPoint_extension;
+	private HashMap<String, Object> EQ_readPoint_extension;
+	private HashMap<String, Object> GT_readPoint_extension;
+	private HashMap<String, Object> GE_readPoint_extension;
+	private HashMap<String, Object> LT_readPoint_extension;
+	private HashMap<String, Object> LE_readPoint_extension;
 	private String EXISTS_readPoint_extension;
 
-	private Entry<Object> EQ_bizLocation_extension;
-	private Entry<Object> GT_bizLocation_extension;
-	private Entry<Object> GE_bizLocation_extension;
-	private Entry<Object> LT_bizLocation_extension;
-	private Entry<Object> LE_bizLocation_extension;
+	private HashMap<String, Object> EQ_bizLocation_extension;
+	private HashMap<String, Object> GT_bizLocation_extension;
+	private HashMap<String, Object> GE_bizLocation_extension;
+	private HashMap<String, Object> LT_bizLocation_extension;
+	private HashMap<String, Object> LE_bizLocation_extension;
 	private String EXISTS_bizLocation_extension;
 
-	private Entry<Object> EQ_ERROR_DECLARATION_extension;
-	private Entry<Object> GT_ERROR_DECLARATION_extension;
-	private Entry<Object> GE_ERROR_DECLARATION_extension;
-	private Entry<Object> LT_ERROR_DECLARATION_extension;
-	private Entry<Object> LE_ERROR_DECLARATION_extension;
+	private HashMap<String, Object> EQ_ERROR_DECLARATION_extension;
+	private HashMap<String, Object> GT_ERROR_DECLARATION_extension;
+	private HashMap<String, Object> GE_ERROR_DECLARATION_extension;
+	private HashMap<String, Object> LT_ERROR_DECLARATION_extension;
+	private HashMap<String, Object> LE_ERROR_DECLARATION_extension;
 	private String EXISTS_ERROR_DECLARATION_extension;
 
-	private Entry<Object> EQ_extension;
-	private Entry<Object> GT_extension;
-	private Entry<Object> GE_extension;
-	private Entry<Object> LT_extension;
-	private Entry<Object> LE_extension;
+	private HashMap<String, Object> EQ_extension;
+	private HashMap<String, Object> GT_extension;
+	private HashMap<String, Object> GE_extension;
+	private HashMap<String, Object> LT_extension;
+	private HashMap<String, Object> LE_extension;
 	private String EXISTS_extension;
 
 	private List<String> EQ_type;
@@ -228,8 +230,8 @@ public class TriggerDescription {
 
 	private List<String> WD_readPoint;
 	private List<String> WD_bizLocation;
-	private Entry<List<String>> HASATTR;
-	private Entry<List<String>> EQ_ATTR;
+	private HashMap<String, Object> HASATTR;
+	private HashMap<String, Object> EQ_ATTR;
 
 	private String subscriptionID;
 
@@ -364,6 +366,155 @@ public class TriggerDescription {
 				return false;
 		}
 
+		return true;
+	}
+
+	public boolean isPassDocument(HashMap<String, Object> eq, HashMap<String, Object> gt, HashMap<String, Object> ge,
+			HashMap<String, Object> lt, HashMap<String, Object> le, List<String> exists, Document ext) {
+		if (eq != null) {
+			for (Entry<String, Object> ent : eq.entrySet()) {
+				String tk = ent.getKey();
+				Object tv = ent.getValue();
+				if (!ext.containsKey(tk))
+					return false;
+				Object v = ext.get(tk);
+				if (tv instanceof Integer) {
+					if (!(v instanceof Integer))
+						return false;
+					if (((Integer) tv).intValue() != ((Integer) v).intValue())
+						return false;
+				} else if (tv instanceof Long) {
+					if (!(v instanceof Long))
+						return false;
+					if (((Long) tv).longValue() != ((Long) v).longValue())
+						return false;
+				} else if (tv instanceof Double) {
+					if (!(v instanceof Double))
+						return false;
+					if (((Double) tv).doubleValue() != ((Double) v).doubleValue())
+						return false;
+				} else if (tv instanceof List) {
+					if (!((List<?>) tv).contains(v))
+						return false;
+				} else
+					return false;
+			}
+		}
+
+		if (gt != null) {
+			for (Entry<String, Object> ent : gt.entrySet()) {
+				String tk = ent.getKey();
+				Object tv = ent.getValue();
+				if (!ext.containsKey(tk))
+					return false;
+				Object v = ext.get(tk);
+				if (tv instanceof Integer) {
+					if (!(v instanceof Integer))
+						return false;
+					if (((Integer) tv).intValue() >= ((Integer) v).intValue())
+						return false;
+				} else if (tv instanceof Long) {
+					if (!(v instanceof Long))
+						return false;
+					if (((Long) tv).longValue() >= ((Long) v).longValue())
+						return false;
+				} else if (tv instanceof Double) {
+					if (!(v instanceof Double))
+						return false;
+					if (((Double) tv).doubleValue() >= ((Double) v).doubleValue())
+						return false;
+				} else
+					return false;
+			}
+		}
+
+		if (ge != null) {
+			for (Entry<String, Object> ent : ge.entrySet()) {
+				String tk = ent.getKey();
+				Object tv = ent.getValue();
+				if (!ext.containsKey(tk))
+					return false;
+				Object v = ext.get(tk);
+				if (tv instanceof Integer) {
+					if (!(v instanceof Integer))
+						return false;
+					if (((Integer) tv).intValue() > ((Integer) v).intValue())
+						return false;
+				} else if (tv instanceof Long) {
+					if (!(v instanceof Long))
+						return false;
+					if (((Long) tv).longValue() > ((Long) v).longValue())
+						return false;
+				} else if (tv instanceof Double) {
+					if (!(v instanceof Double))
+						return false;
+					if (((Double) tv).doubleValue() > ((Double) v).doubleValue())
+						return false;
+				} else
+					return false;
+			}
+		}
+
+		if (lt != null) {
+			for (Entry<String, Object> ent : lt.entrySet()) {
+				String tk = ent.getKey();
+				Object tv = ent.getValue();
+				if (!ext.containsKey(tk))
+					return false;
+				Object v = ext.get(tk);
+				if (tv instanceof Integer) {
+					if (!(v instanceof Integer))
+						return false;
+					if (((Integer) tv).intValue() <= ((Integer) v).intValue())
+						return false;
+				} else if (tv instanceof Long) {
+					if (!(v instanceof Long))
+						return false;
+					if (((Long) tv).longValue() <= ((Long) v).longValue())
+						return false;
+				} else if (tv instanceof Double) {
+					if (!(v instanceof Double))
+						return false;
+					if (((Double) tv).doubleValue() <= ((Double) v).doubleValue())
+						return false;
+				} else
+					return false;
+			}
+		}
+
+		if (le != null) {
+			for (Entry<String, Object> ent : le.entrySet()) {
+				String tk = ent.getKey();
+				Object tv = ent.getValue();
+				if (!ext.containsKey(tk))
+					return false;
+				Object v = ext.get(tk);
+				if (tv instanceof Integer) {
+					if (!(v instanceof Integer))
+						return false;
+					if (((Integer) tv).intValue() < ((Integer) v).intValue())
+						return false;
+				} else if (tv instanceof Long) {
+					if (!(v instanceof Long))
+						return false;
+					if (((Long) tv).longValue() < ((Long) v).longValue())
+						return false;
+				} else if (tv instanceof Double) {
+					if (!(v instanceof Double))
+						return false;
+					if (((Double) tv).doubleValue() < ((Double) v).doubleValue())
+						return false;
+				} else
+					return false;
+			}
+		}
+
+		if (exists != null) {
+			for (String exist : exists) {
+				if (!ext.containsKey(exist))
+					return false;
+			}
+		}
 		return true;
 	}
 
@@ -1040,6 +1191,21 @@ public class TriggerDescription {
 				if (isPass1 == false && isPass2 == false && isPass3 == false)
 					return false;
 			}
+
+			// EQ_INNER_ILMD
+			// GT, GE, LT, LE
+			if ((EQ_INNER_ILMD != null && !EQ_INNER_ILMD.isEmpty())
+					|| (GT_INNER_ILMD != null && !GT_INNER_ILMD.isEmpty())
+					|| (GE_INNER_ILMD != null && !GE_INNER_ILMD.isEmpty())
+					|| (LT_INNER_ILMD != null && !LT_INNER_ILMD.isEmpty())
+					|| (LE_INNER_ILMD != null && !LE_INNER_ILMD.isEmpty())
+					|| (EXISTS_INNER_ILMD != null && !EXISTS_INNER_ILMD.isEmpty())) {
+				Document ilmdf = doc.get("ilmdf", Document.class);
+				if (!isPassDocument(EQ_INNER_ILMD, GT_INNER_ILMD, GE_INNER_ILMD, LT_INNER_ILMD, LE_INNER_ILMD,
+						EXISTS_INNER_ILMD, ilmdf))
+					return false;
+			}
+
 		} catch (Exception e) {
 			return false;
 		}
@@ -1282,6 +1448,46 @@ public class TriggerDescription {
 				LE_quantity.put(uom, (double) value);
 			}
 
+			if (name.startsWith("EQ_INNER_ILMD")) {
+				if (EQ_INNER_ILMD == null)
+					EQ_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				EQ_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER_ILMD")) {
+				if (GT_INNER_ILMD == null)
+					GT_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				GT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_INNER_ILMD")) {
+				if (GE_INNER_ILMD == null)
+					GE_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				GE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_INNER_ILMD")) {
+				if (LT_INNER_ILMD == null)
+					LT_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				LT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_INNER_ILMD")) {
+				if (LE_INNER_ILMD == null)
+					LE_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				LE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER_ILMD")) {
+				if (EXISTS_INNER_ILMD == null)
+					EXISTS_INNER_ILMD = new ArrayList<String>();
+				EXISTS_INNER_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(18)));
+			}
 		}
 	}
 
@@ -1515,6 +1721,30 @@ public class TriggerDescription {
 			doc.put("LE_quantity", LE_quantity);
 		}
 
+		if (EQ_INNER_ILMD != null) {
+			doc.put("EQ_INNER_ILMD", EQ_INNER_ILMD);
+		}
+
+		if (GT_INNER_ILMD != null) {
+			doc.put("GT_INNER_ILMD", GT_INNER_ILMD);
+		}
+
+		if (GE_INNER_ILMD != null) {
+			doc.put("GE_INNER_ILMD", GE_INNER_ILMD);
+		}
+
+		if (LT_INNER_ILMD != null) {
+			doc.put("LT_INNER_ILMD", LT_INNER_ILMD);
+		}
+
+		if (LE_INNER_ILMD != null) {
+			doc.put("LE_INNER_ILMD", LE_INNER_ILMD);
+		}
+
+		if (EXISTS_INNER_ILMD != null) {
+			doc.put("EXISTS_INNER_ILMD", EXISTS_INNER_ILMD);
+		}
+
 		return doc;
 	}
 
@@ -1578,32 +1808,4 @@ public class TriggerDescription {
 			throw new QueryParameterException(e.getMessage());
 		}
 	}
-}
-
-class Entry<V> {
-	private String key;
-	private V value;
-
-	public String getKey() {
-		return key;
-	}
-
-	public void setKey(String key) {
-		this.key = key;
-	}
-
-	public V getValue() {
-		return value;
-	}
-
-	public void setValue(V value) {
-		this.value = value;
-	}
-
-	public Entry(String key, V value) {
-		super();
-		this.key = key;
-		this.value = value;
-	}
-
 }
