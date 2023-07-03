@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -89,9 +90,10 @@ public class TriggerDescription {
 	private List<String> EQ_uriValue;
 	private Double GE_percRank;
 	private Double LT_percRank;
-	private Entry<List<String>> EQ_bizTransaction;
-	private Entry<List<String>> EQ_source;
-	private Entry<List<String>> EQ_destination;
+	
+	private HashMap<String, List<String>> EQ_bizTransaction;
+	private HashMap<String, List<String>> EQ_source;
+	private HashMap<String, List<String>> EQ_destination;
 
 	private Entry<Double> EQ_quantity;
 	private Entry<Double> GT_quantity;
@@ -255,6 +257,14 @@ public class TriggerDescription {
 		if (Collections.disjoint(query, value))
 			return false;
 		return true;
+	}
+	
+	public boolean isPassMap(HashMap<String, List<String>> query, String type, String value) {
+		if(!query.containsKey(type))
+			return false;
+		else{
+			return query.get(type).contains(value);	
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -876,10 +886,26 @@ public class TriggerDescription {
 				}
 				if (!isPartialPass)
 					return false;
+			}			
+			
+			if (EQ_bizTransaction != null || !EQ_bizTransaction.isEmpty()) {
+				List<Document> bizTransactionList = doc.getList("bizTransactionList", Document.class);
+				if (bizTransactionList == null || bizTransactionList.isEmpty())
+					return false;
+				for(Document bizTransaction: bizTransactionList) {
+					String type = bizTransaction.getString("type");
+					if(type == null)
+						type = "";
+					String value = bizTransaction.getString("value");
+					if(!isPassMap(EQ_bizTransaction, type, value))
+						return false;
+				}
 			}
-
-			// percRank
-			// bizTransaction
+			
+			// EQ_bizTransaction_*
+			// EQ_source_*
+			// EQ_destination_*
+			
 
 		} catch (Exception e) {
 			return false;
@@ -1049,6 +1075,17 @@ public class TriggerDescription {
 				GE_percRank = (double) value;
 			if (name.equals("LT_percRank"))
 				LT_percRank = (double) value;
+			
+			if (name.startsWith("EQ_bizTransaction")) {
+				if(EQ_bizTransaction == null)
+					EQ_bizTransaction = new HashMap<String, List<String>>();
+				String type = name.substring(18);
+				List<String> values = EQ_bizTransaction.get(type);
+				if(values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_bizTransaction.put(type, values);
+			}
 
 		}
 	}
@@ -1249,6 +1286,10 @@ public class TriggerDescription {
 		
 		if (LT_percRank != null) {
 			doc.put("LT_percRank", LT_percRank);
+		}
+		
+		if (EQ_bizTransaction != null) {
+			doc.put("EQ_bizTransaction", EQ_bizTransaction);
 		}
 
 		return doc;
