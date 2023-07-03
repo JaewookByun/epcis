@@ -95,11 +95,11 @@ public class TriggerDescription {
 	private HashMap<String, List<String>> EQ_source;
 	private HashMap<String, List<String>> EQ_destination;
 
-	private Entry<Double> EQ_quantity;
-	private Entry<Double> GT_quantity;
-	private Entry<Double> GE_quantity;
-	private Entry<Double> LT_quantity;
-	private Entry<Double> LE_quantity;
+	private HashMap<String, Double> EQ_quantity;
+	private HashMap<String, Double> GT_quantity;
+	private HashMap<String, Double> GE_quantity;
+	private HashMap<String, Double> LT_quantity;
+	private HashMap<String, Double> LE_quantity;
 
 	private Entry<Object> EQ_INNER_ILMD;
 	private Entry<Object> GT_INNER_ILMD;
@@ -313,16 +313,58 @@ public class TriggerDescription {
 	}
 
 	public boolean isPassDouble(Double ge, Double lt, Double value) {
-		if (ge != null && lt != null) {
-			return value >= ge && value < lt;
-		} else if (ge != null) {
-			return value >= ge;
-		} else if (lt != null) {
-			return value < lt;
-		} else {
-			// not happen
+
+		if (ge != null && ge < value)
 			return false;
+
+		if (lt != null && lt >= value)
+			return false;
+		return true;
+
+	}
+
+	public boolean isPassDouble(HashMap<String, Double> eq, HashMap<String, Double> gt, HashMap<String, Double> ge,
+			HashMap<String, Double> lt, HashMap<String, Double> le, String uom, Double value) {
+
+		if (eq != null) {
+			Double tVal = eq.get(uom);
+			if (tVal == null)
+				return false;
+			if (tVal.doubleValue() != value.doubleValue())
+				return false;
 		}
+		if (gt != null) {
+			Double tVal = gt.get(uom);
+			if (tVal == null)
+				return false;
+			if (tVal.doubleValue() >= value.doubleValue())
+				return false;
+		}
+		if (ge != null) {
+			Double tVal = ge.get(uom);
+			if (tVal == null)
+				return false;
+			if (tVal.doubleValue() > value.doubleValue())
+				return false;
+		}
+
+		if (lt != null) {
+			Double tVal = lt.get(uom);
+			if (tVal == null)
+				return false;
+			if (tVal.doubleValue() <= value.doubleValue())
+				return false;
+		}
+
+		if (le != null) {
+			Double tVal = le.get(uom);
+			if (tVal == null)
+				return false;
+			if (tVal.doubleValue() < value.doubleValue())
+				return false;
+		}
+
+		return true;
 	}
 
 	// TODO:
@@ -945,6 +987,59 @@ public class TriggerDescription {
 					return false;
 			}
 
+			if ((EQ_quantity != null && !EQ_quantity.isEmpty()) || (GT_quantity != null && !GT_quantity.isEmpty())
+					|| (GE_quantity != null && !GE_quantity.isEmpty())
+					|| (LT_quantity != null && !LT_quantity.isEmpty())
+					|| (LE_quantity != null && !LE_quantity.isEmpty())) {
+
+				boolean isPass1 = false;
+				List<Document> quantityList = doc.getList("quantityList", Document.class);
+				if (quantityList != null) {
+					for (Document quantity : quantityList) {
+						String uom = quantity.getString("uom");
+						if (uom == null)
+							uom = "";
+						Double value = quantity.getDouble("quantity");
+						if (isPassDouble(EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, uom, value)) {
+							isPass1 = true;
+							break;
+						}
+					}
+				}
+
+				boolean isPass2 = false;
+				List<Document> inputQuantityList = doc.getList("inputQuantityList", Document.class);
+				if (inputQuantityList != null) {
+					for (Document quantity : inputQuantityList) {
+						String uom = quantity.getString("uom");
+						if (uom == null)
+							uom = "";
+						Double value = quantity.getDouble("quantity");
+						if (isPassDouble(EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, uom, value)) {
+							isPass2 = true;
+							break;
+						}
+					}
+				}
+
+				boolean isPass3 = false;
+				List<Document> outputQuantityList = doc.getList("outputQuantityList", Document.class);
+				if (outputQuantityList != null) {
+					for (Document quantity : outputQuantityList) {
+						String uom = quantity.getString("uom");
+						if (uom == null)
+							uom = "";
+						Double value = quantity.getDouble("quantity");
+						if (isPassDouble(EQ_quantity, GT_quantity, GE_quantity, LT_quantity, LE_quantity, uom, value)) {
+							isPass3 = true;
+							break;
+						}
+					}
+				}
+
+				if (isPass1 == false && isPass2 == false && isPass3 == false)
+					return false;
+			}
 		} catch (Exception e) {
 			return false;
 		}
@@ -1145,6 +1240,46 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_destination.put(type, values);
+			}
+
+			if (name.startsWith("EQ_quantity")) {
+				if (EQ_quantity == null)
+					EQ_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				EQ_quantity.put(uom, (double) value);
+			}
+
+			if (name.startsWith("GT_quantity")) {
+				if (GT_quantity == null)
+					GT_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				GT_quantity.put(uom, (double) value);
+			}
+
+			if (name.startsWith("GE_quantity")) {
+				if (GE_quantity == null)
+					GE_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				GE_quantity.put(uom, (double) value);
+			}
+
+			if (name.startsWith("LT_quantity")) {
+				if (LT_quantity == null)
+					LT_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				LT_quantity.put(uom, (double) value);
+			}
+
+			if (name.startsWith("LE_quantity")) {
+				if (LE_quantity == null)
+					LE_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				LE_quantity.put(uom, (double) value);
 			}
 
 		}
@@ -1358,6 +1493,26 @@ public class TriggerDescription {
 
 		if (EQ_destination != null) {
 			doc.put("EQ_destination", EQ_destination);
+		}
+
+		if (EQ_quantity != null) {
+			doc.put("EQ_quantity", EQ_quantity);
+		}
+
+		if (GT_quantity != null) {
+			doc.put("GT_quantity", GT_quantity);
+		}
+
+		if (GE_quantity != null) {
+			doc.put("GE_quantity", GE_quantity);
+		}
+
+		if (LT_quantity != null) {
+			doc.put("LT_quantity", LT_quantity);
+		}
+
+		if (LE_quantity != null) {
+			doc.put("LE_quantity", LE_quantity);
 		}
 
 		return doc;
