@@ -816,8 +816,33 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
+			
+			if (EQ_uriValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
 
-			// hexBinaryValue
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						String s = sensorReport.getString("uriValue");
+						if (s == null)
+							continue;
+						if (isPassString(EQ_uriValue, s)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
+			
+
 			// uriValue
 			// percRank
 			// bizTransaction
@@ -982,6 +1007,9 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_hexBinaryValue"))
 				EQ_hexBinaryValue = (List<String>) value;
+			
+			if (name.equals("EQ_uriValue"))
+				EQ_uriValue = (List<String>) value;
 		}
 	}
 
@@ -1169,6 +1197,10 @@ public class TriggerDescription {
 
 		if (EQ_hexBinaryValue != null) {
 			doc.put("EQ_hexBinaryValue", EQ_hexBinaryValue);
+		}
+		
+		if (EQ_uriValue != null) {
+			doc.put("EQ_uriValue", EQ_uriValue);
 		}
 
 		return doc;
