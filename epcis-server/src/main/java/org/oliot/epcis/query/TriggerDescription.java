@@ -244,9 +244,9 @@ public class TriggerDescription {
 			return false;
 		return true;
 	}
-	
+
 	public boolean isPassBoolean(Boolean query, Boolean value) {
-		if(query.equals(value))
+		if (query.equals(value))
 			return true;
 		return false;
 	}
@@ -791,7 +791,7 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
+
 			if (EQ_hexBinaryValue != null) {
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
@@ -803,23 +803,20 @@ public class TriggerDescription {
 					if (sensorReports == null || sensorReports.isEmpty())
 						continue;
 					for (Document sensorReport : sensorReports) {
-						// TODO: 
-						Object obj = sensorReport.get("hexBinaryValue", Binary.class);
-						if(obj == null)
+						Object obj = sensorReport.get("hexBinaryValue");
+						if (obj == null)
 							continue;
-						byte[] hbv = (byte[]) obj;
-						if (isPassString(EQ_hexBinaryValue, hbv.toString())) {
+						String strHex = DatatypeConverter.printHexBinary((byte[]) obj);
+						if (isPassString(EQ_hexBinaryValue, strHex)) {
 							isPartialPass = true;
 							break;
 						}
-
 					}
 				}
 				if (!isPartialPass)
 					return false;
 			}
-			
-			
+
 			// hexBinaryValue
 			// uriValue
 			// percRank
@@ -979,10 +976,10 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_stringValue"))
 				EQ_stringValue = (List<String>) value;
-			
+
 			if (name.equals("EQ_booleanValue"))
 				EQ_booleanValue = (Boolean) value;
-			
+
 			if (name.equals("EQ_hexBinaryValue"))
 				EQ_hexBinaryValue = (List<String>) value;
 		}
@@ -1165,11 +1162,11 @@ public class TriggerDescription {
 		if (EQ_stringValue != null) {
 			doc.put("EQ_stringValue", EQ_stringValue);
 		}
-		
+
 		if (EQ_booleanValue != null) {
 			doc.put("EQ_booleanValue", EQ_booleanValue);
 		}
-		
+
 		if (EQ_hexBinaryValue != null) {
 			doc.put("EQ_hexBinaryValue", EQ_hexBinaryValue);
 		}
