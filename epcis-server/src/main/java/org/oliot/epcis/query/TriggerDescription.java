@@ -90,7 +90,7 @@ public class TriggerDescription {
 	private List<String> EQ_uriValue;
 	private Double GE_percRank;
 	private Double LT_percRank;
-	
+
 	private HashMap<String, List<String>> EQ_bizTransaction;
 	private HashMap<String, List<String>> EQ_source;
 	private HashMap<String, List<String>> EQ_destination;
@@ -258,12 +258,12 @@ public class TriggerDescription {
 			return false;
 		return true;
 	}
-	
+
 	public boolean isPassMap(HashMap<String, List<String>> query, String type, String value) {
-		if(!query.containsKey(type))
+		if (!query.containsKey(type))
 			return false;
-		else{
-			return query.get(type).contains(value);	
+		else {
+			return query.get(type).contains(value);
 		}
 	}
 
@@ -311,7 +311,7 @@ public class TriggerDescription {
 			return false;
 		}
 	}
-	
+
 	public boolean isPassDouble(Double ge, Double lt, Double value) {
 		if (ge != null && lt != null) {
 			return value >= ge && value < lt;
@@ -839,7 +839,7 @@ public class TriggerDescription {
 				if (!isPartialPass)
 					return false;
 			}
-			
+
 			if (EQ_uriValue != null) {
 				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
 				if (sensorElementList == null || sensorElementList.isEmpty())
@@ -886,26 +886,64 @@ public class TriggerDescription {
 				}
 				if (!isPartialPass)
 					return false;
-			}			
-			
-			if (EQ_bizTransaction != null || !EQ_bizTransaction.isEmpty()) {
+			}
+
+			if (EQ_bizTransaction != null && !EQ_bizTransaction.isEmpty()) {
 				List<Document> bizTransactionList = doc.getList("bizTransactionList", Document.class);
 				if (bizTransactionList == null || bizTransactionList.isEmpty())
 					return false;
-				for(Document bizTransaction: bizTransactionList) {
+				boolean isPass = false;
+				for (Document bizTransaction : bizTransactionList) {
 					String type = bizTransaction.getString("type");
-					if(type == null)
+					if (type == null)
 						type = "";
 					String value = bizTransaction.getString("value");
-					if(!isPassMap(EQ_bizTransaction, type, value))
-						return false;
+					if (isPassMap(EQ_bizTransaction, type, value)) {
+						isPass = true;
+						break;
+					}
 				}
+				if (!isPass)
+					return false;
 			}
-			
-			// EQ_bizTransaction_*
-			// EQ_source_*
-			// EQ_destination_*
-			
+
+			if (EQ_source != null && !EQ_source.isEmpty()) {
+				List<Document> sourceList = doc.getList("sourceList", Document.class);
+				if (sourceList == null || sourceList.isEmpty())
+					return false;
+				boolean isPass = false;
+				for (Document source : sourceList) {
+					String type = source.getString("type");
+					if (type == null)
+						type = "";
+					String value = source.getString("value");
+					if (isPassMap(EQ_source, type, value)) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_destination != null && !EQ_destination.isEmpty()) {
+				List<Document> destinationList = doc.getList("destinationList", Document.class);
+				if (destinationList == null || destinationList.isEmpty())
+					return false;
+				boolean isPass = false;
+				for (Document destination : destinationList) {
+					String type = destination.getString("type");
+					if (type == null)
+						type = "";
+					String value = destination.getString("value");
+					if (isPassMap(EQ_destination, type, value)) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
 
 		} catch (Exception e) {
 			return false;
@@ -1067,24 +1105,46 @@ public class TriggerDescription {
 
 			if (name.equals("EQ_hexBinaryValue"))
 				EQ_hexBinaryValue = (List<String>) value;
-			
+
 			if (name.equals("EQ_uriValue"))
 				EQ_uriValue = (List<String>) value;
-			
+
 			if (name.equals("GE_percRank"))
 				GE_percRank = (double) value;
 			if (name.equals("LT_percRank"))
 				LT_percRank = (double) value;
-			
+
 			if (name.startsWith("EQ_bizTransaction")) {
-				if(EQ_bizTransaction == null)
+				if (EQ_bizTransaction == null)
 					EQ_bizTransaction = new HashMap<String, List<String>>();
 				String type = name.substring(18);
 				List<String> values = EQ_bizTransaction.get(type);
-				if(values == null)
+				if (values == null)
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_bizTransaction.put(type, values);
+			}
+
+			if (name.startsWith("EQ_source")) {
+				if (EQ_source == null)
+					EQ_source = new HashMap<String, List<String>>();
+				String type = name.substring(10);
+				List<String> values = EQ_source.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_source.put(type, values);
+			}
+
+			if (name.startsWith("EQ_destination")) {
+				if (EQ_destination == null)
+					EQ_destination = new HashMap<String, List<String>>();
+				String type = name.substring(15);
+				List<String> values = EQ_destination.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_destination.put(type, values);
 			}
 
 		}
@@ -1275,21 +1335,29 @@ public class TriggerDescription {
 		if (EQ_hexBinaryValue != null) {
 			doc.put("EQ_hexBinaryValue", EQ_hexBinaryValue);
 		}
-		
+
 		if (EQ_uriValue != null) {
 			doc.put("EQ_uriValue", EQ_uriValue);
 		}
-		
+
 		if (GE_percRank != null) {
 			doc.put("GE_percRank", GE_percRank);
 		}
-		
+
 		if (LT_percRank != null) {
 			doc.put("LT_percRank", LT_percRank);
 		}
-		
+
 		if (EQ_bizTransaction != null) {
 			doc.put("EQ_bizTransaction", EQ_bizTransaction);
+		}
+
+		if (EQ_source != null) {
+			doc.put("EQ_source", EQ_source);
+		}
+
+		if (EQ_destination != null) {
+			doc.put("EQ_destination", EQ_destination);
 		}
 
 		return doc;
