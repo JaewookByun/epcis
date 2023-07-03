@@ -87,8 +87,8 @@ public class TriggerDescription {
 	private Boolean EQ_booleanValue;
 	private List<String> EQ_hexBinaryValue;
 	private List<String> EQ_uriValue;
-	private Long GE_percRank;
-	private Long LT_percRank;
+	private Double GE_percRank;
+	private Double LT_percRank;
 	private Entry<List<String>> EQ_bizTransaction;
 	private Entry<List<String>> EQ_source;
 	private Entry<List<String>> EQ_destination;
@@ -290,6 +290,19 @@ public class TriggerDescription {
 	}
 
 	public boolean isPassLong(Long ge, Long lt, Long value) {
+		if (ge != null && lt != null) {
+			return value >= ge && value < lt;
+		} else if (ge != null) {
+			return value >= ge;
+		} else if (lt != null) {
+			return value < lt;
+		} else {
+			// not happen
+			return false;
+		}
+	}
+	
+	public boolean isPassDouble(Double ge, Double lt, Double value) {
 		if (ge != null && lt != null) {
 			return value >= ge && value < lt;
 		} else if (ge != null) {
@@ -841,9 +854,30 @@ public class TriggerDescription {
 					return false;
 			}
 
-			
+			if (GE_percRank != null || LT_percRank != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
 
-			// uriValue
+				boolean isPartialPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReports = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReports == null || sensorReports.isEmpty())
+						continue;
+					for (Document sensorReport : sensorReports) {
+						Double time = sensorReport.getDouble("percRank");
+						if (time == null)
+							continue;
+						if (isPassDouble(GE_percRank, LT_percRank, time)) {
+							isPartialPass = true;
+							break;
+						}
+					}
+				}
+				if (!isPartialPass)
+					return false;
+			}
+
 			// percRank
 			// bizTransaction
 
@@ -1010,6 +1044,12 @@ public class TriggerDescription {
 			
 			if (name.equals("EQ_uriValue"))
 				EQ_uriValue = (List<String>) value;
+			
+			if (name.equals("GE_percRank"))
+				GE_percRank = (double) value;
+			if (name.equals("LT_percRank"))
+				LT_percRank = (double) value;
+
 		}
 	}
 
@@ -1201,6 +1241,14 @@ public class TriggerDescription {
 		
 		if (EQ_uriValue != null) {
 			doc.put("EQ_uriValue", EQ_uriValue);
+		}
+		
+		if (GE_percRank != null) {
+			doc.put("GE_percRank", GE_percRank);
+		}
+		
+		if (LT_percRank != null) {
+			doc.put("LT_percRank", LT_percRank);
 		}
 
 		return doc;
