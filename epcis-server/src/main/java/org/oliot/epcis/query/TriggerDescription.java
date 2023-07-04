@@ -1227,7 +1227,17 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// TODO
+			if ((EQ_INNER_readPoint != null && !EQ_INNER_readPoint.isEmpty())
+					|| (GT_INNER_readPoint != null && !GT_INNER_readPoint.isEmpty())
+					|| (GE_INNER_readPoint != null && !GE_INNER_readPoint.isEmpty())
+					|| (LT_INNER_readPoint != null && !LT_INNER_readPoint.isEmpty())
+					|| (LE_INNER_readPoint != null && !LE_INNER_readPoint.isEmpty())
+					|| (EXISTS_INNER_readPoint != null && !EXISTS_INNER_readPoint.isEmpty())) {
+				Document rpf = doc.get("rpf", Document.class);
+				if (!isPassDocument(EQ_INNER_readPoint, GT_INNER_readPoint, GE_INNER_readPoint, LT_INNER_readPoint, LE_INNER_readPoint,
+						EXISTS_INNER_readPoint, rpf))
+					return false;
+			}
 
 		} catch (Exception e) {
 			return false;
@@ -1549,6 +1559,44 @@ public class TriggerDescription {
 					EXISTS_INNER_SENSORELEMENT = new ArrayList<String>();
 				EXISTS_INNER_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(27)));
 			}
+			
+			if (name.startsWith("EQ_INNER_readPoint")) {
+				if (EQ_INNER_readPoint == null)
+					EQ_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				EQ_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER_readPoint")) {
+				if (GT_INNER_readPoint == null)
+					GT_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				GT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_INNER_readPoint")) {
+				if (GE_INNER_readPoint == null)
+					GE_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				GE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_INNER_readPoint")) {
+				if (LT_INNER_readPoint == null)
+					LT_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				LT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_INNER_readPoint")) {
+				if (LE_INNER_readPoint == null)
+					LE_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				LE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER_readPoint")) {
+				if (EXISTS_INNER_readPoint == null)
+					EXISTS_INNER_readPoint = new ArrayList<String>();
+				EXISTS_INNER_readPoint.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(23)));
+			}
 		}
 	}
 
@@ -1828,6 +1876,30 @@ public class TriggerDescription {
 
 		if (EXISTS_INNER_SENSORELEMENT != null) {
 			doc.put("EXISTS_INNER_SENSORELEMENT", EXISTS_INNER_SENSORELEMENT);
+		}
+		
+		if (EQ_INNER_readPoint != null) {
+			doc.put("EQ_INNER_readPoint", EQ_INNER_readPoint);
+		}
+
+		if (GT_INNER_readPoint != null) {
+			doc.put("GT_INNER_readPoint", GT_INNER_readPoint);
+		}
+
+		if (GE_INNER_readPoint != null) {
+			doc.put("GE_INNER_readPoint", GE_INNER_readPoint);
+		}
+
+		if (LT_INNER_readPoint != null) {
+			doc.put("LT_INNER_readPoint", LT_INNER_readPoint);
+		}
+
+		if (LE_INNER_readPoint != null) {
+			doc.put("LE_INNER_readPoint", LE_INNER_readPoint);
+		}
+
+		if (EXISTS_INNER_readPoint != null) {
+			doc.put("EXISTS_INNER_readPoint", EXISTS_INNER_readPoint);
 		}
 
 
