@@ -1217,8 +1217,8 @@ public class TriggerDescription {
 				boolean isPass = false;
 				for (Document sensorElement : sensorElementList) {
 					Document sef = sensorElement.get("sef", Document.class);
-					if (isPassDocument(EQ_INNER_SENSORELEMENT, GT_INNER_SENSORELEMENT, GE_INNER_SENSORELEMENT, LT_INNER_SENSORELEMENT, LE_INNER_SENSORELEMENT,
-							EXISTS_INNER_SENSORELEMENT, sef)) {
+					if (isPassDocument(EQ_INNER_SENSORELEMENT, GT_INNER_SENSORELEMENT, GE_INNER_SENSORELEMENT,
+							LT_INNER_SENSORELEMENT, LE_INNER_SENSORELEMENT, EXISTS_INNER_SENSORELEMENT, sef)) {
 						isPass = true;
 						break;
 					}
@@ -1234,11 +1234,11 @@ public class TriggerDescription {
 					|| (LE_INNER_readPoint != null && !LE_INNER_readPoint.isEmpty())
 					|| (EXISTS_INNER_readPoint != null && !EXISTS_INNER_readPoint.isEmpty())) {
 				Document rpf = doc.get("rpf", Document.class);
-				if (!isPassDocument(EQ_INNER_readPoint, GT_INNER_readPoint, GE_INNER_readPoint, LT_INNER_readPoint, LE_INNER_readPoint,
-						EXISTS_INNER_readPoint, rpf))
+				if (!isPassDocument(EQ_INNER_readPoint, GT_INNER_readPoint, GE_INNER_readPoint, LT_INNER_readPoint,
+						LE_INNER_readPoint, EXISTS_INNER_readPoint, rpf))
 					return false;
 			}
-			
+
 			if ((EQ_INNER_bizLocation != null && !EQ_INNER_bizLocation.isEmpty())
 					|| (GT_INNER_bizLocation != null && !GT_INNER_bizLocation.isEmpty())
 					|| (GE_INNER_bizLocation != null && !GE_INNER_bizLocation.isEmpty())
@@ -1246,8 +1246,32 @@ public class TriggerDescription {
 					|| (LE_INNER_bizLocation != null && !LE_INNER_bizLocation.isEmpty())
 					|| (EXISTS_INNER_bizLocation != null && !EXISTS_INNER_bizLocation.isEmpty())) {
 				Document blf = doc.get("blf", Document.class);
-				if (!isPassDocument(EQ_INNER_bizLocation, GT_INNER_bizLocation, GE_INNER_bizLocation, LT_INNER_bizLocation, LE_INNER_bizLocation,
-						EXISTS_INNER_bizLocation, blf))
+				if (!isPassDocument(EQ_INNER_bizLocation, GT_INNER_bizLocation, GE_INNER_bizLocation,
+						LT_INNER_bizLocation, LE_INNER_bizLocation, EXISTS_INNER_bizLocation, blf))
+					return false;
+			}
+
+			if ((EQ_INNER_ERROR_DECLARATION != null && !EQ_INNER_ERROR_DECLARATION.isEmpty())
+					|| (GT_INNER_ERROR_DECLARATION != null && !GT_INNER_ERROR_DECLARATION.isEmpty())
+					|| (GE_INNER_ERROR_DECLARATION != null && !GE_INNER_ERROR_DECLARATION.isEmpty())
+					|| (LT_INNER_ERROR_DECLARATION != null && !LT_INNER_ERROR_DECLARATION.isEmpty())
+					|| (LE_INNER_ERROR_DECLARATION != null && !LE_INNER_ERROR_DECLARATION.isEmpty())
+					|| (EXISTS_INNER_ERROR_DECLARATION != null && !EXISTS_INNER_ERROR_DECLARATION.isEmpty())) {
+				Document errf = doc.get("errf", Document.class);
+				if (!isPassDocument(EQ_INNER_ERROR_DECLARATION, GT_INNER_ERROR_DECLARATION, GE_INNER_ERROR_DECLARATION,
+						LT_INNER_ERROR_DECLARATION, LE_INNER_ERROR_DECLARATION, EXISTS_INNER_ERROR_DECLARATION, errf))
+					return false;
+			}
+			
+			if ((EQ_INNER != null && !EQ_INNER.isEmpty())
+					|| (GT_INNER != null && !GT_INNER.isEmpty())
+					|| (GE_INNER != null && !GE_INNER.isEmpty())
+					|| (LT_INNER != null && !LT_INNER.isEmpty())
+					|| (LE_INNER != null && !LE_INNER.isEmpty())
+					|| (EXISTS_INNER != null && !EXISTS_INNER.isEmpty())) {
+				Document extf = doc.get("extf", Document.class);
+				if (!isPassDocument(EQ_INNER, GT_INNER, GE_INNER,
+						LT_INNER, LE_INNER, EXISTS_INNER, extf))
 					return false;
 			}
 
@@ -1571,7 +1595,7 @@ public class TriggerDescription {
 					EXISTS_INNER_SENSORELEMENT = new ArrayList<String>();
 				EXISTS_INNER_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(27)));
 			}
-			
+
 			if (name.startsWith("EQ_INNER_readPoint")) {
 				if (EQ_INNER_readPoint == null)
 					EQ_INNER_readPoint = new HashMap<String, Object>();
@@ -1609,7 +1633,7 @@ public class TriggerDescription {
 					EXISTS_INNER_readPoint = new ArrayList<String>();
 				EXISTS_INNER_readPoint.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(23)));
 			}
-			
+
 			if (name.startsWith("EQ_INNER_bizLocation")) {
 				if (EQ_INNER_bizLocation == null)
 					EQ_INNER_bizLocation = new HashMap<String, Object>();
@@ -1646,6 +1670,82 @@ public class TriggerDescription {
 				if (EXISTS_INNER_bizLocation == null)
 					EXISTS_INNER_bizLocation = new ArrayList<String>();
 				EXISTS_INNER_bizLocation.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+			}
+
+			if (name.startsWith("EQ_INNER_ERROR_DECLARATION")) {
+				if (EQ_INNER_ERROR_DECLARATION == null)
+					EQ_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				EQ_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER_ERROR_DECLARATION")) {
+				if (GT_INNER_ERROR_DECLARATION == null)
+					GT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				GT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_INNER_ERROR_DECLARATION")) {
+				if (GE_INNER_ERROR_DECLARATION == null)
+					GE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				GE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_INNER_ERROR_DECLARATION")) {
+				if (LT_INNER_ERROR_DECLARATION == null)
+					LT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				LT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_INNER_ERROR_DECLARATION")) {
+				if (LE_INNER_ERROR_DECLARATION == null)
+					LE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				LE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER_ERROR_DECLARATION")) {
+				if (EXISTS_INNER_ERROR_DECLARATION == null)
+					EXISTS_INNER_ERROR_DECLARATION = new ArrayList<String>();
+				EXISTS_INNER_ERROR_DECLARATION.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(31)));
+			}
+			
+			if (name.startsWith("EQ_INNER")) {
+				if (EQ_INNER == null)
+					EQ_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				EQ_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER")) {
+				if (GT_INNER == null)
+					GT_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				GT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_INNER")) {
+				if (GE_INNER == null)
+					GE_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				GE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_INNER")) {
+				if (LT_INNER == null)
+					LT_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				LT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_INNER")) {
+				if (LE_INNER == null)
+					LE_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				LE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER")) {
+				if (EXISTS_INNER == null)
+					EXISTS_INNER = new ArrayList<String>();
+				EXISTS_INNER.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(13)));
 			}
 		}
 	}
@@ -1903,7 +2003,7 @@ public class TriggerDescription {
 		if (EXISTS_INNER_ILMD != null) {
 			doc.put("EXISTS_INNER_ILMD", EXISTS_INNER_ILMD);
 		}
-		
+
 		if (EQ_INNER_SENSORELEMENT != null) {
 			doc.put("EQ_INNER_SENSORELEMENT", EQ_INNER_SENSORELEMENT);
 		}
@@ -1927,7 +2027,7 @@ public class TriggerDescription {
 		if (EXISTS_INNER_SENSORELEMENT != null) {
 			doc.put("EXISTS_INNER_SENSORELEMENT", EXISTS_INNER_SENSORELEMENT);
 		}
-		
+
 		if (EQ_INNER_readPoint != null) {
 			doc.put("EQ_INNER_readPoint", EQ_INNER_readPoint);
 		}
@@ -1951,7 +2051,7 @@ public class TriggerDescription {
 		if (EXISTS_INNER_readPoint != null) {
 			doc.put("EXISTS_INNER_readPoint", EXISTS_INNER_readPoint);
 		}
-		
+
 		if (EQ_INNER_bizLocation != null) {
 			doc.put("EQ_INNER_bizLocation", EQ_INNER_bizLocation);
 		}
@@ -1976,6 +2076,53 @@ public class TriggerDescription {
 			doc.put("EXISTS_INNER_bizLocation", EXISTS_INNER_bizLocation);
 		}
 
+		if (EQ_INNER_ERROR_DECLARATION != null) {
+			doc.put("EQ_INNER_ERROR_DECLARATION", EQ_INNER_ERROR_DECLARATION);
+		}
+
+		if (GT_INNER_ERROR_DECLARATION != null) {
+			doc.put("GT_INNER_ERROR_DECLARATION", GT_INNER_ERROR_DECLARATION);
+		}
+
+		if (GE_INNER_ERROR_DECLARATION != null) {
+			doc.put("GE_INNER_ERROR_DECLARATION", GE_INNER_ERROR_DECLARATION);
+		}
+
+		if (LT_INNER_ERROR_DECLARATION != null) {
+			doc.put("LT_INNER_ERROR_DECLARATION", LT_INNER_ERROR_DECLARATION);
+		}
+
+		if (LE_INNER_ERROR_DECLARATION != null) {
+			doc.put("LE_INNER_ERROR_DECLARATION", LE_INNER_ERROR_DECLARATION);
+		}
+
+		if (EXISTS_INNER_ERROR_DECLARATION != null) {
+			doc.put("EXISTS_INNER_ERROR_DECLARATION", EXISTS_INNER_ERROR_DECLARATION);
+		}
+		
+		if (EQ_INNER != null) {
+			doc.put("EQ_INNER", EQ_INNER);
+		}
+
+		if (GT_INNER != null) {
+			doc.put("GT_INNER", GT_INNER);
+		}
+
+		if (GE_INNER != null) {
+			doc.put("GE_INNER", GE_INNER);
+		}
+
+		if (LT_INNER != null) {
+			doc.put("LT_INNER", LT_INNER);
+		}
+
+		if (LE_INNER != null) {
+			doc.put("LE_INNER", LE_INNER);
+		}
+
+		if (EXISTS_INNER != null) {
+			doc.put("EXISTS_INNER", EXISTS_INNER);
+		}
 
 		return doc;
 	}
