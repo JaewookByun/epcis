@@ -1238,6 +1238,18 @@ public class TriggerDescription {
 						EXISTS_INNER_readPoint, rpf))
 					return false;
 			}
+			
+			if ((EQ_INNER_bizLocation != null && !EQ_INNER_bizLocation.isEmpty())
+					|| (GT_INNER_bizLocation != null && !GT_INNER_bizLocation.isEmpty())
+					|| (GE_INNER_bizLocation != null && !GE_INNER_bizLocation.isEmpty())
+					|| (LT_INNER_bizLocation != null && !LT_INNER_bizLocation.isEmpty())
+					|| (LE_INNER_bizLocation != null && !LE_INNER_bizLocation.isEmpty())
+					|| (EXISTS_INNER_bizLocation != null && !EXISTS_INNER_bizLocation.isEmpty())) {
+				Document blf = doc.get("blf", Document.class);
+				if (!isPassDocument(EQ_INNER_bizLocation, GT_INNER_bizLocation, GE_INNER_bizLocation, LT_INNER_bizLocation, LE_INNER_bizLocation,
+						EXISTS_INNER_bizLocation, blf))
+					return false;
+			}
 
 		} catch (Exception e) {
 			return false;
@@ -1597,6 +1609,44 @@ public class TriggerDescription {
 					EXISTS_INNER_readPoint = new ArrayList<String>();
 				EXISTS_INNER_readPoint.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(23)));
 			}
+			
+			if (name.startsWith("EQ_INNER_bizLocation")) {
+				if (EQ_INNER_bizLocation == null)
+					EQ_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				EQ_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER_bizLocation")) {
+				if (GT_INNER_bizLocation == null)
+					GT_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_INNER_bizLocation")) {
+				if (GE_INNER_bizLocation == null)
+					GE_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_INNER_bizLocation")) {
+				if (LT_INNER_bizLocation == null)
+					LT_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_INNER_bizLocation")) {
+				if (LE_INNER_bizLocation == null)
+					LE_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER_bizLocation")) {
+				if (EXISTS_INNER_bizLocation == null)
+					EXISTS_INNER_bizLocation = new ArrayList<String>();
+				EXISTS_INNER_bizLocation.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+			}
 		}
 	}
 
@@ -1900,6 +1950,30 @@ public class TriggerDescription {
 
 		if (EXISTS_INNER_readPoint != null) {
 			doc.put("EXISTS_INNER_readPoint", EXISTS_INNER_readPoint);
+		}
+		
+		if (EQ_INNER_bizLocation != null) {
+			doc.put("EQ_INNER_bizLocation", EQ_INNER_bizLocation);
+		}
+
+		if (GT_INNER_bizLocation != null) {
+			doc.put("GT_INNER_bizLocation", GT_INNER_bizLocation);
+		}
+
+		if (GE_INNER_bizLocation != null) {
+			doc.put("GE_INNER_bizLocation", GE_INNER_bizLocation);
+		}
+
+		if (LT_INNER_bizLocation != null) {
+			doc.put("LT_INNER_bizLocation", LT_INNER_bizLocation);
+		}
+
+		if (LE_INNER_bizLocation != null) {
+			doc.put("LE_INNER_bizLocation", LE_INNER_bizLocation);
+		}
+
+		if (EXISTS_INNER_bizLocation != null) {
+			doc.put("EXISTS_INNER_bizLocation", EXISTS_INNER_bizLocation);
 		}
 
 
