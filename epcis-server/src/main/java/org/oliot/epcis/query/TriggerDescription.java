@@ -115,42 +115,42 @@ public class TriggerDescription {
 	private HashMap<String, Object> GE_INNER_SENSORELEMENT;
 	private HashMap<String, Object> LT_INNER_SENSORELEMENT;
 	private HashMap<String, Object> LE_INNER_SENSORELEMENT;
-	private String EXISTS_INNER_SENSORELEMENT;
+	private List<String> EXISTS_INNER_SENSORELEMENT;
 
 	private HashMap<String, Object> EQ_INNER_readPoint;
 	private HashMap<String, Object> GT_INNER_readPoint;
 	private HashMap<String, Object> GE_INNER_readPoint;
 	private HashMap<String, Object> LT_INNER_readPoint;
 	private HashMap<String, Object> LE_INNER_readPoint;
-	private String EXISTS_INNER_readPoint;
+	private List<String> EXISTS_INNER_readPoint;
 
 	private HashMap<String, Object> EQ_INNER_bizLocation;
 	private HashMap<String, Object> GT_INNER_bizLocation;
 	private HashMap<String, Object> GE_INNER_bizLocation;
 	private HashMap<String, Object> LT_INNER_bizLocation;
 	private HashMap<String, Object> LE_INNER_bizLocation;
-	private String EXISTS_INNER_bizLocation;
+	private List<String> EXISTS_INNER_bizLocation;
 
 	private HashMap<String, Object> EQ_INNER_ERROR_DECLARATION;
 	private HashMap<String, Object> GT_INNER_ERROR_DECLARATION;
 	private HashMap<String, Object> GE_INNER_ERROR_DECLARATION;
 	private HashMap<String, Object> LT_INNER_ERROR_DECLARATION;
 	private HashMap<String, Object> LE_INNER_ERROR_DECLARATION;
-	private String EXISTS_INNER_ERROR_DECLARATION;
+	private List<String> EXISTS_INNER_ERROR_DECLARATION;
 
 	private HashMap<String, Object> EQ_INNER;
 	private HashMap<String, Object> GT_INNER;
 	private HashMap<String, Object> GE_INNER;
 	private HashMap<String, Object> LT_INNER;
 	private HashMap<String, Object> LE_INNER;
-	private String EXISTS_INNER;
+	private List<String> EXISTS_INNER;
 
 	private HashMap<String, Object> EQ_ILMD;
 	private HashMap<String, Object> GT_ILMD;
 	private HashMap<String, Object> GE_ILMD;
 	private HashMap<String, Object> LT_ILMD;
 	private HashMap<String, Object> LE_ILMD;
-	private String EXISTS_ILMD;
+	private List<String> EXISTS_ILMD;
 
 	private HashMap<String, Object> EQ_SENSORELEMENT;
 	private HashMap<String, Object> GT_SENSORELEMENT;
@@ -1192,8 +1192,6 @@ public class TriggerDescription {
 					return false;
 			}
 
-			// EQ_INNER_ILMD
-			// GT, GE, LT, LE
 			if ((EQ_INNER_ILMD != null && !EQ_INNER_ILMD.isEmpty())
 					|| (GT_INNER_ILMD != null && !GT_INNER_ILMD.isEmpty())
 					|| (GE_INNER_ILMD != null && !GE_INNER_ILMD.isEmpty())
@@ -1205,6 +1203,31 @@ public class TriggerDescription {
 						EXISTS_INNER_ILMD, ilmdf))
 					return false;
 			}
+
+			if ((EQ_INNER_SENSORELEMENT != null && !EQ_INNER_SENSORELEMENT.isEmpty())
+					|| (GT_INNER_SENSORELEMENT != null && !GT_INNER_SENSORELEMENT.isEmpty())
+					|| (GE_INNER_SENSORELEMENT != null && !GE_INNER_SENSORELEMENT.isEmpty())
+					|| (LT_INNER_SENSORELEMENT != null && !LT_INNER_SENSORELEMENT.isEmpty())
+					|| (LE_INNER_SENSORELEMENT != null && !LE_INNER_SENSORELEMENT.isEmpty())
+					|| (EXISTS_INNER_SENSORELEMENT != null && !EXISTS_INNER_SENSORELEMENT.isEmpty())) {
+
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sef = sensorElement.get("sef", Document.class);
+					if (isPassDocument(EQ_INNER_SENSORELEMENT, GT_INNER_SENSORELEMENT, GE_INNER_SENSORELEMENT, LT_INNER_SENSORELEMENT, LE_INNER_SENSORELEMENT,
+							EXISTS_INNER_SENSORELEMENT, sef)) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			// TODO
 
 		} catch (Exception e) {
 			return false;
@@ -1488,6 +1511,44 @@ public class TriggerDescription {
 					EXISTS_INNER_ILMD = new ArrayList<String>();
 				EXISTS_INNER_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(18)));
 			}
+
+			if (name.startsWith("EQ_INNER_SENSORELEMENT")) {
+				if (EQ_INNER_SENSORELEMENT == null)
+					EQ_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				EQ_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_INNER_SENSORELEMENT")) {
+				if (GT_INNER_SENSORELEMENT == null)
+					GT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				GT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_INNER_SENSORELEMENT")) {
+				if (GE_INNER_SENSORELEMENT == null)
+					GE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				GE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_INNER_SENSORELEMENT")) {
+				if (LT_INNER_SENSORELEMENT == null)
+					LT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				LT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_INNER_SENSORELEMENT")) {
+				if (LE_INNER_SENSORELEMENT == null)
+					LE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				LE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_INNER_SENSORELEMENT")) {
+				if (EXISTS_INNER_SENSORELEMENT == null)
+					EXISTS_INNER_SENSORELEMENT = new ArrayList<String>();
+				EXISTS_INNER_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(27)));
+			}
 		}
 	}
 
@@ -1744,6 +1805,31 @@ public class TriggerDescription {
 		if (EXISTS_INNER_ILMD != null) {
 			doc.put("EXISTS_INNER_ILMD", EXISTS_INNER_ILMD);
 		}
+		
+		if (EQ_INNER_SENSORELEMENT != null) {
+			doc.put("EQ_INNER_SENSORELEMENT", EQ_INNER_SENSORELEMENT);
+		}
+
+		if (GT_INNER_SENSORELEMENT != null) {
+			doc.put("GT_INNER_SENSORELEMENT", GT_INNER_SENSORELEMENT);
+		}
+
+		if (GE_INNER_SENSORELEMENT != null) {
+			doc.put("GE_INNER_SENSORELEMENT", GE_INNER_SENSORELEMENT);
+		}
+
+		if (LT_INNER_SENSORELEMENT != null) {
+			doc.put("LT_INNER_SENSORELEMENT", LT_INNER_SENSORELEMENT);
+		}
+
+		if (LE_INNER_SENSORELEMENT != null) {
+			doc.put("LE_INNER_SENSORELEMENT", LE_INNER_SENSORELEMENT);
+		}
+
+		if (EXISTS_INNER_SENSORELEMENT != null) {
+			doc.put("EXISTS_INNER_SENSORELEMENT", EXISTS_INNER_SENSORELEMENT);
+		}
+
 
 		return doc;
 	}
