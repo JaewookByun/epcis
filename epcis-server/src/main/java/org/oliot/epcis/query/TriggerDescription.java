@@ -157,9 +157,9 @@ public class TriggerDescription {
 	private HashMap<String, Object> GE_SENSORELEMENT;
 	private HashMap<String, Object> LT_SENSORELEMENT;
 	private HashMap<String, Object> LE_SENSORELEMENT;
-	private String EXISTS_SENSORELEMENT;
-	private HashMap<String, Object> EQ_SENSORMETADATA;
-	private HashMap<String, Object> EQ_SENSORREPORT;
+	private List<String> EXISTS_SENSORELEMENT;
+	private HashMap<String, List<String>> EQ_SENSORMETADATA;
+	private HashMap<String, List<String>> EQ_SENSORREPORT;
 	private String EXISTS_SENSORMETADATA;
 	private String EXISTS_SENSORREPORT;
 
@@ -1262,16 +1262,89 @@ public class TriggerDescription {
 						LT_INNER_ERROR_DECLARATION, LE_INNER_ERROR_DECLARATION, EXISTS_INNER_ERROR_DECLARATION, errf))
 					return false;
 			}
-			
-			if ((EQ_INNER != null && !EQ_INNER.isEmpty())
-					|| (GT_INNER != null && !GT_INNER.isEmpty())
-					|| (GE_INNER != null && !GE_INNER.isEmpty())
-					|| (LT_INNER != null && !LT_INNER.isEmpty())
-					|| (LE_INNER != null && !LE_INNER.isEmpty())
-					|| (EXISTS_INNER != null && !EXISTS_INNER.isEmpty())) {
+
+			if ((EQ_INNER != null && !EQ_INNER.isEmpty()) || (GT_INNER != null && !GT_INNER.isEmpty())
+					|| (GE_INNER != null && !GE_INNER.isEmpty()) || (LT_INNER != null && !LT_INNER.isEmpty())
+					|| (LE_INNER != null && !LE_INNER.isEmpty()) || (EXISTS_INNER != null && !EXISTS_INNER.isEmpty())) {
 				Document extf = doc.get("extf", Document.class);
-				if (!isPassDocument(EQ_INNER, GT_INNER, GE_INNER,
-						LT_INNER, LE_INNER, EXISTS_INNER, extf))
+				if (!isPassDocument(EQ_INNER, GT_INNER, GE_INNER, LT_INNER, LE_INNER, EXISTS_INNER, extf))
+					return false;
+			}
+
+			if ((EQ_ILMD != null && !EQ_ILMD.isEmpty()) || (GT_ILMD != null && !GT_ILMD.isEmpty())
+					|| (GE_ILMD != null && !GE_ILMD.isEmpty()) || (LT_ILMD != null && !LT_ILMD.isEmpty())
+					|| (LE_ILMD != null && !LE_ILMD.isEmpty()) || (EXISTS_ILMD != null && !EXISTS_ILMD.isEmpty())) {
+				Document ilmdf = doc.get("ilmd", Document.class);
+				if (!isPassDocument(EQ_ILMD, GT_ILMD, GE_ILMD, LT_ILMD, LE_ILMD, EXISTS_ILMD, ilmdf))
+					return false;
+			}
+
+			if ((EQ_SENSORELEMENT != null && !EQ_SENSORELEMENT.isEmpty())
+					|| (GT_SENSORELEMENT != null && !GT_SENSORELEMENT.isEmpty())
+					|| (GE_SENSORELEMENT != null && !GE_SENSORELEMENT.isEmpty())
+					|| (LT_SENSORELEMENT != null && !LT_SENSORELEMENT.isEmpty())
+					|| (LE_SENSORELEMENT != null && !LE_SENSORELEMENT.isEmpty())
+					|| (EXISTS_SENSORELEMENT != null && !EXISTS_SENSORELEMENT.isEmpty())) {
+
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document ext = sensorElement.get("extension", Document.class);
+					if (isPassDocument(EQ_SENSORELEMENT, GT_SENSORELEMENT, GE_SENSORELEMENT, LT_SENSORELEMENT,
+							LE_SENSORELEMENT, EXISTS_SENSORELEMENT, ext)) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if ((EQ_SENSORMETADATA != null && !EQ_SENSORMETADATA.isEmpty())
+					|| (EQ_SENSORREPORT != null && !EQ_SENSORREPORT.isEmpty())) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass1 = false;
+				boolean isPass2 = false;
+				for (Document sensorElement : sensorElementList) {
+					isPass1 = false;
+					isPass2 = false;
+					Document sm = sensorElement.get("sensorMetadata", Document.class);
+					if (sm == null || sm.isEmpty())
+						continue;
+					Document oa = sm.get("otherAttributes", Document.class);
+					if (oa == null || oa.isEmpty())
+						continue;
+					for (String key : oa.keySet()) {
+						if (isPassMap(EQ_SENSORMETADATA, key, oa.getString(key))) {
+							isPass1 = true;
+							break;
+						}
+					}
+
+					List<Document> srl = sensorElement.getList("sensorReport", Document.class);
+					for (Document sr : srl) {
+						Document oa2 = sr.get("otherAttributes", Document.class);
+						if (oa2 == null || oa2.isEmpty())
+							continue;
+						for (String key : oa2.keySet()) {
+							if (isPassMap(EQ_SENSORREPORT, key, oa2.getString(key))) {
+								isPass2 = true;
+								break;
+							}
+						}
+						if (isPass2 == true)
+							break;
+					}
+					if (isPass1 == true && isPass2 == true)
+						break;
+				}
+
+				if (isPass1 == false || isPass2 == false)
 					return false;
 			}
 
@@ -1709,7 +1782,7 @@ public class TriggerDescription {
 					EXISTS_INNER_ERROR_DECLARATION = new ArrayList<String>();
 				EXISTS_INNER_ERROR_DECLARATION.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(31)));
 			}
-			
+
 			if (name.startsWith("EQ_INNER")) {
 				if (EQ_INNER == null)
 					EQ_INNER = new HashMap<String, Object>();
@@ -1746,6 +1819,107 @@ public class TriggerDescription {
 				if (EXISTS_INNER == null)
 					EXISTS_INNER = new ArrayList<String>();
 				EXISTS_INNER.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(13)));
+			}
+
+			if (name.startsWith("EQ_ILMD")) {
+				if (EQ_ILMD == null)
+					EQ_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				EQ_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_ILMD")) {
+				if (GT_ILMD == null)
+					GT_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				GT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_ILMD")) {
+				if (GE_ILMD == null)
+					GE_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				GE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_ILMD")) {
+				if (LT_ILMD == null)
+					LT_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				LT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_ILMD")) {
+				if (LE_ILMD == null)
+					LE_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				LE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_ILMD")) {
+				if (EXISTS_ILMD == null)
+					EXISTS_ILMD = new ArrayList<String>();
+				EXISTS_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(12)));
+			}
+
+			if (name.startsWith("EQ_SENSORELEMENT")) {
+				if (EQ_SENSORELEMENT == null)
+					EQ_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				EQ_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_SENSORELEMENT")) {
+				if (GT_SENSORELEMENT == null)
+					GT_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				GT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("GE_SENSORELEMENT")) {
+				if (GE_SENSORELEMENT == null)
+					GE_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				GE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LT_SENSORELEMENT")) {
+				if (LT_SENSORELEMENT == null)
+					LT_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				LT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+			if (name.startsWith("LE_SENSORELEMENT")) {
+				if (LE_SENSORELEMENT == null)
+					LE_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				LE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_SENSORELEMENT")) {
+				if (EXISTS_SENSORELEMENT == null)
+					EXISTS_SENSORELEMENT = new ArrayList<String>();
+				EXISTS_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(21)));
+			}
+
+			if (name.startsWith("EQ_SENSORMETADATA")) {
+				if (EQ_SENSORMETADATA == null)
+					EQ_SENSORMETADATA = new HashMap<String, List<String>>();
+				String type = name.substring(18);
+				List<String> values = EQ_SENSORMETADATA.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_SENSORMETADATA.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
+			}
+
+			if (name.startsWith("EQ_SENSORREPORT")) {
+				if (EQ_SENSORREPORT == null)
+					EQ_SENSORREPORT = new HashMap<String, List<String>>();
+				String type = name.substring(16);
+				List<String> values = EQ_SENSORREPORT.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_SENSORREPORT.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
 			}
 		}
 	}
@@ -2099,7 +2273,7 @@ public class TriggerDescription {
 		if (EXISTS_INNER_ERROR_DECLARATION != null) {
 			doc.put("EXISTS_INNER_ERROR_DECLARATION", EXISTS_INNER_ERROR_DECLARATION);
 		}
-		
+
 		if (EQ_INNER != null) {
 			doc.put("EQ_INNER", EQ_INNER);
 		}
@@ -2122,6 +2296,62 @@ public class TriggerDescription {
 
 		if (EXISTS_INNER != null) {
 			doc.put("EXISTS_INNER", EXISTS_INNER);
+		}
+
+		if (EQ_ILMD != null) {
+			doc.put("EQ_ILMD", EQ_ILMD);
+		}
+
+		if (GT_ILMD != null) {
+			doc.put("GT_ILMD", GT_ILMD);
+		}
+
+		if (GE_ILMD != null) {
+			doc.put("GE_ILMD", GE_ILMD);
+		}
+
+		if (LT_ILMD != null) {
+			doc.put("LT_ILMD", LT_ILMD);
+		}
+
+		if (LE_ILMD != null) {
+			doc.put("LE_ILMD", LE_ILMD);
+		}
+
+		if (EXISTS_ILMD != null) {
+			doc.put("EXISTS_ILMD", EXISTS_ILMD);
+		}
+
+		if (EQ_SENSORELEMENT != null) {
+			doc.put("EQ_SENSORELEMENT", EQ_SENSORELEMENT);
+		}
+
+		if (GT_SENSORELEMENT != null) {
+			doc.put("GT_SENSORELEMENT", GT_SENSORELEMENT);
+		}
+
+		if (GE_SENSORELEMENT != null) {
+			doc.put("GE_SENSORELEMENT", GE_SENSORELEMENT);
+		}
+
+		if (LT_SENSORELEMENT != null) {
+			doc.put("LT_SENSORELEMENT", LT_SENSORELEMENT);
+		}
+
+		if (LE_SENSORELEMENT != null) {
+			doc.put("LE_SENSORELEMENT", LE_SENSORELEMENT);
+		}
+
+		if (EXISTS_SENSORELEMENT != null) {
+			doc.put("EXISTS_SENSORELEMENT", EXISTS_SENSORELEMENT);
+		}
+
+		if (EQ_SENSORMETADATA != null) {
+			doc.put("EQ_SENSORMETADATA", EQ_SENSORMETADATA);
+		}
+
+		if (EQ_SENSORREPORT != null) {
+			doc.put("EQ_SENSORREPORT", EQ_SENSORREPORT);
 		}
 
 		return doc;
