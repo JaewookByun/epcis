@@ -160,36 +160,36 @@ public class TriggerDescription {
 	private List<String> EXISTS_SENSORELEMENT;
 	private HashMap<String, List<String>> EQ_SENSORMETADATA;
 	private HashMap<String, List<String>> EQ_SENSORREPORT;
-	private String EXISTS_SENSORMETADATA;
-	private String EXISTS_SENSORREPORT;
+	private VoidHolder EXISTS_SENSORMETADATA;
+	private VoidHolder EXISTS_SENSORREPORT;
 
 	private HashMap<String, Object> EQ_readPoint_extension;
 	private HashMap<String, Object> GT_readPoint_extension;
 	private HashMap<String, Object> GE_readPoint_extension;
 	private HashMap<String, Object> LT_readPoint_extension;
 	private HashMap<String, Object> LE_readPoint_extension;
-	private String EXISTS_readPoint_extension;
+	private List<String> EXISTS_readPoint_extension;
 
 	private HashMap<String, Object> EQ_bizLocation_extension;
 	private HashMap<String, Object> GT_bizLocation_extension;
 	private HashMap<String, Object> GE_bizLocation_extension;
 	private HashMap<String, Object> LT_bizLocation_extension;
 	private HashMap<String, Object> LE_bizLocation_extension;
-	private String EXISTS_bizLocation_extension;
+	private List<String> EXISTS_bizLocation_extension;
 
 	private HashMap<String, Object> EQ_ERROR_DECLARATION_extension;
 	private HashMap<String, Object> GT_ERROR_DECLARATION_extension;
 	private HashMap<String, Object> GE_ERROR_DECLARATION_extension;
 	private HashMap<String, Object> LT_ERROR_DECLARATION_extension;
 	private HashMap<String, Object> LE_ERROR_DECLARATION_extension;
-	private String EXISTS_ERROR_DECLARATION_extension;
+	private List<String> EXISTS_ERROR_DECLARATION_extension;
 
 	private HashMap<String, Object> EQ_extension;
 	private HashMap<String, Object> GT_extension;
 	private HashMap<String, Object> GE_extension;
 	private HashMap<String, Object> LT_extension;
 	private HashMap<String, Object> LE_extension;
-	private String EXISTS_extension;
+	private List<String> EXISTS_extension;
 
 	private List<String> EQ_type;
 	private Double EQ_value;
@@ -1348,6 +1348,100 @@ public class TriggerDescription {
 					return false;
 			}
 
+			if (EXISTS_SENSORMETADATA != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					Document sm = sensorElement.get("sensorMetadata", Document.class);
+					if (sm != null && !sm.isEmpty()) {
+						isPass = true;
+						break;
+					}
+					if (isPass)
+						break;
+				}
+				if (!isPass)
+					return false;
+
+			}
+
+			if (EXISTS_SENSORREPORT != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					if (sensorReportList != null && !sensorReportList.isEmpty()) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if ((EQ_readPoint_extension != null && !EQ_readPoint_extension.isEmpty())
+					|| (GT_readPoint_extension != null && !GT_readPoint_extension.isEmpty())
+					|| (GE_readPoint_extension != null && !GE_readPoint_extension.isEmpty())
+					|| (LT_readPoint_extension != null && !LT_readPoint_extension.isEmpty())
+					|| (LE_readPoint_extension != null && !LE_readPoint_extension.isEmpty())
+					|| (EXISTS_readPoint_extension != null && !EXISTS_readPoint_extension.isEmpty())) {
+				Document rpe = doc.get("readPointExt", Document.class);
+				if (!isPassDocument(EQ_readPoint_extension, GT_readPoint_extension, GE_readPoint_extension,
+						LT_readPoint_extension, LE_readPoint_extension, EXISTS_readPoint_extension, rpe))
+					return false;
+			}
+
+			if ((EQ_bizLocation_extension != null && !EQ_bizLocation_extension.isEmpty())
+					|| (GT_bizLocation_extension != null && !GT_bizLocation_extension.isEmpty())
+					|| (GE_bizLocation_extension != null && !GE_bizLocation_extension.isEmpty())
+					|| (LT_bizLocation_extension != null && !LT_bizLocation_extension.isEmpty())
+					|| (LE_bizLocation_extension != null && !LE_bizLocation_extension.isEmpty())
+					|| (EXISTS_bizLocation_extension != null && !EXISTS_bizLocation_extension.isEmpty())) {
+				Document ble = doc.get("bizLocationExt", Document.class);
+				if (!isPassDocument(EQ_bizLocation_extension, GT_bizLocation_extension, GE_bizLocation_extension,
+						LT_bizLocation_extension, LE_bizLocation_extension, EXISTS_bizLocation_extension, ble))
+					return false;
+			}
+
+			if ((EQ_ERROR_DECLARATION_extension != null && !EQ_ERROR_DECLARATION_extension.isEmpty())
+					|| (GT_ERROR_DECLARATION_extension != null && !GT_ERROR_DECLARATION_extension.isEmpty())
+					|| (GE_ERROR_DECLARATION_extension != null && !GE_ERROR_DECLARATION_extension.isEmpty())
+					|| (LT_ERROR_DECLARATION_extension != null && !LT_ERROR_DECLARATION_extension.isEmpty())
+					|| (LE_ERROR_DECLARATION_extension != null && !LE_ERROR_DECLARATION_extension.isEmpty())
+					|| (EXISTS_ERROR_DECLARATION_extension != null && !EXISTS_ERROR_DECLARATION_extension.isEmpty())) {
+				Document ed = doc.get("errorDeclaration", Document.class);
+				if(ed == null)
+					return false;
+				Document errExt = ed.get("extension", Document.class);
+				if(errExt == null)
+					return false;
+				
+				if (!isPassDocument(EQ_ERROR_DECLARATION_extension, GT_ERROR_DECLARATION_extension,
+						GE_ERROR_DECLARATION_extension, LT_ERROR_DECLARATION_extension, LE_ERROR_DECLARATION_extension,
+						EXISTS_ERROR_DECLARATION_extension, errExt))
+					return false;
+			}
+			
+			if ((EQ_extension != null && !EQ_extension.isEmpty())
+					|| (GT_extension != null && !GT_extension.isEmpty())
+					|| (GE_extension != null && !GE_extension.isEmpty())
+					|| (LT_extension != null && !LT_extension.isEmpty())
+					|| (LE_extension != null && !LE_extension.isEmpty())
+					|| (EXISTS_extension != null && !EXISTS_extension.isEmpty())) {
+				Document ext = doc.get("extension", Document.class);
+				if (!isPassDocument(EQ_extension, GT_extension, GE_extension,
+						LT_extension, LE_extension, EXISTS_extension, ext))
+					return false;
+			}
+			
+			
+
 		} catch (Exception e) {
 			return false;
 		}
@@ -1921,6 +2015,178 @@ public class TriggerDescription {
 				values.addAll((List<String>) value);
 				EQ_SENSORREPORT.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
 			}
+
+			if (name.equals("EXISTS_SENSORMETADATA")) {
+				EXISTS_SENSORMETADATA = (VoidHolder) value;
+			}
+
+			if (name.equals("EXISTS_SENSORREPORT")) {
+				EXISTS_SENSORREPORT = (VoidHolder) value;
+			}
+
+			if (name.startsWith("EQ_readPoint_")) {
+				if (EQ_readPoint_extension == null)
+					EQ_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				EQ_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_readPoint_")) {
+				if (GT_readPoint_extension == null)
+					GT_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				GT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_readPoint_")) {
+				if (GE_readPoint_extension == null)
+					GE_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				GE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_readPoint_")) {
+				if (LT_readPoint_extension == null)
+					LT_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				LT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_readPoint_")) {
+				if (LE_readPoint_extension == null)
+					LE_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				LE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_readPoint_")) {
+				if (EXISTS_readPoint_extension == null)
+					EXISTS_readPoint_extension = new ArrayList<String>();
+				EXISTS_readPoint_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(17)));
+			}
+
+			if (name.startsWith("EQ_bizLocation_")) {
+				if (EQ_bizLocation_extension == null)
+					EQ_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				EQ_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_bizLocation_")) {
+				if (GT_bizLocation_extension == null)
+					GT_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				GT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_bizLocation_")) {
+				if (GE_bizLocation_extension == null)
+					GE_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				GE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_bizLocation_")) {
+				if (LT_bizLocation_extension == null)
+					LT_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				LT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_bizLocation_")) {
+				if (LE_bizLocation_extension == null)
+					LE_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				LE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_bizLocation_")) {
+				if (EXISTS_bizLocation_extension == null)
+					EXISTS_bizLocation_extension = new ArrayList<String>();
+				EXISTS_bizLocation_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(19)));
+			}
+			
+			if (name.startsWith("EQ_ERROR_DECLARATION_")) {
+				if (EQ_ERROR_DECLARATION_extension == null)
+					EQ_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				EQ_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_ERROR_DECLARATION_")) {
+				if (GT_ERROR_DECLARATION_extension == null)
+					GT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_ERROR_DECLARATION_")) {
+				if (GE_ERROR_DECLARATION_extension == null)
+					GE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_ERROR_DECLARATION_")) {
+				if (LT_ERROR_DECLARATION_extension == null)
+					LT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_ERROR_DECLARATION_")) {
+				if (LE_ERROR_DECLARATION_extension == null)
+					LE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_ERROR_DECLARATION_")) {
+				if (EXISTS_ERROR_DECLARATION_extension == null)
+					EXISTS_ERROR_DECLARATION_extension = new ArrayList<String>();
+				EXISTS_ERROR_DECLARATION_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+			}
+			
+			if (name.startsWith("EQ_")) {
+				if (EQ_extension == null)
+					EQ_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				EQ_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GT_")) {
+				if (GT_extension == null)
+					GT_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				GT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("GE_")) {
+				if (GE_extension == null)
+					GE_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				GE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LT_")) {
+				if (LT_extension == null)
+					LT_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				LT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("LE_")) {
+				if (LE_extension == null)
+					LE_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				LE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+			}
+
+			if (name.startsWith("EXISTS_")) {
+				if (EXISTS_extension == null)
+					EXISTS_extension = new ArrayList<String>();
+				EXISTS_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(7)));
+			}
 		}
 	}
 
@@ -2352,6 +2618,110 @@ public class TriggerDescription {
 
 		if (EQ_SENSORREPORT != null) {
 			doc.put("EQ_SENSORREPORT", EQ_SENSORREPORT);
+		}
+
+		if (EXISTS_SENSORMETADATA != null) {
+			doc.put("EXISTS_SENSORMETADATA", "VoidHolder");
+		}
+
+		if (EXISTS_SENSORREPORT != null) {
+			doc.put("EXISTS_SENSORREPORT", "VoidHolder");
+		}
+
+		if (EQ_readPoint_extension != null) {
+			doc.put("EQ_readPoint_extension", EQ_readPoint_extension);
+		}
+
+		if (GT_readPoint_extension != null) {
+			doc.put("GT_readPoint_extension", GT_readPoint_extension);
+		}
+
+		if (GE_readPoint_extension != null) {
+			doc.put("GE_readPoint_extension", GE_readPoint_extension);
+		}
+
+		if (LT_readPoint_extension != null) {
+			doc.put("LT_readPoint_extension", LT_readPoint_extension);
+		}
+
+		if (LE_readPoint_extension != null) {
+			doc.put("LE_readPoint_extension", LE_readPoint_extension);
+		}
+
+		if (EXISTS_readPoint_extension != null) {
+			doc.put("EXISTS_readPoint_extension", EXISTS_readPoint_extension);
+		}
+
+		if (EQ_bizLocation_extension != null) {
+			doc.put("EQ_bizLocation_extension", EQ_bizLocation_extension);
+		}
+
+		if (GT_bizLocation_extension != null) {
+			doc.put("GT_bizLocation_extension", GT_bizLocation_extension);
+		}
+
+		if (GE_bizLocation_extension != null) {
+			doc.put("GE_bizLocation_extension", GE_bizLocation_extension);
+		}
+
+		if (LT_bizLocation_extension != null) {
+			doc.put("LT_bizLocation_extension", LT_bizLocation_extension);
+		}
+
+		if (LE_bizLocation_extension != null) {
+			doc.put("LE_bizLocation_extension", LE_bizLocation_extension);
+		}
+
+		if (EXISTS_bizLocation_extension != null) {
+			doc.put("EXISTS_bizLocation_extension", EXISTS_bizLocation_extension);
+		}
+		
+		if (EQ_ERROR_DECLARATION_extension != null) {
+			doc.put("EQ_ERROR_DECLARATION_extension", EQ_ERROR_DECLARATION_extension);
+		}
+
+		if (GT_ERROR_DECLARATION_extension != null) {
+			doc.put("GT_ERROR_DECLARATION_extension", GT_ERROR_DECLARATION_extension);
+		}
+
+		if (GE_ERROR_DECLARATION_extension != null) {
+			doc.put("GE_ERROR_DECLARATION_extension", GE_ERROR_DECLARATION_extension);
+		}
+
+		if (LT_ERROR_DECLARATION_extension != null) {
+			doc.put("LT_ERROR_DECLARATION_extension", LT_ERROR_DECLARATION_extension);
+		}
+
+		if (LE_ERROR_DECLARATION_extension != null) {
+			doc.put("LE_ERROR_DECLARATION_extension", LE_ERROR_DECLARATION_extension);
+		}
+
+		if (EXISTS_ERROR_DECLARATION_extension != null) {
+			doc.put("EXISTS_ERROR_DECLARATION_extension", EXISTS_ERROR_DECLARATION_extension);
+		}
+		
+		if (EQ_extension != null) {
+			doc.put("EQ_extension", EQ_extension);
+		}
+
+		if (GT_extension != null) {
+			doc.put("GT_extension", GT_extension);
+		}
+
+		if (GE_extension != null) {
+			doc.put("GE_extension", GE_extension);
+		}
+
+		if (LT_extension != null) {
+			doc.put("LT_extension", LT_extension);
+		}
+
+		if (LE_extension != null) {
+			doc.put("LE_extension", LE_extension);
+		}
+
+		if (EXISTS_extension != null) {
+			doc.put("EXISTS_extension", EXISTS_extension);
 		}
 
 		return doc;
