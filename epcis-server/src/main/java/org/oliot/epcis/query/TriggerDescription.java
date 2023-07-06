@@ -715,7 +715,7 @@ public class TriggerDescription {
 			if (MATCH_anyEPCClass != null) {
 				boolean isPass1 = false;
 				List<Document> ecl = doc.getList("quantityList", Document.class);
-				if (ecl!= null) {
+				if (ecl != null) {
 					for (Document ec : ecl) {
 						if (isPassMatchString(MATCH_anyEPCClass, ec.getString("epcClass"))) {
 							isPass1 = true;
@@ -1904,11 +1904,73 @@ public class TriggerDescription {
 						if (!isPass)
 							return false;
 					} else if (fieldName.equals("EPCClass")) {
-						vtype = "urn:epcglobal:epcis:vtype:EPCClass";
-						// xxx
+
+						boolean isPass1 = false;
+						List<Document> ecl = doc.getList("quantityList", Document.class);
+						if (ecl != null) {
+							for (Document ec : ecl) {
+								if (isPassString(new ArrayList<String>(wdValues), ec.getString("epcClass"))) {
+									isPass1 = true;
+									break;
+								}
+							}
+						}
+
+						boolean isPass2 = false;
+						List<Document> ecl2 = doc.getList("inputQuantityList", Document.class);
+						if (ecl2 != null) {
+							for (Document ec : ecl2) {
+								if (isPassString(new ArrayList<String>(wdValues), ec.getString("epcClass"))) {
+									isPass2 = true;
+									break;
+								}
+							}
+						}
+
+						boolean isPass3 = false;
+						List<Document> ecl3 = doc.getList("outputQuantityList", Document.class);
+						if (ecl3 != null) {
+							for (Document ec : ecl3) {
+								if (isPassString(new ArrayList<String>(wdValues), ec.getString("epcClass"))) {
+									isPass3 = true;
+									break;
+								}
+							}
+						}
+
+						if (!isPass1 && !isPass2 && !isPass3)
+							return false;
 					} else if (fieldName.equals("SourceDestID")) {
-						vtype = "urn:epcglobal:epcis:vtype:SourceDest";
+						boolean isPass1 = false;
+						List<Document> sourceList = doc.getList("sourceList", Document.class);
+						if (sourceList != null) {
+							for (Document source : sourceList) {
+
+								String value = source.getString("value");
+								if (isPassString(new ArrayList<String>(wdValues), value)) {
+									isPass1 = true;
+									break;
+								}
+							}
+						}
+						boolean isPass2 = false;
+						List<Document> destinationList = doc.getList("destinationList", Document.class);
+						if (destinationList != null) {
+							for (Document dest : destinationList) {
+
+								String value = dest.getString("value");
+								if (isPassString(new ArrayList<String>(wdValues), value)) {
+									isPass2 = true;
+									break;
+								}
+							}
+						}
+
+						if (!isPass1 && !isPass2)
+							return false;
+
 					} else if (fieldName.equals("LocationID")) {
+						//TODO
 						vtype = "urn:epcglobal:epcis:vtype:Location";
 					} else if (fieldName.equals("PartyID")) {
 						vtype = "urn:epcglobal:epcis:vtype:Party";
