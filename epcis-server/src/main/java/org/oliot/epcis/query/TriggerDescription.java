@@ -236,8 +236,8 @@ public class TriggerDescription {
 
 	private List<String> WD_readPoint;
 	private List<String> WD_bizLocation;
-	private HashMap<String, Object> HASATTR;
-	private HashMap<String, Object> EQ_ATTR;
+	private HashMap<String, List<String>> HASATTR;
+	private HashMap<String, List<String>> EQ_ATTR;
 
 	private String subscriptionID;
 
@@ -290,6 +290,20 @@ public class TriggerDescription {
 						return true;
 					}
 				}
+			}
+		}
+		return false;
+	}
+
+	public boolean isPassMatchString(List<String> query, String value) {
+		for (String q : query) {
+			if (q.contains("*")) {
+				q = q.replaceAll("\\.", "[.]");
+				q = q.replaceAll("\\*", "(.)*");
+			}
+
+			if (Pattern.matches(q, value)) {
+				return true;
 			}
 		}
 		return false;
@@ -651,6 +665,89 @@ public class TriggerDescription {
 					doc.getList("epcList", String.class), doc.getList("inputEPCList", String.class),
 					doc.getList("outputEPCList", String.class))) {
 				return false;
+			}
+
+			if (MATCH_epcClass != null) {
+				boolean isPass = false;
+				List<Document> ecl = doc.getList("quantityList", Document.class);
+				if (ecl == null)
+					return false;
+				for (Document ec : ecl) {
+					if (isPassMatchString(MATCH_epcClass, ec.getString("epcClass"))) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (MATCH_inputEPCClass != null) {
+				boolean isPass = false;
+				List<Document> ecl = doc.getList("inputQuantityList", Document.class);
+				if (ecl == null)
+					return false;
+				for (Document ec : ecl) {
+					if (isPassMatchString(MATCH_inputEPCClass, ec.getString("epcClass"))) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (MATCH_outputEPCClass != null) {
+				boolean isPass = false;
+				List<Document> ecl = doc.getList("outputQuantityList", Document.class);
+				if (ecl == null)
+					return false;
+				for (Document ec : ecl) {
+					if (isPassMatchString(MATCH_outputEPCClass, ec.getString("epcClass"))) {
+						isPass = true;
+						break;
+					}
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (MATCH_anyEPCClass != null) {
+				boolean isPass1 = false;
+				List<Document> ecl = doc.getList("quantityList", Document.class);
+				if (ecl!= null) {
+					for (Document ec : ecl) {
+						if (isPassMatchString(MATCH_anyEPCClass, ec.getString("epcClass"))) {
+							isPass1 = true;
+							break;
+						}
+					}
+				}
+
+				boolean isPass2 = false;
+				List<Document> ecl2 = doc.getList("inputQuantityList", Document.class);
+				if (ecl2 != null) {
+					for (Document ec : ecl2) {
+						if (isPassMatchString(MATCH_anyEPCClass, ec.getString("epcClass"))) {
+							isPass2 = true;
+							break;
+						}
+					}
+				}
+
+				boolean isPass3 = false;
+				List<Document> ecl3 = doc.getList("outputQuantityList", Document.class);
+				if (ecl3 != null) {
+					for (Document ec : ecl3) {
+						if (isPassMatchString(MATCH_anyEPCClass, ec.getString("epcClass"))) {
+							isPass3 = true;
+							break;
+						}
+					}
+				}
+
+				if (!isPass1 && !isPass2 && !isPass3)
+					return false;
 			}
 
 			if (GE_startTime != null || LT_startTime != null) {
@@ -1716,6 +1813,121 @@ public class TriggerDescription {
 				}
 			}
 
+			if (WD_bizLocation != null) {
+
+				Set<String> wdValues = new HashSet<String>();
+				for (String v : WD_bizLocation) {
+					wdValues.add(v);
+					List<org.bson.Document> rDocs = new ArrayList<org.bson.Document>();
+					EPCISServer.mVocCollection.find(new org.bson.Document("id", v)).into(rDocs);
+					for (org.bson.Document rDoc : rDocs) {
+						if (rDoc.containsKey("children")) {
+							List<String> children = rDoc.getList("children", String.class);
+							wdValues.addAll(children);
+						}
+					}
+				}
+
+				List<String> wdList = new ArrayList<String>(wdValues);
+				if (!isPassString(WD_bizLocation, doc.getString("bizLocation"))) {
+					return false;
+				}
+			}
+
+			if (HASATTR != null) {
+
+				for (Entry<String, List<String>> entry : HASATTR.entrySet()) {
+					String fieldName = entry.getKey();
+					List<String> mdValues = entry.getValue();
+					HashSet<String> wdValues = new HashSet<String>();
+					wdValues.addAll(mdValues);
+					String vtype;
+					if (fieldName.equals("readPoint")) {
+						vtype = "urn:epcglobal:epcis:vtype:ReadPoint";
+					} else if (fieldName.equals("bizLocation")) {
+						vtype = "urn:epcglobal:epcis:vtype:BusinessLocation";
+					} else if (fieldName.equals("BusinessTransaction")) {
+						vtype = "urn:epcglobal:epcis:vtype:BusinessTransaction";
+					} else if (fieldName.equals("EPCClass")) {
+						vtype = "urn:epcglobal:epcis:vtype:EPCClass";
+					} else if (fieldName.equals("SourceDestID")) {
+						vtype = "urn:epcglobal:epcis:vtype:SourceDest";
+					} else if (fieldName.equals("LocationID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Location";
+					} else if (fieldName.equals("PartyID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Party";
+					} else if (fieldName.equals("MicroorganismID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Microorganism";
+					} else if (fieldName.equals("ChemicalSubstanceID")) {
+						vtype = "urn:epcglobal:epcis:vtype:ChemicalSubstance";
+					} else if (fieldName.equals("ResourceID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Resource";
+					} else {
+						throw new QueryParameterException(fieldName
+								+ " should be one of readPoint, bizLocation, BusinessTransaction, EPCClass, SourceDestID, LocationID, PartyID, MicroorganismID, ChemicalSubstanceID, ResourceID");
+					}
+
+					for (String v : mdValues) {
+						Document first = null;
+						try {
+							first = EPCISServer.mVocCollection
+									.find(new org.bson.Document("id", v).append("type", vtype)).first();
+						} catch (Throwable e) {
+							ImplementationException e1 = new ImplementationException(
+									ImplementationExceptionSeverity.ERROR, null, null, e.getMessage());
+							// throw e1;
+						}
+
+						if (first == null) {
+							wdValues.add(v);
+						}
+					}
+
+					if (fieldName.equals("readPoint")
+							&& !isPassString(new ArrayList<String>(wdValues), doc.getString("readPoint"))) {
+						return false;
+					} else if (fieldName.equals("bizLocation")
+							&& !isPassString(new ArrayList<String>(wdValues), doc.getString("bizLocation"))) {
+						return false;
+					} else if (fieldName.equals("BusinessTransaction")) {
+						List<Document> bizTransactionList = doc.getList("bizTransactionList", Document.class);
+						if (bizTransactionList == null || bizTransactionList.isEmpty())
+							return false;
+						boolean isPass = false;
+						for (Document bizTransaction : bizTransactionList) {
+							String value = bizTransaction.getString("value");
+							if (isPassString(new ArrayList<String>(wdValues), value)) {
+								isPass = true;
+								break;
+							}
+						}
+						if (!isPass)
+							return false;
+					} else if (fieldName.equals("EPCClass")) {
+						vtype = "urn:epcglobal:epcis:vtype:EPCClass";
+						// xxx
+					} else if (fieldName.equals("SourceDestID")) {
+						vtype = "urn:epcglobal:epcis:vtype:SourceDest";
+					} else if (fieldName.equals("LocationID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Location";
+					} else if (fieldName.equals("PartyID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Party";
+					} else if (fieldName.equals("MicroorganismID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Microorganism";
+					} else if (fieldName.equals("ChemicalSubstanceID")) {
+						vtype = "urn:epcglobal:epcis:vtype:ChemicalSubstance";
+					} else if (fieldName.equals("ResourceID")) {
+						vtype = "urn:epcglobal:epcis:vtype:Resource";
+					} else {
+						throw new QueryParameterException(fieldName
+								+ " should be one of readPoint, bizLocation, BusinessTransaction, EPCClass, SourceDestID, LocationID, PartyID, MicroorganismID, ChemicalSubstanceID, ResourceID");
+					}
+
+					// map.put(fieldName, new ArrayList<String>(wdValues));
+
+				}
+			}
+
 		} catch (Exception e) {
 			return false;
 		} catch (QueryParameterException e) {
@@ -1871,6 +2083,26 @@ public class TriggerDescription {
 
 			if (name.equals("MATCH_anyEPC")) {
 				MATCH_anyEPC = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_epcClass")) {
+				MATCH_epcClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_inputEPCClass")) {
+				MATCH_inputEPCClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_outputEPCClass")) {
+				MATCH_outputEPCClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_anyEPCClass")) {
+				MATCH_anyEPCClass = (List<String>) value;
 				continue;
 			}
 
@@ -3035,9 +3267,14 @@ public class TriggerDescription {
 				EXISTS_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(7)));
 				continue;
 			}
-			
+
 			if (name.equals("WD_readPoint")) {
 				WD_readPoint = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("WD_bizLocation")) {
+				WD_bizLocation = (List<String>) value;
 				continue;
 			}
 		}
@@ -3135,6 +3372,22 @@ public class TriggerDescription {
 
 		if (MATCH_anyEPC != null) {
 			doc.put("MATCH_anyEPC", MATCH_anyEPC);
+		}
+
+		if (MATCH_epcClass != null) {
+			doc.put("MATCH_epcClass", MATCH_epcClass);
+		}
+
+		if (MATCH_inputEPCClass != null) {
+			doc.put("MATCH_inputEPCClass", MATCH_inputEPCClass);
+		}
+
+		if (MATCH_outputEPCClass != null) {
+			doc.put("MATCH_outputEPCClass", MATCH_outputEPCClass);
+		}
+
+		if (MATCH_anyEPCClass != null) {
+			doc.put("MATCH_anyEPCClass", MATCH_anyEPCClass);
 		}
 
 		if (GE_startTime != null) {
@@ -3700,9 +3953,13 @@ public class TriggerDescription {
 		if (LE_percValue != null) {
 			doc.put("LE_percValue", LE_percValue.toMongoDocument());
 		}
-		
+
 		if (WD_readPoint != null) {
 			doc.put("WD_readPoint", WD_readPoint);
+		}
+
+		if (WD_bizLocation != null) {
+			doc.put("WD_bizLocation", WD_bizLocation);
 		}
 
 		return doc;
