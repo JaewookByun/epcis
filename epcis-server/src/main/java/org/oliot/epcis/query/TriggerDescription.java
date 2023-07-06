@@ -24,7 +24,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.VoidHolder;
-
+import org.oliot.epcis.resource.Resource;
 import org.oliot.epcis.util.TimeUtil;
 import org.w3c.dom.Element;
 
@@ -192,11 +192,11 @@ public class TriggerDescription {
 	private List<String> EXISTS_extension;
 
 	private List<String> EQ_type;
-	private Double EQ_value;
-	private Double GT_value;
-	private Double GE_value;
-	private Double LT_value;
-	private Double LE_value;
+	private SensorUomValue EQ_value;
+	private SensorUomValue GT_value;
+	private SensorUomValue GE_value;
+	private SensorUomValue LT_value;
+	private SensorUomValue LE_value;
 
 	private Double EQ_minValue;
 	private Double GT_minValue;
@@ -364,6 +364,40 @@ public class TriggerDescription {
 				return false;
 			if (tVal.doubleValue() < value.doubleValue())
 				return false;
+		}
+
+		return true;
+	}
+
+	public boolean isPassDouble(SensorUomValue eq, SensorUomValue gt, SensorUomValue ge, SensorUomValue lt,
+			SensorUomValue le, String uom, Double value) {
+
+		if (eq != null) {
+			if (!eq.getUom().equals(uom) || (eq.getValue().doubleValue() != value.doubleValue())) {
+				return false;
+			}
+		}
+		if (gt != null) {
+			if (!gt.getUom().equals(uom) || (gt.getValue().doubleValue() >= value.doubleValue())) {
+				return false;
+			}
+		}
+		if (ge != null) {
+			if (!ge.getUom().equals(uom) || (ge.getValue().doubleValue() > value.doubleValue())) {
+				return false;
+			}
+		}
+
+		if (lt != null) {
+			if (!lt.getUom().equals(uom) || (lt.getValue().doubleValue() <= value.doubleValue())) {
+				return false;
+			}
+		}
+
+		if (le != null) {
+			if (!le.getUom().equals(uom) || (le.getValue().doubleValue() < value.doubleValue())) {
+				return false;
+			}
 		}
 
 		return true;
@@ -1416,33 +1450,85 @@ public class TriggerDescription {
 					|| (LE_ERROR_DECLARATION_extension != null && !LE_ERROR_DECLARATION_extension.isEmpty())
 					|| (EXISTS_ERROR_DECLARATION_extension != null && !EXISTS_ERROR_DECLARATION_extension.isEmpty())) {
 				Document ed = doc.get("errorDeclaration", Document.class);
-				if(ed == null)
+				if (ed == null)
 					return false;
 				Document errExt = ed.get("extension", Document.class);
-				if(errExt == null)
+				if (errExt == null)
 					return false;
-				
+
 				if (!isPassDocument(EQ_ERROR_DECLARATION_extension, GT_ERROR_DECLARATION_extension,
 						GE_ERROR_DECLARATION_extension, LT_ERROR_DECLARATION_extension, LE_ERROR_DECLARATION_extension,
 						EXISTS_ERROR_DECLARATION_extension, errExt))
 					return false;
 			}
-			
-			if ((EQ_extension != null && !EQ_extension.isEmpty())
-					|| (GT_extension != null && !GT_extension.isEmpty())
+
+			if ((EQ_extension != null && !EQ_extension.isEmpty()) || (GT_extension != null && !GT_extension.isEmpty())
 					|| (GE_extension != null && !GE_extension.isEmpty())
 					|| (LT_extension != null && !LT_extension.isEmpty())
 					|| (LE_extension != null && !LE_extension.isEmpty())
 					|| (EXISTS_extension != null && !EXISTS_extension.isEmpty())) {
 				Document ext = doc.get("extension", Document.class);
-				if (!isPassDocument(EQ_extension, GT_extension, GE_extension,
-						LT_extension, LE_extension, EXISTS_extension, ext))
+				if (!isPassDocument(EQ_extension, GT_extension, GE_extension, LT_extension, LE_extension,
+						EXISTS_extension, ext))
 					return false;
 			}
-			
-			
+
+			if (EQ_type != null && !EQ_type.isEmpty()) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String type = sensorReport.getString("type");
+						if (isPassString(EQ_type, type)) {
+							isPass = true;
+							break;
+						}
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_value != null || GT_value != null || GE_value != null || LT_value != null || LE_value != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("value");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_value, GT_value, GE_value, LT_value, LE_value, rUom, rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
 
 		} catch (Exception e) {
+			return false;
+		} catch (QueryParameterException e) {
 			return false;
 		}
 
@@ -1478,138 +1564,261 @@ public class TriggerDescription {
 			String name = param.getName();
 			Object value = param.getValue();
 
-			if (name.equals("eventType"))
+			if (name.equals("eventType")) {
 				eventType = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("GE_eventTime"))
+			if (name.equals("GE_eventTime")) {
 				GE_eventTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("LT_eventTime"))
+			if (name.equals("LT_eventTime")) {
 				LT_eventTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("GE_recordTime"))
+			if (name.equals("GE_recordTime")) {
 				GE_recordTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("LT_recordTime"))
+			if (name.equals("LT_recordTime")) {
 				LT_recordTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("EQ_action"))
+			if (name.equals("EQ_action")) {
 				EQ_action = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_bizStep"))
+			if (name.equals("EQ_bizStep")) {
 				EQ_bizStep = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_disposition"))
+			if (name.equals("EQ_disposition")) {
 				EQ_disposition = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_persistentDisposition_set"))
+			if (name.equals("EQ_persistentDisposition_set")) {
 				EQ_persistentDisposition_set = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_persistentDisposition_unset"))
+			if (name.equals("EQ_persistentDisposition_unset")) {
 				EQ_persistentDisposition_unset = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_readPoint"))
+			if (name.equals("EQ_readPoint")) {
 				EQ_readPoint = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_bizLocation"))
+			if (name.equals("EQ_bizLocation")) {
 				EQ_bizLocation = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_transformationID"))
+			if (name.equals("EQ_transformationID")) {
 				EQ_transformationID = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_eventID"))
+			if (name.equals("EQ_eventID")) {
 				EQ_eventID = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EXISTS_errorDeclaration"))
+			if (name.equals("EXISTS_errorDeclaration")) {
 				EXISTS_errorDeclaration = (VoidHolder) value;
+				continue;
+			}
 
-			if (name.equals("GE_errorDeclarationTime"))
+			if (name.equals("GE_errorDeclarationTime")) {
 				GE_errorDeclarationTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("LT_errorDeclarationTime"))
+			if (name.equals("LT_errorDeclarationTime")) {
 				LT_errorDeclarationTime = (long) value;
+				continue;
+			}
 
-			if (name.equals("EQ_errorReason"))
+			if (name.equals("EQ_errorReason")) {
 				EQ_errorReason = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_correctiveEventID"))
+			if (name.equals("EQ_correctiveEventID")) {
 				EQ_correctiveEventID = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("MATCH_epc"))
+			if (name.equals("MATCH_epc")) {
 				MATCH_epc = (List<String>) value;
-			if (name.equals("MATCH_parentID"))
+				continue;
+			}
+
+			if (name.equals("MATCH_parentID")) {
 				MATCH_parentID = (List<String>) value;
-			if (name.equals("MATCH_inputEPC"))
+				continue;
+			}
+
+			if (name.equals("MATCH_inputEPC")) {
 				MATCH_inputEPC = (List<String>) value;
-			if (name.equals("MATCH_outputEPC"))
+				continue;
+			}
+
+			if (name.equals("MATCH_outputEPC")) {
 				MATCH_outputEPC = (List<String>) value;
-			if (name.equals("MATCH_anyEPC"))
+				continue;
+			}
+
+			if (name.equals("MATCH_anyEPC")) {
 				MATCH_anyEPC = (List<String>) value;
-			if (name.equals("GE_startTime"))
+				continue;
+			}
+
+			if (name.equals("GE_startTime")) {
 				GE_startTime = (long) value;
-			if (name.equals("LT_startTime"))
+				continue;
+			}
+
+			if (name.equals("LT_startTime")) {
 				LT_startTime = (long) value;
-			if (name.equals("GE_endTime"))
+				continue;
+			}
+
+			if (name.equals("GE_endTime")) {
 				GE_endTime = (long) value;
-			if (name.equals("LT_endTime"))
+				continue;
+			}
+
+			if (name.equals("LT_endTime")) {
 				LT_endTime = (long) value;
+				continue;
 
-			if (name.equals("GE_SENSORMETADATA_time"))
+			}
+
+			if (name.equals("GE_SENSORMETADATA_time")) {
 				GE_SENSORMETADATA_time = (long) value;
-			if (name.equals("LT_SENSORMETADATA_time"))
+				continue;
+			}
+
+			if (name.equals("LT_SENSORMETADATA_time")) {
 				LT_SENSORMETADATA_time = (long) value;
+				continue;
+			}
 
-			if (name.equals("GE_SENSORREPORT_time"))
+			if (name.equals("GE_SENSORREPORT_time")) {
 				GE_SENSORREPORT_time = (long) value;
-			if (name.equals("LT_SENSORREPORT_time"))
+				continue;
+			}
+
+			if (name.equals("LT_SENSORREPORT_time")) {
 				LT_SENSORREPORT_time = (long) value;
-			if (name.equals("EQ_deviceID"))
+				continue;
+			}
+
+			if (name.equals("EQ_deviceID")) {
 				EQ_deviceID = (List<String>) value;
-			if (name.equals("EQ_SENSORMETADATA_deviceID"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_deviceID")) {
 				EQ_SENSORMETADATA_deviceID = (List<String>) value;
-			if (name.equals("EQ_SENSORREPORT_deviceID"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_deviceID")) {
 				EQ_SENSORREPORT_deviceID = (List<String>) value;
-			if (name.equals("EQ_SENSORMETADATA_deviceMetadata"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_deviceMetadata")) {
 				EQ_SENSORMETADATA_deviceMetadata = (List<String>) value;
-			if (name.equals("EQ_SENSORREPORT_deviceMetadata"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_deviceMetadata")) {
 				EQ_SENSORREPORT_deviceMetadata = (List<String>) value;
-			if (name.equals("EQ_SENSORMETADATA_rawData"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_rawData")) {
 				EQ_SENSORMETADATA_rawData = (List<String>) value;
-			if (name.equals("EQ_SENSORREPORT_rawData"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_rawData")) {
 				EQ_SENSORREPORT_rawData = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_dataProcessingMethod"))
+			if (name.equals("EQ_dataProcessingMethod")) {
 				EQ_dataProcessingMethod = (List<String>) value;
-			if (name.equals("EQ_SENSORMETADATA_dataProcessingMethod"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_dataProcessingMethod")) {
 				EQ_SENSORMETADATA_dataProcessingMethod = (List<String>) value;
-			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod"))
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod")) {
 				EQ_SENSORREPORT_dataProcessingMethod = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_microorganism"))
+			if (name.equals("EQ_microorganism")) {
 				EQ_microorganism = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_chemicalSubstance"))
+			if (name.equals("EQ_chemicalSubstance")) {
 				EQ_chemicalSubstance = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_bizRules"))
+			if (name.equals("EQ_bizRules")) {
 				EQ_bizRules = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_stringValue"))
+			if (name.equals("EQ_stringValue")) {
 				EQ_stringValue = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_booleanValue"))
+			if (name.equals("EQ_booleanValue")) {
 				EQ_booleanValue = (Boolean) value;
+				continue;
+			}
 
-			if (name.equals("EQ_hexBinaryValue"))
+			if (name.equals("EQ_hexBinaryValue")) {
 				EQ_hexBinaryValue = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("EQ_uriValue"))
+			if (name.equals("EQ_uriValue")) {
 				EQ_uriValue = (List<String>) value;
+				continue;
+			}
 
-			if (name.equals("GE_percRank"))
+			if (name.equals("GE_percRank")) {
 				GE_percRank = (double) value;
-			if (name.equals("LT_percRank"))
+				continue;
+			}
+
+			if (name.equals("LT_percRank")) {
 				LT_percRank = (double) value;
+				continue;
+			}
 
 			if (name.startsWith("EQ_bizTransaction")) {
 				if (EQ_bizTransaction == null)
@@ -1620,6 +1829,7 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_bizTransaction.put(type, values);
+				continue;
 			}
 
 			if (name.startsWith("EQ_source")) {
@@ -1631,6 +1841,7 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_source.put(type, values);
+				continue;
 			}
 
 			if (name.startsWith("EQ_destination")) {
@@ -1642,6 +1853,7 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_destination.put(type, values);
+				continue;
 			}
 
 			if (name.startsWith("EQ_quantity")) {
@@ -1650,6 +1862,7 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 
 				EQ_quantity.put(uom, (double) value);
+				continue;
 			}
 
 			if (name.startsWith("GT_quantity")) {
@@ -1658,6 +1871,7 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 
 				GT_quantity.put(uom, (double) value);
+				continue;
 			}
 
 			if (name.startsWith("GE_quantity")) {
@@ -1666,6 +1880,7 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 
 				GE_quantity.put(uom, (double) value);
+				continue;
 			}
 
 			if (name.startsWith("LT_quantity")) {
@@ -1674,6 +1889,7 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 
 				LT_quantity.put(uom, (double) value);
+				continue;
 			}
 
 			if (name.startsWith("LE_quantity")) {
@@ -1682,6 +1898,7 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 
 				LE_quantity.put(uom, (double) value);
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_ILMD")) {
@@ -1689,6 +1906,7 @@ public class TriggerDescription {
 					EQ_INNER_ILMD = new HashMap<String, Object>();
 				String key = name.substring(14);
 				EQ_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER_ILMD")) {
@@ -1696,6 +1914,7 @@ public class TriggerDescription {
 					GT_INNER_ILMD = new HashMap<String, Object>();
 				String key = name.substring(14);
 				GT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_INNER_ILMD")) {
@@ -1703,6 +1922,7 @@ public class TriggerDescription {
 					GE_INNER_ILMD = new HashMap<String, Object>();
 				String key = name.substring(14);
 				GE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_INNER_ILMD")) {
@@ -1710,6 +1930,7 @@ public class TriggerDescription {
 					LT_INNER_ILMD = new HashMap<String, Object>();
 				String key = name.substring(14);
 				LT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_INNER_ILMD")) {
@@ -1717,12 +1938,14 @@ public class TriggerDescription {
 					LE_INNER_ILMD = new HashMap<String, Object>();
 				String key = name.substring(14);
 				LE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_ILMD")) {
 				if (EXISTS_INNER_ILMD == null)
 					EXISTS_INNER_ILMD = new ArrayList<String>();
 				EXISTS_INNER_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(18)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_SENSORELEMENT")) {
@@ -1730,6 +1953,7 @@ public class TriggerDescription {
 					EQ_INNER_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(23);
 				EQ_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER_SENSORELEMENT")) {
@@ -1737,30 +1961,35 @@ public class TriggerDescription {
 					GT_INNER_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(23);
 				GT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_INNER_SENSORELEMENT")) {
 				if (GE_INNER_SENSORELEMENT == null)
 					GE_INNER_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(23);
 				GE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_INNER_SENSORELEMENT")) {
 				if (LT_INNER_SENSORELEMENT == null)
 					LT_INNER_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(23);
 				LT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_INNER_SENSORELEMENT")) {
 				if (LE_INNER_SENSORELEMENT == null)
 					LE_INNER_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(23);
 				LE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_SENSORELEMENT")) {
 				if (EXISTS_INNER_SENSORELEMENT == null)
 					EXISTS_INNER_SENSORELEMENT = new ArrayList<String>();
 				EXISTS_INNER_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(27)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_readPoint")) {
@@ -1768,6 +1997,7 @@ public class TriggerDescription {
 					EQ_INNER_readPoint = new HashMap<String, Object>();
 				String key = name.substring(19);
 				EQ_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER_readPoint")) {
@@ -1775,30 +2005,35 @@ public class TriggerDescription {
 					GT_INNER_readPoint = new HashMap<String, Object>();
 				String key = name.substring(19);
 				GT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_INNER_readPoint")) {
 				if (GE_INNER_readPoint == null)
 					GE_INNER_readPoint = new HashMap<String, Object>();
 				String key = name.substring(19);
 				GE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_INNER_readPoint")) {
 				if (LT_INNER_readPoint == null)
 					LT_INNER_readPoint = new HashMap<String, Object>();
 				String key = name.substring(19);
 				LT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_INNER_readPoint")) {
 				if (LE_INNER_readPoint == null)
 					LE_INNER_readPoint = new HashMap<String, Object>();
 				String key = name.substring(19);
 				LE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_readPoint")) {
 				if (EXISTS_INNER_readPoint == null)
 					EXISTS_INNER_readPoint = new ArrayList<String>();
 				EXISTS_INNER_readPoint.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(23)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_bizLocation")) {
@@ -1806,6 +2041,7 @@ public class TriggerDescription {
 					EQ_INNER_bizLocation = new HashMap<String, Object>();
 				String key = name.substring(21);
 				EQ_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER_bizLocation")) {
@@ -1813,30 +2049,35 @@ public class TriggerDescription {
 					GT_INNER_bizLocation = new HashMap<String, Object>();
 				String key = name.substring(21);
 				GT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_INNER_bizLocation")) {
 				if (GE_INNER_bizLocation == null)
 					GE_INNER_bizLocation = new HashMap<String, Object>();
 				String key = name.substring(21);
 				GE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_INNER_bizLocation")) {
 				if (LT_INNER_bizLocation == null)
 					LT_INNER_bizLocation = new HashMap<String, Object>();
 				String key = name.substring(21);
 				LT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_INNER_bizLocation")) {
 				if (LE_INNER_bizLocation == null)
 					LE_INNER_bizLocation = new HashMap<String, Object>();
 				String key = name.substring(21);
 				LE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_bizLocation")) {
 				if (EXISTS_INNER_bizLocation == null)
 					EXISTS_INNER_bizLocation = new ArrayList<String>();
 				EXISTS_INNER_bizLocation.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_ERROR_DECLARATION")) {
@@ -1844,6 +2085,7 @@ public class TriggerDescription {
 					EQ_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
 				String key = name.substring(27);
 				EQ_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER_ERROR_DECLARATION")) {
@@ -1851,30 +2093,35 @@ public class TriggerDescription {
 					GT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
 				String key = name.substring(27);
 				GT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_INNER_ERROR_DECLARATION")) {
 				if (GE_INNER_ERROR_DECLARATION == null)
 					GE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
 				String key = name.substring(27);
 				GE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_INNER_ERROR_DECLARATION")) {
 				if (LT_INNER_ERROR_DECLARATION == null)
 					LT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
 				String key = name.substring(27);
 				LT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_INNER_ERROR_DECLARATION")) {
 				if (LE_INNER_ERROR_DECLARATION == null)
 					LE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
 				String key = name.substring(27);
 				LE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_ERROR_DECLARATION")) {
 				if (EXISTS_INNER_ERROR_DECLARATION == null)
 					EXISTS_INNER_ERROR_DECLARATION = new ArrayList<String>();
 				EXISTS_INNER_ERROR_DECLARATION.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(31)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_INNER")) {
@@ -1882,6 +2129,7 @@ public class TriggerDescription {
 					EQ_INNER = new HashMap<String, Object>();
 				String key = name.substring(9);
 				EQ_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_INNER")) {
@@ -1889,30 +2137,35 @@ public class TriggerDescription {
 					GT_INNER = new HashMap<String, Object>();
 				String key = name.substring(9);
 				GT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_INNER")) {
 				if (GE_INNER == null)
 					GE_INNER = new HashMap<String, Object>();
 				String key = name.substring(9);
 				GE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_INNER")) {
 				if (LT_INNER == null)
 					LT_INNER = new HashMap<String, Object>();
 				String key = name.substring(9);
 				LT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_INNER")) {
 				if (LE_INNER == null)
 					LE_INNER = new HashMap<String, Object>();
 				String key = name.substring(9);
 				LE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER")) {
 				if (EXISTS_INNER == null)
 					EXISTS_INNER = new ArrayList<String>();
 				EXISTS_INNER.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(13)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_ILMD")) {
@@ -1920,6 +2173,7 @@ public class TriggerDescription {
 					EQ_ILMD = new HashMap<String, Object>();
 				String key = name.substring(8);
 				EQ_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_ILMD")) {
@@ -1927,6 +2181,7 @@ public class TriggerDescription {
 					GT_ILMD = new HashMap<String, Object>();
 				String key = name.substring(8);
 				GT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_ILMD")) {
@@ -1934,6 +2189,7 @@ public class TriggerDescription {
 					GE_ILMD = new HashMap<String, Object>();
 				String key = name.substring(8);
 				GE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_ILMD")) {
@@ -1941,6 +2197,7 @@ public class TriggerDescription {
 					LT_ILMD = new HashMap<String, Object>();
 				String key = name.substring(8);
 				LT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_ILMD")) {
@@ -1948,12 +2205,14 @@ public class TriggerDescription {
 					LE_ILMD = new HashMap<String, Object>();
 				String key = name.substring(8);
 				LE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_ILMD")) {
 				if (EXISTS_ILMD == null)
 					EXISTS_ILMD = new ArrayList<String>();
 				EXISTS_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(12)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORELEMENT")) {
@@ -1961,6 +2220,7 @@ public class TriggerDescription {
 					EQ_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(17);
 				EQ_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_SENSORELEMENT")) {
@@ -1968,30 +2228,35 @@ public class TriggerDescription {
 					GT_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(17);
 				GT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("GE_SENSORELEMENT")) {
 				if (GE_SENSORELEMENT == null)
 					GE_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(17);
 				GE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LT_SENSORELEMENT")) {
 				if (LT_SENSORELEMENT == null)
 					LT_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(17);
 				LT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 			if (name.startsWith("LE_SENSORELEMENT")) {
 				if (LE_SENSORELEMENT == null)
 					LE_SENSORELEMENT = new HashMap<String, Object>();
 				String key = name.substring(17);
 				LE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_SENSORELEMENT")) {
 				if (EXISTS_SENSORELEMENT == null)
 					EXISTS_SENSORELEMENT = new ArrayList<String>();
 				EXISTS_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(21)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORMETADATA")) {
@@ -2003,6 +2268,7 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_SENSORMETADATA.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
+				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORREPORT")) {
@@ -2014,14 +2280,17 @@ public class TriggerDescription {
 					values = new ArrayList<String>();
 				values.addAll((List<String>) value);
 				EQ_SENSORREPORT.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
+				continue;
 			}
 
 			if (name.equals("EXISTS_SENSORMETADATA")) {
 				EXISTS_SENSORMETADATA = (VoidHolder) value;
+				continue;
 			}
 
 			if (name.equals("EXISTS_SENSORREPORT")) {
 				EXISTS_SENSORREPORT = (VoidHolder) value;
+				continue;
 			}
 
 			if (name.startsWith("EQ_readPoint_")) {
@@ -2029,6 +2298,7 @@ public class TriggerDescription {
 					EQ_readPoint_extension = new HashMap<String, Object>();
 				String key = name.substring(13);
 				EQ_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_readPoint_")) {
@@ -2036,6 +2306,7 @@ public class TriggerDescription {
 					GT_readPoint_extension = new HashMap<String, Object>();
 				String key = name.substring(13);
 				GT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_readPoint_")) {
@@ -2043,6 +2314,7 @@ public class TriggerDescription {
 					GE_readPoint_extension = new HashMap<String, Object>();
 				String key = name.substring(13);
 				GE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_readPoint_")) {
@@ -2050,6 +2322,7 @@ public class TriggerDescription {
 					LT_readPoint_extension = new HashMap<String, Object>();
 				String key = name.substring(13);
 				LT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_readPoint_")) {
@@ -2057,12 +2330,14 @@ public class TriggerDescription {
 					LE_readPoint_extension = new HashMap<String, Object>();
 				String key = name.substring(13);
 				LE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_readPoint_")) {
 				if (EXISTS_readPoint_extension == null)
 					EXISTS_readPoint_extension = new ArrayList<String>();
 				EXISTS_readPoint_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(17)));
+				continue;
 			}
 
 			if (name.startsWith("EQ_bizLocation_")) {
@@ -2070,6 +2345,7 @@ public class TriggerDescription {
 					EQ_bizLocation_extension = new HashMap<String, Object>();
 				String key = name.substring(15);
 				EQ_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_bizLocation_")) {
@@ -2077,6 +2353,7 @@ public class TriggerDescription {
 					GT_bizLocation_extension = new HashMap<String, Object>();
 				String key = name.substring(15);
 				GT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_bizLocation_")) {
@@ -2084,6 +2361,7 @@ public class TriggerDescription {
 					GE_bizLocation_extension = new HashMap<String, Object>();
 				String key = name.substring(15);
 				GE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_bizLocation_")) {
@@ -2091,6 +2369,7 @@ public class TriggerDescription {
 					LT_bizLocation_extension = new HashMap<String, Object>();
 				String key = name.substring(15);
 				LT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_bizLocation_")) {
@@ -2098,19 +2377,22 @@ public class TriggerDescription {
 					LE_bizLocation_extension = new HashMap<String, Object>();
 				String key = name.substring(15);
 				LE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_bizLocation_")) {
 				if (EXISTS_bizLocation_extension == null)
 					EXISTS_bizLocation_extension = new ArrayList<String>();
 				EXISTS_bizLocation_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(19)));
+				continue;
 			}
-			
+
 			if (name.startsWith("EQ_ERROR_DECLARATION_")) {
 				if (EQ_ERROR_DECLARATION_extension == null)
 					EQ_ERROR_DECLARATION_extension = new HashMap<String, Object>();
 				String key = name.substring(21);
 				EQ_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_ERROR_DECLARATION_")) {
@@ -2118,6 +2400,7 @@ public class TriggerDescription {
 					GT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
 				String key = name.substring(21);
 				GT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_ERROR_DECLARATION_")) {
@@ -2125,6 +2408,7 @@ public class TriggerDescription {
 					GE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
 				String key = name.substring(21);
 				GE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_ERROR_DECLARATION_")) {
@@ -2132,6 +2416,7 @@ public class TriggerDescription {
 					LT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
 				String key = name.substring(21);
 				LT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_ERROR_DECLARATION_")) {
@@ -2139,19 +2424,87 @@ public class TriggerDescription {
 					LE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
 				String key = name.substring(21);
 				LE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_ERROR_DECLARATION_")) {
 				if (EXISTS_ERROR_DECLARATION_extension == null)
 					EXISTS_ERROR_DECLARATION_extension = new ArrayList<String>();
 				EXISTS_ERROR_DECLARATION_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+				continue;
 			}
-			
+
+			if (name.equals("EQ_type")) {
+				EQ_type = (List<String>) value;
+				continue;
+			}
+
+			if (name.startsWith("EQ_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
 			if (name.startsWith("EQ_")) {
 				if (EQ_extension == null)
 					EQ_extension = new HashMap<String, Object>();
 				String key = name.substring(3);
 				EQ_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GT_")) {
@@ -2159,6 +2512,7 @@ public class TriggerDescription {
 					GT_extension = new HashMap<String, Object>();
 				String key = name.substring(3);
 				GT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("GE_")) {
@@ -2166,6 +2520,7 @@ public class TriggerDescription {
 					GE_extension = new HashMap<String, Object>();
 				String key = name.substring(3);
 				GE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LT_")) {
@@ -2173,6 +2528,7 @@ public class TriggerDescription {
 					LT_extension = new HashMap<String, Object>();
 				String key = name.substring(3);
 				LT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("LE_")) {
@@ -2180,13 +2536,25 @@ public class TriggerDescription {
 					LE_extension = new HashMap<String, Object>();
 				String key = name.substring(3);
 				LE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
 			}
 
 			if (name.startsWith("EXISTS_")) {
 				if (EXISTS_extension == null)
 					EXISTS_extension = new ArrayList<String>();
 				EXISTS_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(7)));
+				continue;
 			}
+
+			/*
+			 * String uom = sensorReport.getString("uom"); Double value =
+			 * sensorReport.getDouble("value"); if (uom == null || value == null) continue;
+			 * 
+			 * String type = Resource.unitConverter.getType(uom); String rUom =
+			 * Resource.unitConverter.getRepresentativeUoMFromType(type); double rValue =
+			 * Resource.unitConverter.getRepresentativeValue(type, uom, value);
+			 * 
+			 */
 		}
 	}
 
@@ -2675,7 +3043,7 @@ public class TriggerDescription {
 		if (EXISTS_bizLocation_extension != null) {
 			doc.put("EXISTS_bizLocation_extension", EXISTS_bizLocation_extension);
 		}
-		
+
 		if (EQ_ERROR_DECLARATION_extension != null) {
 			doc.put("EQ_ERROR_DECLARATION_extension", EQ_ERROR_DECLARATION_extension);
 		}
@@ -2699,7 +3067,7 @@ public class TriggerDescription {
 		if (EXISTS_ERROR_DECLARATION_extension != null) {
 			doc.put("EXISTS_ERROR_DECLARATION_extension", EXISTS_ERROR_DECLARATION_extension);
 		}
-		
+
 		if (EQ_extension != null) {
 			doc.put("EQ_extension", EQ_extension);
 		}
@@ -2722,6 +3090,30 @@ public class TriggerDescription {
 
 		if (EXISTS_extension != null) {
 			doc.put("EXISTS_extension", EXISTS_extension);
+		}
+
+		if (EQ_type != null) {
+			doc.put("EQ_type", EQ_type);
+		}
+
+		if (EQ_value != null) {
+			doc.put("EQ_value", EQ_value.toMongoDocument());
+		}
+
+		if (GT_value != null) {
+			doc.put("GT_value", GT_value.toMongoDocument());
+		}
+
+		if (GE_value != null) {
+			doc.put("GE_value", GE_value.toMongoDocument());
+		}
+
+		if (LT_value != null) {
+			doc.put("LT_value", LT_value.toMongoDocument());
+		}
+
+		if (LE_value != null) {
+			doc.put("LE_value", LE_value.toMongoDocument());
 		}
 
 		return doc;
@@ -2786,5 +3178,35 @@ public class TriggerDescription {
 		} catch (ParseException | NullPointerException e) {
 			throw new QueryParameterException(e.getMessage());
 		}
+	}
+}
+
+class SensorUomValue {
+	private String uom;
+	private Double value;
+
+	public SensorUomValue(String uom, Double value) {
+		this.uom = uom;
+		this.value = value;
+	}
+
+	public String getUom() {
+		return uom;
+	}
+
+	public void setUom(String uom) {
+		this.uom = uom;
+	}
+
+	public Double getValue() {
+		return value;
+	}
+
+	public void setValue(Double value) {
+		this.value = value;
+	}
+
+	public Document toMongoDocument() {
+		return new Document().append("uom", uom).append("value", value);
 	}
 }
