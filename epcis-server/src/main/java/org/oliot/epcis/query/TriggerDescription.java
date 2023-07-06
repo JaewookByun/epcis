@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -19,13 +21,17 @@ import org.bson.types.Binary;
 import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
+import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.QueryParam;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
+import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.TimeUtil;
+import org.oliot.epcis.validation.IdentifierValidator;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("unused")
@@ -198,35 +204,35 @@ public class TriggerDescription {
 	private SensorUomValue LT_value;
 	private SensorUomValue LE_value;
 
-	private Double EQ_minValue;
-	private Double GT_minValue;
-	private Double GE_minValue;
-	private Double LT_minValue;
-	private Double LE_minValue;
+	private SensorUomValue EQ_minValue;
+	private SensorUomValue GT_minValue;
+	private SensorUomValue GE_minValue;
+	private SensorUomValue LT_minValue;
+	private SensorUomValue LE_minValue;
 
-	private Double EQ_maxValue;
-	private Double GT_maxValue;
-	private Double GE_maxValue;
-	private Double LT_maxValue;
-	private Double LE_maxValue;
+	private SensorUomValue EQ_maxValue;
+	private SensorUomValue GT_maxValue;
+	private SensorUomValue GE_maxValue;
+	private SensorUomValue LT_maxValue;
+	private SensorUomValue LE_maxValue;
 
-	private Double EQ_meanValue;
-	private Double GT_meanValue;
-	private Double GE_meanValue;
-	private Double LT_meanValue;
-	private Double LE_meanValue;
+	private SensorUomValue EQ_meanValue;
+	private SensorUomValue GT_meanValue;
+	private SensorUomValue GE_meanValue;
+	private SensorUomValue LT_meanValue;
+	private SensorUomValue LE_meanValue;
 
-	private Double EQ_sDev;
-	private Double GT_sDev;
-	private Double GE_sDev;
-	private Double LT_sDev;
-	private Double LE_sDev;
+	private SensorUomValue EQ_sDev;
+	private SensorUomValue GT_sDev;
+	private SensorUomValue GE_sDev;
+	private SensorUomValue LT_sDev;
+	private SensorUomValue LE_sDev;
 
-	private Double EQ_percValue;
-	private Double GT_percValue;
-	private Double GE_percValue;
-	private Double LT_percValue;
-	private Double LE_percValue;
+	private SensorUomValue EQ_percValue;
+	private SensorUomValue GT_percValue;
+	private SensorUomValue GE_percValue;
+	private SensorUomValue LT_percValue;
+	private SensorUomValue LE_percValue;
 
 	private List<String> WD_readPoint;
 	private List<String> WD_bizLocation;
@@ -1526,6 +1532,190 @@ public class TriggerDescription {
 					return false;
 			}
 
+			if (EQ_minValue != null || GT_minValue != null || GE_minValue != null || LT_minValue != null
+					|| LE_minValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("minValue");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_minValue, GT_minValue, GE_minValue, LT_minValue, LE_minValue, rUom,
+								rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_maxValue != null || GT_maxValue != null || GE_maxValue != null || LT_maxValue != null
+					|| LE_maxValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("maxValue");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_maxValue, GT_maxValue, GE_maxValue, LT_maxValue, LE_maxValue, rUom,
+								rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_meanValue != null || GT_meanValue != null || GE_meanValue != null || LT_meanValue != null
+					|| LE_meanValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("meanValue");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_meanValue, GT_meanValue, GE_meanValue, LT_meanValue, LE_meanValue, rUom,
+								rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_sDev != null || GT_sDev != null || GE_sDev != null || LT_sDev != null || LE_sDev != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("sDev");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_sDev, GT_sDev, GE_sDev, LT_sDev, LE_sDev, rUom, rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (EQ_percValue != null || GT_percValue != null || GE_percValue != null || LT_percValue != null
+					|| LE_percValue != null) {
+				List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+				if (sensorElementList == null || sensorElementList.isEmpty())
+					return false;
+
+				boolean isPass = false;
+				for (Document sensorElement : sensorElementList) {
+					List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReport : sensorReportList) {
+						String uom = sensorReport.getString("uom");
+						Double value = sensorReport.getDouble("percValue");
+						if (uom == null || value == null)
+							continue;
+
+						String type = Resource.unitConverter.getType(uom);
+						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+
+						if (isPassDouble(EQ_percValue, GT_percValue, GE_percValue, LT_percValue, LE_percValue, rUom,
+								rValue)) {
+							isPass = true;
+							break;
+						}
+
+					}
+					if (isPass == true)
+						break;
+				}
+				if (!isPass)
+					return false;
+			}
+
+			if (WD_readPoint != null) {
+
+				Set<String> wdValues = new HashSet<String>();
+				for (String v : WD_readPoint) {
+					wdValues.add(v);
+					List<org.bson.Document> rDocs = new ArrayList<org.bson.Document>();
+					EPCISServer.mVocCollection.find(new org.bson.Document("id", v)).into(rDocs);
+					for (org.bson.Document rDoc : rDocs) {
+						if (rDoc.containsKey("children")) {
+							List<String> children = rDoc.getList("children", String.class);
+							wdValues.addAll(children);
+						}
+					}
+				}
+
+				List<String> wdList = new ArrayList<String>(wdValues);
+				if (!isPassString(WD_readPoint, doc.getString("readPoint"))) {
+					return false;
+				}
+			}
+
 		} catch (Exception e) {
 			return false;
 		} catch (QueryParameterException e) {
@@ -2499,6 +2689,306 @@ public class TriggerDescription {
 				continue;
 			}
 
+			if (name.startsWith("EQ_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = Resource.unitConverter.getType(uom);
+				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
 			if (name.startsWith("EQ_")) {
 				if (EQ_extension == null)
 					EQ_extension = new HashMap<String, Object>();
@@ -2545,16 +3035,11 @@ public class TriggerDescription {
 				EXISTS_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(7)));
 				continue;
 			}
-
-			/*
-			 * String uom = sensorReport.getString("uom"); Double value =
-			 * sensorReport.getDouble("value"); if (uom == null || value == null) continue;
-			 * 
-			 * String type = Resource.unitConverter.getType(uom); String rUom =
-			 * Resource.unitConverter.getRepresentativeUoMFromType(type); double rValue =
-			 * Resource.unitConverter.getRepresentativeValue(type, uom, value);
-			 * 
-			 */
+			
+			if (name.equals("WD_readPoint")) {
+				WD_readPoint = (List<String>) value;
+				continue;
+			}
 		}
 	}
 
@@ -3116,6 +3601,110 @@ public class TriggerDescription {
 			doc.put("LE_value", LE_value.toMongoDocument());
 		}
 
+		if (EQ_minValue != null) {
+			doc.put("EQ_minValue", EQ_minValue.toMongoDocument());
+		}
+
+		if (GT_minValue != null) {
+			doc.put("GT_minValue", GT_minValue.toMongoDocument());
+		}
+
+		if (GE_minValue != null) {
+			doc.put("GE_minValue", GE_minValue.toMongoDocument());
+		}
+
+		if (LT_minValue != null) {
+			doc.put("LT_minValue", LT_minValue.toMongoDocument());
+		}
+
+		if (LE_minValue != null) {
+			doc.put("LE_minValue", LE_minValue.toMongoDocument());
+		}
+
+		if (EQ_maxValue != null) {
+			doc.put("EQ_maxValue", EQ_maxValue.toMongoDocument());
+		}
+
+		if (GT_maxValue != null) {
+			doc.put("GT_maxValue", GT_maxValue.toMongoDocument());
+		}
+
+		if (GE_maxValue != null) {
+			doc.put("GE_maxValue", GE_maxValue.toMongoDocument());
+		}
+
+		if (LT_maxValue != null) {
+			doc.put("LT_maxValue", LT_maxValue.toMongoDocument());
+		}
+
+		if (LE_maxValue != null) {
+			doc.put("LE_maxValue", LE_maxValue.toMongoDocument());
+		}
+
+		if (EQ_meanValue != null) {
+			doc.put("EQ_meanValue", EQ_meanValue.toMongoDocument());
+		}
+
+		if (GT_meanValue != null) {
+			doc.put("GT_meanValue", GT_meanValue.toMongoDocument());
+		}
+
+		if (GE_meanValue != null) {
+			doc.put("GE_meanValue", GE_meanValue.toMongoDocument());
+		}
+
+		if (LT_meanValue != null) {
+			doc.put("LT_meanValue", LT_meanValue.toMongoDocument());
+		}
+
+		if (LE_meanValue != null) {
+			doc.put("LE_meanValue", LE_meanValue.toMongoDocument());
+		}
+
+		if (EQ_sDev != null) {
+			doc.put("EQ_sDev", EQ_sDev.toMongoDocument());
+		}
+
+		if (GT_sDev != null) {
+			doc.put("GT_sDev", GT_sDev.toMongoDocument());
+		}
+
+		if (GE_sDev != null) {
+			doc.put("GE_sDev", GE_sDev.toMongoDocument());
+		}
+
+		if (LT_sDev != null) {
+			doc.put("LT_sDev", LT_sDev.toMongoDocument());
+		}
+
+		if (LE_sDev != null) {
+			doc.put("LE_sDev", LE_sDev.toMongoDocument());
+		}
+
+		if (EQ_percValue != null) {
+			doc.put("EQ_percValue", EQ_percValue.toMongoDocument());
+		}
+
+		if (GT_percValue != null) {
+			doc.put("GT_percValue", GT_percValue.toMongoDocument());
+		}
+
+		if (GE_percValue != null) {
+			doc.put("GE_percValue", GE_percValue.toMongoDocument());
+		}
+
+		if (LT_percValue != null) {
+			doc.put("LT_percValue", LT_percValue.toMongoDocument());
+		}
+
+		if (LE_percValue != null) {
+			doc.put("LE_percValue", LE_percValue.toMongoDocument());
+		}
+		
+		if (WD_readPoint != null) {
+			doc.put("WD_readPoint", WD_readPoint);
+		}
+
 		return doc;
 	}
 
@@ -3208,5 +3797,10 @@ class SensorUomValue {
 
 	public Document toMongoDocument() {
 		return new Document().append("uom", uom).append("value", value);
+	}
+
+	@Override
+	public String toString() {
+		return uom + "," + value;
 	}
 }
