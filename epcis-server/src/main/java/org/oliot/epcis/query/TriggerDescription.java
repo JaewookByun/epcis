@@ -1840,7 +1840,7 @@ public class TriggerDescription {
 					String fieldName = entry.getKey();
 					List<String> mdValues = entry.getValue();
 					HashSet<String> wdValues = new HashSet<String>();
-					wdValues.addAll(mdValues);
+					// wdValues.addAll(mdValues);
 					String vtype;
 					if (fieldName.equals("readPoint")) {
 						vtype = "urn:epcglobal:epcis:vtype:ReadPoint";
@@ -1878,17 +1878,19 @@ public class TriggerDescription {
 							// throw e1;
 						}
 
-						if (first == null) {
-							wdValues.add(v);
+						if (first != null && first.getString("id") != null) {
+							wdValues.add(first.getString("id"));
 						}
 					}
 
-					if (fieldName.equals("readPoint")
-							&& !isPassString(new ArrayList<String>(wdValues), doc.getString("readPoint"))) {
-						return false;
-					} else if (fieldName.equals("bizLocation")
-							&& !isPassString(new ArrayList<String>(wdValues), doc.getString("bizLocation"))) {
-						return false;
+					if (fieldName.equals("readPoint")) {
+						if (!isPassString(new ArrayList<String>(wdValues), doc.getString("readPoint"))) {
+							return false;
+						}
+					} else if (fieldName.equals("bizLocation")) {
+						if (!isPassString(new ArrayList<String>(wdValues), doc.getString("bizLocation"))) {
+							return false;
+						}
 					} else if (fieldName.equals("BusinessTransaction")) {
 						List<Document> bizTransactionList = doc.getList("bizTransactionList", Document.class);
 						if (bizTransactionList == null || bizTransactionList.isEmpty())
@@ -1970,23 +1972,121 @@ public class TriggerDescription {
 							return false;
 
 					} else if (fieldName.equals("LocationID")) {
-						//TODO
-						vtype = "urn:epcglobal:epcis:vtype:Location";
+						boolean isPass1 = false;
+						boolean isPass2 = false;
+
+						List<Document> sourceList = doc.getList("sourceList", Document.class);
+						if (sourceList != null) {
+							for (Document source : sourceList) {
+								String type = source.getString("type");
+								String value = source.getString("value");
+								if (type != null && value != null && type.equals("urn:epcglobal:cbv:sdt:location")) {
+									if (isPassString(new ArrayList<String>(wdValues), value)) {
+										isPass1 = true;
+										break;
+									}
+								}
+							}
+						}
+						List<Document> destinationList = doc.getList("destinationList", Document.class);
+						if (destinationList != null) {
+							for (Document dest : destinationList) {
+								String type = dest.getString("type");
+								String value = dest.getString("value");
+								if (type != null && value != null && type.equals("urn:epcglobal:cbv:sdt:location")) {
+									if (isPassString(new ArrayList<String>(wdValues), value)) {
+										isPass2 = true;
+										break;
+									}
+								}
+							}
+						}
+						if (!isPass1 && !isPass2)
+							return false;
 					} else if (fieldName.equals("PartyID")) {
-						vtype = "urn:epcglobal:epcis:vtype:Party";
+						boolean isPass1 = false;
+						boolean isPass2 = false;
+
+						List<Document> sourceList = doc.getList("sourceList", Document.class);
+						if (sourceList != null) {
+							for (Document source : sourceList) {
+								String type = source.getString("type");
+								String value = source.getString("value");
+								if (type != null && value != null && (type.equals("urn:epcglobal:cbv:sdt:owning_party")
+										|| type.equals("urn:epcglobal:cbv:sdt:possessing_party"))) {
+									if (isPassString(new ArrayList<String>(wdValues), value)) {
+										isPass1 = true;
+										break;
+									}
+								}
+							}
+						}
+						List<Document> destinationList = doc.getList("destinationList", Document.class);
+						if (destinationList != null) {
+							for (Document dest : destinationList) {
+								String type = dest.getString("type");
+								String value = dest.getString("value");
+								if (type != null && value != null && (type.equals("urn:epcglobal:cbv:sdt:owning_party")
+										|| type.equals("urn:epcglobal:cbv:sdt:possessing_party"))) {
+									if (isPassString(new ArrayList<String>(wdValues), value)) {
+										isPass2 = true;
+										break;
+									}
+								}
+							}
+						}
+						if (!isPass1 && !isPass2)
+							return false;
 					} else if (fieldName.equals("MicroorganismID")) {
-						vtype = "urn:epcglobal:epcis:vtype:Microorganism";
+						List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+						if (sensorElementList == null)
+							return false;
+						boolean isPass = false;
+						for (Document sensorElement : sensorElementList) {
+							List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+							if (sensorReportList == null)
+								continue;
+							for (Document sensorReport : sensorReportList) {
+								String value = sensorReport.getString("microorganism");
+								if (isPassString(new ArrayList<String>(wdValues), value)) {
+									isPass = true;
+									break;
+								}
+							}
+							if (isPass == true)
+								break;
+						}
+						if (isPass == false)
+							return false;
 					} else if (fieldName.equals("ChemicalSubstanceID")) {
-						vtype = "urn:epcglobal:epcis:vtype:ChemicalSubstance";
+						List<Document> sensorElementList = doc.getList("sensorElementList", Document.class);
+						if (sensorElementList == null)
+							return false;
+						boolean isPass = false;
+						for (Document sensorElement : sensorElementList) {
+							List<Document> sensorReportList = sensorElement.getList("sensorReport", Document.class);
+							if (sensorReportList == null)
+								continue;
+							for (Document sensorReport : sensorReportList) {
+								String value = sensorReport.getString("chemicalSubstance");
+								if (isPassString(new ArrayList<String>(wdValues), value)) {
+									isPass = true;
+									break;
+								}
+							}
+							if (isPass == true)
+								break;
+						}
+						if (isPass == false)
+							return false;
 					} else if (fieldName.equals("ResourceID")) {
 						vtype = "urn:epcglobal:epcis:vtype:Resource";
+						// TODO: not supported yet
 					} else {
 						throw new QueryParameterException(fieldName
 								+ " should be one of readPoint, bizLocation, BusinessTransaction, EPCClass, SourceDestID, LocationID, PartyID, MicroorganismID, ChemicalSubstanceID, ResourceID");
 					}
-
 					// map.put(fieldName, new ArrayList<String>(wdValues));
-
 				}
 			}
 
@@ -3339,6 +3439,18 @@ public class TriggerDescription {
 				WD_bizLocation = (List<String>) value;
 				continue;
 			}
+
+			if (name.startsWith("HASATTR_")) {
+				if (HASATTR == null)
+					HASATTR = new HashMap<String, List<String>>();
+				String key = POJOtoBSONUtil.encodeMongoObjectKey(name.substring(8));
+				List<String> values = HASATTR.get(key);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				HASATTR.put(key, values);
+				continue;
+			}
 		}
 	}
 
@@ -4022,6 +4134,10 @@ public class TriggerDescription {
 
 		if (WD_bizLocation != null) {
 			doc.put("WD_bizLocation", WD_bizLocation);
+		}
+
+		if (HASATTR != null) {
+			doc.put("HASATTR", HASATTR);
 		}
 
 		return doc;
