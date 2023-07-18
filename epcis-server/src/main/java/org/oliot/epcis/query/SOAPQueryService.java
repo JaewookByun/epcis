@@ -67,7 +67,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class SOAPQueryService {
 
-	final SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
+	final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
 	public void query(HttpServerRequest request, HttpServerResponse response, String soapMessage) {
 
@@ -927,7 +927,7 @@ public class SOAPQueryService {
 			List<Object> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList, message);
 
 			if (reportIfEmpty == false && convertedResultList.size() == 0) {
-				EPCISServer.logger.debug("Subscription invoked but not sent due to reportIfEmpty");
+				EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
 				return;
 			}
 

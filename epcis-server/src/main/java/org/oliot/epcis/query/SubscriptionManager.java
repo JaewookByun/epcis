@@ -44,11 +44,8 @@ public class SubscriptionManager {
 					subscribeService.addScheduleToQuartz(s);
 					EPCISServer.logger.debug("Existing scheduled subscription " + doc.getString("_id") + " activated");
 				} else if (doc.getString("trigger") != null) {
-					// TODO
-					// EPCISServer.triggerEngine.addSubscription(new TriggerDescription(s, new
-					// SOAPQueryUnmarshaller()), s.getDest());
-					// EPCISServer.logger.debug("Existing trigger subscription " +
-					// s.getSubscriptionID() + " activated");
+					EPCISServer.triggerEngine.addSubscription(s.getTriggerDescription(), s.getDest());
+					EPCISServer.logger.debug("Existing triggered subscription " + doc.getString("_id") + " activated");
 				}
 			}
 		} catch (SchedulerException e) {

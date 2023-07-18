@@ -16,6 +16,8 @@ import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.SubscriptionControls;
 import org.oliot.epcis.model.SubscriptionControlsException;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
  * <p>
@@ -39,6 +41,21 @@ public class Subscription {
 	private QueryDescription queryDescription;
 	private TriggerDescription triggerDescription;
 
+	@Override
+		public String toString() {
+			if(schedule != null) {
+				JsonObject obj = new JsonObject();
+				obj.put("subscriptionID", subscriptionID);
+				obj.put("dest", dest.toString());
+				obj.put("schedule", schedule);
+				obj.put("initialRecordTime", initialRecordTime);
+				obj.put("reportIfEmpty", reportIfEmpty);
+				return obj.toString();
+			}else {
+				return null;
+			}			
+		}
+	
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)
 			throws InvalidURIException, SubscriptionControlsException, ImplementationException, QueryParameterException,
 			SubscribeNotPermittedException {
@@ -108,7 +125,10 @@ public class Subscription {
 				trigger = new URI(doc.getString("trigger"));
 
 			queryDescription = new QueryDescription(doc);
+			triggerDescription = new TriggerDescription(doc);
 		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (QueryParameterException e) {
 			e.printStackTrace();
 		}
 	}
