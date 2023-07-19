@@ -4053,28 +4053,54 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_quantity != null) {
-				
-				
-				
-				
-				doc.put("EQ_quantity", EQ_quantity);
+			if (queryKey.equals("EQ_quantity")) {
+				Document obj = query.get("EQ_quantity", Document.class);
+				if(EQ_quantity == null)
+					EQ_quantity = new HashMap<String, Double>();
+				for(String tKey: obj.keySet()) {
+					EQ_quantity.put(tKey, obj.getDouble(tKey));
+				}
+				continue;
 			}
 
-			if (GT_quantity != null) {
-				doc.put("GT_quantity", GT_quantity);
+			if (queryKey.equals("GT_quantity")) {
+				Document obj = query.get("GT_quantity", Document.class);
+				if(GT_quantity == null)
+					GT_quantity = new HashMap<String, Double>();
+				for(String tKey: obj.keySet()) {
+					GT_quantity.put(tKey, obj.getDouble(tKey));
+				}
+				continue;
 			}
 
-			if (GE_quantity != null) {
-				doc.put("GE_quantity", GE_quantity);
+			if (queryKey.equals("GE_quantity")) {
+				Document obj = query.get("GE_quantity", Document.class);
+				if(GE_quantity == null)
+					GE_quantity = new HashMap<String, Double>();
+				for(String tKey: obj.keySet()) {
+					GE_quantity.put(tKey, obj.getDouble(tKey));
+				}
+				continue;
 			}
 
-			if (LT_quantity != null) {
-				doc.put("LT_quantity", LT_quantity);
+			if (queryKey.equals("LT_quantity")) {
+				Document obj = query.get("LT_quantity", Document.class);
+				if(LT_quantity == null)
+					LT_quantity = new HashMap<String, Double>();
+				for(String tKey: obj.keySet()) {
+					LT_quantity.put(tKey, obj.getDouble(tKey));
+				}
+				continue;
 			}
 
-			if (LE_quantity != null) {
-				doc.put("LE_quantity", LE_quantity);
+			if (queryKey.equals("LE_quantity")) {
+				Document obj = query.get("LE_quantity", Document.class);
+				if(LE_quantity == null)
+					LE_quantity = new HashMap<String, Double>();
+				for(String tKey: obj.keySet()) {
+					LE_quantity.put(tKey, obj.getDouble(tKey));
+				}
+				continue;
 			}
 
 			if (EQ_INNER_ILMD != null) {
