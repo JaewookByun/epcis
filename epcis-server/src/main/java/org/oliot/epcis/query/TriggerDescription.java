@@ -3739,6 +3739,7 @@ public class TriggerDescription {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public TriggerDescription(Document doc) throws QueryParameterException {
 		this.unmarshaller = SOAPQueryService.soapQueryUnmarshaller;
 
@@ -4010,12 +4011,12 @@ public class TriggerDescription {
 
 			if (queryKey.equals("EQ_bizTransaction")) {
 				Document obj = query.get("EQ_bizTransaction", Document.class);
-				if(EQ_bizTransaction == null)
+				if (EQ_bizTransaction == null)
 					EQ_bizTransaction = new HashMap<String, List<String>>();
-				for(String bizTKey: obj.keySet()) {
+				for (String bizTKey : obj.keySet()) {
 					List<String> bizTValues = obj.getList(bizTKey, String.class);
 					List<String> bizTransactions = EQ_bizTransaction.get(bizTKey);
-					if(bizTransactions == null)
+					if (bizTransactions == null)
 						bizTransactions = new ArrayList<String>();
 					bizTransactions.addAll(bizTValues);
 					EQ_bizTransaction.put(bizTKey, bizTransactions);
@@ -4025,12 +4026,12 @@ public class TriggerDescription {
 
 			if (queryKey.equals("EQ_source")) {
 				Document obj = query.get("EQ_source", Document.class);
-				if(EQ_source == null)
+				if (EQ_source == null)
 					EQ_source = new HashMap<String, List<String>>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					List<String> tValues = obj.getList(tKey, String.class);
 					List<String> v = EQ_source.get(tKey);
-					if(v == null)
+					if (v == null)
 						v = new ArrayList<String>();
 					v.addAll(tValues);
 					EQ_source.put(tKey, v);
@@ -4040,12 +4041,12 @@ public class TriggerDescription {
 
 			if (queryKey.equals("EQ_destination")) {
 				Document obj = query.get("EQ_destination", Document.class);
-				if(EQ_destination == null)
+				if (EQ_destination == null)
 					EQ_destination = new HashMap<String, List<String>>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					List<String> tValues = obj.getList(tKey, String.class);
 					List<String> v = EQ_destination.get(tKey);
-					if(v == null)
+					if (v == null)
 						v = new ArrayList<String>();
 					v.addAll(tValues);
 					EQ_destination.put(tKey, v);
@@ -4055,9 +4056,9 @@ public class TriggerDescription {
 
 			if (queryKey.equals("EQ_quantity")) {
 				Document obj = query.get("EQ_quantity", Document.class);
-				if(EQ_quantity == null)
+				if (EQ_quantity == null)
 					EQ_quantity = new HashMap<String, Double>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					EQ_quantity.put(tKey, obj.getDouble(tKey));
 				}
 				continue;
@@ -4065,9 +4066,9 @@ public class TriggerDescription {
 
 			if (queryKey.equals("GT_quantity")) {
 				Document obj = query.get("GT_quantity", Document.class);
-				if(GT_quantity == null)
+				if (GT_quantity == null)
 					GT_quantity = new HashMap<String, Double>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					GT_quantity.put(tKey, obj.getDouble(tKey));
 				}
 				continue;
@@ -4075,9 +4076,9 @@ public class TriggerDescription {
 
 			if (queryKey.equals("GE_quantity")) {
 				Document obj = query.get("GE_quantity", Document.class);
-				if(GE_quantity == null)
+				if (GE_quantity == null)
 					GE_quantity = new HashMap<String, Double>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					GE_quantity.put(tKey, obj.getDouble(tKey));
 				}
 				continue;
@@ -4085,9 +4086,9 @@ public class TriggerDescription {
 
 			if (queryKey.equals("LT_quantity")) {
 				Document obj = query.get("LT_quantity", Document.class);
-				if(LT_quantity == null)
+				if (LT_quantity == null)
 					LT_quantity = new HashMap<String, Double>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					LT_quantity.put(tKey, obj.getDouble(tKey));
 				}
 				continue;
@@ -4095,36 +4096,112 @@ public class TriggerDescription {
 
 			if (queryKey.equals("LE_quantity")) {
 				Document obj = query.get("LE_quantity", Document.class);
-				if(LE_quantity == null)
+				if (LE_quantity == null)
 					LE_quantity = new HashMap<String, Double>();
-				for(String tKey: obj.keySet()) {
+				for (String tKey : obj.keySet()) {
 					LE_quantity.put(tKey, obj.getDouble(tKey));
 				}
 				continue;
 			}
 
-			if (EQ_INNER_ILMD != null) {
-				doc.put("EQ_INNER_ILMD", EQ_INNER_ILMD);
+			if (queryKey.equals("EQ_INNER_ILMD")) {
+				Document obj = query.get("EQ_INNER_ILMD", Document.class);
+				if (EQ_INNER_ILMD == null)
+					EQ_INNER_ILMD = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) EQ_INNER_ILMD.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						EQ_INNER_ILMD.put(tKey, v);
+					} else {
+						EQ_INNER_ILMD.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (GT_INNER_ILMD != null) {
-				doc.put("GT_INNER_ILMD", GT_INNER_ILMD);
+			if (queryKey.equals("GT_INNER_ILMD")) {
+				Document obj = query.get("GT_INNER_ILMD", Document.class);
+				if (GT_INNER_ILMD == null)
+					GT_INNER_ILMD = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) GT_INNER_ILMD.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						GT_INNER_ILMD.put(tKey, v);
+					} else {
+						GT_INNER_ILMD.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (GE_INNER_ILMD != null) {
-				doc.put("GE_INNER_ILMD", GE_INNER_ILMD);
+			if (queryKey.equals("GE_INNER_ILMD")) {
+				Document obj = query.get("GE_INNER_ILMD", Document.class);
+				if (GE_INNER_ILMD == null)
+					GE_INNER_ILMD = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) GE_INNER_ILMD.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						GE_INNER_ILMD.put(tKey, v);
+					} else {
+						GE_INNER_ILMD.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (LT_INNER_ILMD != null) {
-				doc.put("LT_INNER_ILMD", LT_INNER_ILMD);
+			if (queryKey.equals("LT_INNER_ILMD")) {
+				Document obj = query.get("LT_INNER_ILMD", Document.class);
+				if (LT_INNER_ILMD == null)
+					LT_INNER_ILMD = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) LT_INNER_ILMD.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						LT_INNER_ILMD.put(tKey, v);
+					} else {
+						LT_INNER_ILMD.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (LE_INNER_ILMD != null) {
-				doc.put("LE_INNER_ILMD", LE_INNER_ILMD);
+			if (queryKey.equals("LE_INNER_ILMD")) {
+				Document obj = query.get("LE_INNER_ILMD", Document.class);
+				if (LE_INNER_ILMD == null)
+					LE_INNER_ILMD = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) LE_INNER_ILMD.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						LE_INNER_ILMD.put(tKey, v);
+					} else {
+						LE_INNER_ILMD.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (EXISTS_INNER_ILMD != null) {
-				doc.put("EXISTS_INNER_ILMD", EXISTS_INNER_ILMD);
+			if (queryKey.equals("EXISTS_INNER_ILMD")) {
+				EXISTS_INNER_ILMD = query.getList("EXISTS_INNER_ILMD", String.class);
+				continue;
 			}
 
 			if (EQ_INNER_SENSORELEMENT != null) {
