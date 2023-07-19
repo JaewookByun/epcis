@@ -4204,28 +4204,104 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_INNER_SENSORELEMENT != null) {
-				doc.put("EQ_INNER_SENSORELEMENT", EQ_INNER_SENSORELEMENT);
+			if (queryKey.equals("EQ_INNER_SENSORELEMENT")) {
+				Document obj = query.get("EQ_INNER_SENSORELEMENT", Document.class);
+				if (EQ_INNER_SENSORELEMENT == null)
+					EQ_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) EQ_INNER_SENSORELEMENT.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						EQ_INNER_SENSORELEMENT.put(tKey, v);
+					} else {
+						EQ_INNER_SENSORELEMENT.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (GT_INNER_SENSORELEMENT != null) {
-				doc.put("GT_INNER_SENSORELEMENT", GT_INNER_SENSORELEMENT);
+			if (queryKey.equals("GT_INNER_SENSORELEMENT")) {
+				Document obj = query.get("GT_INNER_SENSORELEMENT", Document.class);
+				if (GT_INNER_SENSORELEMENT == null)
+					GT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) GT_INNER_SENSORELEMENT.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						GT_INNER_SENSORELEMENT.put(tKey, v);
+					} else {
+						GT_INNER_SENSORELEMENT.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (GE_INNER_SENSORELEMENT != null) {
-				doc.put("GE_INNER_SENSORELEMENT", GE_INNER_SENSORELEMENT);
+			if (queryKey.equals("GE_INNER_SENSORELEMENT")) {
+				Document obj = query.get("GE_INNER_SENSORELEMENT", Document.class);
+				if (GE_INNER_SENSORELEMENT == null)
+					GE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) GE_INNER_SENSORELEMENT.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						GE_INNER_SENSORELEMENT.put(tKey, v);
+					} else {
+						GE_INNER_SENSORELEMENT.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (LT_INNER_SENSORELEMENT != null) {
-				doc.put("LT_INNER_SENSORELEMENT", LT_INNER_SENSORELEMENT);
+			if (queryKey.equals("LT_INNER_SENSORELEMENT")) {
+				Document obj = query.get("LT_INNER_SENSORELEMENT", Document.class);
+				if (LT_INNER_SENSORELEMENT == null)
+					LT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) LT_INNER_SENSORELEMENT.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						LT_INNER_SENSORELEMENT.put(tKey, v);
+					} else {
+						LT_INNER_SENSORELEMENT.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (LE_INNER_SENSORELEMENT != null) {
-				doc.put("LE_INNER_SENSORELEMENT", LE_INNER_SENSORELEMENT);
+			if (queryKey.equals("LE_INNER_SENSORELEMENT")) {
+				Document obj = query.get("LE_INNER_SENSORELEMENT", Document.class);
+				if (LE_INNER_SENSORELEMENT == null)
+					LE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				for (String tKey : obj.keySet()) {
+					Object tValue = obj.get(tKey);
+					if (tValue instanceof List) {
+						List<String> v = (List<String>) LE_INNER_SENSORELEMENT.get(tKey);
+						if (v == null)
+							v = new ArrayList<String>();
+						v.addAll((List<String>) tValue);
+						LE_INNER_SENSORELEMENT.put(tKey, v);
+					} else {
+						LE_INNER_SENSORELEMENT.put(tKey, tValue);
+					}
+				}
+				continue;
 			}
 
-			if (EXISTS_INNER_SENSORELEMENT != null) {
-				doc.put("EXISTS_INNER_SENSORELEMENT", EXISTS_INNER_SENSORELEMENT);
+			if (queryKey.equals("EXISTS_INNER_SENSORELEMENT")) {			
+				EXISTS_INNER_SENSORELEMENT = query.getList("EXISTS_INNER_SENSORELEMENT", String.class);
+				continue;
 			}
 
 			if (EQ_INNER_readPoint != null) {
