@@ -4305,6 +4305,7 @@ public class TriggerDescription {
 			}
 
 			if (EQ_INNER_readPoint != null) {
+				// TODO
 				doc.put("EQ_INNER_readPoint", EQ_INNER_readPoint);
 			}
 
