@@ -4383,14 +4383,14 @@ public class TriggerDescription {
 				doc.put("EQ_SENSORREPORT", EQ_SENSORREPORT);
 			}
 
-			if (EXISTS_SENSORMETADATA != null) {
-				// TODO
-				doc.put("EXISTS_SENSORMETADATA", "VoidHolder");
+			if (EXISTS_SENSORMETADATA != null) {			
+				EXISTS_SENSORMETADATA = new VoidHolder();
+				continue;
 			}
 
 			if (EXISTS_SENSORREPORT != null) {
-				// TODO
-				doc.put("EXISTS_SENSORREPORT", "VoidHolder");
+				EXISTS_SENSORREPORT = new VoidHolder();
+				continue;
 			}
 
 			if (EQ_readPoint_extension != null) {
