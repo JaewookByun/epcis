@@ -3739,7 +3739,39 @@ public class TriggerDescription {
 		}
 	}
 
+	public HashMap<String, List<String>> getQueryStringListMap(Document obj, HashMap<String, List<String>> query) {
+		if (query == null)
+			query = new HashMap<String, List<String>>();
+		for (String bizTKey : obj.keySet()) {
+			List<String> bizTValues = obj.getList(bizTKey, String.class);
+			List<String> bizTransactions = query.get(bizTKey);
+			if (bizTransactions == null)
+				bizTransactions = new ArrayList<String>();
+			bizTransactions.addAll(bizTValues);
+			query.put(bizTKey, bizTransactions);
+		}
+		return query;
+	}
+
 	@SuppressWarnings("unchecked")
+	public HashMap<String, Object> getQueryStringObjectMap(Document obj, HashMap<String, Object> query) {
+		if (query == null)
+			query = new HashMap<String, Object>();
+		for (String tKey : obj.keySet()) {
+			Object tValue = obj.get(tKey);
+			if (tValue instanceof List) {
+				List<String> v = (List<String>) query.get(tKey);
+				if (v == null)
+					v = new ArrayList<String>();
+				v.addAll((List<String>) tValue);
+				query.put(tKey, v);
+			} else {
+				query.put(tKey, tValue);
+			}
+		}
+		return query;
+	}
+
 	public TriggerDescription(Document doc) throws QueryParameterException {
 		this.unmarshaller = SOAPQueryService.soapQueryUnmarshaller;
 
@@ -4010,47 +4042,18 @@ public class TriggerDescription {
 			}
 
 			if (queryKey.equals("EQ_bizTransaction")) {
-				Document obj = query.get("EQ_bizTransaction", Document.class);
-				if (EQ_bizTransaction == null)
-					EQ_bizTransaction = new HashMap<String, List<String>>();
-				for (String bizTKey : obj.keySet()) {
-					List<String> bizTValues = obj.getList(bizTKey, String.class);
-					List<String> bizTransactions = EQ_bizTransaction.get(bizTKey);
-					if (bizTransactions == null)
-						bizTransactions = new ArrayList<String>();
-					bizTransactions.addAll(bizTValues);
-					EQ_bizTransaction.put(bizTKey, bizTransactions);
-				}
+				EQ_bizTransaction = getQueryStringListMap(query.get("EQ_bizTransaction", Document.class),
+						EQ_bizTransaction);
 				continue;
 			}
 
 			if (queryKey.equals("EQ_source")) {
-				Document obj = query.get("EQ_source", Document.class);
-				if (EQ_source == null)
-					EQ_source = new HashMap<String, List<String>>();
-				for (String tKey : obj.keySet()) {
-					List<String> tValues = obj.getList(tKey, String.class);
-					List<String> v = EQ_source.get(tKey);
-					if (v == null)
-						v = new ArrayList<String>();
-					v.addAll(tValues);
-					EQ_source.put(tKey, v);
-				}
+				EQ_source = getQueryStringListMap(query.get("EQ_source", Document.class), EQ_source);
 				continue;
 			}
 
 			if (queryKey.equals("EQ_destination")) {
-				Document obj = query.get("EQ_destination", Document.class);
-				if (EQ_destination == null)
-					EQ_destination = new HashMap<String, List<String>>();
-				for (String tKey : obj.keySet()) {
-					List<String> tValues = obj.getList(tKey, String.class);
-					List<String> v = EQ_destination.get(tKey);
-					if (v == null)
-						v = new ArrayList<String>();
-					v.addAll(tValues);
-					EQ_destination.put(tKey, v);
-				}
+				EQ_destination = getQueryStringListMap(query.get("EQ_destination", Document.class), EQ_destination);
 				continue;
 			}
 
@@ -4105,97 +4108,27 @@ public class TriggerDescription {
 			}
 
 			if (queryKey.equals("EQ_INNER_ILMD")) {
-				Document obj = query.get("EQ_INNER_ILMD", Document.class);
-				if (EQ_INNER_ILMD == null)
-					EQ_INNER_ILMD = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) EQ_INNER_ILMD.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						EQ_INNER_ILMD.put(tKey, v);
-					} else {
-						EQ_INNER_ILMD.put(tKey, tValue);
-					}
-				}
+				EQ_INNER_ILMD = getQueryStringObjectMap(query.get("EQ_INNER_ILMD", Document.class), EQ_INNER_ILMD);
 				continue;
 			}
 
 			if (queryKey.equals("GT_INNER_ILMD")) {
-				Document obj = query.get("GT_INNER_ILMD", Document.class);
-				if (GT_INNER_ILMD == null)
-					GT_INNER_ILMD = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) GT_INNER_ILMD.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						GT_INNER_ILMD.put(tKey, v);
-					} else {
-						GT_INNER_ILMD.put(tKey, tValue);
-					}
-				}
+				GT_INNER_ILMD = getQueryStringObjectMap(query.get("GT_INNER_ILMD", Document.class), GT_INNER_ILMD);
 				continue;
 			}
 
 			if (queryKey.equals("GE_INNER_ILMD")) {
-				Document obj = query.get("GE_INNER_ILMD", Document.class);
-				if (GE_INNER_ILMD == null)
-					GE_INNER_ILMD = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) GE_INNER_ILMD.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						GE_INNER_ILMD.put(tKey, v);
-					} else {
-						GE_INNER_ILMD.put(tKey, tValue);
-					}
-				}
+				GE_INNER_ILMD = getQueryStringObjectMap(query.get("GE_INNER_ILMD", Document.class), GE_INNER_ILMD);
 				continue;
 			}
 
 			if (queryKey.equals("LT_INNER_ILMD")) {
-				Document obj = query.get("LT_INNER_ILMD", Document.class);
-				if (LT_INNER_ILMD == null)
-					LT_INNER_ILMD = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) LT_INNER_ILMD.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						LT_INNER_ILMD.put(tKey, v);
-					} else {
-						LT_INNER_ILMD.put(tKey, tValue);
-					}
-				}
+				LT_INNER_ILMD = getQueryStringObjectMap(query.get("LT_INNER_ILMD", Document.class), LT_INNER_ILMD);
 				continue;
 			}
 
 			if (queryKey.equals("LE_INNER_ILMD")) {
-				Document obj = query.get("LE_INNER_ILMD", Document.class);
-				if (LE_INNER_ILMD == null)
-					LE_INNER_ILMD = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) LE_INNER_ILMD.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						LE_INNER_ILMD.put(tKey, v);
-					} else {
-						LE_INNER_ILMD.put(tKey, tValue);
-					}
-				}
+				LE_INNER_ILMD = getQueryStringObjectMap(query.get("LE_INNER_ILMD", Document.class), LE_INNER_ILMD);
 				continue;
 			}
 
@@ -4205,503 +4138,573 @@ public class TriggerDescription {
 			}
 
 			if (queryKey.equals("EQ_INNER_SENSORELEMENT")) {
-				Document obj = query.get("EQ_INNER_SENSORELEMENT", Document.class);
-				if (EQ_INNER_SENSORELEMENT == null)
-					EQ_INNER_SENSORELEMENT = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) EQ_INNER_SENSORELEMENT.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						EQ_INNER_SENSORELEMENT.put(tKey, v);
-					} else {
-						EQ_INNER_SENSORELEMENT.put(tKey, tValue);
-					}
-				}
+				EQ_INNER_SENSORELEMENT = getQueryStringObjectMap(query.get("EQ_INNER_SENSORELEMENT", Document.class),
+						EQ_INNER_SENSORELEMENT);
 				continue;
 			}
 
 			if (queryKey.equals("GT_INNER_SENSORELEMENT")) {
-				Document obj = query.get("GT_INNER_SENSORELEMENT", Document.class);
-				if (GT_INNER_SENSORELEMENT == null)
-					GT_INNER_SENSORELEMENT = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) GT_INNER_SENSORELEMENT.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						GT_INNER_SENSORELEMENT.put(tKey, v);
-					} else {
-						GT_INNER_SENSORELEMENT.put(tKey, tValue);
-					}
-				}
+				GT_INNER_SENSORELEMENT = getQueryStringObjectMap(query.get("GT_INNER_SENSORELEMENT", Document.class),
+						GT_INNER_SENSORELEMENT);
 				continue;
 			}
 
 			if (queryKey.equals("GE_INNER_SENSORELEMENT")) {
-				Document obj = query.get("GE_INNER_SENSORELEMENT", Document.class);
-				if (GE_INNER_SENSORELEMENT == null)
-					GE_INNER_SENSORELEMENT = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) GE_INNER_SENSORELEMENT.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						GE_INNER_SENSORELEMENT.put(tKey, v);
-					} else {
-						GE_INNER_SENSORELEMENT.put(tKey, tValue);
-					}
-				}
+				GE_INNER_SENSORELEMENT = getQueryStringObjectMap(query.get("GE_INNER_SENSORELEMENT", Document.class),
+						GE_INNER_SENSORELEMENT);
 				continue;
 			}
 
 			if (queryKey.equals("LT_INNER_SENSORELEMENT")) {
-				Document obj = query.get("LT_INNER_SENSORELEMENT", Document.class);
-				if (LT_INNER_SENSORELEMENT == null)
-					LT_INNER_SENSORELEMENT = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) LT_INNER_SENSORELEMENT.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						LT_INNER_SENSORELEMENT.put(tKey, v);
-					} else {
-						LT_INNER_SENSORELEMENT.put(tKey, tValue);
-					}
-				}
+				LT_INNER_SENSORELEMENT = getQueryStringObjectMap(query.get("LT_INNER_SENSORELEMENT", Document.class),
+						LT_INNER_SENSORELEMENT);
 				continue;
 			}
 
 			if (queryKey.equals("LE_INNER_SENSORELEMENT")) {
-				Document obj = query.get("LE_INNER_SENSORELEMENT", Document.class);
-				if (LE_INNER_SENSORELEMENT == null)
-					LE_INNER_SENSORELEMENT = new HashMap<String, Object>();
-				for (String tKey : obj.keySet()) {
-					Object tValue = obj.get(tKey);
-					if (tValue instanceof List) {
-						List<String> v = (List<String>) LE_INNER_SENSORELEMENT.get(tKey);
-						if (v == null)
-							v = new ArrayList<String>();
-						v.addAll((List<String>) tValue);
-						LE_INNER_SENSORELEMENT.put(tKey, v);
-					} else {
-						LE_INNER_SENSORELEMENT.put(tKey, tValue);
-					}
-				}
+				LE_INNER_SENSORELEMENT = getQueryStringObjectMap(query.get("LE_INNER_SENSORELEMENT", Document.class),
+						LE_INNER_SENSORELEMENT);
 				continue;
 			}
 
-			if (queryKey.equals("EXISTS_INNER_SENSORELEMENT")) {			
+			if (queryKey.equals("EXISTS_INNER_SENSORELEMENT")) {
 				EXISTS_INNER_SENSORELEMENT = query.getList("EXISTS_INNER_SENSORELEMENT", String.class);
 				continue;
 			}
 
 			if (EQ_INNER_readPoint != null) {
-				// TODO
-				doc.put("EQ_INNER_readPoint", EQ_INNER_readPoint);
+				EQ_INNER_readPoint = getQueryStringObjectMap(query.get("EQ_INNER_readPoint", Document.class),
+						EQ_INNER_readPoint);
+				continue;
 			}
 
 			if (GT_INNER_readPoint != null) {
-				doc.put("GT_INNER_readPoint", GT_INNER_readPoint);
+				GT_INNER_readPoint = getQueryStringObjectMap(query.get("GT_INNER_readPoint", Document.class),
+						GT_INNER_readPoint);
+				continue;
 			}
 
 			if (GE_INNER_readPoint != null) {
-				doc.put("GE_INNER_readPoint", GE_INNER_readPoint);
+				GE_INNER_readPoint = getQueryStringObjectMap(query.get("GE_INNER_readPoint", Document.class),
+						GE_INNER_readPoint);
+				continue;
 			}
 
 			if (LT_INNER_readPoint != null) {
-				doc.put("LT_INNER_readPoint", LT_INNER_readPoint);
+				LT_INNER_readPoint = getQueryStringObjectMap(query.get("LT_INNER_readPoint", Document.class),
+						LT_INNER_readPoint);
+				continue;
 			}
 
 			if (LE_INNER_readPoint != null) {
-				doc.put("LE_INNER_readPoint", LE_INNER_readPoint);
+				LE_INNER_readPoint = getQueryStringObjectMap(query.get("LE_INNER_readPoint", Document.class),
+						LE_INNER_readPoint);
+				continue;
 			}
 
 			if (EXISTS_INNER_readPoint != null) {
-				doc.put("EXISTS_INNER_readPoint", EXISTS_INNER_readPoint);
+				EXISTS_INNER_readPoint = query.getList("EXISTS_INNER_readPoint", String.class);
+				continue;
+
 			}
 
 			if (EQ_INNER_bizLocation != null) {
-				doc.put("EQ_INNER_bizLocation", EQ_INNER_bizLocation);
+				EQ_INNER_bizLocation = getQueryStringObjectMap(query.get("EQ_INNER_bizLocation", Document.class),
+						EQ_INNER_bizLocation);
+				continue;
 			}
 
 			if (GT_INNER_bizLocation != null) {
-				doc.put("GT_INNER_bizLocation", GT_INNER_bizLocation);
+				GT_INNER_bizLocation = getQueryStringObjectMap(query.get("GT_INNER_bizLocation", Document.class),
+						GT_INNER_bizLocation);
+				continue;
 			}
 
 			if (GE_INNER_bizLocation != null) {
-				doc.put("GE_INNER_bizLocation", GE_INNER_bizLocation);
+				GE_INNER_bizLocation = getQueryStringObjectMap(query.get("GE_INNER_bizLocation", Document.class),
+						GE_INNER_bizLocation);
+				continue;
 			}
 
 			if (LT_INNER_bizLocation != null) {
-				doc.put("LT_INNER_bizLocation", LT_INNER_bizLocation);
+				LT_INNER_bizLocation = getQueryStringObjectMap(query.get("LT_INNER_bizLocation", Document.class),
+						LT_INNER_bizLocation);
+				continue;
 			}
 
 			if (LE_INNER_bizLocation != null) {
-				doc.put("LE_INNER_bizLocation", LE_INNER_bizLocation);
+				LE_INNER_bizLocation = getQueryStringObjectMap(query.get("LE_INNER_bizLocation", Document.class),
+						LE_INNER_bizLocation);
+				continue;
 			}
 
 			if (EXISTS_INNER_bizLocation != null) {
-				doc.put("EXISTS_INNER_bizLocation", EXISTS_INNER_bizLocation);
+				EXISTS_INNER_bizLocation = query.getList("EXISTS_INNER_bizLocation", String.class);
+				continue;
 			}
 
 			if (EQ_INNER_ERROR_DECLARATION != null) {
-				doc.put("EQ_INNER_ERROR_DECLARATION", EQ_INNER_ERROR_DECLARATION);
+				EQ_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
+						query.get("EQ_INNER_ERROR_DECLARATION", Document.class), EQ_INNER_ERROR_DECLARATION);
+				continue;
 			}
 
 			if (GT_INNER_ERROR_DECLARATION != null) {
-				doc.put("GT_INNER_ERROR_DECLARATION", GT_INNER_ERROR_DECLARATION);
+				GT_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
+						query.get("GT_INNER_ERROR_DECLARATION", Document.class), GT_INNER_ERROR_DECLARATION);
+				continue;
 			}
 
 			if (GE_INNER_ERROR_DECLARATION != null) {
-				doc.put("GE_INNER_ERROR_DECLARATION", GE_INNER_ERROR_DECLARATION);
+				GE_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
+						query.get("GE_INNER_ERROR_DECLARATION", Document.class), GE_INNER_ERROR_DECLARATION);
+				continue;
 			}
 
 			if (LT_INNER_ERROR_DECLARATION != null) {
-				doc.put("LT_INNER_ERROR_DECLARATION", LT_INNER_ERROR_DECLARATION);
+				LT_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
+						query.get("LT_INNER_ERROR_DECLARATION", Document.class), LT_INNER_ERROR_DECLARATION);
+				continue;
 			}
 
 			if (LE_INNER_ERROR_DECLARATION != null) {
-				doc.put("LE_INNER_ERROR_DECLARATION", LE_INNER_ERROR_DECLARATION);
+				LE_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
+						query.get("LE_INNER_ERROR_DECLARATION", Document.class), LE_INNER_ERROR_DECLARATION);
+				continue;
 			}
 
 			if (EXISTS_INNER_ERROR_DECLARATION != null) {
-				doc.put("EXISTS_INNER_ERROR_DECLARATION", EXISTS_INNER_ERROR_DECLARATION);
+				EXISTS_INNER_ERROR_DECLARATION = query.getList("EXISTS_INNER_ERROR_DECLARATION", String.class);
+				continue;
 			}
 
 			if (EQ_INNER != null) {
-				doc.put("EQ_INNER", EQ_INNER);
+				EQ_INNER = getQueryStringObjectMap(query.get("EQ_INNER", Document.class), EQ_INNER);
+				continue;
 			}
 
 			if (GT_INNER != null) {
-				doc.put("GT_INNER", GT_INNER);
+				GT_INNER = getQueryStringObjectMap(query.get("GT_INNER", Document.class), GT_INNER);
+				continue;
 			}
 
 			if (GE_INNER != null) {
-				doc.put("GE_INNER", GE_INNER);
+				GE_INNER = getQueryStringObjectMap(query.get("GE_INNER", Document.class), GE_INNER);
+				continue;
 			}
 
 			if (LT_INNER != null) {
-				doc.put("LT_INNER", LT_INNER);
+				LT_INNER = getQueryStringObjectMap(query.get("LT_INNER", Document.class), LT_INNER);
+				continue;
 			}
 
 			if (LE_INNER != null) {
-				doc.put("LE_INNER", LE_INNER);
+				LE_INNER = getQueryStringObjectMap(query.get("LE_INNER", Document.class), LE_INNER);
+				continue;
 			}
 
 			if (EXISTS_INNER != null) {
-				doc.put("EXISTS_INNER", EXISTS_INNER);
+				EXISTS_INNER = query.getList("EXISTS_INNER", String.class);
+				continue;
 			}
 
 			if (EQ_ILMD != null) {
-				doc.put("EQ_ILMD", EQ_ILMD);
+				EQ_ILMD = getQueryStringObjectMap(query.get("EQ_ILMD", Document.class), EQ_ILMD);
+				continue;
 			}
 
 			if (GT_ILMD != null) {
-				doc.put("GT_ILMD", GT_ILMD);
+				GT_ILMD = getQueryStringObjectMap(query.get("GT_ILMD", Document.class), GT_ILMD);
+				continue;
 			}
 
 			if (GE_ILMD != null) {
-				doc.put("GE_ILMD", GE_ILMD);
+				GE_ILMD = getQueryStringObjectMap(query.get("GE_ILMD", Document.class), GE_ILMD);
+				continue;
 			}
 
 			if (LT_ILMD != null) {
-				doc.put("LT_ILMD", LT_ILMD);
+				LT_ILMD = getQueryStringObjectMap(query.get("LT_ILMD", Document.class), LT_ILMD);
+				continue;
 			}
 
 			if (LE_ILMD != null) {
-				doc.put("LE_ILMD", LE_ILMD);
+				LE_ILMD = getQueryStringObjectMap(query.get("LE_ILMD", Document.class), LE_ILMD);
+				continue;
 			}
 
 			if (EXISTS_ILMD != null) {
-				doc.put("EXISTS_ILMD", EXISTS_ILMD);
+				EXISTS_ILMD = query.getList("EXISTS_ILMD", String.class);
+				continue;
 			}
 
 			if (EQ_SENSORELEMENT != null) {
-				doc.put("EQ_SENSORELEMENT", EQ_SENSORELEMENT);
+				EQ_SENSORELEMENT = getQueryStringObjectMap(query.get("EQ_SENSORELEMENT", Document.class),
+						EQ_SENSORELEMENT);
+				continue;
 			}
 
 			if (GT_SENSORELEMENT != null) {
-				doc.put("GT_SENSORELEMENT", GT_SENSORELEMENT);
+				GT_SENSORELEMENT = getQueryStringObjectMap(query.get("GT_SENSORELEMENT", Document.class),
+						GT_SENSORELEMENT);
+				continue;
 			}
 
 			if (GE_SENSORELEMENT != null) {
-				doc.put("GE_SENSORELEMENT", GE_SENSORELEMENT);
+				GE_SENSORELEMENT = getQueryStringObjectMap(query.get("GE_SENSORELEMENT", Document.class),
+						GE_SENSORELEMENT);
+				continue;
 			}
 
 			if (LT_SENSORELEMENT != null) {
-				doc.put("LT_SENSORELEMENT", LT_SENSORELEMENT);
+				LT_SENSORELEMENT = getQueryStringObjectMap(query.get("LT_SENSORELEMENT", Document.class),
+						LT_SENSORELEMENT);
+				continue;
 			}
 
 			if (LE_SENSORELEMENT != null) {
-				doc.put("LE_SENSORELEMENT", LE_SENSORELEMENT);
+				LE_SENSORELEMENT = getQueryStringObjectMap(query.get("LE_SENSORELEMENT", Document.class),
+						LE_SENSORELEMENT);
+				continue;
 			}
 
 			if (EXISTS_SENSORELEMENT != null) {
-				doc.put("EXISTS_SENSORELEMENT", EXISTS_SENSORELEMENT);
+				EXISTS_SENSORELEMENT = query.getList("EXISTS_SENSORELEMENT", String.class);
+				continue;
 			}
 
 			if (EQ_SENSORMETADATA != null) {
+				// TODO
 				doc.put("EQ_SENSORMETADATA", EQ_SENSORMETADATA);
 			}
 
 			if (EQ_SENSORREPORT != null) {
+				// TODO
 				doc.put("EQ_SENSORREPORT", EQ_SENSORREPORT);
 			}
 
 			if (EXISTS_SENSORMETADATA != null) {
+				// TODO
 				doc.put("EXISTS_SENSORMETADATA", "VoidHolder");
 			}
 
 			if (EXISTS_SENSORREPORT != null) {
+				// TODO
 				doc.put("EXISTS_SENSORREPORT", "VoidHolder");
 			}
 
 			if (EQ_readPoint_extension != null) {
-				doc.put("EQ_readPoint_extension", EQ_readPoint_extension);
+				EQ_readPoint_extension = getQueryStringObjectMap(query.get("EQ_readPoint_extension", Document.class),
+						EQ_readPoint_extension);
+				continue;
 			}
 
 			if (GT_readPoint_extension != null) {
-				doc.put("GT_readPoint_extension", GT_readPoint_extension);
+				GT_readPoint_extension = getQueryStringObjectMap(query.get("GT_readPoint_extension", Document.class),
+						GT_readPoint_extension);
+				continue;
 			}
 
 			if (GE_readPoint_extension != null) {
-				doc.put("GE_readPoint_extension", GE_readPoint_extension);
+				GE_readPoint_extension = getQueryStringObjectMap(query.get("GE_readPoint_extension", Document.class),
+						GE_readPoint_extension);
+				continue;
 			}
 
 			if (LT_readPoint_extension != null) {
-				doc.put("LT_readPoint_extension", LT_readPoint_extension);
+				LT_readPoint_extension = getQueryStringObjectMap(query.get("LT_readPoint_extension", Document.class),
+						LT_readPoint_extension);
+				continue;
 			}
 
 			if (LE_readPoint_extension != null) {
-				doc.put("LE_readPoint_extension", LE_readPoint_extension);
+				LE_readPoint_extension = getQueryStringObjectMap(query.get("LE_readPoint_extension", Document.class),
+						LE_readPoint_extension);
+				continue;
 			}
 
 			if (EXISTS_readPoint_extension != null) {
-				doc.put("EXISTS_readPoint_extension", EXISTS_readPoint_extension);
+				EXISTS_readPoint_extension = query.getList("EXISTS_readPoint_extension", String.class);
+				continue;
 			}
 
 			if (EQ_bizLocation_extension != null) {
-				doc.put("EQ_bizLocation_extension", EQ_bizLocation_extension);
+				EQ_bizLocation_extension = getQueryStringObjectMap(
+						query.get("EQ_bizLocation_extension", Document.class), EQ_bizLocation_extension);
+				continue;
 			}
 
 			if (GT_bizLocation_extension != null) {
-				doc.put("GT_bizLocation_extension", GT_bizLocation_extension);
+				GT_bizLocation_extension = getQueryStringObjectMap(
+						query.get("GT_bizLocation_extension", Document.class), GT_bizLocation_extension);
+				continue;
 			}
 
 			if (GE_bizLocation_extension != null) {
-				doc.put("GE_bizLocation_extension", GE_bizLocation_extension);
+				GE_bizLocation_extension = getQueryStringObjectMap(
+						query.get("GE_bizLocation_extension", Document.class), GE_bizLocation_extension);
+				continue;
 			}
 
 			if (LT_bizLocation_extension != null) {
-				doc.put("LT_bizLocation_extension", LT_bizLocation_extension);
+				LT_bizLocation_extension = getQueryStringObjectMap(
+						query.get("LT_bizLocation_extension", Document.class), LT_bizLocation_extension);
+				continue;
 			}
 
 			if (LE_bizLocation_extension != null) {
-				doc.put("LE_bizLocation_extension", LE_bizLocation_extension);
+				LE_bizLocation_extension = getQueryStringObjectMap(
+						query.get("LE_bizLocation_extension", Document.class), LE_bizLocation_extension);
+				continue;
 			}
 
 			if (EXISTS_bizLocation_extension != null) {
-				doc.put("EXISTS_bizLocation_extension", EXISTS_bizLocation_extension);
+				EXISTS_bizLocation_extension = query.getList("EXISTS_bizLocation_extension", String.class);
+				continue;
 			}
 
 			if (EQ_ERROR_DECLARATION_extension != null) {
-				doc.put("EQ_ERROR_DECLARATION_extension", EQ_ERROR_DECLARATION_extension);
+				EQ_ERROR_DECLARATION_extension = getQueryStringObjectMap(
+						query.get("EQ_ERROR_DECLARATION_extension", Document.class), EQ_ERROR_DECLARATION_extension);
+				continue;
 			}
 
 			if (GT_ERROR_DECLARATION_extension != null) {
-				doc.put("GT_ERROR_DECLARATION_extension", GT_ERROR_DECLARATION_extension);
+				GT_ERROR_DECLARATION_extension = getQueryStringObjectMap(
+						query.get("GT_ERROR_DECLARATION_extension", Document.class), GT_ERROR_DECLARATION_extension);
+				continue;
 			}
 
 			if (GE_ERROR_DECLARATION_extension != null) {
-				doc.put("GE_ERROR_DECLARATION_extension", GE_ERROR_DECLARATION_extension);
+				GE_ERROR_DECLARATION_extension = getQueryStringObjectMap(
+						query.get("GE_ERROR_DECLARATION_extension", Document.class), GE_ERROR_DECLARATION_extension);
+				continue;
 			}
 
 			if (LT_ERROR_DECLARATION_extension != null) {
-				doc.put("LT_ERROR_DECLARATION_extension", LT_ERROR_DECLARATION_extension);
+				LT_ERROR_DECLARATION_extension = getQueryStringObjectMap(
+						query.get("LT_ERROR_DECLARATION_extension", Document.class), LT_ERROR_DECLARATION_extension);
+				continue;
 			}
 
 			if (LE_ERROR_DECLARATION_extension != null) {
-				doc.put("LE_ERROR_DECLARATION_extension", LE_ERROR_DECLARATION_extension);
+				LE_ERROR_DECLARATION_extension = getQueryStringObjectMap(
+						query.get("LE_ERROR_DECLARATION_extension", Document.class), LE_ERROR_DECLARATION_extension);
+				continue;
 			}
 
 			if (EXISTS_ERROR_DECLARATION_extension != null) {
-				doc.put("EXISTS_ERROR_DECLARATION_extension", EXISTS_ERROR_DECLARATION_extension);
+				EXISTS_ERROR_DECLARATION_extension = query.getList("EXISTS_ERROR_DECLARATION_extension", String.class);
+				continue;
 			}
 
 			if (EQ_extension != null) {
-				doc.put("EQ_extension", EQ_extension);
+				EQ_extension = getQueryStringObjectMap(query.get("EQ_extension", Document.class), EQ_extension);
+				continue;
 			}
 
 			if (GT_extension != null) {
-				doc.put("GT_extension", GT_extension);
+				GT_extension = getQueryStringObjectMap(query.get("GT_extension", Document.class), GT_extension);
+				continue;
 			}
 
 			if (GE_extension != null) {
-				doc.put("GE_extension", GE_extension);
+				GE_extension = getQueryStringObjectMap(query.get("GE_extension", Document.class), GE_extension);
+				continue;
 			}
 
 			if (LT_extension != null) {
-				doc.put("LT_extension", LT_extension);
+				LT_extension = getQueryStringObjectMap(query.get("LT_extension", Document.class), LT_extension);
+				continue;
 			}
 
 			if (LE_extension != null) {
-				doc.put("LE_extension", LE_extension);
+				LE_extension = getQueryStringObjectMap(query.get("LE_extension", Document.class), LE_extension);
+				continue;
 			}
 
 			if (EXISTS_extension != null) {
-				doc.put("EXISTS_extension", EXISTS_extension);
+				EXISTS_extension = query.getList("EXISTS_extension", String.class);
+				continue;
 			}
 
 			if (EQ_type != null) {
+				// TODO
 				doc.put("EQ_type", EQ_type);
 			}
 
 			if (EQ_value != null) {
+				// TODO
 				doc.put("EQ_value", EQ_value.toMongoDocument());
 			}
 
 			if (GT_value != null) {
+				// TODO
 				doc.put("GT_value", GT_value.toMongoDocument());
 			}
 
 			if (GE_value != null) {
+				// TODO
 				doc.put("GE_value", GE_value.toMongoDocument());
 			}
 
 			if (LT_value != null) {
+				// TODO
 				doc.put("LT_value", LT_value.toMongoDocument());
 			}
 
 			if (LE_value != null) {
+				// TODO
 				doc.put("LE_value", LE_value.toMongoDocument());
 			}
 
 			if (EQ_minValue != null) {
+				// TODO
 				doc.put("EQ_minValue", EQ_minValue.toMongoDocument());
 			}
 
 			if (GT_minValue != null) {
+				// TODO
 				doc.put("GT_minValue", GT_minValue.toMongoDocument());
 			}
 
 			if (GE_minValue != null) {
+				// TODO
 				doc.put("GE_minValue", GE_minValue.toMongoDocument());
 			}
 
 			if (LT_minValue != null) {
+				// TODO
 				doc.put("LT_minValue", LT_minValue.toMongoDocument());
 			}
 
 			if (LE_minValue != null) {
+				// TODO
 				doc.put("LE_minValue", LE_minValue.toMongoDocument());
 			}
 
 			if (EQ_maxValue != null) {
+				// TODO
 				doc.put("EQ_maxValue", EQ_maxValue.toMongoDocument());
 			}
 
 			if (GT_maxValue != null) {
+				// TODO
 				doc.put("GT_maxValue", GT_maxValue.toMongoDocument());
 			}
 
 			if (GE_maxValue != null) {
+				// TODO
 				doc.put("GE_maxValue", GE_maxValue.toMongoDocument());
 			}
 
 			if (LT_maxValue != null) {
+				// TODO
 				doc.put("LT_maxValue", LT_maxValue.toMongoDocument());
 			}
 
 			if (LE_maxValue != null) {
+				// TODO
 				doc.put("LE_maxValue", LE_maxValue.toMongoDocument());
 			}
 
 			if (EQ_meanValue != null) {
+				// TODO
 				doc.put("EQ_meanValue", EQ_meanValue.toMongoDocument());
 			}
 
 			if (GT_meanValue != null) {
+				// TODO
 				doc.put("GT_meanValue", GT_meanValue.toMongoDocument());
 			}
 
 			if (GE_meanValue != null) {
+				// TODO
 				doc.put("GE_meanValue", GE_meanValue.toMongoDocument());
 			}
 
 			if (LT_meanValue != null) {
+				// TODO
 				doc.put("LT_meanValue", LT_meanValue.toMongoDocument());
 			}
 
 			if (LE_meanValue != null) {
+				// TODO
 				doc.put("LE_meanValue", LE_meanValue.toMongoDocument());
 			}
 
 			if (EQ_sDev != null) {
+				// TODO
 				doc.put("EQ_sDev", EQ_sDev.toMongoDocument());
 			}
 
 			if (GT_sDev != null) {
+				// TODO
 				doc.put("GT_sDev", GT_sDev.toMongoDocument());
 			}
 
 			if (GE_sDev != null) {
+				// TODO
 				doc.put("GE_sDev", GE_sDev.toMongoDocument());
 			}
 
 			if (LT_sDev != null) {
+				// TODO
 				doc.put("LT_sDev", LT_sDev.toMongoDocument());
 			}
 
 			if (LE_sDev != null) {
+				// TODO
 				doc.put("LE_sDev", LE_sDev.toMongoDocument());
 			}
 
 			if (EQ_percValue != null) {
+				// TODO
 				doc.put("EQ_percValue", EQ_percValue.toMongoDocument());
 			}
 
 			if (GT_percValue != null) {
+				// TODO
 				doc.put("GT_percValue", GT_percValue.toMongoDocument());
 			}
 
 			if (GE_percValue != null) {
+				// TODO
 				doc.put("GE_percValue", GE_percValue.toMongoDocument());
 			}
 
 			if (LT_percValue != null) {
+				// TODO
 				doc.put("LT_percValue", LT_percValue.toMongoDocument());
 			}
 
 			if (LE_percValue != null) {
+				// TODO
 				doc.put("LE_percValue", LE_percValue.toMongoDocument());
 			}
 
 			if (WD_readPoint != null) {
+				// TODO
 				doc.put("WD_readPoint", WD_readPoint);
 			}
 
 			if (WD_bizLocation != null) {
+				// TODO
 				doc.put("WD_bizLocation", WD_bizLocation);
 			}
 
 			if (HASATTR != null) {
+				// TODO
 				doc.put("HASATTR", HASATTR);
 			}
 
 			if (EQ_ATTR != null) {
+				// TODO
 				doc.put("EQ_ATTR", EQ_ATTR);
 			}
 
 		}
+
 	}
 
 	public Document getMongoQueryParameter() {
