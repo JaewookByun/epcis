@@ -3794,6 +3794,29 @@ public class TriggerDescription {
 		}
 		return query;
 	}
+	
+	public HashMap<String, HashMap<String, List<String>>> getQueryStringStringListOfStringMap(Document obj,
+			HashMap<String, HashMap<String, List<String>>> query) {
+		if (query == null)
+			query = new HashMap<String, HashMap<String, List<String>>>();
+		for (String tKey : obj.keySet()) {
+			Document tValue = obj.get(tKey, Document.class);
+			HashMap<String, List<String>> v = query.get(tKey);
+			if (v == null)
+				v = new HashMap<String, List<String>>();
+			
+			for(String ttKey : tValue.keySet()) {
+				List<String> ttValue = tValue.getList(ttKey, String.class);
+				List<String> vv = v.get(ttKey);
+				if(vv == null)
+					vv = new ArrayList<String>();
+				vv.addAll(ttValue);
+				v.put(ttKey, vv);
+			}			
+			query.put(tKey, v);
+		}
+		return query;
+	}
 
 	public TriggerDescription(Document doc) throws QueryParameterException {
 		this.unmarshaller = SOAPQueryService.soapQueryUnmarshaller;
@@ -4719,18 +4742,18 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (HASATTR != null) {
-				// TODO
-				doc.put("HASATTR", HASATTR);
+			if (queryKey.equals("HASATTR")) {		
+				HASATTR = getQueryStringListOfStringMap(query.get("HASATTR", Document.class),
+						HASATTR);
+				continue;
 			}
 
-			if (EQ_ATTR != null) {
-				// TODO
-				doc.put("EQ_ATTR", EQ_ATTR);
+			if (queryKey.equals("EQ_ATTR")) {
+				EQ_ATTR = getQueryStringStringListOfStringMap(query.get("EQ_ATTR", Document.class),
+						EQ_ATTR);
+				continue;
 			}
-
 		}
-
 	}
 
 	public Document getMongoQueryParameter() {
