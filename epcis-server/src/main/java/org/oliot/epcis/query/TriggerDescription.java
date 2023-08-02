@@ -4634,29 +4634,29 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_meanValue != null) {
-				// TODO
-				doc.put("EQ_meanValue", EQ_meanValue.toMongoDocument());
+			if (queryKey.equals("EQ_meanValue")) {
+				EQ_meanValue = getSensorUomValue(query.get("EQ_meanValue", Document.class), EQ_meanValue);
+				continue;
 			}
 
-			if (GT_meanValue != null) {
-				// TODO
-				doc.put("GT_meanValue", GT_meanValue.toMongoDocument());
+			if (queryKey.equals("GT_meanValue")) {
+				GT_meanValue = getSensorUomValue(query.get("GT_meanValue", Document.class), GT_meanValue);
+				continue;
 			}
 
-			if (GE_meanValue != null) {
-				// TODO
-				doc.put("GE_meanValue", GE_meanValue.toMongoDocument());
+			if (queryKey.equals("GE_meanValue")) {
+				GE_meanValue = getSensorUomValue(query.get("GE_meanValue", Document.class), GE_meanValue);
+				continue;
 			}
 
-			if (LT_meanValue != null) {
-				// TODO
-				doc.put("LT_meanValue", LT_meanValue.toMongoDocument());
+			if (queryKey.equals("LT_meanValue")) {
+				LT_meanValue = getSensorUomValue(query.get("LT_meanValue", Document.class), LT_meanValue);
+				continue;
 			}
 
-			if (LE_meanValue != null) {
-				// TODO
-				doc.put("LE_meanValue", LE_meanValue.toMongoDocument());
+			if (queryKey.equals("LE_meanValue")) {
+				LE_meanValue = getSensorUomValue(query.get("LE_meanValue", Document.class), LE_meanValue);
+				continue;
 			}
 
 			if (EQ_sDev != null) {
