@@ -4709,14 +4709,14 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (WD_readPoint != null) {
-				// TODO
-				doc.put("WD_readPoint", WD_readPoint);
+			if (queryKey.equals("WD_readPoint")) {
+				WD_readPoint = query.getList("WD_readPoint", String.class);
+				continue;
 			}
 
-			if (WD_bizLocation != null) {
-				// TODO
-				doc.put("WD_bizLocation", WD_bizLocation);
+			if (queryKey.equals("WD_bizLocation")) {
+				WD_bizLocation = query.getList("WD_bizLocation", String.class);
+				continue;
 			}
 
 			if (HASATTR != null) {
