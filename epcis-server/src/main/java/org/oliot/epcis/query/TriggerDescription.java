@@ -3771,6 +3771,12 @@ public class TriggerDescription {
 		}
 		return query;
 	}
+	
+	public SensorUomValue getSensorUomValue(Document obj, SensorUomValue query) {
+		String uom = obj.getString("uom");
+		Double value = obj.getDouble("value");
+		return new SensorUomValue(uom, value);
+	}
 
 	public HashMap<String, List<String>> getQueryStringListOfStringMap(Document obj,
 			HashMap<String, List<String>> query) {
@@ -4548,34 +4554,34 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_type != null) {			
+			if (queryKey.equals("EQ_type")) {			
 				EQ_type = query.getList("EQ_type", String.class);
 				continue;
 			}
 
-			if (EQ_value != null) {
-				// TODO
-				doc.put("EQ_value", EQ_value.toMongoDocument());
+			if (queryKey.equals("EQ_value")) {
+				EQ_value = getSensorUomValue(query.get("EQ_value", Document.class), EQ_value);
+				continue;
 			}
 
-			if (GT_value != null) {
-				// TODO
-				doc.put("GT_value", GT_value.toMongoDocument());
+			if (queryKey.equals("GT_value")) {
+				GT_value = getSensorUomValue(query.get("GT_value", Document.class), GT_value);
+				continue;
 			}
 
-			if (GE_value != null) {
-				// TODO
-				doc.put("GE_value", GE_value.toMongoDocument());
+			if (queryKey.equals("GE_value")) {
+				GE_value = getSensorUomValue(query.get("GE_value", Document.class), GE_value);
+				continue;
 			}
 
-			if (LT_value != null) {
-				// TODO
-				doc.put("LT_value", LT_value.toMongoDocument());
+			if (queryKey.equals("LT_value")) {
+				LT_value = getSensorUomValue(query.get("LT_value", Document.class), LT_value);
+				continue;
 			}
 
-			if (LE_value != null) {
-				// TODO
-				doc.put("LE_value", LE_value.toMongoDocument());
+			if (queryKey.equals("LE_value")) {
+				LE_value = getSensorUomValue(query.get("LE_value", Document.class), LE_value);
+				continue;
 			}
 
 			if (EQ_minValue != null) {
