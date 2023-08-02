@@ -1,7 +1,9 @@
-package org.oliot.epcis.capture.xml;
+package org.oliot.epcis.capture.json;
 
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
+
+import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.server.EPCISServer;
@@ -26,7 +28,7 @@ import static org.oliot.epcis.validation.HeaderValidator.isEqualHeader;
  *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
  *         bjw0829@gmail.com
  */
-public class XMLCaptureServiceHandler {
+public class JSONCaptureServiceHandler {
 
 	/**
 	 * EPCIS events are added in bulk using the capture interface. Four design
@@ -46,13 +48,13 @@ public class XMLCaptureServiceHandler {
 	 * client can use to obtain information about the capture job.\n"
 	 *
 	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
+	 * @param jsonCaptureService xmlCaptureService
 	 * @param eventBus          eventBus
 	 */
 	public static void registerPostCaptureHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
 
-		router.post("/epcis/capture").consumes("application/xml").handler(routingContext -> {
+		router.post("/epcis/capture").consumes("application/json").handler(routingContext -> {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
 				return;
 			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
@@ -62,7 +64,7 @@ public class XMLCaptureServiceHandler {
 
 			xmlCaptureService.post(routingContext, eventBus);
 		});
-		EPCISServer.logger.info("[POST /epcis/capture (application/xml)] - router added");
+		EPCISServer.logger.info("[POST /epcis/capture] - router added");
 	}
 
 	/**
@@ -76,6 +78,7 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerGetCaptureHandler(Router router, XMLCaptureService xmlCaptureService) {
+		// TODO
 		router.get("/epcis/capture").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
@@ -87,7 +90,7 @@ public class XMLCaptureServiceHandler {
 				xmlCaptureService.postRemainingCaptureJobList(routingContext, nextPageToken);
 			}
 		});
-		EPCISServer.logger.info("[GET /epcis/capture (application/xml)] - router added");
+		EPCISServer.logger.info("[GET /epcis/capture] - router added");
 	}
 
 	/**
@@ -97,12 +100,13 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerGetCaptureIDHandler(Router router, XMLCaptureService xmlCaptureService) {
+		// TODO
 		router.get("/epcis/capture/:captureID").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
 			xmlCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
 		});
-		EPCISServer.logger.info("[GET /epcis/capture/:captureID (application/xml)] - router added");
+		EPCISServer.logger.info("[GET /epcis/capture/:captureID] - router added");
 	}
 
 	/**
@@ -116,6 +120,7 @@ public class XMLCaptureServiceHandler {
 	 */
 	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
+		// TODO
 		router.post("/epcis/events").consumes("*/xml").blockingHandler(routingContext -> {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
 				return;
@@ -123,7 +128,7 @@ public class XMLCaptureServiceHandler {
 				return;
 			xmlCaptureService.postEvent(routingContext, eventBus);
 		});
-		EPCISServer.logger.info("[POST /epcis/events (application/xml)] - router added");
+		EPCISServer.logger.info("[POST /epcis/events] - router added");
 	}
 
 	/**
@@ -133,6 +138,7 @@ public class XMLCaptureServiceHandler {
 	 * @param router
 	 */
 	public static void registerDeletePageToken(Router router) {
+		// TODO
 		router.delete("/epcis/nextPageToken/:token").handler(routingContext -> {
 			UUID uuid = UUID.fromString(routingContext.pathParam("token"));
 			Page page = EPCISServer.captureIDPageMap.remove(uuid);
@@ -148,7 +154,7 @@ public class XMLCaptureServiceHandler {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 			}
 		});
-		EPCISServer.logger.info("[DELETE /nextPageToken/:token (application/xml)] - router added");
+		EPCISServer.logger.info("[DELETE /nextPageToken/:token] - router added");
 	}
 
 	/**
@@ -158,9 +164,21 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerValidationHandler(Router router, XMLCaptureService xmlCaptureService) {
+		// TODO
 		router.post("/epcis/validation").consumes("*/xml").handler(xmlCaptureService::postValidationResult);
 		EPCISServer.logger.info("[GET /epcis/validation] - router added");
 	}
 
-	
+	/**
+	 * non-standard service to provide 'ping'
+	 *
+	 * @param router router
+	 */
+	public static void registerPingHandler(Router router) {
+		// TODO
+		router.get("/epcis").handler(routingContext -> {
+			routingContext.response().setStatusCode(200).end();
+		});
+		EPCISServer.logger.info("[GET /epcis] - router added");
+	}
 }

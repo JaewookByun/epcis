@@ -130,4 +130,16 @@ public class CaptureMetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events] - router added");
 	}
+	
+	/**
+	 * non-standard service to provide 'ping'
+	 *
+	 * @param router router
+	 */
+	public static void registerPingHandler(Router router) {
+		router.get("/epcis").handler(routingContext -> {
+			routingContext.response().setStatusCode(200).end();
+		});
+		EPCISServer.logger.info("[GET /epcis] - router added");
+	}
 }

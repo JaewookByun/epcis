@@ -114,6 +114,7 @@ public class EPCISServer extends AbstractVerticle {
 		CaptureMetadataHandler.registerCaptureHandler(router);
 		CaptureMetadataHandler.registerCaptureIDHandler(router);
 		CaptureMetadataHandler.registerEventsHandler(router);
+		CaptureMetadataHandler.registerPingHandler(router);
 
 		TransactionManager.registerTransactionStartHandler(eventBus);
 		TransactionManager.registerTransactionSuccessHandler(eventBus);
@@ -128,7 +129,6 @@ public class EPCISServer extends AbstractVerticle {
 		XMLCaptureServiceHandler.registerGetCaptureHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerDeletePageToken(router);
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);
-		XMLCaptureServiceHandler.registerPingHandler(router);
 	}
 
 	private void loadStaticResponses() {
