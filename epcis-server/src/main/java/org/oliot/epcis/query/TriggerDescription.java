@@ -4684,29 +4684,29 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_percValue != null) {
-				// TODO
-				doc.put("EQ_percValue", EQ_percValue.toMongoDocument());
+			if (queryKey.equals("EQ_percValue")) {
+				EQ_percValue = getSensorUomValue(query.get("EQ_percValue", Document.class), EQ_percValue);
+				continue;
 			}
 
-			if (GT_percValue != null) {
-				// TODO
-				doc.put("GT_percValue", GT_percValue.toMongoDocument());
+			if (queryKey.equals("GT_percValue")) {
+				GT_percValue = getSensorUomValue(query.get("GT_percValue", Document.class), GT_percValue);
+				continue;
 			}
 
-			if (GE_percValue != null) {
-				// TODO
-				doc.put("GE_percValue", GE_percValue.toMongoDocument());
+			if (queryKey.equals("GE_percValue")) {
+				GE_percValue = getSensorUomValue(query.get("GE_percValue", Document.class), GE_percValue);
+				continue;
 			}
 
-			if (LT_percValue != null) {
-				// TODO
-				doc.put("LT_percValue", LT_percValue.toMongoDocument());
+			if (queryKey.equals("LT_percValue")) {
+				LT_percValue = getSensorUomValue(query.get("LT_percValue", Document.class), LT_percValue);
+				continue;
 			}
 
-			if (LE_percValue != null) {
-				// TODO
-				doc.put("LE_percValue", LE_percValue.toMongoDocument());
+			if (queryKey.equals("LE_percValue")) {
+				LE_percValue = getSensorUomValue(query.get("LE_percValue", Document.class), LE_percValue);
+				continue;
 			}
 
 			if (WD_readPoint != null) {
