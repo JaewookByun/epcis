@@ -4584,29 +4584,29 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_minValue != null) {
-				// TODO
-				doc.put("EQ_minValue", EQ_minValue.toMongoDocument());
+			if (queryKey.equals("EQ_minValue")) {
+				EQ_minValue = getSensorUomValue(query.get("EQ_minValue", Document.class), EQ_minValue);
+				continue;
 			}
 
-			if (GT_minValue != null) {
-				// TODO
-				doc.put("GT_minValue", GT_minValue.toMongoDocument());
+			if (queryKey.equals("GT_minValue")) {
+				GT_minValue = getSensorUomValue(query.get("GT_minValue", Document.class), GT_minValue);
+				continue;
 			}
 
-			if (GE_minValue != null) {
-				// TODO
-				doc.put("GE_minValue", GE_minValue.toMongoDocument());
+			if (queryKey.equals("GE_minValue")) {
+				GE_minValue = getSensorUomValue(query.get("GE_minValue", Document.class), GE_minValue);
+				continue;
 			}
 
-			if (LT_minValue != null) {
-				// TODO
-				doc.put("LT_minValue", LT_minValue.toMongoDocument());
+			if (queryKey.equals("LT_minValue")) {
+				LT_minValue = getSensorUomValue(query.get("LT_minValue", Document.class), LT_minValue);
+				continue;
 			}
 
-			if (LE_minValue != null) {
-				// TODO
-				doc.put("LE_minValue", LE_minValue.toMongoDocument());
+			if (queryKey.equals("LE_minValue")) {
+				LE_minValue = getSensorUomValue(query.get("LE_minValue", Document.class), LE_minValue);
+				continue;
 			}
 
 			if (EQ_maxValue != null) {
