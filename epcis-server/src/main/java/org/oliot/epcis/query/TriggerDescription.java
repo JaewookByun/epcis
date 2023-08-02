@@ -3772,6 +3772,23 @@ public class TriggerDescription {
 		return query;
 	}
 
+	public HashMap<String, List<String>> getQueryStringListOfStringMap(Document obj,
+			HashMap<String, List<String>> query) {
+		if (query == null)
+			query = new HashMap<String, List<String>>();
+		for (String tKey : obj.keySet()) {
+			List<String> tValue = obj.getList(tKey, String.class);
+
+			List<String> v = query.get(tKey);
+			if (v == null)
+				v = new ArrayList<String>();
+			v.addAll(tValue);
+			query.put(tKey, v);
+
+		}
+		return query;
+	}
+
 	public TriggerDescription(Document doc) throws QueryParameterException {
 		this.unmarshaller = SOAPQueryService.soapQueryUnmarshaller;
 
@@ -4172,365 +4189,368 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_INNER_readPoint != null) {
+			if (queryKey.equals("EQ_INNER_readPoint")) {
 				EQ_INNER_readPoint = getQueryStringObjectMap(query.get("EQ_INNER_readPoint", Document.class),
 						EQ_INNER_readPoint);
 				continue;
 			}
 
-			if (GT_INNER_readPoint != null) {
+			if (queryKey.equals("GT_INNER_readPoint")) {
 				GT_INNER_readPoint = getQueryStringObjectMap(query.get("GT_INNER_readPoint", Document.class),
 						GT_INNER_readPoint);
 				continue;
 			}
 
-			if (GE_INNER_readPoint != null) {
+			if (queryKey.equals("GE_INNER_readPoint")) {
 				GE_INNER_readPoint = getQueryStringObjectMap(query.get("GE_INNER_readPoint", Document.class),
 						GE_INNER_readPoint);
 				continue;
 			}
 
-			if (LT_INNER_readPoint != null) {
+			if (queryKey.equals("LT_INNER_readPoint")) {
 				LT_INNER_readPoint = getQueryStringObjectMap(query.get("LT_INNER_readPoint", Document.class),
 						LT_INNER_readPoint);
 				continue;
 			}
 
-			if (LE_INNER_readPoint != null) {
+			if (queryKey.equals("LE_INNER_readPoint")) {
 				LE_INNER_readPoint = getQueryStringObjectMap(query.get("LE_INNER_readPoint", Document.class),
 						LE_INNER_readPoint);
 				continue;
 			}
 
-			if (EXISTS_INNER_readPoint != null) {
+			if (queryKey.equals("EXISTS_INNER_readPoint")) {
 				EXISTS_INNER_readPoint = query.getList("EXISTS_INNER_readPoint", String.class);
 				continue;
 
 			}
 
-			if (EQ_INNER_bizLocation != null) {
+			if (queryKey.equals("EQ_INNER_bizLocation")) {
 				EQ_INNER_bizLocation = getQueryStringObjectMap(query.get("EQ_INNER_bizLocation", Document.class),
 						EQ_INNER_bizLocation);
 				continue;
 			}
 
-			if (GT_INNER_bizLocation != null) {
+			if (queryKey.equals("GT_INNER_bizLocation")) {
 				GT_INNER_bizLocation = getQueryStringObjectMap(query.get("GT_INNER_bizLocation", Document.class),
 						GT_INNER_bizLocation);
 				continue;
 			}
 
-			if (GE_INNER_bizLocation != null) {
+			if (queryKey.equals("GE_INNER_bizLocation")) {
 				GE_INNER_bizLocation = getQueryStringObjectMap(query.get("GE_INNER_bizLocation", Document.class),
 						GE_INNER_bizLocation);
 				continue;
 			}
 
-			if (LT_INNER_bizLocation != null) {
+			if (queryKey.equals("LT_INNER_bizLocation")) {
 				LT_INNER_bizLocation = getQueryStringObjectMap(query.get("LT_INNER_bizLocation", Document.class),
 						LT_INNER_bizLocation);
 				continue;
 			}
 
-			if (LE_INNER_bizLocation != null) {
+			if (queryKey.equals("LE_INNER_bizLocation")) {
 				LE_INNER_bizLocation = getQueryStringObjectMap(query.get("LE_INNER_bizLocation", Document.class),
 						LE_INNER_bizLocation);
 				continue;
 			}
 
-			if (EXISTS_INNER_bizLocation != null) {
+			if (queryKey.equals("EXISTS_INNER_bizLocation")) {
 				EXISTS_INNER_bizLocation = query.getList("EXISTS_INNER_bizLocation", String.class);
 				continue;
 			}
 
-			if (EQ_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("EQ_INNER_ERROR_DECLARATION")) {
 				EQ_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
 						query.get("EQ_INNER_ERROR_DECLARATION", Document.class), EQ_INNER_ERROR_DECLARATION);
 				continue;
 			}
 
-			if (GT_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("GT_INNER_ERROR_DECLARATION")) {
 				GT_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
 						query.get("GT_INNER_ERROR_DECLARATION", Document.class), GT_INNER_ERROR_DECLARATION);
 				continue;
 			}
 
-			if (GE_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("GE_INNER_ERROR_DECLARATION")) {
 				GE_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
 						query.get("GE_INNER_ERROR_DECLARATION", Document.class), GE_INNER_ERROR_DECLARATION);
 				continue;
 			}
 
-			if (LT_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("LT_INNER_ERROR_DECLARATION")) {
 				LT_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
 						query.get("LT_INNER_ERROR_DECLARATION", Document.class), LT_INNER_ERROR_DECLARATION);
 				continue;
 			}
 
-			if (LE_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("LE_INNER_ERROR_DECLARATION")) {
 				LE_INNER_ERROR_DECLARATION = getQueryStringObjectMap(
 						query.get("LE_INNER_ERROR_DECLARATION", Document.class), LE_INNER_ERROR_DECLARATION);
 				continue;
 			}
 
-			if (EXISTS_INNER_ERROR_DECLARATION != null) {
+			if (queryKey.equals("EXISTS_INNER_ERROR_DECLARATION")) {
 				EXISTS_INNER_ERROR_DECLARATION = query.getList("EXISTS_INNER_ERROR_DECLARATION", String.class);
 				continue;
 			}
 
-			if (EQ_INNER != null) {
+			if (queryKey.equals("EQ_INNER")) {
 				EQ_INNER = getQueryStringObjectMap(query.get("EQ_INNER", Document.class), EQ_INNER);
 				continue;
 			}
 
-			if (GT_INNER != null) {
+			if (queryKey.equals("GT_INNER")) {
 				GT_INNER = getQueryStringObjectMap(query.get("GT_INNER", Document.class), GT_INNER);
 				continue;
 			}
 
-			if (GE_INNER != null) {
+			if (queryKey.equals("GE_INNER")) {
 				GE_INNER = getQueryStringObjectMap(query.get("GE_INNER", Document.class), GE_INNER);
 				continue;
 			}
 
-			if (LT_INNER != null) {
+			if (queryKey.equals("LT_INNER")) {
 				LT_INNER = getQueryStringObjectMap(query.get("LT_INNER", Document.class), LT_INNER);
 				continue;
 			}
 
-			if (LE_INNER != null) {
+			if (queryKey.equals("LE_INNER")) {
 				LE_INNER = getQueryStringObjectMap(query.get("LE_INNER", Document.class), LE_INNER);
 				continue;
 			}
 
-			if (EXISTS_INNER != null) {
+			if (queryKey.equals("EXISTS_INNER")) {
 				EXISTS_INNER = query.getList("EXISTS_INNER", String.class);
 				continue;
 			}
 
-			if (EQ_ILMD != null) {
+			if (queryKey.equals("EQ_ILMD")) {
 				EQ_ILMD = getQueryStringObjectMap(query.get("EQ_ILMD", Document.class), EQ_ILMD);
 				continue;
 			}
 
-			if (GT_ILMD != null) {
+			if (queryKey.equals("GT_ILMD")) {
 				GT_ILMD = getQueryStringObjectMap(query.get("GT_ILMD", Document.class), GT_ILMD);
 				continue;
 			}
 
-			if (GE_ILMD != null) {
+			if (queryKey.equals("GE_ILMD")) {
 				GE_ILMD = getQueryStringObjectMap(query.get("GE_ILMD", Document.class), GE_ILMD);
 				continue;
 			}
 
-			if (LT_ILMD != null) {
+			if (queryKey.equals("LT_ILMD")) {
 				LT_ILMD = getQueryStringObjectMap(query.get("LT_ILMD", Document.class), LT_ILMD);
 				continue;
 			}
 
-			if (LE_ILMD != null) {
+			if (queryKey.equals("LE_ILMD")) {
 				LE_ILMD = getQueryStringObjectMap(query.get("LE_ILMD", Document.class), LE_ILMD);
 				continue;
 			}
 
-			if (EXISTS_ILMD != null) {
+			if (queryKey.equals("EXISTS_ILMD")) {
 				EXISTS_ILMD = query.getList("EXISTS_ILMD", String.class);
 				continue;
 			}
 
-			if (EQ_SENSORELEMENT != null) {
+			if (queryKey.equals("EQ_SENSORELEMENT")) {
 				EQ_SENSORELEMENT = getQueryStringObjectMap(query.get("EQ_SENSORELEMENT", Document.class),
 						EQ_SENSORELEMENT);
 				continue;
 			}
 
-			if (GT_SENSORELEMENT != null) {
+			if (queryKey.equals("GT_SENSORELEMENT")) {
 				GT_SENSORELEMENT = getQueryStringObjectMap(query.get("GT_SENSORELEMENT", Document.class),
 						GT_SENSORELEMENT);
 				continue;
 			}
 
-			if (GE_SENSORELEMENT != null) {
+			if (queryKey.equals("GE_SENSORELEMENT")) {
 				GE_SENSORELEMENT = getQueryStringObjectMap(query.get("GE_SENSORELEMENT", Document.class),
 						GE_SENSORELEMENT);
 				continue;
 			}
 
-			if (LT_SENSORELEMENT != null) {
+			if (queryKey.equals("LT_SENSORELEMENT")) {
 				LT_SENSORELEMENT = getQueryStringObjectMap(query.get("LT_SENSORELEMENT", Document.class),
 						LT_SENSORELEMENT);
 				continue;
 			}
 
-			if (LE_SENSORELEMENT != null) {
+			if (queryKey.equals("LE_SENSORELEMENT")) {
 				LE_SENSORELEMENT = getQueryStringObjectMap(query.get("LE_SENSORELEMENT", Document.class),
 						LE_SENSORELEMENT);
 				continue;
 			}
 
-			if (EXISTS_SENSORELEMENT != null) {
+			if (queryKey.equals("EXISTS_SENSORELEMENT")) {
 				EXISTS_SENSORELEMENT = query.getList("EXISTS_SENSORELEMENT", String.class);
 				continue;
 			}
 
-			if (EQ_SENSORMETADATA != null) {
-				// TODO
-				doc.put("EQ_SENSORMETADATA", EQ_SENSORMETADATA);
+			if (queryKey.equals("EQ_SENSORMETADATA")) {
+				EQ_SENSORMETADATA = getQueryStringListOfStringMap(query.get("EQ_SENSORMETADATA", Document.class),
+						EQ_SENSORMETADATA);
+				continue;
+
 			}
 
-			if (EQ_SENSORREPORT != null) {
-				// TODO
-				doc.put("EQ_SENSORREPORT", EQ_SENSORREPORT);
+			if (queryKey.equals("EQ_SENSORREPORT")) {
+				EQ_SENSORREPORT = getQueryStringListOfStringMap(query.get("EQ_SENSORREPORT", Document.class),
+						EQ_SENSORREPORT);
+				continue;
 			}
 
-			if (EXISTS_SENSORMETADATA != null) {			
+			if (queryKey.equals("EXISTS_SENSORMETADATA")) {
 				EXISTS_SENSORMETADATA = new VoidHolder();
 				continue;
 			}
 
-			if (EXISTS_SENSORREPORT != null) {
+			if (queryKey.equals("EXISTS_SENSORREPORT")) {
 				EXISTS_SENSORREPORT = new VoidHolder();
 				continue;
 			}
 
-			if (EQ_readPoint_extension != null) {
+			if (queryKey.equals("EQ_readPoint_extension")) {
 				EQ_readPoint_extension = getQueryStringObjectMap(query.get("EQ_readPoint_extension", Document.class),
 						EQ_readPoint_extension);
 				continue;
 			}
 
-			if (GT_readPoint_extension != null) {
+			if (queryKey.equals("GT_readPoint_extension")) {
 				GT_readPoint_extension = getQueryStringObjectMap(query.get("GT_readPoint_extension", Document.class),
 						GT_readPoint_extension);
 				continue;
 			}
 
-			if (GE_readPoint_extension != null) {
+			if (queryKey.equals("GE_readPoint_extension")) {
 				GE_readPoint_extension = getQueryStringObjectMap(query.get("GE_readPoint_extension", Document.class),
 						GE_readPoint_extension);
 				continue;
 			}
 
-			if (LT_readPoint_extension != null) {
+			if (queryKey.equals("LT_readPoint_extension")) {
 				LT_readPoint_extension = getQueryStringObjectMap(query.get("LT_readPoint_extension", Document.class),
 						LT_readPoint_extension);
 				continue;
 			}
 
-			if (LE_readPoint_extension != null) {
+			if (queryKey.equals("LE_readPoint_extension")) {
 				LE_readPoint_extension = getQueryStringObjectMap(query.get("LE_readPoint_extension", Document.class),
 						LE_readPoint_extension);
 				continue;
 			}
 
-			if (EXISTS_readPoint_extension != null) {
+			if (queryKey.equals("EXISTS_readPoint_extension")) {
 				EXISTS_readPoint_extension = query.getList("EXISTS_readPoint_extension", String.class);
 				continue;
 			}
 
-			if (EQ_bizLocation_extension != null) {
+			if (queryKey.equals("EQ_bizLocation_extension")) {
 				EQ_bizLocation_extension = getQueryStringObjectMap(
 						query.get("EQ_bizLocation_extension", Document.class), EQ_bizLocation_extension);
 				continue;
 			}
 
-			if (GT_bizLocation_extension != null) {
+			if (queryKey.equals("GT_bizLocation_extension")) {
 				GT_bizLocation_extension = getQueryStringObjectMap(
 						query.get("GT_bizLocation_extension", Document.class), GT_bizLocation_extension);
 				continue;
 			}
 
-			if (GE_bizLocation_extension != null) {
+			if (queryKey.equals("GE_bizLocation_extension")) {
 				GE_bizLocation_extension = getQueryStringObjectMap(
 						query.get("GE_bizLocation_extension", Document.class), GE_bizLocation_extension);
 				continue;
 			}
 
-			if (LT_bizLocation_extension != null) {
+			if (queryKey.equals("LT_bizLocation_extension")) {
 				LT_bizLocation_extension = getQueryStringObjectMap(
 						query.get("LT_bizLocation_extension", Document.class), LT_bizLocation_extension);
 				continue;
 			}
 
-			if (LE_bizLocation_extension != null) {
+			if (queryKey.equals("LE_bizLocation_extension")) {
 				LE_bizLocation_extension = getQueryStringObjectMap(
 						query.get("LE_bizLocation_extension", Document.class), LE_bizLocation_extension);
 				continue;
 			}
 
-			if (EXISTS_bizLocation_extension != null) {
+			if (queryKey.equals("EXISTS_bizLocation_extension")) {
 				EXISTS_bizLocation_extension = query.getList("EXISTS_bizLocation_extension", String.class);
 				continue;
 			}
 
-			if (EQ_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("EQ_ERROR_DECLARATION_extension")) {
 				EQ_ERROR_DECLARATION_extension = getQueryStringObjectMap(
 						query.get("EQ_ERROR_DECLARATION_extension", Document.class), EQ_ERROR_DECLARATION_extension);
 				continue;
 			}
 
-			if (GT_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("GT_ERROR_DECLARATION_extension")) {
 				GT_ERROR_DECLARATION_extension = getQueryStringObjectMap(
 						query.get("GT_ERROR_DECLARATION_extension", Document.class), GT_ERROR_DECLARATION_extension);
 				continue;
 			}
 
-			if (GE_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("GE_ERROR_DECLARATION_extension")) {
 				GE_ERROR_DECLARATION_extension = getQueryStringObjectMap(
 						query.get("GE_ERROR_DECLARATION_extension", Document.class), GE_ERROR_DECLARATION_extension);
 				continue;
 			}
 
-			if (LT_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("LT_ERROR_DECLARATION_extension")) {
 				LT_ERROR_DECLARATION_extension = getQueryStringObjectMap(
 						query.get("LT_ERROR_DECLARATION_extension", Document.class), LT_ERROR_DECLARATION_extension);
 				continue;
 			}
 
-			if (LE_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("LE_ERROR_DECLARATION_extension")) {
 				LE_ERROR_DECLARATION_extension = getQueryStringObjectMap(
 						query.get("LE_ERROR_DECLARATION_extension", Document.class), LE_ERROR_DECLARATION_extension);
 				continue;
 			}
 
-			if (EXISTS_ERROR_DECLARATION_extension != null) {
+			if (queryKey.equals("EXISTS_ERROR_DECLARATION_extension")) {
 				EXISTS_ERROR_DECLARATION_extension = query.getList("EXISTS_ERROR_DECLARATION_extension", String.class);
 				continue;
 			}
 
-			if (EQ_extension != null) {
+			if (queryKey.equals("EQ_extension")) {
 				EQ_extension = getQueryStringObjectMap(query.get("EQ_extension", Document.class), EQ_extension);
 				continue;
 			}
 
-			if (GT_extension != null) {
+			if (queryKey.equals("GT_extension")) {
 				GT_extension = getQueryStringObjectMap(query.get("GT_extension", Document.class), GT_extension);
 				continue;
 			}
 
-			if (GE_extension != null) {
+			if (queryKey.equals("GE_extension")) {
 				GE_extension = getQueryStringObjectMap(query.get("GE_extension", Document.class), GE_extension);
 				continue;
 			}
 
-			if (LT_extension != null) {
+			if (queryKey.equals("LT_extension")) {
 				LT_extension = getQueryStringObjectMap(query.get("LT_extension", Document.class), LT_extension);
 				continue;
 			}
 
-			if (LE_extension != null) {
+			if (queryKey.equals("LE_extension")) {
 				LE_extension = getQueryStringObjectMap(query.get("LE_extension", Document.class), LE_extension);
 				continue;
 			}
 
-			if (EXISTS_extension != null) {
+			if (queryKey.equals("EXISTS_extension")) {
 				EXISTS_extension = query.getList("EXISTS_extension", String.class);
 				continue;
 			}
 
-			if (EQ_type != null) {
-				// TODO
-				doc.put("EQ_type", EQ_type);
+			if (EQ_type != null) {			
+				EQ_type = query.getList("EQ_type", String.class);
+				continue;
 			}
 
 			if (EQ_value != null) {
