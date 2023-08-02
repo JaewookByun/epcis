@@ -18,6 +18,7 @@ import io.vertx.ext.web.RoutingContext;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.pojo_to_bson.AggregationEventConverter;
 import org.oliot.epcis.converter.data.pojo_to_bson.AssociationEventConverter;

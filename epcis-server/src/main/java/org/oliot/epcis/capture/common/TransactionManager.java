@@ -1,4 +1,4 @@
-package org.oliot.epcis.capture.xml;
+package org.oliot.epcis.capture.common;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.result.InsertOneResult;

@@ -1,4 +1,4 @@
-package org.oliot.epcis.capture.xml;
+package org.oliot.epcis.capture.common;
 
 import io.vertx.ext.web.Router;
 import org.bson.Document;
@@ -27,7 +27,7 @@ import java.util.List;
  *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
  *         bjw0829@gmail.com
  */
-public class XMLCaptureMetadataHandler {
+public class CaptureMetadataHandler {
 
 	public static void registerBaseHandler(Router router) {
 		// Query server settings, EPCIS version(s) and related vocabularies/standards.

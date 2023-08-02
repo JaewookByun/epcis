@@ -1,4 +1,4 @@
-package org.oliot.epcis.capture.xml;
+package org.oliot.epcis.capture.common;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

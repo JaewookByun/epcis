@@ -15,8 +15,8 @@ import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
-import org.oliot.epcis.capture.xml.TransactionManager;
-import org.oliot.epcis.capture.xml.XMLCaptureMetadataHandler;
+import org.oliot.epcis.capture.common.CaptureMetadataHandler;
+import org.oliot.epcis.capture.common.TransactionManager;
 import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.capture.xml.XMLCaptureServiceHandler;
 import org.oliot.epcis.converter.unit.UnitConverter;
@@ -92,6 +92,7 @@ public class EPCISServer extends AbstractVerticle {
 		setRouter(router);
 		loadStaticResponses();
 
+		registerCaptureServiceHandler(router, eventBus);
 		registerXMLCaptureServiceHandler(router, eventBus);
 		registerSOAPQueryServiceHandler(router, eventBus);
 
@@ -107,13 +108,20 @@ public class EPCISServer extends AbstractVerticle {
 		SOAPQueryServiceHandler.registerEchoHandler(router);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
+	
+	private void registerCaptureServiceHandler(Router router, EventBus eventBus) {
+		CaptureMetadataHandler.registerBaseHandler(router);
+		CaptureMetadataHandler.registerCaptureHandler(router);
+		CaptureMetadataHandler.registerCaptureIDHandler(router);
+		CaptureMetadataHandler.registerEventsHandler(router);
+
+		TransactionManager.registerTransactionStartHandler(eventBus);
+		TransactionManager.registerTransactionSuccessHandler(eventBus);
+		TransactionManager.registerTransactionProceedHandler(eventBus);
+		TransactionManager.registerTransactionRollBackHandler(eventBus);
+	}
 
 	private void registerXMLCaptureServiceHandler(Router router, EventBus eventBus) {
-		XMLCaptureMetadataHandler.registerBaseHandler(router);
-		XMLCaptureMetadataHandler.registerCaptureHandler(router);
-		XMLCaptureMetadataHandler.registerCaptureIDHandler(router);
-		XMLCaptureMetadataHandler.registerEventsHandler(router);
-
 		XMLCaptureServiceHandler.registerPostCaptureHandler(router, xmlCaptureCoreService, eventBus);
 		XMLCaptureServiceHandler.registerGetCaptureIDHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerPostEventsHandler(router, xmlCaptureCoreService, eventBus);
@@ -121,11 +129,6 @@ public class EPCISServer extends AbstractVerticle {
 		XMLCaptureServiceHandler.registerDeletePageToken(router);
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerPingHandler(router);
-
-		TransactionManager.registerTransactionStartHandler(eventBus);
-		TransactionManager.registerTransactionSuccessHandler(eventBus);
-		TransactionManager.registerTransactionProceedHandler(eventBus);
-		TransactionManager.registerTransactionRollBackHandler(eventBus);
 	}
 
 	private void loadStaticResponses() {
