@@ -4659,29 +4659,29 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (EQ_sDev != null) {
-				// TODO
-				doc.put("EQ_sDev", EQ_sDev.toMongoDocument());
+			if (queryKey.equals("EQ_sDev")) {
+				EQ_sDev = getSensorUomValue(query.get("EQ_sDev", Document.class), EQ_sDev);
+				continue;
 			}
 
-			if (GT_sDev != null) {
-				// TODO
-				doc.put("GT_sDev", GT_sDev.toMongoDocument());
+			if (queryKey.equals("GT_sDev")) {
+				GT_sDev = getSensorUomValue(query.get("GT_sDev", Document.class), GT_sDev);
+				continue;
 			}
 
-			if (GE_sDev != null) {
-				// TODO
-				doc.put("GE_sDev", GE_sDev.toMongoDocument());
+			if (queryKey.equals("GE_sDev")) {
+				GE_sDev = getSensorUomValue(query.get("GE_sDev", Document.class), GE_sDev);
+				continue;
 			}
 
-			if (LT_sDev != null) {
-				// TODO
-				doc.put("LT_sDev", LT_sDev.toMongoDocument());
+			if (queryKey.equals("LT_sDev")) {
+				LT_sDev = getSensorUomValue(query.get("LT_sDev", Document.class), LT_sDev);
+				continue;
 			}
 
-			if (LE_sDev != null) {
-				// TODO
-				doc.put("LE_sDev", LE_sDev.toMongoDocument());
+			if (queryKey.equals("LE_sDev")) {
+				LE_sDev = getSensorUomValue(query.get("LE_sDev", Document.class), LE_sDev);
+				continue;
 			}
 
 			if (EQ_percValue != null) {
