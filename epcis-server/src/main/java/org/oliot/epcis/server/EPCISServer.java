@@ -90,7 +90,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> monitoringEventCollection;
 	public static MongoCollection<Document> monitoringTxCollection;
 	public static MongoCollection<Document> monitoringSubscriptionCollection;
-	
+
 	@Override
 	public void start(Promise<Void> startPromise) {
 		final HttpServer server = vertx.createHttpServer();
@@ -105,7 +105,7 @@ public class EPCISServer extends AbstractVerticle {
 		registerSOAPQueryServiceHandler(router, eventBus);
 
 		server.requestHandler(router).listen(port);
-		
+
 		new DynamicResource(vertx).start();
 	}
 
@@ -119,7 +119,7 @@ public class EPCISServer extends AbstractVerticle {
 		SOAPQueryServiceHandler.registerEchoHandler(router);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
-	
+
 	private void registerCaptureServiceHandler(Router router, EventBus eventBus) {
 		CaptureMetadataHandler.registerBaseHandler(router);
 		CaptureMetadataHandler.registerCaptureHandler(router);
@@ -157,6 +157,9 @@ public class EPCISServer extends AbstractVerticle {
 	private void setRouter(Router router) {
 		router.route()
 				.handler(CorsHandler.create().addOrigin("*").allowedHeader("Access-Control-Allow-Credentials")
+						.allowedHeader("GS1-EPCIS-Version")
+						.allowedHeader("GS1-CBV-Version")
+						.allowedHeader("GS1-EPCIS-Capture-Error-Behaviour")
 						.allowedHeader("Access-Control-Allow-Origin").allowedHeader("Access-Control-Allow-Headers")
 						.allowedHeader("Content-Type").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST)
 						.allowedMethod(HttpMethod.OPTIONS).allowedMethod(HttpMethod.DELETE)

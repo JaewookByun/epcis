@@ -115,7 +115,7 @@ public class XMLCaptureService {
 				Transaction tx = new Transaction(Metadata.GS1_EPCIS_Capture_Error_Behaviour);
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Location", "http://"
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "Location").putHeader("Location", "http://"
 								+ EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture/" + tx.getTxId())
 						.setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
@@ -232,6 +232,7 @@ public class XMLCaptureService {
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+						.putHeader("Access-Control-Expose-Headers", "Location")
 						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
@@ -250,6 +251,7 @@ public class XMLCaptureService {
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+						.putHeader("Access-Control-Expose-Headers", "Location")
 						.putHeader("Location",
 								"http://" + EPCISServer.host + ":8084/epcis/events/"
 										+ URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
