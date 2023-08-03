@@ -4,6 +4,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
+import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
@@ -26,6 +27,13 @@ import io.vertx.ext.web.Router;
  */
 public class SOAPQueryServiceHandler {
 
+	public static void registerStatisticsHandler(Router router) {
+		router.get("/epcis/statistics").handler(routingContext -> {
+			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200).end(DynamicResource.getCounts().toString());
+		});
+		EPCISServer.logger.info("[POST /epcis/query] - router added");
+	}
+	
 	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService) {
 		router.post("/epcis/query").consumes("*/xml").handler(routingContext -> {
 			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),

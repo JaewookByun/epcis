@@ -4,7 +4,7 @@ import org.bson.Document;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 
 /**
  * This is not a single parameter, but a family of parameters. If a parameter of
@@ -25,9 +25,9 @@ public class GTSensorPercValueConverter extends BaseConverter implements QueryCo
 	public Document convert(String key, Object value) throws QueryParameterException {
 		double dValue = getDouble(value);
 		String uom = retrieveParameterType(key, 13);
-		String type = Resource.unitConverter.getType(uom);
-		String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-		double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, dValue);
+		String type = StaticResource.unitConverter.getType(uom);
+		String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+		double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, dValue);
 
 		return new Document().append("sensorElementList.sensorReport.rUom", rUom)
 				.append("sensorElementList.sensorReport.rPercValue", new Document("$gt", rValue));

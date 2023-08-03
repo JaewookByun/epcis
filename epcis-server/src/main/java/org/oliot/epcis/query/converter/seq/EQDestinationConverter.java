@@ -8,7 +8,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 /**
@@ -28,14 +28,14 @@ public class EQDestinationConverter extends BaseConverter implements QueryConver
 	public Document convert(String key, Object value) throws QueryParameterException {
 		List<String> valueList = getListOfString(value);
 		String type = retrieveParameterType(key, 15);
-		if (!Resource.sourceDestinationTypes.contains(type))
+		if (!StaticResource.sourceDestinationTypes.contains(type))
 			throw new QueryParameterException(
-					"the value of a parameter should be one of " + Resource.sourceDestinationTypes);
+					"the value of a parameter should be one of " + StaticResource.sourceDestinationTypes);
 
 		List<Document> docList = new ArrayList<Document>();
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkSourceDestinationEPCPureIdentity(Resource.gcpLength, v);
+				IdentifierValidator.checkSourceDestinationEPCPureIdentity(StaticResource.gcpLength, v);
 				docList.add(new Document("destinationList",
 						new Document("$elemMatch", new Document().append("type", type).append("value", v))));
 			} catch (ValidationException e) {

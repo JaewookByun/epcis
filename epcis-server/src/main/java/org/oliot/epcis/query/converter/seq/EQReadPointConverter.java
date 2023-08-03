@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 /**
@@ -27,7 +27,7 @@ public class EQReadPointConverter extends BaseConverter implements QueryConverte
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkLocationEPCPureIdentity(Resource.gcpLength, v);
+				IdentifierValidator.checkLocationEPCPureIdentity(StaticResource.gcpLength, v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

@@ -26,6 +26,7 @@ import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.TriggerEngine;
 import org.oliot.epcis.query.response.StaticResponseBuilder;
+import org.oliot.epcis.resource.DynamicResource;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
@@ -83,6 +84,13 @@ public class EPCISServer extends AbstractVerticle {
 
 	public static WebClient clientForSubscriptionCallback;
 
+	public static MongoClient monitoringClient;
+	public static MongoDatabase monitoringDatabase;
+	public static MongoCollection<Document> monitoringVocCollection;
+	public static MongoCollection<Document> monitoringEventCollection;
+	public static MongoCollection<Document> monitoringTxCollection;
+	public static MongoCollection<Document> monitoringSubscriptionCollection;
+	
 	@Override
 	public void start(Promise<Void> startPromise) {
 		final HttpServer server = vertx.createHttpServer();
@@ -97,12 +105,15 @@ public class EPCISServer extends AbstractVerticle {
 		registerSOAPQueryServiceHandler(router, eventBus);
 
 		server.requestHandler(router).listen(port);
+		
+		new DynamicResource(vertx).start();
 	}
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryMetadataHandler.registerBaseHandler(router);
 		SOAPQueryServiceHandler.registerPingHandler(router);
 		SOAPQueryServiceHandler.registerDeleteHandler(router);
+		SOAPQueryServiceHandler.registerStatisticsHandler(router);
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerEchoHandler(router);

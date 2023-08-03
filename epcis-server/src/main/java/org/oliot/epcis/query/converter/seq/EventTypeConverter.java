@@ -6,7 +6,7 @@ import org.bson.Document;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 
 /**
  * If specified, the result will only include events whose type matches one of
@@ -24,9 +24,9 @@ public class EventTypeConverter extends BaseConverter implements QueryConverter 
 	public Document convert(String key, Object value) throws QueryParameterException {
 		List<String> valueList = null;
 		valueList = getListOfString(value);
-		if (!valueList.parallelStream().allMatch(Resource.eventTypes::contains))
+		if (!valueList.parallelStream().allMatch(StaticResource.eventTypes::contains))
 			throw new QueryParameterException(
-					"the value of a parameter should be one of " + Resource.eventTypes);
+					"the value of a parameter should be one of " + StaticResource.eventTypes);
 		return getEQQuery("type", valueList);
 	}
 }

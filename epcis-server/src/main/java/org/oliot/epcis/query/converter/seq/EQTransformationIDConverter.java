@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 /**
@@ -27,7 +27,7 @@ public class EQTransformationIDConverter extends BaseConverter implements QueryC
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkDocumentEPCPureIdentity(Resource.gcpLength, v);
+				IdentifierValidator.checkDocumentEPCPureIdentity(StaticResource.gcpLength, v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

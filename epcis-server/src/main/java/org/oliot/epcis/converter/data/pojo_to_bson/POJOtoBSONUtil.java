@@ -32,7 +32,7 @@ import org.oliot.epcis.model.SensorReportType;
 import org.oliot.epcis.model.SourceDestType;
 import org.oliot.epcis.model.SourceListType;
 import org.oliot.epcis.model.ValidationException;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.CBVAttributeUtil;
 import org.oliot.epcis.util.TimeUtil;
@@ -41,7 +41,7 @@ import org.w3c.dom.*;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import static org.oliot.epcis.resource.Resource.*;
+import static org.oliot.epcis.resource.StaticResource.*;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -266,7 +266,7 @@ public class POJOtoBSONUtil {
 		try {
 			for (SourceDestType sdt : sdtList) {
 				String type = sdt.getType();
-				if (!Resource.sourceDestinationTypes.contains(type)) {
+				if (!StaticResource.sourceDestinationTypes.contains(type)) {
 					ValidationException e = new ValidationException();
 					e.setStackTrace(new StackTraceElement[0]);
 					e.setReason("non-CBV source destination type: " + type);
@@ -295,7 +295,7 @@ public class POJOtoBSONUtil {
 		try {
 			for (SourceDestType sdt : sdtList) {
 				String type = sdt.getType();
-				if (!Resource.sourceDestinationTypes.contains(type)) {
+				if (!StaticResource.sourceDestinationTypes.contains(type)) {
 					ValidationException e = new ValidationException();
 					e.setStackTrace(new StackTraceElement[0]);
 					e.setReason("non-CBV source destination type: " + type);

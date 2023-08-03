@@ -20,7 +20,7 @@ import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.model.cbv.UnitOfMeasure;
 import org.oliot.epcis.model.cbv.UnloadingPort;
 import org.oliot.epcis.query.SubscriptionManager;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.util.FileUtil;
 
 import com.mongodb.client.MongoClients;
@@ -138,6 +138,13 @@ public class BootstrapUtil {
 			// ping for checking connection
 			logger.info("Backend configured: (# event: " + eCount + ", # vocabularies: " + vCount + ")");
 			timer.cancel();
+			
+			monitoringClient = MongoClients.create(configuration.getString("db_connection_string"));
+			monitoringDatabase = monitoringClient.getDatabase(configuration.getString("db_name"));
+			monitoringVocCollection = monitoringDatabase.getCollection("MasterData", Document.class);
+			monitoringEventCollection = monitoringDatabase.getCollection("EventData", Document.class);
+			monitoringTxCollection = monitoringDatabase.getCollection("Tx", Document.class);
+			monitoringSubscriptionCollection = monitoringDatabase.getCollection("Subscription", Document.class);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -214,54 +221,54 @@ public class BootstrapUtil {
 
 	static void setVocabularies() {
 		// Unit Of Measure
-		Resource.unitOfMeasure = new HashSet<String>();
+		StaticResource.unitOfMeasure = new HashSet<String>();
 		for (UnitOfMeasure uom : UnitOfMeasure.values()) {
-			Resource.unitOfMeasure.add(uom.name());
+			StaticResource.unitOfMeasure.add(uom.name());
 		}
 		// eventType
-		Resource.eventTypes = new HashSet<String>();
+		StaticResource.eventTypes = new HashSet<String>();
 		for (EPCISEventType value : EPCISEventType.values()) {
-			Resource.eventTypes.add(value.name());
+			StaticResource.eventTypes.add(value.name());
 		}
 		// action
-		Resource.actions = new HashSet<String>();
+		StaticResource.actions = new HashSet<String>();
 		for (ActionType value : ActionType.values()) {
-			Resource.actions.add(value.name());
+			StaticResource.actions.add(value.name());
 		}
 		// bizStep
-		Resource.bizSteps = new HashSet<String>();
+		StaticResource.bizSteps = new HashSet<String>();
 		for (BusinessStep bs : BusinessStep.values()) {
-			Resource.bizSteps.add(bs.getBusinessStep());
+			StaticResource.bizSteps.add(bs.getBusinessStep());
 		}
 		// disposition
-		Resource.dispositions = new HashSet<String>();
+		StaticResource.dispositions = new HashSet<String>();
 		for (Disposition d : Disposition.values()) {
-			Resource.dispositions.add(d.getDisposition());
+			StaticResource.dispositions.add(d.getDisposition());
 		}
 		// bizTransactionType
-		Resource.bizTransactionTypes = new HashSet<String>();
+		StaticResource.bizTransactionTypes = new HashSet<String>();
 		for (BusinessTransactionType d : BusinessTransactionType.values()) {
-			Resource.bizTransactionTypes.add(d.getBusinessTransactionType());
+			StaticResource.bizTransactionTypes.add(d.getBusinessTransactionType());
 		}
 		// source destination type
-		Resource.sourceDestinationTypes = new HashSet<String>();
+		StaticResource.sourceDestinationTypes = new HashSet<String>();
 		for (SourceDestinationType d : SourceDestinationType.values()) {
-			Resource.sourceDestinationTypes.add(d.getSourceDestinationType());
+			StaticResource.sourceDestinationTypes.add(d.getSourceDestinationType());
 		}
 		// error reason
-		Resource.errorReasons = new HashSet<String>();
+		StaticResource.errorReasons = new HashSet<String>();
 		for (ErrorReason d : ErrorReason.values()) {
-			Resource.errorReasons.add(d.getErrorReason());
+			StaticResource.errorReasons.add(d.getErrorReason());
 		}
 		// measurement type
-		Resource.measurements = new HashSet<String>();
+		StaticResource.measurements = new HashSet<String>();
 		for (Measurement m : Measurement.values()) {
-			Resource.measurements.add("gs1:" + m.name());
+			StaticResource.measurements.add("gs1:" + m.name());
 		}
 		// vocabulary Types
-		Resource.vocabularyTypes = new HashSet<String>();
+		StaticResource.vocabularyTypes = new HashSet<String>();
 		for (EPCISVocabularyType m : EPCISVocabularyType.values()) {
-			Resource.vocabularyTypes.add(m.getVocabularyType());
+			StaticResource.vocabularyTypes.add(m.getVocabularyType());
 		}
 
 		// fao3alpha code
@@ -271,7 +278,7 @@ public class BootstrapUtil {
 	}
 
 	static void setGCPLengthList() {
-		Resource.gcpLength = new HashMap<String, Integer>();
+		StaticResource.gcpLength = new HashMap<String, Integer>();
 		JsonObject gcpPrefixFormatList = null;
 		if (configuration.getString("gcp_source").equals("local")) {
 			logger.info("load GCP Length from local");
@@ -310,7 +317,7 @@ public class BootstrapUtil {
 
 		for (Object entry : gcpPrefixFormatList.getJsonArray("entry")) {
 			JsonObject entryObj = (JsonObject) entry;
-			Resource.gcpLength.put(entryObj.getString("prefix"), entryObj.getInteger("gcpLength"));
+			StaticResource.gcpLength.put(entryObj.getString("prefix"), entryObj.getInteger("gcpLength"));
 		}
 
 		logger.info("GCP Length all retrieved (Last update: " + gcpPrefixFormatList.getString("date") + ")");

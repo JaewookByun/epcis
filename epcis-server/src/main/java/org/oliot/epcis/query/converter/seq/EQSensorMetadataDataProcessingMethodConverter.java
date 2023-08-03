@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 // TODO: need pull request
@@ -18,7 +18,7 @@ public class EQSensorMetadataDataProcessingMethodConverter extends BaseConverter
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkEPCPureIdentity(Resource.gcpLength, v);
+				IdentifierValidator.checkEPCPureIdentity(StaticResource.gcpLength, v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

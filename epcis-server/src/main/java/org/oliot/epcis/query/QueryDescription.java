@@ -16,7 +16,7 @@ import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.util.BSONReadUtil;
 import org.oliot.epcis.util.TimeUtil;
 import org.w3c.dom.Element;
@@ -296,14 +296,14 @@ public class QueryDescription {
 			Object value = param.getValue();
 
 			// single param
-			QueryConverter converter = Resource.simpleMasterDataQueryFactory.getConverterMap().get(name);
+			QueryConverter converter = StaticResource.simpleMasterDataQueryFactory.getConverterMap().get(name);
 			if (converter != null) {
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQATTR_")) {
-				converter = Resource.simpleMasterDataQueryFactory.getConverterMap().get("EQATTR_");
+				converter = StaticResource.simpleMasterDataQueryFactory.getConverterMap().get("EQATTR_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
@@ -367,7 +367,7 @@ public class QueryDescription {
 			Object value = param.getValue();
 
 			// single param
-			QueryConverter converter = Resource.simpleEventQueryFactory.getConverterMap().get(name);
+			QueryConverter converter = StaticResource.simpleEventQueryFactory.getConverterMap().get(name);
 			if (converter != null) {
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
@@ -375,707 +375,707 @@ public class QueryDescription {
 
 			// complex param
 			if (name.startsWith("EQ_bizTransaction_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_bizTransaction_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_bizTransaction_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_source_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_source_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_source_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_destination_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_destination_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_destination_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_quantity_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_quantity_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_quantity_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_quantity_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_quantity_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_quantity_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_quantity_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_quantity_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_quantity_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_quantity_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_quantity_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_quantity_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_quantity_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_quantity_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_quantity_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_INNER_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_ILMD_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_ILMD_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_ILMD_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_SENSORELEMENT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORELEMENT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORELEMENT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_readPoint_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_readPoint_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_readPoint_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORMETADATA_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORMETADATA_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORMETADATA_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORREPORT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORREPORT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORREPORT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_bizLocation_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_bizLocation_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_bizLocation_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_ERROR_DECLARATION_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			// sensor
 			if (name.startsWith("EQ_value_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_value_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_value_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_value_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_value_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_value_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_value_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_value_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_value_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_value_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_value_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_value_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_value_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_value_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_value_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_minValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_minValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_minValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_minValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_minValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_minValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_minValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_minValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_minValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_minValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_minValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_minValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_minValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_minValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_minValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_maxValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_maxValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_maxValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_maxValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_maxValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_maxValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_maxValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_maxValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_maxValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_maxValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_maxValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_maxValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_maxValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_maxValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_maxValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_meanValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_meanValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_meanValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_meanValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_meanValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_meanValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_meanValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_meanValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_meanValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_meanValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_meanValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_meanValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_meanValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_meanValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_meanValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_sDev_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_sDev_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_sDev_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_sDev_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_sDev_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_sDev_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_sDev_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_sDev_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_sDev_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_sDev_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_sDev_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_sDev_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_sDev_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_sDev_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_sDev_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_percValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_percValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_percValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_percValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_percValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_percValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_percValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_percValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_percValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_percValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_percValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_percValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_percValue_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_percValue_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_percValue_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_ATTR_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_ATTR_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_ATTR_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("GE_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("GE_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("GE_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("LE_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("LE_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("LE_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EXISTS_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("HASATTR_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("HASATTR_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("HASATTR_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 
 			if (name.startsWith("EQ_SENSORMETADATA_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORMETADATA_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORMETADATA_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 			if (name.startsWith("EQ_SENSORREPORT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORREPORT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORREPORT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 			if (name.startsWith("EXISTS_SENSORMETADATA_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORMETADATA_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORMETADATA_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
 			if (name.startsWith("EXISTS_SENSORREPORT_")) {
-				converter = Resource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORREPORT_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORREPORT_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}

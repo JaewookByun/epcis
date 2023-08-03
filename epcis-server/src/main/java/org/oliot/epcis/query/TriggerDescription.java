@@ -29,7 +29,7 @@ import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VoidHolder;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.TimeUtil;
 import org.oliot.epcis.validation.IdentifierValidator;
@@ -1612,9 +1612,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_value, GT_value, GE_value, LT_value, LE_value, rUom, rValue)) {
 							isPass = true;
@@ -1644,9 +1644,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_minValue, GT_minValue, GE_minValue, LT_minValue, LE_minValue, rUom,
 								rValue)) {
@@ -1677,9 +1677,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_maxValue, GT_maxValue, GE_maxValue, LT_maxValue, LE_maxValue, rUom,
 								rValue)) {
@@ -1710,9 +1710,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_meanValue, GT_meanValue, GE_meanValue, LT_meanValue, LE_meanValue, rUom,
 								rValue)) {
@@ -1742,9 +1742,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_sDev, GT_sDev, GE_sDev, LT_sDev, LE_sDev, rUom, rValue)) {
 							isPass = true;
@@ -1774,9 +1774,9 @@ public class TriggerDescription {
 						if (uom == null || value == null)
 							continue;
 
-						String type = Resource.unitConverter.getType(uom);
-						String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-						double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, value);
+						String type = StaticResource.unitConverter.getType(uom);
+						String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+						double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, value);
 
 						if (isPassDouble(EQ_percValue, GT_percValue, GE_percValue, LT_percValue, LE_percValue, rUom,
 								rValue)) {
@@ -3291,9 +3291,9 @@ public class TriggerDescription {
 				String uom = name.substring(9);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_value = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3303,9 +3303,9 @@ public class TriggerDescription {
 				String uom = name.substring(9);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_value = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3315,9 +3315,9 @@ public class TriggerDescription {
 				String uom = name.substring(9);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_value = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3327,9 +3327,9 @@ public class TriggerDescription {
 				String uom = name.substring(9);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_value = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3339,9 +3339,9 @@ public class TriggerDescription {
 				String uom = name.substring(9);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_value = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3351,9 +3351,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_minValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3363,9 +3363,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_minValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3375,9 +3375,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_minValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3387,9 +3387,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_minValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3399,9 +3399,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_minValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3411,9 +3411,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_maxValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3423,9 +3423,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_maxValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3435,9 +3435,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_maxValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3447,9 +3447,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_maxValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3459,9 +3459,9 @@ public class TriggerDescription {
 				String uom = name.substring(12);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_maxValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3471,9 +3471,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_meanValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3483,9 +3483,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_meanValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3495,9 +3495,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_meanValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3507,9 +3507,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_meanValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3519,9 +3519,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_meanValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3531,9 +3531,9 @@ public class TriggerDescription {
 				String uom = name.substring(8);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_sDev = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3543,9 +3543,9 @@ public class TriggerDescription {
 				String uom = name.substring(8);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_sDev = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3555,9 +3555,9 @@ public class TriggerDescription {
 				String uom = name.substring(8);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_sDev = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3567,9 +3567,9 @@ public class TriggerDescription {
 				String uom = name.substring(8);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_sDev = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3579,9 +3579,9 @@ public class TriggerDescription {
 				String uom = name.substring(8);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_sDev = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3591,9 +3591,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				EQ_percValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3603,9 +3603,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GT_percValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3615,9 +3615,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				GE_percValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3627,9 +3627,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LT_percValue = new SensorUomValue(rUom, rValue);
 				continue;
@@ -3639,9 +3639,9 @@ public class TriggerDescription {
 				String uom = name.substring(13);
 				Double v = (Double) value;
 
-				String type = Resource.unitConverter.getType(uom);
-				String rUom = Resource.unitConverter.getRepresentativeUoMFromType(type);
-				double rValue = Resource.unitConverter.getRepresentativeValue(type, uom, v);
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
 
 				LE_percValue = new SensorUomValue(rUom, rValue);
 				continue;

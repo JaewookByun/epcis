@@ -6,7 +6,7 @@ import org.bson.Document;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
@@ -25,7 +25,7 @@ public class EQSensorReportSensorTypeConverter extends BaseConverter implements 
 	public Document convert(String key, Object value) throws QueryParameterException {
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
-			if (!Resource.measurements.contains(v)) {
+			if (!StaticResource.measurements.contains(v)) {
 				throw new QueryParameterException("unsupported sensor measurement: " + v);
 			}
 		}

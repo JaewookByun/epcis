@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.cbv.UnitOfMeasure;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 
 /**
  * LT: Like EQ_quantity_uom, but includes events whose quantity-uom-pair (or a
@@ -23,7 +23,7 @@ public class LTQuantityConverter extends BaseConverter implements QueryConverter
 
 		String type = retrieveParameterType(key, 12);
 
-		if (!type.isEmpty() && !Resource.unitOfMeasure.contains(type))
+		if (!type.isEmpty() && !StaticResource.unitOfMeasure.contains(type))
 			throw new QueryParameterException(
 					"the value of a parameter is of the wrong type or out of range: value should be one of unit of measures defined in "
 							+ UnitOfMeasure.values().getClass().getCanonicalName());

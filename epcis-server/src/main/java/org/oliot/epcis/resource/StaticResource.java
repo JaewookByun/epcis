@@ -7,7 +7,7 @@ import org.oliot.epcis.converter.unit.UnitConverter;
 import org.oliot.epcis.query.converter.SimpleEventQueryFactory;
 import org.oliot.epcis.query.converter.SimpleMasterDataQueryFactory;
 
-public class Resource {
+public class StaticResource {
 	public static HashSet<String> unitOfMeasure;
 	public static HashSet<String> eventTypes;
 	public static HashSet<String> actions;
@@ -25,5 +25,4 @@ public class Resource {
 
 	public static SimpleEventQueryFactory simpleEventQueryFactory = new SimpleEventQueryFactory();
 	public static SimpleMasterDataQueryFactory simpleMasterDataQueryFactory = new SimpleMasterDataQueryFactory();
-
 }

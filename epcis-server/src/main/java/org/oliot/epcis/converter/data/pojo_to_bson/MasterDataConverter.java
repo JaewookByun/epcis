@@ -1,6 +1,6 @@
 package org.oliot.epcis.converter.data.pojo_to_bson;
 
-import static org.oliot.epcis.resource.Resource.*;
+import static org.oliot.epcis.resource.StaticResource.*;
 
 import java.util.ArrayList;
 import java.util.List;

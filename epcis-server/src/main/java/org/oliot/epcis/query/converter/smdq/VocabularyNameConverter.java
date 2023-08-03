@@ -6,7 +6,7 @@ import org.bson.Document;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
@@ -25,9 +25,9 @@ public class VocabularyNameConverter extends BaseConverter implements QueryConve
 		List<String> valueList = getListOfString(value);
 
 		for (String v : valueList) {
-			if (!Resource.vocabularyTypes.contains(v)) {
+			if (!StaticResource.vocabularyTypes.contains(v)) {
 				throw new QueryParameterException(
-						"the value of a parameter should be one of " + Resource.vocabularyTypes);
+						"the value of a parameter should be one of " + StaticResource.vocabularyTypes);
 			}
 		}
 

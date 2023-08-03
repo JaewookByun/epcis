@@ -8,7 +8,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.resource.Resource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 /**
@@ -27,14 +27,14 @@ public class EQBizTransactionConverter extends BaseConverter implements QueryCon
 	public Document convert(String key, Object value) throws QueryParameterException {
 		List<String> valueList = getListOfString(value);
 		String type = retrieveParameterType(key, 18);
-		if (!type.isEmpty() && !Resource.bizTransactionTypes.contains(type))
+		if (!type.isEmpty() && !StaticResource.bizTransactionTypes.contains(type))
 			throw new QueryParameterException(
-					"the value of a parameter should be one of " + Resource.bizTransactionTypes);
+					"the value of a parameter should be one of " + StaticResource.bizTransactionTypes);
 
 		List<Document> docList = new ArrayList<Document>();
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkBusinessTransactionEPCPureIdentity(Resource.gcpLength, v);
+				IdentifierValidator.checkBusinessTransactionEPCPureIdentity(StaticResource.gcpLength, v);
 				if (type.isEmpty()) {
 					docList.add(new Document("bizTransactionList", new Document("value", v)));
 				} else {
