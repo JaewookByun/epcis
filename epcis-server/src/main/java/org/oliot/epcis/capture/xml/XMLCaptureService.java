@@ -106,7 +106,7 @@ public class XMLCaptureService {
 			if (eventList.size() > Metadata.GS1_CAPTURE_limit) {
 				EPCISException e = new EPCISException(
 						"[413CapturePayLodTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-Limit`.\n");
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 				return;
 			}
 

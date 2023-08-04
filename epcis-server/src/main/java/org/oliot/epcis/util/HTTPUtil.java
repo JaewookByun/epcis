@@ -37,6 +37,12 @@ public class HTTPUtil {
 		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(statusCode)
 				.end(message.toString());
 	}
+	
+	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject message, int statusCode) {
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(statusCode)
+				.end(message.toString());
+	}
+
 
 	public static void sendQueryResults(WebClient webClient, URI uri, Logger logger, SOAPMessage message, Object result,
 			Class<?> resultType) {

@@ -61,6 +61,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> mSubscriptionCollection;
 
 	public static Validator xmlValidator;
+	public static io.vertx.rxjava.json.schema.Validator jsonValidator;
 	public static int numOfVerticles;
 	public static String host;
 	public static int port = 8080;
@@ -84,6 +85,7 @@ public class EPCISServer extends AbstractVerticle {
 
 	public static WebClient clientForSubscriptionCallback;
 
+	// resource monitor
 	public static MongoClient monitoringClient;
 	public static MongoDatabase monitoringDatabase;
 	public static MongoCollection<Document> monitoringVocCollection;
@@ -171,9 +173,8 @@ public class EPCISServer extends AbstractVerticle {
 
 	public static void main(String[] args) {
 
-		BootstrapUtil.configureServer(args);
-
 		Vertx vertx = Vertx.vertx();
+		BootstrapUtil.configureServer(vertx, args);
 		vertx.deployVerticle(new EPCISServer());
 
 		// DeploymentOptions dOptions = new

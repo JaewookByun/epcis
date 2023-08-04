@@ -51,7 +51,7 @@ public class JSONCaptureServiceHandler {
 	 * @param jsonCaptureService xmlCaptureService
 	 * @param eventBus          eventBus
 	 */
-	public static void registerPostCaptureHandler(Router router, XMLCaptureService xmlCaptureService,
+	public static void registerPostCaptureHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/json").handler(routingContext -> {
@@ -62,10 +62,12 @@ public class JSONCaptureServiceHandler {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
 				return;
 
-			xmlCaptureService.post(routingContext, eventBus);
+			jsonCaptureService.post(routingContext, eventBus);
 		});
-		EPCISServer.logger.info("[POST /epcis/capture] - router added");
+		EPCISServer.logger.info("[POST /epcis/capture (application/json)] - router added");
 	}
+	
+	// TODO: --------------------------------------------------------------------------------
 
 	/**
 	 * Returns a list of capture jobs. When EPCIS events are added through the

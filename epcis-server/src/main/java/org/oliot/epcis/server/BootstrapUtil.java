@@ -1,6 +1,12 @@
 package org.oliot.epcis.server;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.json.schema.Draft;
+import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.rxjava.json.schema.JsonSchema;
+import io.vertx.rxjava.json.schema.Validator;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -151,7 +157,7 @@ public class BootstrapUtil {
 		}
 	}
 
-	private static void setValidator() {
+	private static void setXMLValidator() {
 		try {
 			EPCISServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 					.newSchema(EPCISServer.class.getResource("/schema/epcglobal-epcis-2_0.xsd")).newValidator();
@@ -177,6 +183,32 @@ public class BootstrapUtil {
 				}
 			}
 		}
+	}
+	
+	private static void setJSONValidator(Vertx vertx) {		
+		JsonObject schemaObj = null;
+		try {
+			schemaObj = new JsonObject(
+					FileUtil.readFile(EPCISServer.class.getResourceAsStream("/schema/EPCIS-JSON-Schema.json")));	
+			logger.info("Schema Validator configured as a developer mode");
+		} catch (Exception e) {
+			try {
+				schemaObj = new JsonObject(FileUtil.readFile(
+						EPCISServer.class.getResourceAsStream("/resources/schema/EPCIS-JSON-Schema.json")));		
+				logger.info("Schema Validator configured as a user mode");
+			} catch (Exception e1) {
+				logger.info("/schema/* not found");
+				try {
+					schemaObj = new JsonObject(FileUtil.readFile(EPCISServer.class
+							.getResourceAsStream(configuration.getString("json_schema_location"))));	
+					logger.info("Schema Validator configured");
+				} catch (Exception e2) {
+					e.printStackTrace();
+					System.exit(1);
+				}
+			}
+		}
+		EPCISServer.jsonValidator = Validator.create(JsonSchema.of(schemaObj), new JsonSchemaOptions().setDraft(Draft.DRAFT7));
 	}
 
 	static void setHostPort() {
@@ -329,7 +361,7 @@ public class BootstrapUtil {
 		sub.init();
 	}
 
-	static void configureServer(String[] args) {
+	static void configureServer(Vertx vertx, String[] args) {
 		// Set Configuration (JSON)
 		setConfigurationJson(args);
 		// Set Logger
@@ -337,7 +369,8 @@ public class BootstrapUtil {
 		// Set Backend
 		setBackend();
 		// Set validator
-		setValidator();
+		setXMLValidator();
+		setJSONValidator(vertx);
 		// host and port set
 		setHostPort();
 		// vocabulary
