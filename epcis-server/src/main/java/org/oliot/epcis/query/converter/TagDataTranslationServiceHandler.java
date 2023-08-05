@@ -10,7 +10,7 @@ public class TagDataTranslationServiceHandler {
 		router.get("/tdt/epc/:id").handler(routingContext -> {
 			String id = routingContext.pathParam("id");
 
-			JsonObject obj = TagDataTranslator.parseEPC(id);
+			JsonObject obj = TagDataTranslationEngine.parseEPC(id);
 
 			if (!obj.containsKey("invalid"))
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8")

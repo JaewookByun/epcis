@@ -8,7 +8,7 @@ import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
 
-public class TagDataTranslator {
+public class TagDataTranslationEngine {
 	private static final String[] ADIVarList = new String[] {
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.([0-9A-Z/-]{1,30})$",
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.([0-9A-Z/-]{1,32})\\.([0-9A-Z/-]{1,30})$",
