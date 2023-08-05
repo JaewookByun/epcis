@@ -1,6 +1,5 @@
 package org.oliot.epcis.capture.json;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -9,9 +8,7 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,26 +18,14 @@ import org.bson.types.ObjectId;
 import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.json_to_bson.EPCISDocumentConverter;
-import org.oliot.epcis.converter.data.pojo_to_bson.AggregationEventConverter;
-import org.oliot.epcis.converter.data.pojo_to_bson.AssociationEventConverter;
-import org.oliot.epcis.converter.data.pojo_to_bson.ObjectEventConverter;
-import org.oliot.epcis.converter.data.pojo_to_bson.TransactionEventConverter;
-import org.oliot.epcis.converter.data.pojo_to_bson.TransformationEventConverter;
-import org.oliot.epcis.model.AggregationEventType;
-import org.oliot.epcis.model.AssociationEventType;
 import org.oliot.epcis.model.EPCISCaptureJobType;
 import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
-import org.oliot.epcis.model.ObjectEventType;
-import org.oliot.epcis.model.TransactionEventType;
-import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.model.ValidationException;
-import org.oliot.epcis.model.cbv.EPCISEventType;
 import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.pagination.PageExpiryTimerTask;
 import org.oliot.epcis.server.EPCISServer;
-import org.oliot.epcis.util.FileUtil;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.util.TimeUtil;
@@ -82,7 +67,7 @@ public class JSONCaptureService {
 	}
 
 	public JsonObject retrieveContext(JsonObject epcisDocument) {
-		JsonObject context = null;
+		JsonObject context = new JsonObject();
 		Object contextObj = epcisDocument.getValue("@context");
 		if (contextObj instanceof JsonObject) {
 			context = (JsonObject) contextObj;
@@ -267,73 +252,56 @@ public class JSONCaptureService {
 
 	}
 
-	// TODO:
-	// -----------------------------------------------------------------------------------
-
 	public void postEvent(RoutingContext routingContext, EventBus eventBus) {
 		String inputString = routingContext.body().asString();
-		SOAPMessage message = new SOAPMessage();
+		// SOAPMessage message = new SOAPMessage();
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
-			EPCISException e = new EPCISException(
-					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.\n");
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.exception413CapturePayloadTooLarge,
+					413);
 			return;
 		}
 
-		byte[] xmlByteArray = FileUtil.getByteArray(inputString);
+		JsonObject epcisEvent = new JsonObject(inputString);
+		JsonObject context = retrieveContext(epcisEvent);
 
 		// Validation
-//		try {
-//			// validateXML(XMLUtil.getXMLDocumentInputStream(xmlByteArray));
-//		} catch (ValidationException e) {
-//			EPCISServer.logger.error(e.getReason());
-//			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
-//			return;
-//		}
-
-		// Get Event Type
-		String type = XMLUtil.getCaptureInputType(XMLUtil.getXMLDocumentInputStream(xmlByteArray));
-		InputStream epcisStream = XMLUtil.getXMLDocumentInputStream(xmlByteArray);
-		if (type == null) {
-			ValidationException e = new ValidationException(
-					"Input should be one of " + Stream.of(EPCISEventType.values()).toList());
-			EPCISServer.logger.error(e.getReason());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+		String validationError = validateJSON(epcisEvent);
+		if (validationError == null) {
+			EPCISServer.logger.debug("An incoming EPCIS document is valid against the json schema 2.0.0");
+		} else {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException(validationError), 400);
 			return;
 		}
-		if (type.equals("AggregationEvent")) {
-			AggregationEventType event = JAXB.unmarshal(epcisStream, AggregationEventType.class);
-			EPCISServer.logger.debug("unmarshal - aggregation event");
-			captureEvent(routingContext, event, eventBus);
-		} else if (type.equals("AssociationEvent")) {
-			AssociationEventType event = JAXB.unmarshal(epcisStream, AssociationEventType.class);
-			EPCISServer.logger.debug("unmarshal - association event");
-			captureEvent(routingContext, event, eventBus);
-		} else if (type.equals("ObjectEvent")) {
-			ObjectEventType event = JAXB.unmarshal(epcisStream, ObjectEventType.class);
-			EPCISServer.logger.debug("unmarshal - object event");
-			captureEvent(routingContext, event, eventBus);
-		} else if (type.equals("TransactionEvent")) {
-			TransactionEventType event = JAXB.unmarshal(epcisStream, TransactionEventType.class);
-			EPCISServer.logger.debug("unmarshal - transaction event");
-			captureEvent(routingContext, event, eventBus);
-		} else if (type.equals("TransformationEvent")) {
-			TransformationEventType event = JAXB.unmarshal(epcisStream, TransformationEventType.class);
-			EPCISServer.logger.debug("unmarshal - transformation event");
-			captureEvent(routingContext, event, eventBus);
-		}
 
+		String type = epcisEvent.getString("type");
+		if (type == null) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException(validationError), 400);
+			return;
+		} else if (type.equals("AggregationEvent")) {
+			captureEvent(routingContext, context, epcisEvent, eventBus);
+		} else if (type.equals("AssociationEvent")) {
+			captureEvent(routingContext, context, epcisEvent, eventBus);
+		} else if (type.equals("ObjectEvent")) {
+			captureEvent(routingContext, context, epcisEvent, eventBus);
+		} else if (type.equals("TransactionEvent")) {
+			captureEvent(routingContext, context, epcisEvent, eventBus);
+		} else if (type.equals("TransformationEvent")) {
+			captureEvent(routingContext, context, epcisEvent, eventBus);
+		}
 	}
 
-	private void captureEvent(RoutingContext routingContext, Object jaxbEvent, EventBus eventBus) {
+	private void captureEvent(RoutingContext routingContext, JsonObject jsonContext, JsonObject jsonEvent,
+			EventBus eventBus) {
 		Document obj = null;
-		SOAPMessage message = new SOAPMessage();
 		try {
-			obj = prepareEvent(jaxbEvent);
+			obj = EPCISDocumentConverter.convertEvent(jsonContext, jsonEvent, null);
 		} catch (ValidationException e) {
-			EPCISServer.logger.error(e.getReason());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+			EPCISServer.logger.error(e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException(e.getReason()), 400);
 			return;
 		}
 		EPCISServer.logger.debug("ready to capture");
@@ -341,7 +309,6 @@ public class JSONCaptureService {
 		eventBus.send("trigger", obj);
 		if (!obj.containsKey("errorDeclaration")) {
 			try {
-
 				InsertOneResult result = EPCISServer.mEventCollection.insertOne(obj);
 				EPCISServer.logger.debug("event captured: " + result);
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
@@ -352,9 +319,8 @@ public class JSONCaptureService {
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
 				EPCISServer.logger.error(e.getMessage());
-				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
 				return;
 			}
 		} else {
@@ -373,31 +339,15 @@ public class JSONCaptureService {
 						.setStatusCode(201).end();
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());
-				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
 				return;
 			}
 		}
 	}
 
-	private Document prepareEvent(Object event) throws ValidationException {
-
-		Document object2Save = null;
-		if (event instanceof AggregationEventType) {
-			object2Save = AggregationEventConverter.toBson((AggregationEventType) event);
-		} else if (event instanceof ObjectEventType) {
-			object2Save = ObjectEventConverter.toBson((ObjectEventType) event);
-		} else if (event instanceof TransactionEventType) {
-			object2Save = TransactionEventConverter.toBson((TransactionEventType) event);
-		} else if (event instanceof TransformationEventType) {
-			object2Save = TransformationEventConverter.toBson((TransformationEventType) event);
-		} else if (event instanceof AssociationEventType) {
-			object2Save = AssociationEventConverter.toBson((AssociationEventType) event);
-		}
-
-		return object2Save;
-	}
+	// TODO:
+	// -----------------------------------------------------------------------------------
 
 	public void postCaptureJobList(RoutingContext routingContext) {
 		SOAPMessage message = new SOAPMessage();

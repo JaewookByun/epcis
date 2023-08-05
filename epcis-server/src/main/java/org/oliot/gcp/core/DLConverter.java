@@ -32,6 +32,7 @@ public class DLConverter {
 			if (numArr.length != 3)
 				return epc;
 			String n01 = numArr[1].substring(0, 1) + numArr[0] + numArr[1].substring(1, numArr[1].length());
+			n01 = appendGtinCheckDigit(n01);
 			return "https://id.gs1.org/01/" + n01 + "/21/" + numArr[2];
 		} else if (epc.startsWith("urn:epc:class:lgtin:")) {
 			String[] elemArr = epc.split(":");
@@ -40,6 +41,7 @@ public class DLConverter {
 			if (numArr.length != 3)
 				return epc;
 			String n01 = numArr[1].substring(0, 1) + numArr[0] + numArr[1].substring(1, numArr[1].length());
+			n01 = appendGtinCheckDigit(n01);
 			return "https://id.gs1.org/01/" + n01 + "/10/" + numArr[2];
 		} else if (epc.startsWith("urn:epc:idpat:sgtin:")) {
 			String[] elemArr = epc.split(":");
@@ -48,9 +50,28 @@ public class DLConverter {
 			if (numArr.length != 3)
 				return epc;
 			String n01 = numArr[1].substring(0, 1) + numArr[0] + numArr[1].substring(1, numArr[1].length());
+			n01 = appendGtinCheckDigit(n01);
 			return "https://id.gs1.org/01/" + n01;
 		}
 		return epc;
+	}
+	
+	public static String appendGtinCheckDigit(String gtin) {
+		if (gtin.length() != 13) {
+			return null;
+		}
+		int[] e = toIntArray(gtin);
+
+		for (int i = 0; i < gtin.length(); i++) {
+			e[i] = Integer.parseInt(gtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12]) + e[1] + e[3] + e[5] + e[7] + e[9] + e[11])
+						% 10))
+				% 10;
+		
+		return gtin + correctCheckDigit;
 	}
 
 	public static String getEPC(HashMap<String, Integer> gcpLengthList, String dl) throws ValidationException {
@@ -163,6 +184,29 @@ public class DLConverter {
 		// System.out.println("[System] Itemref: " + itemref);
 
 		return "urn:epc:idpat:sgtin:" + gcp + "." + itemref + ".*";
+	}
+	
+	public static String generateSscc(String sscc, int gcpLength) {
+		// GTIN
+		// System.out.println("[System] SGTIN exists");
+
+		// Validation Check
+		if (!sscc.matches("([0-9]{18})")) {
+			return null;
+		}
+		// Check digit validation
+		if (!isSsccCheckDigitCorrect(sscc)) {
+			return null;
+		}
+
+		String gcp = sscc.substring(1, gcpLength + 1);
+		// System.out.println("[System] GTIN: " + gcp);
+		String serialref = sscc.substring(gcpLength + 1, sscc.length() - 1);
+		// System.out.println("[System] Itemref Suffix: " + itemref);
+		serialref = sscc.charAt(0) + serialref;
+		// System.out.println("[System] Itemref: " + itemref);
+
+		return "urn:epc:id:sscc:" + gcp + "." + serialref;
 	}
 
 	public static int getGCPLength(HashMap<String, Integer> gcpLengthList, String code) throws ValidationException {
@@ -381,6 +425,26 @@ public class DLConverter {
 						% 10))
 				% 10;
 		if (!(e[13] == correctCheckDigit)) {
+			System.out.println("[System] Invalid Check Digit");
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean isSsccCheckDigitCorrect(String sscc) {
+		if (sscc.length() != 18) {
+			return false;
+		}
+		int[] e = toIntArray(sscc);
+
+		for (int i = 0; i < sscc.length(); i++) {
+			e[i] = Integer.parseInt(sscc.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1]
+				+ e[3] + e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10;
+		
+		if (!(e[17] == correctCheckDigit)) {
 			System.out.println("[System] Invalid Check Digit");
 			return false;
 		}

@@ -2,6 +2,7 @@ package org.oliot.epcis.validation;
 
 import java.util.Arrays;
 
+import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.common.Version;
 import org.oliot.epcis.model.EPCISException;
@@ -72,6 +73,47 @@ public class HeaderValidator {
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_EPCIS_Capture_Error_Behaviour);
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+			}
+			return false;
+		}
+		return true;
+	}
+
+	public static boolean isEqualHeaderJSON(RoutingContext routingContext, String givenHeaderKey) {
+		// check header
+		String given = routingContext.request().getHeader(givenHeaderKey);
+		if (given == null) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
+									+ " does not provided."),
+					406);
+			return false;
+		}
+
+		if (givenHeaderKey.equals("GS1-EPCIS-Version") && !given.equals(Metadata.GS1_EPCIS_Version)) {
+			if (!routingContext.response().closed()) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
+						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
+								+ given + " != " + Metadata.GS1_EPCIS_Version),
+						406);
+			}
+			return false;
+		} else if (givenHeaderKey.equals("GS1-CBV-Version") && !given.equals(Metadata.GS1_CBV_Version)) {
+			if (!routingContext.response().closed()) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
+						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
+								+ given + " != " + Metadata.GS1_CBV_Version),
+						406);
+			}
+			return false;
+		} else if (givenHeaderKey.equals("GS1-EPCIS-Capture-Error-Behaviour")
+				&& !given.equals(Metadata.GS1_EPCIS_Capture_Error_Behaviour)) {
+			if (!routingContext.response().closed()) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
+						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
+								+ given + " != " + Metadata.GS1_EPCIS_Capture_Error_Behaviour),
+						406);
 			}
 			return false;
 		}

@@ -67,6 +67,27 @@ public class JSONCaptureServiceHandler {
 		EPCISServer.logger.info("[POST /epcis/capture (application/json)] - router added");
 	}
 	
+	/**
+	 * Synchronous capture interface for a single EPCIS event. An individual EPCIS
+	 * event can be created by making a `POST` request on the `/events` resource.
+	 * Alternatively, the client can also use the `/capture` interface and capture a
+	 * single event.
+	 *
+	 * @param router            router
+	 * @param xmlCaptureService xmlCaptureService
+	 */
+	public static void registerPostEventsHandler(Router router, JSONCaptureService jsonCaptureService,
+			EventBus eventBus) {
+		router.post("/epcis/events").consumes("*/json").blockingHandler(routingContext -> {
+			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
+				return;
+			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
+				return;
+			jsonCaptureService.postEvent(routingContext, eventBus);
+		});
+		EPCISServer.logger.info("[POST /epcis/events (application/json)] - router added");
+	}
+	
 	// TODO: --------------------------------------------------------------------------------
 
 	/**
@@ -111,27 +132,7 @@ public class JSONCaptureServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/capture/:captureID] - router added");
 	}
 
-	/**
-	 * Synchronous capture interface for a single EPCIS event. An individual EPCIS
-	 * event can be created by making a `POST` request on the `/events` resource.
-	 * Alternatively, the client can also use the `/capture` interface and capture a
-	 * single event.
-	 *
-	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
-	 */
-	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
-			EventBus eventBus) {
-		// TODO
-		router.post("/epcis/events").consumes("*/xml").blockingHandler(routingContext -> {
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
-				return;
-			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
-				return;
-			xmlCaptureService.postEvent(routingContext, eventBus);
-		});
-		EPCISServer.logger.info("[POST /epcis/events] - router added");
-	}
+
 
 	/**
 	 * Optional endpoint that allows on-demand release of any resources associated

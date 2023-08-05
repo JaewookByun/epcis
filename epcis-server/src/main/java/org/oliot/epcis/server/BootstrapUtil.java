@@ -161,13 +161,13 @@ public class BootstrapUtil {
 		try {
 			EPCISServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 					.newSchema(EPCISServer.class.getResource("/schema/epcglobal-epcis-2_0.xsd")).newValidator();
-			logger.info("Schema Validator configured as a developer mode");
+			logger.info("Schema Validator (XML) configured as a developer mode");
 		} catch (Exception e) {
 			try {
 				EPCISServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 						.newSchema(EPCISServer.class.getResource("/resources/schema/epcglobal-epcis-2_0.xsd"))
 						.newValidator();
-				logger.info("Schema Validator configured as a user mode");
+				logger.info("Schema Validator (XML) configured as a user mode");
 			} catch (Exception e1) {
 				logger.info("/schema/* not found");
 				try {
@@ -176,7 +176,7 @@ public class BootstrapUtil {
 					EPCISServer.xmlValidator = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema")
 							.newSchema(new File(configuration.getString("xml_master_data_schema_location")))
 							.newValidator();
-					logger.info("Schema Validator configured");
+					logger.info("Schema Validator (XML) configured");
 				} catch (Exception e2) {
 					e.printStackTrace();
 					System.exit(1);
@@ -189,26 +189,30 @@ public class BootstrapUtil {
 		JsonObject schemaObj = null;
 		try {
 			schemaObj = new JsonObject(
-					FileUtil.readFile(EPCISServer.class.getResourceAsStream("/schema/EPCIS-JSON-Schema.json")));	
-			logger.info("Schema Validator configured as a developer mode");
+					FileUtil.readFile(EPCISServer.class.getResourceAsStream("/schema/epcis-json-schema.json")));	
+			logger.info("Schema Validator (XML) configured as a developer mode");
 		} catch (Exception e) {
 			try {
 				schemaObj = new JsonObject(FileUtil.readFile(
-						EPCISServer.class.getResourceAsStream("/resources/schema/EPCIS-JSON-Schema.json")));		
-				logger.info("Schema Validator configured as a user mode");
+						EPCISServer.class.getResourceAsStream("/resources/schema/epcis-json-schema.json")));		
+				logger.info("Schema Validator (XML) configured as a user mode");
 			} catch (Exception e1) {
 				logger.info("/schema/* not found");
 				try {
 					schemaObj = new JsonObject(FileUtil.readFile(EPCISServer.class
 							.getResourceAsStream(configuration.getString("json_schema_location"))));	
-					logger.info("Schema Validator configured");
+					logger.info("Schema Validator (XML) configured");
 				} catch (Exception e2) {
 					e.printStackTrace();
 					System.exit(1);
 				}
 			}
 		}
-		EPCISServer.jsonValidator = Validator.create(JsonSchema.of(schemaObj), new JsonSchemaOptions().setDraft(Draft.DRAFT7));
+		
+		JsonSchema sc = JsonSchema.of(schemaObj);
+		JsonSchemaOptions opt = new JsonSchemaOptions().setBaseUri("http://http://dfpl.sejong.ac.kr/").setDraft(Draft.DRAFT7);
+	
+		EPCISServer.jsonValidator = Validator.create(sc, opt);
 	}
 
 	static void setHostPort() {

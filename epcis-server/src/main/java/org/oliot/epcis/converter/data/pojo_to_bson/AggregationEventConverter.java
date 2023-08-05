@@ -64,6 +64,9 @@ public class AggregationEventConverter {
 		if (extension != null)
 			putFlatten(dbo, "extf", extension);
 		
+		// remove unnecessary fields
+		dbo.remove("otherAttributes");
+		
 		// put event id
 		if (!dbo.containsKey("eventID")) {
 			putEventHashID(dbo);

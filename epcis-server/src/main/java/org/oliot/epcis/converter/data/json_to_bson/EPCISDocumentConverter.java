@@ -114,7 +114,8 @@ public class EPCISDocumentConverter {
 					}
 				}
 				if (qElem.containsKey("quantity")) {
-					qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+					Object obj = qElem.get("quantity");
+					qElem.put("quantity", Double.valueOf(obj.toString()));
 				}
 				newArray.add(qElem);
 			}
@@ -373,12 +374,17 @@ public class EPCISDocumentConverter {
 			putFlatten(event, "extf", extension);
 		}
 
+		// remove unnecessary fields
+		event.remove("@context");
+		event.remove("otherAttributes");
+
 		// put event id
 		if (!event.containsKey("eventID")) {
 			putEventHashID(event);
 		}
 
-		event.put("_tx", tx.getTxId());
+		if (tx != null)
+			event.put("_tx", tx.getTxId());
 
 		return event;
 	}
@@ -648,8 +654,7 @@ public class EPCISDocumentConverter {
 		return key;
 	}
 
-	@SuppressWarnings("unused")
-	public static String getEPC(String uri) {
+	public static String getEPC(String uri) throws ValidationException {
 		if (uri == null)
 			return null;
 		if (!uri.contains("https://id.gs1.org"))
@@ -657,9 +662,11 @@ public class EPCISDocumentConverter {
 		String _01 = null;
 		String _21 = null;
 		String _10 = null;
+		String _00 = null;
 		boolean is01 = false;
 		boolean is21 = false;
 		boolean is10 = false;
+		boolean is00 = false;
 		String[] arr = uri.split("\\/");
 		for (String elem : arr) {
 			switch (elem) {
@@ -681,6 +688,13 @@ public class EPCISDocumentConverter {
 				is10 = false;
 				continue;
 			}
+			case "00" -> {
+				is01 = false;
+				is21 = false;
+				is10 = false;
+				is00 = true;
+				continue;
+			}
 			}
 			if (is01) {
 				is01 = false;
@@ -691,39 +705,45 @@ public class EPCISDocumentConverter {
 			} else if (is21) {
 				is21 = false;
 				_21 = elem;
+			} else if (is00) {
+				_00 = elem;
 			}
 		}
 
-		if (_01 == null)
-			return null;
+		if (_01 != null) {
+//			String _01back = _01.substring(1);
+//			Integer gcpLength = null;
+//			while (!_01back.equals("")) {
+//				if (_01back.length() == 0)
+//					return null;
+//
+//				gcpLength = StaticResource.gcpLength.get(_01back);
+//
+//				if (gcpLength != null)
+//					break;
+//
+//				_01back = _01back.substring(0, _01back.length() - 1);
+//			}
+//
+//			if (gcpLength == null)
+//				return null;
+			Integer gcpLength = DLConverter.getGCPLength(StaticResource.gcpLength, _01.substring(1));
 
-		String _01back = _01.substring(1);
-		Integer gcpLength = null;
-		while (!_01back.equals("")) {
-			if (_01back.length() == 0)
-				return null;
-
-			gcpLength = StaticResource.gcpLength.get(_01back);
-
-			if (gcpLength != null)
-				break;
-
-			_01back = _01back.substring(0, _01back.length() - 1);
+			if (_01 != null && _21 != null) {
+				// 01 & 21 formulate SGTIN
+				return DLConverter.generateSgtin(_01, _21, gcpLength);
+			} else if (_01 != null && _10 != null) {
+				// 01 & 10 formulate LGTIN
+				return DLConverter.generateLgtin(_01, _10, gcpLength);
+			} else if (_01 != null) {
+				// 01 formulate GTIN
+				return DLConverter.generateGtin(_01, gcpLength);
+			}
+		}else if(_00 != null) {
+			Integer gcpLength = DLConverter.getGCPLength(StaticResource.gcpLength, _00.substring(1));
+			return DLConverter.generateSscc(_00, gcpLength);
 		}
 
-		if (gcpLength == null)
-			return null;
-
-		if (_01 != null && _21 != null) {
-			// 01 & 21 formulate SGTIN
-			return DLConverter.generateSgtin(_01, _21, gcpLength);
-		} else if (_01 != null && _10 != null) {
-			// 01 & 10 formulate LGTIN
-			return DLConverter.generateLgtin(_01, _10, gcpLength);
-		} else if (_01 != null) {
-			// 01 formulate GTIN
-			return DLConverter.generateGtin(_01, gcpLength);
-		}
 		return null;
 	}
 }

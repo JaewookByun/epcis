@@ -17,6 +17,8 @@ import io.vertx.ext.web.handler.CorsHandler;
 
 import org.oliot.epcis.capture.common.CaptureMetadataHandler;
 import org.oliot.epcis.capture.common.TransactionManager;
+import org.oliot.epcis.capture.json.JSONCaptureService;
+import org.oliot.epcis.capture.json.JSONCaptureServiceHandler;
 import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.capture.xml.XMLCaptureServiceHandler;
 import org.oliot.epcis.converter.unit.UnitConverter;
@@ -25,6 +27,7 @@ import org.oliot.epcis.query.SOAPQueryMetadataHandler;
 import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.TriggerEngine;
+import org.oliot.epcis.query.converter.TagDataTranslationServiceHandler;
 import org.oliot.epcis.query.response.StaticResponseBuilder;
 import org.oliot.epcis.resource.DynamicResource;
 
@@ -76,6 +79,8 @@ public class EPCISServer extends AbstractVerticle {
 	final SOAPQueryService soapQueryService = new SOAPQueryService();
 	public static TriggerEngine triggerEngine = new TriggerEngine();
 
+	final JSONCaptureService jsonCaptureCoreService = new JSONCaptureService();
+
 	public static UnitConverter unitConverter;
 
 	public static String getStandardVersionResponse;
@@ -102,13 +107,20 @@ public class EPCISServer extends AbstractVerticle {
 		setRouter(router);
 		loadStaticResponses();
 
+		registerTDTServiceHandler(router);
 		registerCaptureServiceHandler(router, eventBus);
 		registerXMLCaptureServiceHandler(router, eventBus);
 		registerSOAPQueryServiceHandler(router, eventBus);
 
+		registerJSONCaptureServiceHandler(router, eventBus);
+
 		server.requestHandler(router).listen(port);
 
 		new DynamicResource(vertx).start();
+	}
+
+	private void registerTDTServiceHandler(Router router) {
+		TagDataTranslationServiceHandler.registerPostEventsHandler(router);
 	}
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
@@ -144,6 +156,11 @@ public class EPCISServer extends AbstractVerticle {
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);
 	}
 
+	private void registerJSONCaptureServiceHandler(Router router, EventBus eventBus) {
+		JSONCaptureServiceHandler.registerPostCaptureHandler(router, jsonCaptureCoreService, eventBus);
+		JSONCaptureServiceHandler.registerPostEventsHandler(router, jsonCaptureCoreService, eventBus);
+	}
+
 	private void loadStaticResponses() {
 		try {
 			getStandardVersionResponse = StaticResponseBuilder.getStandardVersion();
@@ -159,15 +176,12 @@ public class EPCISServer extends AbstractVerticle {
 	private void setRouter(Router router) {
 		router.route()
 				.handler(CorsHandler.create().addOrigin("*").allowedHeader("Access-Control-Allow-Credentials")
-						.allowedHeader("GS1-EPCIS-Version")
-						.allowedHeader("GS1-CBV-Version")
-						.allowedHeader("GS1-EPCIS-Max")
-						.allowedHeader("GS1-EPCIS-Min")
-						.allowedHeader("GS1-EPCIS-Capture-Error-Behaviour")
-						.allowedHeader("Access-Control-Allow-Origin").allowedHeader("Access-Control-Allow-Headers")
-						.allowedHeader("Content-Type").allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST)
-						.allowedMethod(HttpMethod.OPTIONS).allowedMethod(HttpMethod.DELETE)
-						.allowedHeader("Access-Control-Request-Method"))
+						.allowedHeader("GS1-EPCIS-Version").allowedHeader("GS1-CBV-Version")
+						.allowedHeader("GS1-EPCIS-Max").allowedHeader("GS1-EPCIS-Min")
+						.allowedHeader("GS1-EPCIS-Capture-Error-Behaviour").allowedHeader("Access-Control-Allow-Origin")
+						.allowedHeader("Access-Control-Allow-Headers").allowedHeader("Content-Type")
+						.allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS)
+						.allowedMethod(HttpMethod.DELETE).allowedHeader("Access-Control-Request-Method"))
 				.handler(BodyHandler.create());
 	}
 
