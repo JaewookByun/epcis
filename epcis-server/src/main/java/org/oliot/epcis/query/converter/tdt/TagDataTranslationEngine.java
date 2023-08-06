@@ -1,4 +1,4 @@
-package org.oliot.epcis.query.converter;
+package org.oliot.epcis.query.converter.tdt;
 
 import java.util.HashMap;
 
@@ -9,8 +9,7 @@ import org.oliot.epcis.resource.StaticResource;
 import io.vertx.core.json.JsonObject;
 
 public class TagDataTranslationEngine {
-	private static final String[] ADIVarList = new String[] {
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.([0-9A-Z/-]{1,30})$",
+	static final String[] ADIVarList = new String[] { "^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.([0-9A-Z/-]{1,30})$",
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.([0-9A-Z/-]{1,32})\\.([0-9A-Z/-]{1,30})$",
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.(#[0-9A-Z/-]{1,29})$",
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.([0-9A-Z/-]{1,32})\\.(#[0-9A-Z/-]{1,29})$",
@@ -19,8 +18,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.\\.(#[0-9A-Z/-]{1,29})$",
 			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.([0-9A-Z/-]{1,32})\\.(#[0-9A-Z/-]{1,29})$" };
 
-	private static final String[] GDTIList = new String[] {
-			"^urn:epc:id:gdti:([0-9]{12})\\.([0-9]{0})\\.([0-9]{0,17})$",
+	static final String[] GDTIList = new String[] { "^urn:epc:id:gdti:([0-9]{12})\\.([0-9]{0})\\.([0-9]{0,17})$",
 			"^urn:epc:id:gdti:([0-9]{11})\\.([0-9]{1})\\.([0-9]{0,17})$",
 			"^urn:epc:id:gdti:([0-9]{10})\\.([0-9]{2})\\.([0-9]{0,17})$",
 			"^urn:epc:id:gdti:([0-9]{9})\\.([0-9]{3})\\.([0-9]{0,17})$",
@@ -28,14 +26,13 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{0,17})$",
 			"^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{0,17})$" };
 
-	private static final String[] cGDTIList = new String[] { "^urn:epc:idpat:gdti:([0-9]{12})\\.([0-9]{0})\\.\\*$",
+	static final String[] cGDTIList = new String[] { "^urn:epc:idpat:gdti:([0-9]{12})\\.([0-9]{0})\\.\\*$",
 			"^urn:epc:idpat:gdti:([0-9]{11})\\.([0-9]{1})\\.\\*$",
 			"^urn:epc:idpat:gdti:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:gdti:([0-9]{9})\\.([0-9]{3})\\.\\*$",
 			"^urn:epc:idpat:gdti:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:gdti:([0-9]{7})\\.([0-9]{5})\\.\\*$",
 			"^urn:epc:idpat:gdti:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
 
-	private static final String[] GIAIList = new String[] {
-			"^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$",
+	static final String[] GIAIList = new String[] { "^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$",
 			"^urn:epc:id:giai:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})$",
 			"^urn:epc:id:giai:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:giai:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})$",
@@ -43,9 +40,9 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:giai:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})$",
 			"^urn:epc:id:giai:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})$" };
 
-	private static final String GID = "^urn:epc:id:gid:([0-9]{1,9})\\.([0-9]{1,8})\\.([0-9]{1,11})$";
+	static final String GID = "^urn:epc:id:gid:([0-9]{1,9})\\.([0-9]{1,8})\\.([0-9]{1,11})$";
 
-	private static final String[] GRAIList = new String[] { "^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
+	static final String[] GRAIList = new String[] { "^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
 			"^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
 			"^urn:epc:id:grai:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
 			"^urn:epc:id:grai:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
@@ -54,23 +51,23 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:grai:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
 			"^urn:epc:id:grai:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,16})$" };
 
-	private static final String[] cGRAIList = new String[] { "^urn:epc:idpat:grai:([0-9]{12})\\.([0-9]{0})\\.\\*",
+	static final String[] cGRAIList = new String[] { "^urn:epc:idpat:grai:([0-9]{12})\\.([0-9]{0})\\.\\*",
 			"^urn:epc:idpat:grai:([0-9]{11})\\.([0-9]{1})\\.\\*$",
 			"^urn:epc:idpat:grai:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:grai:([0-9]{9})\\.([0-9]{3})\\.\\*$",
 			"^urn:epc:idpat:grai:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:grai:([0-9]{7})\\.([0-9]{5})\\.\\*$",
 			"^urn:epc:idpat:grai:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
 
-	private static final String[] GSRNList = new String[] { "^urn:epc:id:gsrn:([0-9]{12})\\.([0-9]{5})$",
+	static final String[] GSRNList = new String[] { "^urn:epc:id:gsrn:([0-9]{12})\\.([0-9]{5})$",
 			"^urn:epc:id:gsrn:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:gsrn:([0-9]{10})\\.([0-9]{7})$",
 			"^urn:epc:id:gsrn:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:gsrn:([0-9]{8})\\.([0-9]{9})$",
 			"^urn:epc:id:gsrn:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:gsrn:([0-9]{6})\\.([0-9]{11})$" };
 
-	private static final String[] GSRNPList = new String[] { "^urn:epc:id:gsrnp:([0-9]{12})\\.([0-9]{5})$",
+	static final String[] GSRNPList = new String[] { "^urn:epc:id:gsrnp:([0-9]{12})\\.([0-9]{5})$",
 			"^urn:epc:id:gsrnp:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:gsrnp:([0-9]{10})\\.([0-9]{7})$",
 			"^urn:epc:id:gsrnp:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:gsrnp:([0-9]{8})\\.([0-9]{9})$",
 			"^urn:epc:id:gsrnp:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:gsrnp:([0-9]{6})\\.([0-9]{11})$" };
 
-	private static final String[] SGLNList = new String[] {
+	static final String[] SGLNList = new String[] {
 			"^urn:epc:id:sgln:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgln:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgln:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
@@ -79,12 +76,12 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:sgln:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgln:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String[] PGLNList = new String[] { "^urn:epc:id:pgln:([0-9]{12})\\.([0-9]{0})$",
+	static final String[] PGLNList = new String[] { "^urn:epc:id:pgln:([0-9]{12})\\.([0-9]{0})$",
 			"^urn:epc:id:pgln:([0-9]{11})\\.([0-9]{1})$", "^urn:epc:id:pgln:([0-9]{10})\\.([0-9]{2})$",
 			"^urn:epc:id:pgln:([0-9]{9})\\.([0-9]{3})$", "^urn:epc:id:pgln:([0-9]{8})\\.([0-9]{4})$",
 			"^urn:epc:id:pgln:([0-9]{7})\\.([0-9]{5})$", "^urn:epc:id:pgln:([0-9]{6})\\.([0-9]{6})$" };
 
-	private static final String[] SGTINList = new String[] {
+	static final String[] SGTINList = new String[] {
 			"^urn:epc:id:sgtin:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgtin:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgtin:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
@@ -93,7 +90,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:sgtin:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:id:sgtin:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String[] cGTINList = new String[] {
+	static final String[] cGTINList = new String[] {
 			"^urn:epc:idpat:sgtin:([0-9]{12})\\.(\\*|[0-9]{1})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:sgtin:([0-9]{11})\\.(\\*|[0-9]{2})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:sgtin:([0-9]{10})\\.(\\*|[0-9]{3})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
@@ -102,7 +99,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:idpat:sgtin:([0-9]{7})\\.(\\*|[0-9]{6})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:sgtin:([0-9]{6})\\.(\\*|[0-9]{7})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String[] LGTINList = new String[] {
+	static final String[] LGTINList = new String[] {
 			"^urn:epc:class:lgtin:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:class:lgtin:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:class:lgtin:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
@@ -111,7 +108,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:class:lgtin:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:class:lgtin:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String[] UPUIList = new String[] {
+	static final String[] UPUIList = new String[] {
 			"^urn:epc:id:upui:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
 			"^urn:epc:id:upui:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
 			"^urn:epc:id:upui:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
@@ -120,7 +117,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:upui:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
 			"^urn:epc:id:upui:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,28})$" };
 
-	private static final String[] SGCNList = new String[] {
+	static final String[] SGCNList = new String[] {
 			"^urn:epc:id:sgcn:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
 			"^urn:epc:id:sgcn:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
 			"^urn:epc:id:sgcn:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
@@ -129,13 +126,13 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:sgcn:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
 			"^urn:epc:id:sgcn:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{0,12})$" };
 
-	private static final String[] cSGCNList = new String[] { "^urn:epc:idpat:sgcn:([0-9]{12})\\.([0-9]{0})\\.\\*$",
+	static final String[] cSGCNList = new String[] { "^urn:epc:idpat:sgcn:([0-9]{12})\\.([0-9]{0})\\.\\*$",
 			"^urn:epc:idpat:sgcn:([0-9]{11})\\.([0-9]{1})\\.\\*$",
 			"^urn:epc:idpat:sgcn:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:sgcn:([0-9]{9})\\.([0-9]{3})\\.\\*$",
 			"^urn:epc:idpat:sgcn:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:sgcn:([0-9]{7})\\.([0-9]{5})\\.\\*$",
 			"^urn:epc:idpat:sgcn:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
 
-	private static final String[] CPIList = new String[] {
+	static final String[] CPIList = new String[] {
 			"^urn:epc:id:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
 			"^urn:epc:id:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
 			"^urn:epc:id:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
@@ -144,7 +141,7 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
 			"^urn:epc:id:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.([!%-?A-Z_a-z\\x22]{1,12})$" };
 
-	private static final String[] cCPIList = new String[] {
+	static final String[] cCPIList = new String[] {
 			"^urn:epc:idpat:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.\\*$",
 			"^urn:epc:idpat:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.\\*$",
 			"^urn:epc:idpat:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.\\*$",
@@ -153,17 +150,17 @@ public class TagDataTranslationEngine {
 			"^urn:epc:idpat:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.\\*$",
 			"^urn:epc:idpat:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.\\*$" };
 
-	private static final String[] GSINList = new String[] { "^urn:epc:id:gsin:([0-9]{12})\\.([0-9]{4})$",
+	static final String[] GSINList = new String[] { "^urn:epc:id:gsin:([0-9]{12})\\.([0-9]{4})$",
 			"^urn:epc:id:gsin:([0-9]{11})\\.([0-9]{5})$", "^urn:epc:id:gsin:([0-9]{10})\\.([0-9]{6})$",
 			"^urn:epc:id:gsin:([0-9]{9})\\.([0-9]{7})$", "^urn:epc:id:gsin:([0-9]{8})\\.([0-9]{8})$",
 			"^urn:epc:id:gsin:([0-9]{7})\\.([0-9]{9})$", "^urn:epc:id:gsin:([0-9]{6})\\.([0-9]{10})$" };
 
-	private static final String[] GINCList = new String[] { "^urn:epc:id:ginc:([0-9]{12})\\.([0-9]{1,18})$",
+	static final String[] GINCList = new String[] { "^urn:epc:id:ginc:([0-9]{12})\\.([0-9]{1,18})$",
 			"^urn:epc:id:ginc:([0-9]{11})\\.([0-9]{1,19})$", "^urn:epc:id:ginc:([0-9]{10})\\.([0-9]{1,20})$",
 			"^urn:epc:id:ginc:([0-9]{9})\\.([0-9]{1,21})$", "^urn:epc:id:ginc:([0-9]{8})\\.([0-9]{1,22})$",
 			"^urn:epc:id:ginc:([0-9]{7})\\.([0-9]{1,23})$", "^urn:epc:id:ginc:([0-9]{6})\\.([0-9]{1,24})$" };
 
-	private static final String[] SSCCList = new String[] { "^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
+	static final String[] SSCCList = new String[] { "^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
 			"^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$",
 			"^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$",
 			"^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$",
@@ -173,11 +170,11 @@ public class TagDataTranslationEngine {
 			"^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$", "^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$",
 			"^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$" };
 
-	private static final String[] USDODList = new String[] { "^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$",
+	static final String[] USDODList = new String[] { "^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$",
 
 			"^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5,6})\\.([0-9]{1,11})$" };
 
-	private static final String[] ITIPList = new String[] {
+	static final String[] ITIPList = new String[] {
 			"^urn:epc:idpat:itip:([0-9]{12})\\.([0-9]{1})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:itip:([0-9]{11})\\.([0-9]{2})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:itip:([0-9]{10})\\.([0-9]{3})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
@@ -186,9 +183,9 @@ public class TagDataTranslationEngine {
 			"^urn:epc:idpat:itip:([0-9]{7})\\.([0-9]{6})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
 			"^urn:epc:idpat:itip:([0-9]{6})\\.([0-9]{7})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
 
-	private static final String BIC = "^urn:epc:id:bic:([A-Z]{3})(J,U,Z]{1})([0-9]{6})([0-9]{1})$";
+	static final String BIC = "^urn:epc:id:bic:([A-Z]{3})(J,U,Z]{1})([0-9]{6})([0-9]{1})$";
 
-	private static final String IMOVN = "^urn:epc:id:imovn:([0-9]{7})$";
+	static final String IMOVN = "^urn:epc:id:imovn:([0-9]{7})$";
 
 	public static void checkEPCPureIdentity(HashMap<String, Integer> gcpLengthList, String epcString)
 			throws ValidationException {
@@ -658,21 +655,17 @@ public class TagDataTranslationEngine {
 		return e;
 	}
 
-	public static JsonObject parseEPC(String epc) {
-		JsonObject obj = new JsonObject();
-		obj.put("epc", epc);
-		try {
-			checkEPCPureIdentity(StaticResource.gcpLength, epc);
-			obj.put("dl", getDL(epc));
-		} catch (ValidationException e) {
-			try {
-				checkEPCClassPureIdentity(StaticResource.gcpLength, epc);
-				obj.put("dl", getDL(epc));
-			} catch (ValidationException e1) {
-				obj.put("invalid", e.getReason());
-			}
+	public static JsonObject parseEPC(String epc, IdentifierType type) throws IllegalArgumentException {
+		if (type == IdentifierType.GTIN) {
+			GlobalTradeItemNumber gtin = new GlobalTradeItemNumber(StaticResource.gcpLength, epc);
+			return gtin.toJson().put("type", "GTIN");
+		} else if (type == IdentifierType.SSCC) {
+			SerialShippingContainerCode sscc = new SerialShippingContainerCode(StaticResource.gcpLength, epc);
+			return sscc.toJson().put("type", "SSCC");
+		} else if( type == IdentifierType.SGLN) {
+			GlobalLocationNumber gln = new GlobalLocationNumber(StaticResource.gcpLength, epc);
+			return gln.toJson().put("type", "SGLN");
 		}
-		return obj;
+		return null;
 	}
-
 }

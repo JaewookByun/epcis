@@ -27,7 +27,7 @@ import org.oliot.epcis.query.SOAPQueryMetadataHandler;
 import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.TriggerEngine;
-import org.oliot.epcis.query.converter.TagDataTranslationServiceHandler;
+import org.oliot.epcis.query.converter.tdt.TagDataTranslationServiceHandler;
 import org.oliot.epcis.query.response.StaticResponseBuilder;
 import org.oliot.epcis.resource.DynamicResource;
 
