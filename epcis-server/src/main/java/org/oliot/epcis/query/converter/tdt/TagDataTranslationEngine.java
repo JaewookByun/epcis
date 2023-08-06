@@ -655,14 +655,170 @@ public class TagDataTranslationEngine {
 		return e;
 	}
 
-	public static JsonObject parseEPC(String epc, IdentifierType type) throws IllegalArgumentException {
+	public static IdentifierType getEPCType(String epcString) {
+		if (epcString.startsWith("urn:epc:id:adi")) {
+			for (int i = 0; i < ADIVarList.length; i++) {
+				if (epcString.matches(ADIVarList[i])) {
+					return IdentifierType.ADI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:gdti")) {
+			for (int i = 0; i < GDTIList.length; i++) {
+				if (epcString.matches(GDTIList[i])) {
+					return IdentifierType.GDTI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:gdti")) {
+			for (int i = 0; i < cGDTIList.length; i++) {
+				if (epcString.matches(cGDTIList[i])) {
+					return IdentifierType.GDTI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:giai")) {
+			for (int i = 0; i < GIAIList.length; i++) {
+				if (epcString.matches(GIAIList[i])) {
+					return IdentifierType.GIAI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:gid")) {
+			if (epcString.matches(GID)) {
+				return IdentifierType.GID;
+			}
+		} else if (epcString.startsWith("urn:epc:id:grai")) {
+			for (int i = 0; i < GRAIList.length; i++) {
+				if (epcString.matches(GRAIList[i])) {
+					return IdentifierType.GRAI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
+			for (int i = 0; i < cGRAIList.length; i++) {
+				if (epcString.matches(cGRAIList[i])) {
+					return IdentifierType.GRAI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
+			for (int i = 0; i < GSRNList.length; i++) {
+				if (epcString.matches(GSRNList[i])) {
+					return IdentifierType.GSRN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
+			for (int i = 0; i < GSRNPList.length; i++) {
+				if (epcString.matches(GSRNPList[i])) {
+					return IdentifierType.GSRNP;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:sgln")) {
+			for (int i = 0; i < SGLNList.length; i++) {
+				if (epcString.matches(SGLNList[i])) {
+					return IdentifierType.SGLN;
+				}
+			}
+		} else if (epcString.startsWith("^urn:epc:id:pgln")) {
+			for (int i = 0; i < PGLNList.length; i++) {
+				if (epcString.matches(PGLNList[i])) {
+					return IdentifierType.PGLN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:sgtin")) {
+			for (int i = 0; i < SGTINList.length; i++) {
+				if (epcString.matches(SGTINList[i])) {
+					return IdentifierType.GTIN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:sgtin")) {
+			for (int i = 0; i < cGTINList.length; i++) {
+				if (epcString.matches(cGTINList[i])) {
+					return IdentifierType.GTIN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:class:lgtin")) {
+			for (int i = 0; i < LGTINList.length; i++) {
+				if (epcString.matches(LGTINList[i])) {
+					return IdentifierType.GTIN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:upui")) {
+			for (int i = 0; i < UPUIList.length; i++) {
+				if (epcString.matches(UPUIList[i])) {
+					return IdentifierType.UPUI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:sgcn")) {
+			for (int i = 0; i < SGCNList.length; i++) {
+				if (epcString.matches(SGCNList[i])) {
+					return IdentifierType.SGCN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:sgcn")) {
+			for (int i = 0; i < cSGCNList.length; i++) {
+				if (epcString.matches(cSGCNList[i])) {
+					return IdentifierType.SGCN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:cpi")) {
+			for (int i = 0; i < CPIList.length; i++) {
+				if (epcString.matches(CPIList[i])) {
+					return IdentifierType.CPI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {
+			for (int i = 0; i < cCPIList.length; i++) {
+				if (epcString.matches(cCPIList[i])) {
+					return IdentifierType.CPI;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:gsin")) {
+			for (int i = 0; i < GSINList.length; i++) {
+				if (epcString.matches(GSINList[i])) {
+					return IdentifierType.GSIN;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:ginc")) {
+			for (int i = 0; i < GINCList.length; i++) {
+				if (epcString.matches(GINCList[i])) {
+					return IdentifierType.GINC;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:sscc")) {
+			for (int i = 0; i < SSCCList.length; i++) {
+				if (epcString.matches(SSCCList[i])) {
+					return IdentifierType.SSCC;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:usdod")) {
+			for (int i = 0; i < USDODList.length; i++) {
+				if (epcString.matches(USDODList[i])) {
+					return IdentifierType.USDOD;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
+			for (int i = 0; i < ITIPList.length; i++) {
+				if (epcString.matches(ITIPList[i])) {
+					return IdentifierType.ITIP;
+				}
+			}
+		} else if (epcString.startsWith("urn:epc:id:bic")) {
+			if (epcString.matches(BIC)) {
+				return IdentifierType.BIC;
+			}
+		} else if (epcString.startsWith("urn:epc:id:imovn")) {
+			if (epcString.matches(IMOVN)) {
+				return IdentifierType.IMOVN;
+			}
+		}
+		return null;
+	}
+
+	public static JsonObject parseEPC(String epc) throws IllegalArgumentException {
+		IdentifierType type = getEPCType(epc);
 		if (type == IdentifierType.GTIN) {
 			GlobalTradeItemNumber gtin = new GlobalTradeItemNumber(StaticResource.gcpLength, epc);
 			return gtin.toJson().put("type", "GTIN");
 		} else if (type == IdentifierType.SSCC) {
 			SerialShippingContainerCode sscc = new SerialShippingContainerCode(StaticResource.gcpLength, epc);
 			return sscc.toJson().put("type", "SSCC");
-		} else if( type == IdentifierType.SGLN) {
+		} else if (type == IdentifierType.SGLN) {
 			GlobalLocationNumber gln = new GlobalLocationNumber(StaticResource.gcpLength, epc);
 			return gln.toJson().put("type", "SGLN");
 		}
