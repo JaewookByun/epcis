@@ -1,6 +1,12 @@
 package org.oliot.epcis.query.converter.tdt;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+
+import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.resource.DigitalLinkPatterns;
+import org.oliot.epcis.resource.EPCPatterns;
+import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
 
@@ -14,30 +20,52 @@ public class SerialShippingContainerCode {
 	private String epc;
 	private String dl;
 
-	public static boolean isSSCC(String epc) {
-		boolean isSSCC = false;
-		for (int i = 0; i < TagDataTranslationEngine.SSCCList.length; i++) {
-			if (epc.matches(TagDataTranslationEngine.SSCCList[i])) {
-				isSSCC = true;
-			}
+	public Matcher getEPCMatcher(String epc) {
+		for (int i = 0; i < EPCPatterns.SSCCList.length; i++) {
+			Matcher m = EPCPatterns.SSCCList[i].matcher(epc);
+			if (m.find())
+				return m;
 		}
-		return isSSCC;
+		return null;
 	}
 
-	public SerialShippingContainerCode(HashMap<String, Integer> gcpLengthList, String epc)
-			throws IllegalArgumentException {
-		if (!isSSCC(epc))
-			throw new IllegalArgumentException("Illegal SGTIN");
-		String[] elemArr = epc.split(":");
-		String last = elemArr[elemArr.length - 1];
-		String[] numArr = last.split("\\.");
-		companyPrefix = numArr[0];
-		extension = numArr[1].substring(0, 1);
-		serialRef = numArr[1].substring(1, numArr[1].length());
-		checkDigit = getCheckDigit(extension + companyPrefix + serialRef);
-		isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
-		this.epc = epc;
-		this.dl = "https://id.gs1.org/00/" + extension + companyPrefix + serialRef + checkDigit;
+	public Matcher getDLMatcher(String dl) {
+		Matcher m = DigitalLinkPatterns.SSCC.matcher(dl);
+		if (m.find())
+			return m;
+		return null;
+	}
+
+	public SerialShippingContainerCode(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
+			throws ValidationException {
+		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
+			Matcher m = getEPCMatcher(id);
+			if (m == null)
+				throw new ValidationException("Illegal SSCC");
+			companyPrefix = m.group(1);
+			extension = m.group(2);
+			serialRef = m.group(3);
+			checkDigit = getCheckDigit(extension + companyPrefix + serialRef);
+			isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
+			this.epc = id;
+			this.dl = "https://id.gs1.org/00/" + extension + companyPrefix + serialRef + checkDigit;
+		} else if (scheme == CodeScheme.GS1DigitalLink) {
+			Matcher m = getDLMatcher(id);
+			if (m == null)
+				throw new ValidationException("Illegal SSCC");
+			extension = m.group(1);
+			String companyPrefixSerialRef = m.group(2);
+			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixSerialRef);
+			companyPrefix = companyPrefixSerialRef.substring(0, gcpLength);
+			serialRef = companyPrefixSerialRef.substring(gcpLength);
+			checkDigit = m.group(3);
+			if (!checkDigit.equals(getCheckDigit(extension + companyPrefix + serialRef)))
+				throw new IllegalArgumentException("Invalid check digit");
+			isLicensedCompanyPrefix = true;
+			this.dl = id;
+			this.epc = "urn:epc:id:sscc:" + companyPrefix + "." + extension + serialRef;
+		}
+
 	}
 
 	public String getCheckDigit(String indicatorSSCC) {

@@ -7,185 +7,9 @@ import org.oliot.epcis.model.cbv.Comp;
 import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
+import static org.oliot.epcis.resource.EPCPatterns.*;
 
 public class TagDataTranslationEngine {
-	static final String[] ADIVarList = new String[] { "^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.([0-9A-Z/-]{1,30})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.([0-9A-Z/-]{1,32})\\.([0-9A-Z/-]{1,30})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.\\.(#[0-9A-Z/-]{1,29})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{5})\\.([0-9A-Z/-]{1,32})\\.(#[0-9A-Z/-]{1,29})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.\\.([0-9A-Z/-]{1,30})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.([0-9A-Z/-]{1,32})\\.([0-9A-Z/-]{1,30})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.\\.(#[0-9A-Z/-]{1,29})$",
-			"^urn:epc:id:adi:([0-9A-HJ-NP-Z]{6})\\.([0-9A-Z/-]{1,32})\\.(#[0-9A-Z/-]{1,29})$" };
-
-	static final String[] GDTIList = new String[] { "^urn:epc:id:gdti:([0-9]{12})\\.([0-9]{0})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{11})\\.([0-9]{1})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{10})\\.([0-9]{2})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{9})\\.([0-9]{3})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{8})\\.([0-9]{4})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{0,17})$",
-			"^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{0,17})$" };
-
-	static final String[] cGDTIList = new String[] { "^urn:epc:idpat:gdti:([0-9]{12})\\.([0-9]{0})\\.\\*$",
-			"^urn:epc:idpat:gdti:([0-9]{11})\\.([0-9]{1})\\.\\*$",
-			"^urn:epc:idpat:gdti:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:gdti:([0-9]{9})\\.([0-9]{3})\\.\\*$",
-			"^urn:epc:idpat:gdti:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:gdti:([0-9]{7})\\.([0-9]{5})\\.\\*$",
-			"^urn:epc:idpat:gdti:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
-
-	static final String[] GIAIList = new String[] { "^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$",
-			"^urn:epc:id:giai:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})$",
-			"^urn:epc:id:giai:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:giai:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})$",
-			"^urn:epc:id:giai:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})$",
-			"^urn:epc:id:giai:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})$",
-			"^urn:epc:id:giai:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})$" };
-
-	static final String GID = "^urn:epc:id:gid:([0-9]{1,9})\\.([0-9]{1,8})\\.([0-9]{1,11})$";
-
-	static final String[] GRAIList = new String[] { "^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([0-9]{1,6})$",
-			"^urn:epc:id:grai:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{9})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{8})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,16})$",
-			"^urn:epc:id:grai:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,16})$" };
-
-	static final String[] cGRAIList = new String[] { "^urn:epc:idpat:grai:([0-9]{12})\\.([0-9]{0})\\.\\*",
-			"^urn:epc:idpat:grai:([0-9]{11})\\.([0-9]{1})\\.\\*$",
-			"^urn:epc:idpat:grai:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:grai:([0-9]{9})\\.([0-9]{3})\\.\\*$",
-			"^urn:epc:idpat:grai:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:grai:([0-9]{7})\\.([0-9]{5})\\.\\*$",
-			"^urn:epc:idpat:grai:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
-
-	static final String[] GSRNList = new String[] { "^urn:epc:id:gsrn:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:gsrn:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:gsrn:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:gsrn:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:gsrn:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:gsrn:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:gsrn:([0-9]{6})\\.([0-9]{11})$" };
-
-	static final String[] GSRNPList = new String[] { "^urn:epc:id:gsrnp:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:gsrnp:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:gsrnp:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:gsrnp:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:gsrnp:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:gsrnp:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:gsrnp:([0-9]{6})\\.([0-9]{11})$" };
-
-	static final String[] SGLNList = new String[] {
-			"^urn:epc:id:sgln:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{9})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{8})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgln:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
-
-	static final String[] PGLNList = new String[] { "^urn:epc:id:pgln:([0-9]{12})\\.([0-9]{0})$",
-			"^urn:epc:id:pgln:([0-9]{11})\\.([0-9]{1})$", "^urn:epc:id:pgln:([0-9]{10})\\.([0-9]{2})$",
-			"^urn:epc:id:pgln:([0-9]{9})\\.([0-9]{3})$", "^urn:epc:id:pgln:([0-9]{8})\\.([0-9]{4})$",
-			"^urn:epc:id:pgln:([0-9]{7})\\.([0-9]{5})$", "^urn:epc:id:pgln:([0-9]{6})\\.([0-9]{6})$" };
-
-	static final String[] SGTINList = new String[] {
-			"^urn:epc:id:sgtin:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{9})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{8})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:id:sgtin:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
-
-	static final String[] cGTINList = new String[] {
-			"^urn:epc:idpat:sgtin:([0-9]{12})\\.(\\*|[0-9]{1})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{11})\\.(\\*|[0-9]{2})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{10})\\.(\\*|[0-9]{3})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{9})\\.(\\*|[0-9]{4})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{8})\\.(\\*|[0-9]{5})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{7})\\.(\\*|[0-9]{6})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:sgtin:([0-9]{6})\\.(\\*|[0-9]{7})\\.(\\*|[!%-?A-Z_a-z\\x22]{1,20})$" };
-
-	static final String[] LGTINList = new String[] {
-			"^urn:epc:class:lgtin:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{9})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{8})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:class:lgtin:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
-
-	static final String[] UPUIList = new String[] {
-			"^urn:epc:id:upui:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{9})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{8})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,28})$",
-			"^urn:epc:id:upui:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,28})$" };
-
-	static final String[] SGCNList = new String[] {
-			"^urn:epc:id:sgcn:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{9})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{8})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{0,12})$",
-			"^urn:epc:id:sgcn:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{0,12})$" };
-
-	static final String[] cSGCNList = new String[] { "^urn:epc:idpat:sgcn:([0-9]{12})\\.([0-9]{0})\\.\\*$",
-			"^urn:epc:idpat:sgcn:([0-9]{11})\\.([0-9]{1})\\.\\*$",
-			"^urn:epc:idpat:sgcn:([0-9]{10})\\.([0-9]{2})\\.\\*$", "^urn:epc:idpat:sgcn:([0-9]{9})\\.([0-9]{3})\\.\\*$",
-			"^urn:epc:idpat:sgcn:([0-9]{8})\\.([0-9]{4})\\.\\*$", "^urn:epc:idpat:sgcn:([0-9]{7})\\.([0-9]{5})\\.\\*$",
-			"^urn:epc:idpat:sgcn:([0-9]{6})\\.([0-9]{6})\\.\\*$" };
-
-	static final String[] CPIList = new String[] {
-			"^urn:epc:id:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.([!%-?A-Z_a-z\\x22]{1,12})$",
-			"^urn:epc:id:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.([!%-?A-Z_a-z\\x22]{1,12})$" };
-
-	static final String[] cCPIList = new String[] {
-			"^urn:epc:idpat:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.\\*$",
-			"^urn:epc:idpat:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.\\*$" };
-
-	static final String[] GSINList = new String[] { "^urn:epc:id:gsin:([0-9]{12})\\.([0-9]{4})$",
-			"^urn:epc:id:gsin:([0-9]{11})\\.([0-9]{5})$", "^urn:epc:id:gsin:([0-9]{10})\\.([0-9]{6})$",
-			"^urn:epc:id:gsin:([0-9]{9})\\.([0-9]{7})$", "^urn:epc:id:gsin:([0-9]{8})\\.([0-9]{8})$",
-			"^urn:epc:id:gsin:([0-9]{7})\\.([0-9]{9})$", "^urn:epc:id:gsin:([0-9]{6})\\.([0-9]{10})$" };
-
-	static final String[] GINCList = new String[] { "^urn:epc:id:ginc:([0-9]{12})\\.([0-9]{1,18})$",
-			"^urn:epc:id:ginc:([0-9]{11})\\.([0-9]{1,19})$", "^urn:epc:id:ginc:([0-9]{10})\\.([0-9]{1,20})$",
-			"^urn:epc:id:ginc:([0-9]{9})\\.([0-9]{1,21})$", "^urn:epc:id:ginc:([0-9]{8})\\.([0-9]{1,22})$",
-			"^urn:epc:id:ginc:([0-9]{7})\\.([0-9]{1,23})$", "^urn:epc:id:ginc:([0-9]{6})\\.([0-9]{1,24})$" };
-
-	static final String[] SSCCList = new String[] { "^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$",
-			"^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$", "^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$",
-			"^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$", "^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$",
-			"^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$", "^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$",
-
-			"^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{5})$", "^urn:epc:id:sscc:([0-9]{11})\\.([0-9]{6})$",
-			"^urn:epc:id:sscc:([0-9]{10})\\.([0-9]{7})$", "^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{8})$",
-			"^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{9})$", "^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{10})$",
-			"^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{11})$" };
-
-	static final String[] USDODList = new String[] { "^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$",
-
-			"^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5,6})\\.([0-9]{1,11})$" };
-
-	static final String[] ITIPList = new String[] {
-			"^urn:epc:idpat:itip:([0-9]{12})\\.([0-9]{1})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{11})\\.([0-9]{2})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{10})\\.([0-9]{3})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{9})\\.([0-9]{4})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{8})\\.([0-9]{5})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{7})\\.([0-9]{6})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$",
-			"^urn:epc:idpat:itip:([0-9]{6})\\.([0-9]{7})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$" };
-
-	static final String BIC = "^urn:epc:id:bic:([A-Z]{3})(J,U,Z]{1})([0-9]{6})([0-9]{1})$";
-
-	static final String IMOVN = "^urn:epc:id:imovn:([0-9]{7})$";
 
 	public static void checkEPCPureIdentity(HashMap<String, Integer> gcpLengthList, String epcString)
 			throws ValidationException {
@@ -207,112 +31,93 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:sgtin")) {
 			for (int i = 0; i < SGTINList.length; i++) {
-				if (epcString.matches(SGTINList[i])) {
+				if (SGTINList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:sscc")) {
 			for (int i = 0; i < SSCCList.length; i++) {
-				if (epcString.matches(SSCCList[i])) {
+				if (SSCCList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:sgln")) {
 			for (int i = 0; i < SGLNList.length; i++) {
-				if (epcString.matches(SGLNList[i])) {
+				if (SGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:grai")) {
 			for (int i = 0; i < GRAIList.length; i++) {
-				if (epcString.matches(GRAIList[i])) {
+				if (GRAIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:giai")) {
 			for (int i = 0; i < GIAIList.length; i++) {
-				if (epcString.matches(GIAIList[i])) {
+				if (GIAIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
 			for (int i = 0; i < GSRNList.length; i++) {
-				if (epcString.matches(GSRNList[i])) {
+				if (GSRNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
 			for (int i = 0; i < GSRNPList.length; i++) {
-				if (epcString.matches(GSRNPList[i])) {
+				if (GSRNPList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gdti")) {
 			for (int i = 0; i < GDTIList.length; i++) {
-				if (epcString.matches(GDTIList[i])) {
+				if (GDTIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:cpi")) {
 			for (int i = 0; i < CPIList.length; i++) {
-				if (epcString.matches(CPIList[i])) {
+				if (CPIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:sgcn")) {
 			for (int i = 0; i < SGCNList.length; i++) {
-				if (epcString.matches(SGCNList[i])) {
+				if (SGCNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:ginc")) {
 			for (int i = 0; i < GINCList.length; i++) {
-				if (epcString.matches(GINCList[i])) {
+				if (GINCList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gsin")) {
 			for (int i = 0; i < GSINList.length; i++) {
-				if (epcString.matches(GSINList[i])) {
+				if (GSINList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:upui")) {
 			for (int i = 0; i < UPUIList.length; i++) {
-				if (epcString.matches(UPUIList[i])) {
+				if (UPUIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("^urn:epc:id:pgln")) {
 			for (int i = 0; i < PGLNList.length; i++) {
-				if (epcString.matches(PGLNList[i])) {
+				if (PGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gid")) {
-			if (epcString.matches(GID)) {
+			if (GID.matcher(epcString).find())
 				return;
-			}
 		} else if (epcString.startsWith("urn:epc:id:usdod")) {
 			for (int i = 0; i < USDODList.length; i++) {
-				if (epcString.matches(USDODList[i])) {
+				if (USDODList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:adi")) {
 			for (int i = 0; i < ADIVarList.length; i++) {
-				if (epcString.matches(ADIVarList[i])) {
+				if (ADIVarList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:bic")) {
-			if (epcString.matches(BIC)) {
+			if (BIC.matcher(epcString).find())
 				return;
-			}
 		} else if (epcString.startsWith("urn:epc:id:imovn")) {
-			if (epcString.matches(IMOVN)) {
+			if (IMOVN.matcher(epcString).find())
 				return;
-			}
 		}
 		throw new ValidationException(epcString + " should comply with EPC Pure Identity format");
 	}
@@ -331,46 +136,39 @@ public class TagDataTranslationEngine {
 
 		// Class-level object identifier (8.3.1, CBV)
 		if (epcString.startsWith("urn:epc:idpat:sgtin")) {
-			for (int i = 0; i < cGTINList.length; i++) {
-				if (epcString.matches(cGTINList[i])) {
+			for (int i = 0; i < GTINList.length; i++) {
+				if (GTINList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:class:lgtin")) {
 			for (int i = 0; i < LGTINList.length; i++) {
-				if (epcString.matches(LGTINList[i])) {
+				if (LGTINList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
 			for (int i = 0; i < cGRAIList.length; i++) {
-				if (epcString.matches(cGRAIList[i])) {
+				if (cGRAIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:gdti")) {
 			for (int i = 0; i < cGDTIList.length; i++) {
-				if (epcString.matches(cGDTIList[i])) {
+				if (cGDTIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:sgcn")) {
 			for (int i = 0; i < cSGCNList.length; i++) {
-				if (epcString.matches(cSGCNList[i])) {
+				if (cSGCNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {
 			for (int i = 0; i < cCPIList.length; i++) {
-				if (epcString.matches(cCPIList[i])) {
+				if (cCPIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
 			for (int i = 0; i < ITIPList.length; i++) {
-				if (epcString.matches(ITIPList[i])) {
+				if (ITIPList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 
@@ -393,15 +191,13 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:gdti")) {
 			for (int i = 0; i < GDTIList.length; i++) {
-				if (epcString.matches(GDTIList[i])) {
+				if (GDTIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
 			for (int i = 0; i < GSRNList.length; i++) {
-				if (epcString.matches(GSRNList[i])) {
+				if (GSRNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 		throw new ValidationException(
@@ -422,15 +218,13 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:sgln")) {
 			for (int i = 0; i < SGLNList.length; i++) {
-				if (epcString.matches(SGLNList[i])) {
+				if (SGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		} else if (epcString.startsWith("urn:epc:id:pgln")) {
 			for (int i = 0; i < PGLNList.length; i++) {
-				if (epcString.matches(PGLNList[i])) {
+				if (PGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 		throw new ValidationException(
@@ -451,9 +245,8 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:pgln")) {
 			for (int i = 0; i < PGLNList.length; i++) {
-				if (epcString.matches(PGLNList[i])) {
+				if (PGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 		throw new ValidationException(epcString + " should comply with pure identity party identifier format (PGLN).");
@@ -473,9 +266,8 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:gdti")) {
 			for (int i = 0; i < GDTIList.length; i++) {
-				if (epcString.matches(GDTIList[i])) {
+				if (GDTIList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 		throw new ValidationException(
@@ -496,9 +288,8 @@ public class TagDataTranslationEngine {
 
 		if (epcString.startsWith("urn:epc:id:sgln")) {
 			for (int i = 0; i < SGLNList.length; i++) {
-				if (epcString.matches(SGLNList[i])) {
+				if (SGLNList[i].matcher(epcString).find())
 					return;
-				}
 			}
 		}
 		throw new ValidationException(
@@ -655,173 +446,196 @@ public class TagDataTranslationEngine {
 		return e;
 	}
 
-	public static IdentifierType getEPCType(String epcString) {
+	private static IdentifierType getEPCType(String epcString) {
 		if (epcString.startsWith("urn:epc:id:adi")) {
-			for (int i = 0; i < ADIVarList.length; i++) {
-				if (epcString.matches(ADIVarList[i])) {
-					return IdentifierType.ADI;
-				}
-			}
+			return IdentifierType.ADI;
 		} else if (epcString.startsWith("urn:epc:id:gdti")) {
-			for (int i = 0; i < GDTIList.length; i++) {
-				if (epcString.matches(GDTIList[i])) {
-					return IdentifierType.GDTI;
-				}
-			}
+			return IdentifierType.GDTI;
 		} else if (epcString.startsWith("urn:epc:idpat:gdti")) {
-			for (int i = 0; i < cGDTIList.length; i++) {
-				if (epcString.matches(cGDTIList[i])) {
-					return IdentifierType.GDTI;
-				}
-			}
+			return IdentifierType.GDTI;
 		} else if (epcString.startsWith("urn:epc:id:giai")) {
-			for (int i = 0; i < GIAIList.length; i++) {
-				if (epcString.matches(GIAIList[i])) {
-					return IdentifierType.GIAI;
-				}
-			}
+			return IdentifierType.GIAI;
 		} else if (epcString.startsWith("urn:epc:id:gid")) {
-			if (epcString.matches(GID)) {
-				return IdentifierType.GID;
-			}
+			return IdentifierType.GID;
 		} else if (epcString.startsWith("urn:epc:id:grai")) {
-			for (int i = 0; i < GRAIList.length; i++) {
-				if (epcString.matches(GRAIList[i])) {
-					return IdentifierType.GRAI;
-				}
-			}
+			return IdentifierType.GRAI;
 		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
-			for (int i = 0; i < cGRAIList.length; i++) {
-				if (epcString.matches(cGRAIList[i])) {
-					return IdentifierType.GRAI;
-				}
-			}
+			return IdentifierType.GRAI;
 		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
-			for (int i = 0; i < GSRNList.length; i++) {
-				if (epcString.matches(GSRNList[i])) {
-					return IdentifierType.GSRN;
-				}
-			}
+			return IdentifierType.GSRN;
 		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
-			for (int i = 0; i < GSRNPList.length; i++) {
-				if (epcString.matches(GSRNPList[i])) {
-					return IdentifierType.GSRNP;
-				}
-			}
+			return IdentifierType.GSRNP;
 		} else if (epcString.startsWith("urn:epc:id:sgln")) {
-			for (int i = 0; i < SGLNList.length; i++) {
-				if (epcString.matches(SGLNList[i])) {
-					return IdentifierType.SGLN;
-				}
-			}
+			return IdentifierType.SGLN;
 		} else if (epcString.startsWith("^urn:epc:id:pgln")) {
-			for (int i = 0; i < PGLNList.length; i++) {
-				if (epcString.matches(PGLNList[i])) {
-					return IdentifierType.PGLN;
-				}
-			}
+			return IdentifierType.PGLN;
 		} else if (epcString.startsWith("urn:epc:id:sgtin")) {
-			for (int i = 0; i < SGTINList.length; i++) {
-				if (epcString.matches(SGTINList[i])) {
-					return IdentifierType.GTIN;
-				}
-			}
+			return IdentifierType.SGTIN;
 		} else if (epcString.startsWith("urn:epc:idpat:sgtin")) {
-			for (int i = 0; i < cGTINList.length; i++) {
-				if (epcString.matches(cGTINList[i])) {
-					return IdentifierType.GTIN;
-				}
-			}
+			return IdentifierType.GTIN;
 		} else if (epcString.startsWith("urn:epc:class:lgtin")) {
-			for (int i = 0; i < LGTINList.length; i++) {
-				if (epcString.matches(LGTINList[i])) {
-					return IdentifierType.GTIN;
-				}
-			}
+			return IdentifierType.LGTIN;
 		} else if (epcString.startsWith("urn:epc:id:upui")) {
-			for (int i = 0; i < UPUIList.length; i++) {
-				if (epcString.matches(UPUIList[i])) {
-					return IdentifierType.UPUI;
-				}
-			}
+			return IdentifierType.UPUI;
 		} else if (epcString.startsWith("urn:epc:id:sgcn")) {
-			for (int i = 0; i < SGCNList.length; i++) {
-				if (epcString.matches(SGCNList[i])) {
-					return IdentifierType.SGCN;
-				}
-			}
+			return IdentifierType.SGCN;
 		} else if (epcString.startsWith("urn:epc:idpat:sgcn")) {
-			for (int i = 0; i < cSGCNList.length; i++) {
-				if (epcString.matches(cSGCNList[i])) {
-					return IdentifierType.SGCN;
-				}
-			}
+			return IdentifierType.SGCN;
 		} else if (epcString.startsWith("urn:epc:id:cpi")) {
-			for (int i = 0; i < CPIList.length; i++) {
-				if (epcString.matches(CPIList[i])) {
-					return IdentifierType.CPI;
-				}
-			}
+			return IdentifierType.CPI;
 		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {
-			for (int i = 0; i < cCPIList.length; i++) {
-				if (epcString.matches(cCPIList[i])) {
-					return IdentifierType.CPI;
-				}
-			}
+			return IdentifierType.CPI;
 		} else if (epcString.startsWith("urn:epc:id:gsin")) {
-			for (int i = 0; i < GSINList.length; i++) {
-				if (epcString.matches(GSINList[i])) {
-					return IdentifierType.GSIN;
-				}
-			}
+			return IdentifierType.GSIN;
 		} else if (epcString.startsWith("urn:epc:id:ginc")) {
-			for (int i = 0; i < GINCList.length; i++) {
-				if (epcString.matches(GINCList[i])) {
-					return IdentifierType.GINC;
-				}
-			}
+			return IdentifierType.GINC;
 		} else if (epcString.startsWith("urn:epc:id:sscc")) {
-			for (int i = 0; i < SSCCList.length; i++) {
-				if (epcString.matches(SSCCList[i])) {
-					return IdentifierType.SSCC;
-				}
-			}
+			return IdentifierType.SSCC;
 		} else if (epcString.startsWith("urn:epc:id:usdod")) {
-			for (int i = 0; i < USDODList.length; i++) {
-				if (epcString.matches(USDODList[i])) {
-					return IdentifierType.USDOD;
-				}
-			}
+			return IdentifierType.USDOD;
 		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
-			for (int i = 0; i < ITIPList.length; i++) {
-				if (epcString.matches(ITIPList[i])) {
-					return IdentifierType.ITIP;
-				}
-			}
+			return IdentifierType.ITIP;
 		} else if (epcString.startsWith("urn:epc:id:bic")) {
-			if (epcString.matches(BIC)) {
-				return IdentifierType.BIC;
-			}
+			return IdentifierType.BIC;
 		} else if (epcString.startsWith("urn:epc:id:imovn")) {
-			if (epcString.matches(IMOVN)) {
-				return IdentifierType.IMOVN;
-			}
+			return IdentifierType.IMOVN;
 		}
 		return null;
 	}
 
-	public static JsonObject parseEPC(String epc) throws IllegalArgumentException {
-		IdentifierType type = getEPCType(epc);
-		if (type == IdentifierType.GTIN) {
-			GlobalTradeItemNumber gtin = new GlobalTradeItemNumber(StaticResource.gcpLength, epc);
-			return gtin.toJson().put("type", "GTIN");
-		} else if (type == IdentifierType.SSCC) {
-			SerialShippingContainerCode sscc = new SerialShippingContainerCode(StaticResource.gcpLength, epc);
-			return sscc.toJson().put("type", "SSCC");
-		} else if (type == IdentifierType.SGLN) {
-			GlobalLocationNumber gln = new GlobalLocationNumber(StaticResource.gcpLength, epc);
-			return gln.toJson().put("type", "SGLN");
+	private static IdentifierType getDLType(String dl) {
+		if (dl.startsWith("urn:epc:id:adi")) {
+
+			return IdentifierType.ADI;
+
+		} else if (dl.startsWith("urn:epc:id:gdti")) {
+
+			return IdentifierType.GDTI;
+
+		} else if (dl.startsWith("urn:epc:idpat:gdti")) {
+
+			return IdentifierType.GDTI;
+
+		} else if (dl.startsWith("urn:epc:id:giai")) {
+
+			return IdentifierType.GIAI;
+
+		} else if (dl.startsWith("urn:epc:id:gid")) {
+
+			return IdentifierType.GID;
+
+		} else if (dl.startsWith("urn:epc:id:grai")) {
+
+			return IdentifierType.GRAI;
+
+		} else if (dl.startsWith("urn:epc:idpat:grai")) {
+
+			return IdentifierType.GRAI;
+
+		} else if (dl.startsWith("urn:epc:id:gsrn")) {
+
+			return IdentifierType.GSRN;
+
+		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
+
+			return IdentifierType.GSRNP;
+
+		} else if (dl.startsWith("urn:epc:id:sgln")) {
+
+			return IdentifierType.SGLN;
+
+		} else if (dl.startsWith("^urn:epc:id:pgln")) {
+
+			return IdentifierType.PGLN;
+
+		} else if (dl.contains("/01/") && !dl.contains("/21/") && !dl.contains("/10/")) {
+			return IdentifierType.GTIN;
+		} else if (dl.contains("/01/") && dl.contains("/21/")) {
+			return IdentifierType.SGTIN;
+		} else if (dl.contains("/01/") && dl.contains("/10/")) {
+			return IdentifierType.LGTIN;
+		} else if (dl.startsWith("urn:epc:id:upui")) {
+
+			return IdentifierType.UPUI;
+
+		} else if (dl.startsWith("urn:epc:id:sgcn")) {
+
+			return IdentifierType.SGCN;
+
+		} else if (dl.startsWith("urn:epc:idpat:sgcn")) {
+
+			return IdentifierType.SGCN;
+
+		} else if (dl.startsWith("urn:epc:id:cpi")) {
+
+			return IdentifierType.CPI;
+
+		} else if (dl.startsWith("urn:epc:idpat:cpi")) {
+
+			return IdentifierType.CPI;
+
+		} else if (dl.startsWith("urn:epc:id:gsin")) {
+
+			return IdentifierType.GSIN;
+
+		} else if (dl.startsWith("urn:epc:id:ginc")) {
+
+			return IdentifierType.GINC;
+
+		} else if (dl.contains("/00/")) {
+			return IdentifierType.SSCC;
+		} else if (dl.startsWith("urn:epc:id:usdod")) {
+
+			return IdentifierType.USDOD;
+
+		} else if (dl.startsWith("urn:epc:idpat:itip")) {
+
+			return IdentifierType.ITIP;
+		} else if (dl.startsWith("urn:epc:id:bic")) {
+			return IdentifierType.BIC;
+		} else if (dl.startsWith("urn:epc:id:imovn")) {
+			return IdentifierType.IMOVN;
 		}
+		return null;
+	}
+
+	public static JsonObject parse(String id) throws IllegalArgumentException, ValidationException {
+		if (id.startsWith("urn:epc")) {
+			IdentifierType type = getEPCType(id);
+			if (type == IdentifierType.GTIN) {
+				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson()
+						.put("type", "GTIN");
+			} else if (type == IdentifierType.LGTIN) {
+				return new GlobalTradeItemNumberWithLot(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "LGTIN");
+			} else if (type == IdentifierType.SGTIN) {
+				return new SerializedGlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "SGTIN");
+			} else if (type == IdentifierType.SSCC) {
+				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "SSCC");
+			} else if (type == IdentifierType.SGLN) {
+				return new GlobalLocationNumber(StaticResource.gcpLength, id).toJson().put("type", "SGLN");
+			}
+		} else if (id.startsWith("https://id.gs1.org/")) {
+			IdentifierType type = getDLType(id);
+			if (type == IdentifierType.GTIN) {
+				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
+						.put("type", "GTIN");
+			} else if (type == IdentifierType.LGTIN) {
+				return new GlobalTradeItemNumberWithLot(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson().put("type", "LGTIN");
+			} else if (type == IdentifierType.SGTIN) {
+				return new SerializedGlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson().put("type", "SGTIN");
+			} else if (type == IdentifierType.SSCC) {
+				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
+						.put("type", "SSCC");
+			} else if (type == IdentifierType.SGLN) {
+				return new GlobalLocationNumber(StaticResource.gcpLength, id).toJson().put("type", "SGLN");
+			}
+		}
+
 		return null;
 	}
 }

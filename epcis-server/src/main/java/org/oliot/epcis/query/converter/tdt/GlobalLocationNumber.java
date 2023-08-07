@@ -1,6 +1,9 @@
 package org.oliot.epcis.query.converter.tdt;
 
 import java.util.HashMap;
+import java.util.regex.Matcher;
+
+import org.oliot.epcis.resource.EPCPatterns;
 
 import io.vertx.core.json.JsonObject;
 
@@ -14,26 +17,24 @@ public class GlobalLocationNumber {
 	private String epc;
 	private String dl;
 
-	public static boolean isSGLN(String epc) {
-		boolean isSGLN = false;
-		for (int i = 0; i < TagDataTranslationEngine.SGLNList.length; i++) {
-			if (epc.matches(TagDataTranslationEngine.SGLNList[i])) {
-				isSGLN = true;
-			}
+	public Matcher getMatcher(String epc) {
+		for (int i = 0; i < EPCPatterns.SGLNList.length; i++) {
+			Matcher m = EPCPatterns.SGLNList[i].matcher(epc);
+			if(m.find())
+				return m;
 		}
-		return isSGLN;
+		return null;
 	}
 
 	public GlobalLocationNumber(HashMap<String, Integer> gcpLengthList, String epc) throws IllegalArgumentException {
-		if (!isSGLN(epc))
-			throw new IllegalArgumentException("Illegal SGTIN");
-		String[] elemArr = epc.split(":");
-		String last = elemArr[elemArr.length - 1];
-		String[] numArr = last.split("\\.");
-		companyPrefix = numArr[0];
-		locationRef = numArr[1];
+		Matcher m = getMatcher(epc);
+		if (m == null)
+			throw new IllegalArgumentException("Illegal SGLN");
+		
+		companyPrefix = m.group(1);
+		locationRef = m.group(2);
 		checkDigit = getCheckDigit(companyPrefix + locationRef);
-		glnExtension = numArr[2];
+		glnExtension = m.group(3);
 		isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
 		this.epc = epc;
 		if (glnExtension.equals("0")) {
