@@ -37,6 +37,13 @@ public class GlobalTradeItemNumberWithLot {
 		return null;
 	}
 
+	public static Matcher getDigitalLinkMatcher(String dl) {
+		Matcher m = DigitalLinkPatterns.LGTIN.matcher(dl);
+		if (m.find())
+			return m;
+		return null;
+	}
+
 	public GlobalTradeItemNumberWithLot(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
@@ -55,7 +62,7 @@ public class GlobalTradeItemNumberWithLot {
 		} else if (scheme == CodeScheme.GS1DigitalLink) {
 			Matcher m = getDLMatcher(id);
 			if (m == null)
-				throw new IllegalArgumentException("Illegal LGTIN");
+				throw new ValidationException("Illegal LGTIN");
 			indicator = m.group(1);
 			String companyPrefixItemRef = m.group(2);
 			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
@@ -63,7 +70,7 @@ public class GlobalTradeItemNumberWithLot {
 			itemRef = companyPrefixItemRef.substring(gcpLength);
 			checkDigit = m.group(3);
 			if (!checkDigit.equals(getCheckDigit(indicator + companyPrefix + itemRef)))
-				throw new IllegalArgumentException("Invalid check digit");
+				throw new ValidationException("Invalid check digit");
 			lotNumber = m.group(4);
 			isLicensedCompanyPrefix = true;
 			this.dl = id;
@@ -89,6 +96,40 @@ public class GlobalTradeItemNumberWithLot {
 				% 10;
 
 		return String.valueOf(correctCheckDigit);
+	}
+
+	public static boolean isValidCheckDigit(String indicatorGtin, String checkDigit) {
+		if (indicatorGtin.length() != 13) {
+			return false;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorGtin);
+
+		for (int i = 0; i < indicatorGtin.length(); i++) {
+			e[i] = Integer.parseInt(indicatorGtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12]) + e[1] + e[3] + e[5] + e[7] + e[9] + e[11])
+						% 10))
+				% 10;
+
+		return String.valueOf(correctCheckDigit).equals(checkDigit);
+	}
+
+	public static String toEPC(String dl) throws ValidationException {
+		Matcher m = getDigitalLinkMatcher(dl);
+		if (m == null)
+			throw new ValidationException("Illegal LGTIN");
+		String indicator = m.group(1);
+		String companyPrefixItemRef = m.group(2);
+		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
+		String companyPrefix = companyPrefixItemRef.substring(0, gcpLength);
+		String itemRef = companyPrefixItemRef.substring(gcpLength);
+		String checkDigit = m.group(3);
+		if (!isValidCheckDigit(indicator + companyPrefix + itemRef, checkDigit))
+			throw new ValidationException("Invalid check digit");
+		String lotNumber = m.group(4);
+		return "urn:epc:class:lgtin:" + companyPrefix + "." + indicator + itemRef + "." + lotNumber;
 	}
 
 	public JsonObject toJson() {

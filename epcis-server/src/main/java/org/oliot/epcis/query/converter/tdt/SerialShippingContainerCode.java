@@ -36,6 +36,13 @@ public class SerialShippingContainerCode {
 		return null;
 	}
 
+	public static Matcher getDigitalLinkMatcher(String dl) {
+		Matcher m = DigitalLinkPatterns.SSCC.matcher(dl);
+		if (m.find())
+			return m;
+		return null;
+	}
+
 	public SerialShippingContainerCode(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
@@ -60,7 +67,7 @@ public class SerialShippingContainerCode {
 			serialRef = companyPrefixSerialRef.substring(gcpLength);
 			checkDigit = m.group(3);
 			if (!checkDigit.equals(getCheckDigit(extension + companyPrefix + serialRef)))
-				throw new IllegalArgumentException("Invalid check digit");
+				throw new ValidationException("Invalid check digit");
 			isLicensedCompanyPrefix = true;
 			this.dl = id;
 			this.epc = "urn:epc:id:sscc:" + companyPrefix + "." + extension + serialRef;
@@ -82,6 +89,37 @@ public class SerialShippingContainerCode {
 				+ e[3] + e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10;
 
 		return String.valueOf(correctCheckDigit);
+	}
+
+	public static boolean isValidCheckDigit(String indicatorSSCC, String checkDigit) {
+		if (indicatorSSCC.length() != 17) {
+			return false;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorSSCC);
+
+		for (int i = 0; i < indicatorSSCC.length(); i++) {
+			e[i] = Integer.parseInt(indicatorSSCC.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1]
+				+ e[3] + e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10;
+
+		return String.valueOf(correctCheckDigit).equals(checkDigit);
+	}
+
+	public static String toEPC(String dl) throws ValidationException {
+		Matcher m = getDigitalLinkMatcher(dl);
+		if (m == null)
+			throw new ValidationException("Illegal SSCC");
+		String extension = m.group(1);
+		String companyPrefixSerialRef = m.group(2);
+		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixSerialRef);
+		String companyPrefix = companyPrefixSerialRef.substring(0, gcpLength);
+		String serialRef = companyPrefixSerialRef.substring(gcpLength);
+		String checkDigit = m.group(3);
+		if (!isValidCheckDigit(extension + companyPrefix + serialRef, checkDigit))
+			throw new ValidationException("Invalid check digit");
+		return "urn:epc:id:sscc:" + companyPrefix + "." + extension + serialRef;
 	}
 
 	public JsonObject toJson() {

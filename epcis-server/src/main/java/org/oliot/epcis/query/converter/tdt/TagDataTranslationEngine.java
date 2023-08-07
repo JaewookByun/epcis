@@ -10,7 +10,6 @@ import io.vertx.core.json.JsonObject;
 import static org.oliot.epcis.resource.EPCPatterns.*;
 
 public class TagDataTranslationEngine {
-
 	public static void checkEPCPureIdentity(HashMap<String, Integer> gcpLengthList, String epcString)
 			throws ValidationException {
 		if (!epcString.startsWith("urn:epc:id:")) {
@@ -540,7 +539,7 @@ public class TagDataTranslationEngine {
 
 			return IdentifierType.GSRNP;
 
-		} else if (dl.startsWith("urn:epc:id:sgln")) {
+		} else if (dl.contains("/414/")) {
 
 			return IdentifierType.SGLN;
 
@@ -599,6 +598,22 @@ public class TagDataTranslationEngine {
 		return null;
 	}
 
+	public static String toEPC(String dl) throws ValidationException {
+		IdentifierType type = getDLType(dl);
+		if (type == IdentifierType.GTIN) {
+			return GlobalTradeItemNumber.toEPC(dl);
+		} else if (type == IdentifierType.LGTIN) {
+			return GlobalTradeItemNumberWithLot.toEPC(dl);
+		} else if (type == IdentifierType.SGTIN) {
+			return SerializedGlobalTradeItemNumber.toEPC(dl);
+		} else if (type == IdentifierType.SSCC) {
+			return SerialShippingContainerCode.toEPC(dl);
+		} else if (type == IdentifierType.SGLN) {
+			return GlobalLocationNumber.toEPC(dl);
+		} else
+			return null;
+	}
+
 	public static JsonObject parse(String id) throws IllegalArgumentException, ValidationException {
 		if (id.startsWith("urn:epc")) {
 			IdentifierType type = getEPCType(id);
@@ -615,7 +630,8 @@ public class TagDataTranslationEngine {
 				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson().put("type", "SSCC");
 			} else if (type == IdentifierType.SGLN) {
-				return new GlobalLocationNumber(StaticResource.gcpLength, id).toJson().put("type", "SGLN");
+				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson()
+						.put("type", "SGLN");
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
@@ -632,7 +648,8 @@ public class TagDataTranslationEngine {
 				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
 						.put("type", "SSCC");
 			} else if (type == IdentifierType.SGLN) {
-				return new GlobalLocationNumber(StaticResource.gcpLength, id).toJson().put("type", "SGLN");
+				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
+						.put("type", "SGLN");
 			}
 		}
 

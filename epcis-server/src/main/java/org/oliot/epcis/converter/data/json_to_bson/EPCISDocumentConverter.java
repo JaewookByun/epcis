@@ -17,6 +17,8 @@ import org.oliot.epcis.model.cbv.BusinessTransactionType;
 import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.model.cbv.ErrorReason;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
+import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
+import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.gcp.core.DLConverter;
 
@@ -47,7 +49,7 @@ public class EPCISDocumentConverter {
 
 		// parent ID
 		if (event.containsKey("parentID")) {
-			String epc = getEPC(event.getString("parentID"));
+			String epc = TagDataTranslationEngine.toEPC(event.getString("parentID"));
 			if (epc != null) {
 				event.put("parentID", epc);
 			}
@@ -57,7 +59,7 @@ public class EPCISDocumentConverter {
 			// child EPCs: using epcList for query efficiency
 			List<String> newArray = new ArrayList<String>();
 			for (String elem : (List<String>) event.remove("childEPCs")) {
-				String epc = getEPC(elem);
+				String epc = TagDataTranslationEngine.toEPC(elem);
 				if (epc != null) {
 					newArray.add(epc);
 				} else
@@ -68,7 +70,7 @@ public class EPCISDocumentConverter {
 			// epcList
 			List<String> newArray = new ArrayList<String>();
 			for (String elem : event.getList("epcList", String.class)) {
-				String epc = getEPC(elem);
+				String epc = TagDataTranslationEngine.toEPC(elem);
 				if (epc != null) {
 					newArray.add(epc);
 				} else
@@ -80,7 +82,7 @@ public class EPCISDocumentConverter {
 		if (event.containsKey("inputEPCList")) {
 			List<String> newArray = new ArrayList<String>();
 			for (String elem : event.getList("inputEPCList", String.class)) {
-				String epc = getEPC(elem);
+				String epc = TagDataTranslationEngine.toEPC(elem);
 				if (epc != null) {
 					newArray.add(epc);
 				} else
@@ -92,7 +94,7 @@ public class EPCISDocumentConverter {
 		if (event.containsKey("outputEPCList")) {
 			List<String> newArray = new ArrayList<String>();
 			for (String elem : event.getList("outputEPCList", String.class)) {
-				String epc = getEPC(elem);
+				String epc = TagDataTranslationEngine.toEPC(elem);
 				if (epc != null) {
 					newArray.add(epc);
 				} else
@@ -108,7 +110,7 @@ public class EPCISDocumentConverter {
 			event.remove("childQuantityList");
 			for (Document qElem : array) {
 				if (qElem.containsKey("epcClass")) {
-					String epcClass = getEPC(qElem.getString("epcClass"));
+					String epcClass = TagDataTranslationEngine.toEPC(qElem.getString("epcClass"));
 					if (epcClass != null) {
 						qElem.put("epcClass", epcClass);
 					}
@@ -125,7 +127,7 @@ public class EPCISDocumentConverter {
 			List<Document> newArray = new ArrayList<Document>();
 			for (Document qElem : event.getList("quantityList", Document.class)) {
 				if (qElem.containsKey("epcClass")) {
-					String epcClass = getEPC(qElem.getString("epcClass"));
+					String epcClass = TagDataTranslationEngine.toEPC(qElem.getString("epcClass"));
 					if (epcClass != null) {
 						qElem.put("epcClass", epcClass);
 					}
@@ -142,7 +144,7 @@ public class EPCISDocumentConverter {
 			List<Document> newArray = new ArrayList<Document>();
 			for (Document qElem : event.getList("inputQuantityList", Document.class)) {
 				if (qElem.containsKey("epcClass")) {
-					String epcClass = getEPC(qElem.getString("epcClass"));
+					String epcClass = TagDataTranslationEngine.toEPC(qElem.getString("epcClass"));
 					if (epcClass != null) {
 						qElem.put("epcClass", epcClass);
 					}
@@ -159,7 +161,7 @@ public class EPCISDocumentConverter {
 			List<Document> newArray = new ArrayList<Document>();
 			for (Document qElem : event.getList("outputQuantityList", Document.class)) {
 				if (qElem.containsKey("epcClass")) {
-					String epcClass = getEPC(qElem.getString("epcClass"));
+					String epcClass = TagDataTranslationEngine.toEPC(qElem.getString("epcClass"));
 					if (epcClass != null) {
 						qElem.put("epcClass", epcClass);
 					}
@@ -188,13 +190,26 @@ public class EPCISDocumentConverter {
 		// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
 		if (event.containsKey("readPoint")) {
 			Document readPoint = event.get("readPoint", Document.class);
-			event.put("readPoint", readPoint.getString("id"));
+
+			String id = readPoint.getString("id");
+			String epc = GlobalLocationNumber.toEPC(readPoint.getString("id"));
+			if (epc != null)
+				event.put("readPoint", epc);
+			else
+				event.put("readPoint", id);
 		}
 		// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
 		// string
 		if (event.containsKey("bizLocation")) {
 			Document bizLocation = event.get("bizLocation", Document.class);
-			event.put("bizLocation", bizLocation.getString("id"));
+			String id = bizLocation.getString("id");
+			String epc = GlobalLocationNumber.toEPC(bizLocation.getString("id"));
+			if (epc != null)
+				event.put("bizLocation", epc);
+			else
+				event.put("bizLocation", id);
+
+			;
 		}
 		// bizTransactionList
 		if (event.containsKey("bizTransactionList")) {
@@ -654,7 +669,7 @@ public class EPCISDocumentConverter {
 		return key;
 	}
 
-	public static String getEPC(String uri) throws ValidationException {
+	public static String getEPC2(String uri) throws ValidationException {
 		if (uri == null)
 			return null;
 		if (!uri.contains("https://id.gs1.org"))
@@ -739,7 +754,7 @@ public class EPCISDocumentConverter {
 				// 01 formulate GTIN
 				return DLConverter.generateGtin(_01, gcpLength);
 			}
-		}else if(_00 != null) {
+		} else if (_00 != null) {
 			Integer gcpLength = DLConverter.getGCPLength(StaticResource.gcpLength, _00.substring(1));
 			return DLConverter.generateSscc(_00, gcpLength);
 		}

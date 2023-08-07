@@ -79,14 +79,9 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{7})\\.([0-9]{10})$"),
 			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{6})\\.([0-9]{11})$") };
 
-	public static final Pattern[] SGLNList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{11})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{10})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{9})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{8})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:sgln:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$") };
+	public static final Pattern SGLN = Pattern
+			.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})/254/([!%-?A-Z_a-z\\x22]{1,20})$");
+	public static final Pattern cSGLN = Pattern.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})$");
 
 	public static final Pattern[] PGLNList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:pgln:([0-9]{12})\\.([0-9]{0})$"),
