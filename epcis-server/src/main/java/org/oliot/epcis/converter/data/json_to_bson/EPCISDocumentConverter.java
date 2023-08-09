@@ -17,6 +17,7 @@ import org.oliot.epcis.model.cbv.BusinessTransactionType;
 import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.model.cbv.ErrorReason;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
+import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.resource.StaticResource;
@@ -219,12 +220,13 @@ public class EPCISDocumentConverter {
 				// type is optional field
 				String type = elemObj.getString("type");
 				String value = elemObj.getString("bizTransaction");
-				if (type == null) {
-					newBizTransactionArr.add(new Document().append("", value));
-				} else {
-					newBizTransactionArr.add(new Document()
-							.append(encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(type)), value));
+				value = GlobalDocumentTypeIdentifier.toEPC(value);
+				Document t = new Document();
+				if (type != null) {
+					t.append("type", encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(type)));
 				}
+				t.append("value", value);
+				newBizTransactionArr.add(t);
 			}
 			event.put("bizTransactionList", newBizTransactionArr);
 		}

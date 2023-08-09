@@ -95,6 +95,7 @@ public class GlobalLocationNumber {
 				if (!checkDigit.equals(getCheckDigit(companyPrefix + locationRef)))
 					throw new ValidationException("Invalid check digit");
 				glnExtension = m.group(3);
+				isLicensedCompanyPrefix = true;
 				this.dl = id;
 				this.epc = "urn:epc:id:sgln:" + companyPrefix + "." + locationRef + "." + glnExtension;
 			} else {
@@ -110,6 +111,7 @@ public class GlobalLocationNumber {
 				if (!checkDigit.equals(getCheckDigit(companyPrefix + locationRef)))
 					throw new ValidationException("Invalid check digit");
 				glnExtension = "0";
+				isLicensedCompanyPrefix = true;
 				this.dl = id;
 				this.epc = "urn:epc:id:sgln:" + companyPrefix + "." + locationRef + "." + glnExtension;
 			}

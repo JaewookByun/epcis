@@ -37,65 +37,27 @@ public class GlobalDocumentTypeIdentifier {
 	}
 
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
-		for (int i = 0; i < EPCPatterns.SGLNList.length; i++) {
-			Matcher m = EPCPatterns.SGLNList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.GDTIList.length; i++) {
+			Matcher m = EPCPatterns.GDTIList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
 		return null;
 	}
 
-	public static Matcher getSerialDigitalLinkMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.SGLN.matcher(dl);
+	public static Matcher getDigitalLinkMatcher(String dl) {
+		Matcher m = DigitalLinkPatterns.GDTI.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
-
-	public Matcher getClassDLMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.cSGLN.matcher(dl);
-		if (m.find())
-			return m;
-		return null;
-	}
-
-	public static Matcher getClassDigitalLinkMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.cSGLN.matcher(dl);
-		if (m.find())
-			return m;
-		return null;
-	}
-
-	/*
-	 * public static final Pattern[] GDTIList = new Pattern[] {
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{12})\\.([0-9]{0})\\.([0-9]{0,17})$")
-	 * ,
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{11})\\.([0-9]{1})\\.([0-9]{0,17})$")
-	 * ,
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{10})\\.([0-9]{2})\\.([0-9]{0,17})$")
-	 * ,
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{9})\\.([0-9]{3})\\.([0-9]{0,17})$"),
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{8})\\.([0-9]{4})\\.([0-9]{0,17})$"),
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{0,17})$"),
-	 * Pattern.compile("^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{0,17})$")
-	 * };
-	 * 
-	 * public static final Pattern[] cGDTIList = new Pattern[] {
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{12})\\.([0-9]{0})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{11})\\.([0-9]{1})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{10})\\.([0-9]{2})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{9})\\.([0-9]{3})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{8})\\.([0-9]{4})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{7})\\.([0-9]{5})\\.\\*$"),
-	 * Pattern.compile("^urn:epc:idpat:gdti:([0-9]{6})\\.([0-9]{6})\\.\\*$") };
-	 */
 
 	public GlobalDocumentTypeIdentifier(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
 			Matcher m = getEPCMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal SGLN");
+				throw new ValidationException("Illegal GDTI");
 
 			companyPrefix = m.group(1);
 			documentType = m.group(2);
@@ -103,11 +65,11 @@ public class GlobalDocumentTypeIdentifier {
 			serial = m.group(3);
 			isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
 			this.epc = id;
-			this.dl = "https://id.gs1.org/414/" + companyPrefix + documentType + checkDigit + serial;
+			this.dl = "https://id.gs1.org/253/" + companyPrefix + documentType + checkDigit + serial;
 		} else if (scheme == CodeScheme.GS1DigitalLink) {
 			Matcher m = getDLMatcher(id);
 			if (m == null) {
-				throw new ValidationException("Illegal SGLN");
+				throw new ValidationException("Illegal GDTI");
 
 			}
 			String companyPrefixLocationRef = m.group(1);
@@ -118,8 +80,9 @@ public class GlobalDocumentTypeIdentifier {
 			if (!checkDigit.equals(getCheckDigit(companyPrefix + documentType)))
 				throw new ValidationException("Invalid check digit");
 			serial = m.group(3);
+			isLicensedCompanyPrefix = true;
 			this.dl = id;
-			this.epc = "urn:epc:id:sgln:" + companyPrefix + "." + documentType + "." + serial;
+			this.epc = "urn:epc:id:gdti:" + companyPrefix + "." + documentType + "." + serial;
 		}
 	}
 
@@ -158,37 +121,24 @@ public class GlobalDocumentTypeIdentifier {
 	}
 
 	public static String toEPC(String dl) throws ValidationException {
-		Matcher m = getSerialDigitalLinkMatcher(dl);
-		if (m != null) {
-			String companyPrefixLocationRef = m.group(1);
-			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
-			String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
-			String locationRef = companyPrefixLocationRef.substring(gcpLength);
-			String checkDigit = m.group(2);
-			if (!isValidCheckDigit(companyPrefix + locationRef, checkDigit))
-				throw new ValidationException("Invalid check digit");
-			String glnExtension = m.group(3);
-			return "urn:epc:id:sgln:" + companyPrefix + "." + locationRef + "." + glnExtension;
-		} else {
-			m = getClassDigitalLinkMatcher(dl);
-			if (m == null) {
-				m = getElectronicProductCodeMatcher(dl);
-				if (m == null)
-					throw new ValidationException("Illegal SGLN");
-				else
-					return dl;
-			}
-
-			String companyPrefixLocationRef = m.group(1);
-			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
-			String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
-			String locationRef = companyPrefixLocationRef.substring(gcpLength);
-			String checkDigit = m.group(2);
-			if (!isValidCheckDigit(companyPrefix + locationRef, checkDigit))
-				throw new ValidationException("Invalid check digit");
-			String glnExtension = "0";
-			return "urn:epc:id:sgln:" + companyPrefix + "." + locationRef + "." + glnExtension;
+		Matcher m = getDigitalLinkMatcher(dl);
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal GDTI");
+			else
+				return dl;
 		}
+
+		String companyPrefixLocationRef = m.group(1);
+		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
+		String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
+		String documentType = companyPrefixLocationRef.substring(gcpLength);
+		String checkDigit = m.group(2);
+		if (!isValidCheckDigit(companyPrefix + documentType, checkDigit))
+			throw new ValidationException("Invalid check digit");
+		String serial = m.group(3);
+		return "urn:epc:id:gdti:" + companyPrefix + "." + documentType + "." + serial;
 	}
 
 	public JsonObject toJson() {
