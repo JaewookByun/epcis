@@ -36,6 +36,15 @@ public class GlobalTradeItemNumber {
 		return null;
 	}
 
+	public static Matcher getElectronicProductCodeMatcher(String epc) {
+		for (int i = 0; i < EPCPatterns.GTINList.length; i++) {
+			Matcher m = EPCPatterns.GTINList[i].matcher(epc);
+			if (m.find())
+				return m;
+		}
+		return null;
+	}
+
 	public static Matcher getDigitalLinkMatcher(String dl) {
 		Matcher m = DigitalLinkPatterns.GTIN.matcher(dl);
 		if (m.find())
@@ -77,8 +86,13 @@ public class GlobalTradeItemNumber {
 
 	public static String toEPC(String dl) throws ValidationException {
 		Matcher m = getDigitalLinkMatcher(dl);
-		if (m == null)
-			throw new ValidationException("Illegal GTIN");
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal GTIN");
+			else
+				return dl;
+		}
 
 		String indicator = m.group(1);
 		String companyPrefixItemRef = m.group(2);

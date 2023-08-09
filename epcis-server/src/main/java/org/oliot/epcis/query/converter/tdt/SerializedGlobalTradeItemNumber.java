@@ -39,6 +39,16 @@ public class SerializedGlobalTradeItemNumber {
 		return null;
 	}
 
+	public static Matcher getElectronicProductCodeMatcher(String epc) {
+		Pattern[] patterns = EPCPatterns.SGTINList;
+		for (int i = 0; i < patterns.length; i++) {
+			Matcher m = EPCPatterns.SGTINList[i].matcher(epc);
+			if (m.find())
+				return m;
+		}
+		return null;
+	}
+
 	public static Matcher getDigitalLinkMatcher(String dl) {
 		Matcher m = DigitalLinkPatterns.SGTIN.matcher(dl);
 		if (m.find())
@@ -118,8 +128,14 @@ public class SerializedGlobalTradeItemNumber {
 
 	public static String toEPC(String dl) throws ValidationException {
 		Matcher m = getDigitalLinkMatcher(dl);
-		if (m == null)
-			throw new ValidationException("Illegal LGTIN");
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal SGTIN");
+			else
+				return dl;
+		}
+
 		String indicator = m.group(1);
 		String companyPrefixItemRef = m.group(2);
 		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);

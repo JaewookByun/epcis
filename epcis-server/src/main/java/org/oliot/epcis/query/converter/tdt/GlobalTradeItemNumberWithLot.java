@@ -37,6 +37,15 @@ public class GlobalTradeItemNumberWithLot {
 		return null;
 	}
 
+	public static Matcher getElectronicProductCodeMatcher(String epc) {
+		for (int i = 0; i < EPCPatterns.LGTINList.length; i++) {
+			Matcher m = EPCPatterns.LGTINList[i].matcher(epc);
+			if (m.find())
+				return m;
+		}
+		return null;
+	}
+
 	public static Matcher getDigitalLinkMatcher(String dl) {
 		Matcher m = DigitalLinkPatterns.LGTIN.matcher(dl);
 		if (m.find())
@@ -118,8 +127,14 @@ public class GlobalTradeItemNumberWithLot {
 
 	public static String toEPC(String dl) throws ValidationException {
 		Matcher m = getDigitalLinkMatcher(dl);
-		if (m == null)
-			throw new ValidationException("Illegal LGTIN");
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal LGTIN");
+			else
+				return dl;
+		}
+
 		String indicator = m.group(1);
 		String companyPrefixItemRef = m.group(2);
 		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);

@@ -21,15 +21,9 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{8})\\.([0-9]{4})\\.([0-9]{0,17})$"),
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{0,17})$"),
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{0,17})$") };
-
-	public static final Pattern[] cGDTIList = new Pattern[] {
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{12})\\.([0-9]{0})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{11})\\.([0-9]{1})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{10})\\.([0-9]{2})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{9})\\.([0-9]{3})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{8})\\.([0-9]{4})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{7})\\.([0-9]{5})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:gdti:([0-9]{6})\\.([0-9]{6})\\.\\*$") };
+	
+	public static final Pattern GDTI = Pattern
+			.compile("^https://id.gs1.org/253/([0-9]{12})([0-9]{1})([!%-?A-Z_a-z\\x22]{1,20})$");
 
 	public static final Pattern[] GIAIList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$"),

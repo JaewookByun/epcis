@@ -36,6 +36,16 @@ public class SerialShippingContainerCode {
 		return null;
 	}
 
+
+	public static Matcher getElectronicProductCodeMatcher(String epc) {
+		for (int i = 0; i < EPCPatterns.SSCCList.length; i++) {
+			Matcher m = EPCPatterns.SSCCList[i].matcher(epc);
+			if (m.find())
+				return m;
+		}
+		return null;
+	}
+
 	public static Matcher getDigitalLinkMatcher(String dl) {
 		Matcher m = DigitalLinkPatterns.SSCC.matcher(dl);
 		if (m.find())
@@ -109,8 +119,14 @@ public class SerialShippingContainerCode {
 
 	public static String toEPC(String dl) throws ValidationException {
 		Matcher m = getDigitalLinkMatcher(dl);
-		if (m == null)
-			throw new ValidationException("Illegal SSCC");
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal SSCC");
+			else
+				return dl;
+		}
+
 		String extension = m.group(1);
 		String companyPrefixSerialRef = m.group(2);
 		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixSerialRef);
