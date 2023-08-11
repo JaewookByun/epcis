@@ -93,7 +93,6 @@ public class GlobalTradeItemNumber {
 			else
 				return dl;
 		}
-
 		String indicator = m.group(1);
 		String companyPrefixItemRef = m.group(2);
 		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);

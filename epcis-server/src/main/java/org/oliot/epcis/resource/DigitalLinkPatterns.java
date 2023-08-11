@@ -21,18 +21,11 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{8})\\.([0-9]{4})\\.([0-9]{0,17})$"),
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{7})\\.([0-9]{5})\\.([0-9]{0,17})$"),
 			Pattern.compile("^urn:epc:id:gdti:([0-9]{6})\\.([0-9]{6})\\.([0-9]{0,17})$") };
-	
+
 	public static final Pattern GDTI = Pattern
 			.compile("^https://id.gs1.org/253/([0-9]{12})([0-9]{1})([!%-?A-Z_a-z\\x22]{1,20})$");
 
-	public static final Pattern[] GIAIList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:giai:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})$"),
-			Pattern.compile("^urn:epc:id:giai:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})$") };
+	public static final Pattern GIAI = Pattern.compile("^https://id.gs1.org/8004/([!%-?A-Z_a-z\\\\x22]{7,30})$");
 
 	public static final Pattern GID = Pattern.compile("^urn:epc:id:gid:([0-9]{1,9})\\.([0-9]{1,8})\\.([0-9]{1,11})$");
 
