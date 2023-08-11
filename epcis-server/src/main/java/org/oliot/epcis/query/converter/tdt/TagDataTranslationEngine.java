@@ -466,7 +466,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GSRNP;
 		} else if (epcString.startsWith("urn:epc:id:sgln")) {
 			return IdentifierType.SGLN;
-		} else if (epcString.startsWith("^urn:epc:id:pgln")) {
+		} else if (epcString.startsWith("urn:epc:id:pgln")) {
 			return IdentifierType.PGLN;
 		} else if (epcString.startsWith("urn:epc:id:sgtin")) {
 			return IdentifierType.SGTIN;
@@ -504,43 +504,25 @@ public class TagDataTranslationEngine {
 
 	private static IdentifierType getDLType(String dl) {
 		if (dl.startsWith("urn:epc:id:adi")) {
-
 			return IdentifierType.ADI;
-
 		} else if (dl.contains("/253/")) {
 			return IdentifierType.GDTI;
 		} else if (dl.startsWith("urn:epc:id:giai")) {
-
 			return IdentifierType.GIAI;
-
 		} else if (dl.startsWith("urn:epc:id:gid")) {
-
 			return IdentifierType.GID;
-
 		} else if (dl.startsWith("urn:epc:id:grai")) {
-
 			return IdentifierType.GRAI;
-
 		} else if (dl.startsWith("urn:epc:idpat:grai")) {
-
 			return IdentifierType.GRAI;
-
 		} else if (dl.startsWith("urn:epc:id:gsrn")) {
-
 			return IdentifierType.GSRN;
-
 		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
-
 			return IdentifierType.GSRNP;
-
 		} else if (dl.contains("/414/")) {
-
 			return IdentifierType.SGLN;
-
-		} else if (dl.startsWith("^urn:epc:id:pgln")) {
-
+		} else if (dl.contains("/417/")) {
 			return IdentifierType.PGLN;
-
 		} else if (dl.contains("/01/") && !dl.contains("/21/") && !dl.contains("/10/")) {
 			return IdentifierType.GTIN;
 		} else if (dl.contains("/01/") && dl.contains("/21/")) {
@@ -548,41 +530,24 @@ public class TagDataTranslationEngine {
 		} else if (dl.contains("/01/") && dl.contains("/10/")) {
 			return IdentifierType.LGTIN;
 		} else if (dl.startsWith("urn:epc:id:upui")) {
-
 			return IdentifierType.UPUI;
-
 		} else if (dl.startsWith("urn:epc:id:sgcn")) {
-
 			return IdentifierType.SGCN;
-
 		} else if (dl.startsWith("urn:epc:idpat:sgcn")) {
-
 			return IdentifierType.SGCN;
-
 		} else if (dl.startsWith("urn:epc:id:cpi")) {
-
 			return IdentifierType.CPI;
-
 		} else if (dl.startsWith("urn:epc:idpat:cpi")) {
-
 			return IdentifierType.CPI;
-
 		} else if (dl.startsWith("urn:epc:id:gsin")) {
-
 			return IdentifierType.GSIN;
-
 		} else if (dl.startsWith("urn:epc:id:ginc")) {
-
 			return IdentifierType.GINC;
-
 		} else if (dl.contains("/00/")) {
 			return IdentifierType.SSCC;
 		} else if (dl.startsWith("urn:epc:id:usdod")) {
-
 			return IdentifierType.USDOD;
-
 		} else if (dl.startsWith("urn:epc:idpat:itip")) {
-
 			return IdentifierType.ITIP;
 		} else if (dl.startsWith("urn:epc:id:bic")) {
 			return IdentifierType.BIC;
@@ -604,6 +569,8 @@ public class TagDataTranslationEngine {
 			return SerialShippingContainerCode.toEPC(dl);
 		} else if (type == IdentifierType.SGLN) {
 			return GlobalLocationNumber.toEPC(dl);
+		} else if (type == IdentifierType.PGLN) {
+			return GlobalLocationNumberOfParty.toEPC(dl);
 		} else
 			return null;
 	}
@@ -629,6 +596,9 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GDTI) {
 				return new GlobalDocumentTypeIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson().put("type", "GDTI");
+			} else if (type == IdentifierType.PGLN) {
+				return new GlobalLocationNumberOfParty(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "PGLN");
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
@@ -650,6 +620,9 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GDTI) {
 				return new GlobalDocumentTypeIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
 						.toJson().put("type", "GDTI");
+			} else if (type == IdentifierType.PGLN) {
+				return new GlobalLocationNumberOfParty(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
+						.put("type", "PGLN");
 			}
 		}
 

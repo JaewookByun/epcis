@@ -77,14 +77,7 @@ public class DigitalLinkPatterns {
 			.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})/254/([!%-?A-Z_a-z\\x22]{1,20})$");
 	public static final Pattern cSGLN = Pattern.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})$");
 
-	public static final Pattern[] PGLNList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{12})\\.([0-9]{0})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{11})\\.([0-9]{1})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{10})\\.([0-9]{2})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{9})\\.([0-9]{3})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{8})\\.([0-9]{4})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{7})\\.([0-9]{5})$"),
-			Pattern.compile("^urn:epc:id:pgln:([0-9]{6})\\.([0-9]{6})$") };
+	public static final Pattern PGLN = Pattern.compile("^https://id.gs1.org/417/([0-9]{12})([0-9]{1})$");
 
 	public static final Pattern SGTIN = Pattern
 			.compile("^https://id.gs1.org/01/([0-9]{1})([0-9]{12})([0-9]{1})/21/([!%-?A-Z_a-z\\x22]{1,20})$");
