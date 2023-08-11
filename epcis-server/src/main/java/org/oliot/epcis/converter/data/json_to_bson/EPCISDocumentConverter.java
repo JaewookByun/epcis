@@ -23,6 +23,7 @@ import org.oliot.epcis.model.cbv.Measurement;
 import org.oliot.epcis.model.cbv.SensorAlertType;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
+import org.oliot.epcis.query.converter.tdt.GlobalIndividualAssetIdentifier;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
@@ -38,7 +39,7 @@ import io.vertx.core.json.JsonObject;
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 
 public class EPCISDocumentConverter {
-	@SuppressWarnings({ "unchecked", "unused" })
+	@SuppressWarnings({ "unchecked" })
 	public static Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
 
@@ -235,7 +236,7 @@ public class EPCISDocumentConverter {
 						}
 						if (sensorMetadata.containsKey("deviceID")) {
 							sensorMetadata.put("deviceID",
-									GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("deviceID")));
+									TagDataTranslationEngine.toEPC(sensorMetadata.getString("deviceID")));
 						}
 						if (sensorMetadata.containsKey("deviceMetadata")) {
 							sensorMetadata.put("deviceMetadata",
@@ -317,13 +318,15 @@ public class EPCISDocumentConverter {
 
 							if (sensorReportElement.containsKey("chemicalSubstance")) {
 								IdentifierValidator
-										.checkMicroorganismValue(sensorReportElement.getString("chemicalSubstance"));
+										.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
 							}
 
 							if (sensorReportElement.containsKey("hexBinaryValue")) {
-								sensorReportElement.put("hexBinaryValue",
-										new JsonObject().put("$binary", DatatypeConverter
-												.parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
+								sensorReportElement.put("hexBinaryValue", DatatypeConverter
+										.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
+								// sensorReportElement.put("hexBinaryValue",
+								// new Document().append("$binary", DatatypeConverter
+								// .parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
 							}
 
 							if (sensorReportElement.containsKey("stringValue")) {

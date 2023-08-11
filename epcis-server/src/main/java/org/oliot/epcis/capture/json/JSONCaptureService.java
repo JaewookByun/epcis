@@ -262,8 +262,16 @@ public class JSONCaptureService {
 			return;
 		}
 
-		JsonObject epcisEvent = new JsonObject(inputString);
-		JsonObject context = retrieveContext(epcisEvent);
+		JsonObject epcisEvent;
+		JsonObject context;
+		try {
+			epcisEvent = new JsonObject(inputString);
+			context = retrieveContext(epcisEvent);
+		} catch (Exception e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException(e.getMessage()), 400);
+			return;
+		}
 
 		// Validation
 		String validationError = validateJSON(epcisEvent);

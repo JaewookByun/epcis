@@ -618,6 +618,9 @@ public class TagDataTranslationEngine {
 
 	public static String toEPC(String dl) throws ValidationException {
 		IdentifierType type = getDLType(dl);
+		if(type == null)
+			type = getEPCType(dl);
+		
 		if (type == IdentifierType.GTIN) {
 			return GlobalTradeItemNumber.toEPC(dl);
 		} else if (type == IdentifierType.LGTIN) {
@@ -630,7 +633,12 @@ public class TagDataTranslationEngine {
 			return GlobalLocationNumber.toEPC(dl);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toEPC(dl);
-		} else
+		}else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toEPC(dl);
+		}  else if (type == IdentifierType.GIAI) {
+			return GlobalIndividualAssetIdentifier.toEPC(dl);
+		} 
+		else
 			throw new ValidationException("Unsupported code scheme");
 	}
 
