@@ -324,15 +324,10 @@ public class TagDataTranslationEngine {
 		Integer gcpLength = null;
 		String _01back = gcp;
 		while (!_01back.equals("")) {
-			if (_01back.length() == 0)
-				return false;
-
 			gcpLength = gcpLengthList.get(_01back);
-
 			if (gcpLength != null) {
 				return true;
 			}
-
 			_01back = _01back.substring(0, _01back.length() - 1);
 		}
 		return false;
@@ -342,17 +337,15 @@ public class TagDataTranslationEngine {
 		Integer gcpLength = null;
 		String _01back = code;
 		while (!_01back.equals("")) {
-			if (_01back.length() == 0)
-				throw new ValidationException("");
-
 			gcpLength = gcpLengthList.get(_01back);
-
 			if (gcpLength != null)
 				break;
-
 			_01back = _01back.substring(0, _01back.length() - 1);
 		}
-		return gcpLength;
+		if (gcpLength == null)
+			throw new ValidationException("Non-licensed GCP");
+		else
+			return gcpLength;
 	}
 
 	public static String getDL(String epc) {
@@ -458,8 +451,6 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GID;
 		} else if (epcString.startsWith("urn:epc:id:grai")) {
 			return IdentifierType.GRAI;
-		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
-			return IdentifierType.GRAI;
 		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
 			return IdentifierType.GSRN;
 		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
@@ -511,11 +502,9 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GIAI;
 		} else if (dl.startsWith("urn:epc:id:gid")) {
 			return IdentifierType.GID;
-		} else if (dl.startsWith("urn:epc:id:grai")) {
+		} else if (dl.contains("/8003/")) {
 			return IdentifierType.GRAI;
-		} else if (dl.startsWith("urn:epc:idpat:grai")) {
-			return IdentifierType.GRAI;
-		} else if (dl.startsWith("urn:epc:id:gsrn")) {
+		} else if (dl.contains("/8018/")) {
 			return IdentifierType.GSRN;
 		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
 			return IdentifierType.GSRNP;
@@ -582,9 +571,9 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GIAI;
 		} else if (dl.startsWith("urn:epc:id:gid")) {
 			return IdentifierType.GID;
-		} else if (dl.startsWith("urn:epc:id:grai")) {
+		} else if (dl.contains("/8003/")) {
 			return IdentifierType.GRAI;
-		} else if (dl.startsWith("urn:epc:id:gsrn")) {
+		} else if (dl.contains("/8018/")) {
 			return IdentifierType.GSRN;
 		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
 			return IdentifierType.GSRNP;
@@ -618,9 +607,9 @@ public class TagDataTranslationEngine {
 
 	public static String toEPC(String dl) throws ValidationException {
 		IdentifierType type = getDLType(dl);
-		if(type == null)
+		if (type == null)
 			type = getEPCType(dl);
-		
+
 		if (type == IdentifierType.GTIN) {
 			return GlobalTradeItemNumber.toEPC(dl);
 		} else if (type == IdentifierType.LGTIN) {
@@ -633,12 +622,11 @@ public class TagDataTranslationEngine {
 			return GlobalLocationNumber.toEPC(dl);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toEPC(dl);
-		}else if (type == IdentifierType.GDTI) {
+		} else if (type == IdentifierType.GDTI) {
 			return GlobalDocumentTypeIdentifier.toEPC(dl);
-		}  else if (type == IdentifierType.GIAI) {
+		} else if (type == IdentifierType.GIAI) {
 			return GlobalIndividualAssetIdentifier.toEPC(dl);
-		} 
-		else
+		} else
 			throw new ValidationException("Unsupported code scheme");
 	}
 
@@ -702,6 +690,12 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GIAI) {
 				return new GlobalIndividualAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson().put("type", "GIAI");
+			} else if (type == IdentifierType.GRAI) {
+				return new GlobalReturnableAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "GRAI");
+			} else if (type == IdentifierType.GSRN) {
+				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson().put("type", "GSRN");
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
@@ -729,6 +723,12 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GIAI) {
 				return new GlobalIndividualAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
 						.toJson().put("type", "GIAI");
+			} else if (type == IdentifierType.GRAI) {
+				return new GlobalReturnableAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson().put("type", "GRAI");
+			} else if (type == IdentifierType.GSRN) {
+				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
+						.put("type", "GSRN");
 			}
 		}
 

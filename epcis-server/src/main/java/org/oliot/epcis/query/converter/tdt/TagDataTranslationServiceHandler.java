@@ -27,7 +27,10 @@ public class TagDataTranslationServiceHandler {
 				JsonObject obj = TagDataTranslationEngine.parse(routingContext.body().asJsonObject().getString("id"));
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8")
 						.setStatusCode(200).end(obj.toString());
-			} catch (IllegalArgumentException | ValidationException e) {
+			} catch (ValidationException e) {
+				routingContext.response().putHeader("content-type", "application/json; charset=utf-8")
+						.setStatusCode(400).end(e.getReason());
+			} catch (IllegalArgumentException e) {
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8")
 						.setStatusCode(400).end(e.getMessage());
 			}

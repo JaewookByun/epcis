@@ -23,7 +23,6 @@ import org.oliot.epcis.model.cbv.Measurement;
 import org.oliot.epcis.model.cbv.SensorAlertType;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
-import org.oliot.epcis.query.converter.tdt.GlobalIndividualAssetIdentifier;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
