@@ -8,7 +8,7 @@
 	"_db_connection_string" : "Mongo connection string",
 	"db_connection_string" : "mongodb://localhost:27017",
 
-	"_xml_schema_location" : "the file location of xml schema (e.g., EPCglobal-epcis-2_0.xsd)",
+	"_xml_schema_location" : "the file location of xml schema (e.g., epcglobal-epcis-2_0.xsd)",
 	"xml_schema_location" : "/schema/epcglobal-epcis-2_0.xsd",
 
 	"_port" : "an integer value for port (default 8080)",
