@@ -125,13 +125,13 @@ public class EPCPatterns {
 			Pattern.compile("^urn:epc:class:lgtin:([0-9]{6})\\.([0-9]{1})([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,20})$") };
 
 	public static final Pattern[] UPUIList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:upui:([0-9]{12})\\.([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{11})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{10})\\.([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{9})\\.([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{8})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{7})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
-			Pattern.compile("^urn:epc:id:upui:([0-9]{6})\\.([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,28})$") };
+			Pattern.compile("^urn:epc:id:upui:([0-9]{12})\\.([0-9]{1})([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{11})\\.([0-9]{1})([0-9]{1})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{10})\\.([0-9]{1})([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{9})\\.([0-9]{1})([0-9]{3})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{8})\\.([0-9]{1})([0-9]{4})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{7})\\.([0-9]{1})([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{1,28})$"),
+			Pattern.compile("^urn:epc:id:upui:([0-9]{6})\\.([0-9]{1})([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,28})$") };
 
 	public static final Pattern[] SGCNList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:sgcn:([0-9]{12})\\.([0-9]{0})\\.([!%-?A-Z_a-z\\x22]{0,12})$"),
