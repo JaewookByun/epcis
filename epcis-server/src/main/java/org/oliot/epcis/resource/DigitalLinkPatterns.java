@@ -74,20 +74,11 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$"),
 			Pattern.compile("^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5,6})\\.([0-9]{1,11})$") };
 
-	public static final Pattern[] ITIPList = new Pattern[] { Pattern.compile(
-			"^urn:epc:idpat:itip:([0-9]{12})\\.([0-9]{1})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{11})\\.([0-9]{2})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{10})\\.([0-9]{3})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{9})\\.([0-9]{4})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{8})\\.([0-9]{5})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{7})\\.([0-9]{6})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$"),
-			Pattern.compile(
-					"^urn:epc:idpat:itip:([0-9]{6})\\.([0-9]{7})\\.([0-9]{2})\\.([0-9]{2})\\.([!%-?A-Z_a-z\\x22]{1,20})$") };
+	public static final Pattern ITIP = Pattern.compile(
+			"^https://id.gs1.org/8006/([0-9]{1})([0-9]{12})([0-9]{1})([0-9]{2})([0-9]{2})/21/([!%-?A-Z_a-z\\x22]{1,20})$");
+
+	public static final Pattern cITIP = Pattern
+			.compile("^https://id.gs1.org/8006/([0-9]{1})([0-9]{12})([0-9]{1})([0-9]{2})([0-9]{2})$");
 
 	public static final Pattern BIC = Pattern.compile("^urn:epc:id:bic:([A-Z]{3})(J,U,Z]{1})([0-9]{6})([0-9]{1})$");
 

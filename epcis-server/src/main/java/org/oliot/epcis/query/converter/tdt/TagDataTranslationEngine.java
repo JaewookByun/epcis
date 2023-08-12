@@ -476,6 +476,8 @@ public class TagDataTranslationEngine {
 			return IdentifierType.SSCC;
 		} else if (epcString.startsWith("urn:epc:id:usdod")) {
 			return IdentifierType.USDOD;
+		} else if (epcString.startsWith("urn:epc:id:itip")) {
+			return IdentifierType.ITIP ;
 		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
 			return IdentifierType.ITIP;
 		} else if (epcString.startsWith("urn:epc:id:bic")) {
@@ -531,6 +533,8 @@ public class TagDataTranslationEngine {
 			return IdentifierType.BIC;
 		} else if (dl.startsWith("urn:epc:id:imovn")) {
 			return IdentifierType.IMOVN;
+		} else if (dl.contains("/8006/")) {
+			return IdentifierType.ITIP;
 		}
 		return null;
 	}
@@ -538,7 +542,7 @@ public class TagDataTranslationEngine {
 	private static IdentifierType getClassLevelDLType(String dl) {
 		if (dl.contains("/8010/")) {
 			return IdentifierType.CPI;
-		} else if (dl.startsWith("urn:epc:idpat:itip")) {
+		} else if (dl.contains("/8006/")) {
 			return IdentifierType.ITIP;
 		} else if (dl.startsWith("urn:epc:idpat:upui")) {
 			return IdentifierType.UPUI;
@@ -551,7 +555,7 @@ public class TagDataTranslationEngine {
 	}
 
 	private static IdentifierType getInstanceLevelDLType(String dl) {
-		// EXCEPT LGTIN, GTIN, CPI, ITIP, UPUI
+		// EXCEPT LGTIN, GTIN, UPUI
 		if (dl.startsWith("urn:epc:id:adi")) {
 			return IdentifierType.ADI;
 		} else if (dl.contains("/253/")) {
@@ -590,6 +594,8 @@ public class TagDataTranslationEngine {
 			return IdentifierType.BIC;
 		} else if (dl.startsWith("urn:epc:id:imovn")) {
 			return IdentifierType.IMOVN;
+		} else if (dl.contains("/8006/")) {
+			return IdentifierType.ITIP;
 		}
 		return null;
 	}
@@ -629,6 +635,8 @@ public class TagDataTranslationEngine {
 			return GlobalIdentificationNumberConsignment.toEPC(dl);
 		} else if (type == IdentifierType.GSIN) {
 			return GlobalShipmentIdentificationNumber.toEPC(dl);
+		} else if (type == IdentifierType.ITIP) {
+			return IndividualTradeItemPiece.toEPC(dl);
 		} else
 			throw new ValidationException("Unsupported code scheme");
 	}
@@ -645,7 +653,7 @@ public class TagDataTranslationEngine {
 	// O 2043 SGCN
 	// O 2075 GINC
 	// O 2107 GSIN
-	// 2133 ITIP
+	// O 2133 ITIP
 	// 2173 UPUI
 	// O 2217 PGLN
 
@@ -658,8 +666,7 @@ public class TagDataTranslationEngine {
 		} else if (type == IdentifierType.CPI) {
 			return ComponentPartIdentifier.toEPC(dl);
 		} else if (type == IdentifierType.ITIP) {
-			// TODO
-			throw new ValidationException("To be supported");
+			return IndividualTradeItemPiece.toEPC(dl);
 		} else if (type == IdentifierType.UPUI) {
 			// TODO
 			throw new ValidationException("To be supported");
@@ -699,6 +706,8 @@ public class TagDataTranslationEngine {
 			return GlobalIdentificationNumberConsignment.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.GSIN) {
 			return GlobalShipmentIdentificationNumber.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.ITIP) {
+			return IndividualTradeItemPiece.toEPC(instanceLevelDL);
 		} else
 			throw new ValidationException("Unsupported instance level code scheme");
 	}
@@ -715,7 +724,7 @@ public class TagDataTranslationEngine {
 	// O 2043 SGCN
 	// O 2075 GINC
 	// O 2107 GSIN
-	// 2133 ITIP
+	// O 2133 ITIP
 	// 2173 UPUI
 	// O 2217 PGLN
 
@@ -765,6 +774,9 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GSIN) {
 				return new GlobalShipmentIdentificationNumber(StaticResource.gcpLength, id,
 						CodeScheme.EPCPureIdentitiyURI).toJson();
+			} else if (type == IdentifierType.ITIP) {
+				return new IndividualTradeItemPiece(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson();
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
@@ -810,6 +822,8 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GSIN) {
 				return new GlobalShipmentIdentificationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
 						.toJson();
+			} else if (type == IdentifierType.ITIP) {
+				return new IndividualTradeItemPiece(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson();
 			}
 		}
 
@@ -825,7 +839,7 @@ public class TagDataTranslationEngine {
 		// O 2043 SGCN
 		// O 2075 GINC
 		// O 2107 GSIN
-		// 2133 ITIP
+		// O 2133 ITIP
 		// 2173 UPUI
 		// O 2217 PGLN
 
