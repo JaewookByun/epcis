@@ -73,14 +73,7 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:id:gsin:([0-9]{7})\\.([0-9]{9})$"),
 			Pattern.compile("^urn:epc:id:gsin:([0-9]{6})\\.([0-9]{10})$") };
 
-	public static final Pattern[] GINCList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{12})\\.([0-9]{1,18})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{11})\\.([0-9]{1,19})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{10})\\.([0-9]{1,20})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{9})\\.([0-9]{1,21})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{8})\\.([0-9]{1,22})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{7})\\.([0-9]{1,23})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{6})\\.([0-9]{1,24})$") };
+	public static final Pattern GINC = Pattern.compile("^https://id.gs1.org/401/([!%-?A-Z_a-z\\\\x22]{7,30})$");
 
 	public static final Pattern SSCC = Pattern.compile("^https://id.gs1.org/00/([0-9]{1})([0-9]{16})([0-9]{1})$");
 

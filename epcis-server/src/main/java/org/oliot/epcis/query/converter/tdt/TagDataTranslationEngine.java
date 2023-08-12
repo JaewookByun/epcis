@@ -519,7 +519,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.CPI;
 		} else if (dl.startsWith("urn:epc:id:gsin")) {
 			return IdentifierType.GSIN;
-		} else if (dl.startsWith("urn:epc:id:ginc")) {
+		} else if (dl.contains("/401/")) {
 			return IdentifierType.GINC;
 		} else if (dl.contains("/00/")) {
 			return IdentifierType.SSCC;
@@ -580,7 +580,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.CPI;
 		} else if (dl.startsWith("urn:epc:id:gsin")) {
 			return IdentifierType.GSIN;
-		} else if (dl.startsWith("urn:epc:id:ginc")) {
+		} else if (dl.contains("/401/")) {
 			return IdentifierType.GINC;
 		} else if (dl.contains("/00/")) {
 			return IdentifierType.SSCC;
@@ -625,6 +625,8 @@ public class TagDataTranslationEngine {
 			return GlobalLocationNumberOfParty.toEPC(dl);
 		} else if (type == IdentifierType.SGCN) {
 			return SerializedGlobalCouponNumber.toEPC(dl);
+		} else if (type == IdentifierType.GINC) {
+			return GlobalIdentificationNumberConsignment.toEPC(dl);
 		} else
 			throw new ValidationException("Unsupported code scheme");
 	}
@@ -638,8 +640,8 @@ public class TagDataTranslationEngine {
 	// O 1939 GSRNP
 	// O 1966 GDTI
 	// O 2006 CPI
-	// 2043 SGCN
-	// 2075 GINC
+	// O 2043 SGCN
+	// O 2075 GINC
 	// 2107 GSIN
 	// 2133 ITIP
 	// 2173 UPUI
@@ -691,6 +693,8 @@ public class TagDataTranslationEngine {
 			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.SGCN) {
 			return SerializedGlobalCouponNumber.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GINC) {
+			return GlobalIdentificationNumberConsignment.toEPC(instanceLevelDL);
 		} else
 			throw new ValidationException("Unsupported instance level code scheme");
 	}
@@ -705,7 +709,7 @@ public class TagDataTranslationEngine {
 	// O 1966 GDTI
 	// O 2006 CPI
 	// O 2043 SGCN
-	// 2075 GINC
+	// O 2075 GINC
 	// 2107 GSIN
 	// 2133 ITIP
 	// 2173 UPUI
@@ -751,6 +755,9 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.SGCN) {
 				return new SerializedGlobalCouponNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson();
+			} else if (type == IdentifierType.GINC) {
+				return new GlobalIdentificationNumberConsignment(StaticResource.gcpLength, id,
+						CodeScheme.EPCPureIdentitiyURI).toJson();
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
@@ -790,6 +797,9 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.SGCN) {
 				return new SerializedGlobalCouponNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
 						.toJson();
+			} else if (type == IdentifierType.GINC) {
+				return new GlobalIdentificationNumberConsignment(StaticResource.gcpLength, id,
+						CodeScheme.GS1DigitalLink).toJson();
 			}
 		}
 
@@ -803,7 +813,7 @@ public class TagDataTranslationEngine {
 		// O 1966 GDTI
 		// O 2006 CPI
 		// O 2043 SGCN
-		// 2075 GINC
+		// O 2075 GINC
 		// 2107 GSIN
 		// 2133 ITIP
 		// 2173 UPUI

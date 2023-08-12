@@ -170,13 +170,13 @@ public class EPCPatterns {
 			Pattern.compile("^urn:epc:id:gsin:([0-9]{6})\\.([0-9]{10})$") };
 
 	public static final Pattern[] GINCList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{12})\\.([0-9]{1,18})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{11})\\.([0-9]{1,19})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{10})\\.([0-9]{1,20})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{9})\\.([0-9]{1,21})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{8})\\.([0-9]{1,22})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{7})\\.([0-9]{1,23})$"),
-			Pattern.compile("^urn:epc:id:ginc:([0-9]{6})\\.([0-9]{1,24})$") };
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{12})\\.([!%-?A-Z_a-z\\\\x22]{1,18})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{11})\\.([!%-?A-Z_a-z\\\\x22]{1,19})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{10})\\.([!%-?A-Z_a-z\\\\x22]{1,20})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{9})\\.([!%-?A-Z_a-z\\\\x22]{1,21})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{8})\\.([!%-?A-Z_a-z\\\\x22]{1,22})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{7})\\.([!%-?A-Z_a-z\\\\x22]{1,23})$"),
+			Pattern.compile("^urn:epc:id:ginc:([0-9]{6})\\.([!%-?A-Z_a-z\\\\x22]{1,24})$") };
 
 	public static final Pattern[] SSCCList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:sscc:([0-9]{12})\\.([0-9]{1})([0-9]{4})$"),
