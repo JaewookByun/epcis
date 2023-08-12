@@ -142,15 +142,6 @@ public class EPCPatterns {
 			Pattern.compile("^urn:epc:id:sgcn:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{0,12})$"),
 			Pattern.compile("^urn:epc:id:sgcn:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{0,12})$") };
 
-	public static final Pattern[] cSGCNList = new Pattern[] {
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{12})\\.([0-9]{0})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{11})\\.([0-9]{1})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{10})\\.([0-9]{2})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{9})\\.([0-9]{3})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{8})\\.([0-9]{4})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{7})\\.([0-9]{5})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{6})\\.([0-9]{6})\\.\\*$") };
-
 	public static final Pattern[] CPIList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
 			Pattern.compile("^urn:epc:id:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
@@ -194,7 +185,7 @@ public class EPCPatterns {
 			Pattern.compile("^urn:epc:id:sscc:([0-9]{9})\\.([0-9]{1})([0-9]{7})$"),
 			Pattern.compile("^urn:epc:id:sscc:([0-9]{8})\\.([0-9]{1})([0-9]{8})$"),
 			Pattern.compile("^urn:epc:id:sscc:([0-9]{7})\\.([0-9]{1})([0-9]{9})$"),
-			Pattern.compile("^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{1})([0-9]{10})$")};
+			Pattern.compile("^urn:epc:id:sscc:([0-9]{6})\\.([0-9]{1})([0-9]{10})$") };
 
 	public static final Pattern[] USDODList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:usdod:([0-9A-HJ-NP-Z]{5})\\.([0-9]{1,8})$"),
