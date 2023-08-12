@@ -149,6 +149,7 @@ public class GlobalReturnableAssetIdentifier {
 		obj.put("assetType", assetType);
 		obj.put("checkDigit", checkDigit);
 		obj.put("serialNumber", serialNumber);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "GRAI");
 		return obj;

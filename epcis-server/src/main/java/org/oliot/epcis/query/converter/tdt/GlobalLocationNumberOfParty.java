@@ -155,6 +155,7 @@ public class GlobalLocationNumberOfParty {
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("partyRef", partyRef);
 		obj.put("checkDigit", checkDigit);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "PGLN");
 		return obj;

@@ -100,6 +100,7 @@ public class GlobalIdentificationNumberConsignment {
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("consignmentRef", consignmentRef);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("granularity", "instance");
 		obj.put("type", "GINC");
 		return obj;
 	}

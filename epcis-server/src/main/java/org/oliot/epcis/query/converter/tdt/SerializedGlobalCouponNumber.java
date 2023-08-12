@@ -148,6 +148,7 @@ public class SerializedGlobalCouponNumber {
 		obj.put("couponRef", couponRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("serial", serial);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "SGCN");
 		return obj;

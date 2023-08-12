@@ -157,6 +157,7 @@ public class SerializedGlobalTradeItemNumber {
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("serialNumber", serialNumber);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "SGTIN");
 		return obj;

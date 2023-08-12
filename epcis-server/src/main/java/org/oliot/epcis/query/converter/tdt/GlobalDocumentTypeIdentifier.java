@@ -150,6 +150,7 @@ public class GlobalDocumentTypeIdentifier {
 		obj.put("checkDigit", checkDigit);
 		obj.put("serial", serial);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("granularity", "instance");
 		obj.put("type", "GDTI");
 		return obj;
 	}

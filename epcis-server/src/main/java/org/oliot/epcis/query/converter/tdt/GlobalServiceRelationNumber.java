@@ -142,6 +142,7 @@ public class GlobalServiceRelationNumber {
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("serviceReference", serviceReference);
 		obj.put("checkDigit", checkDigit);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "GSRN");
 		return obj;

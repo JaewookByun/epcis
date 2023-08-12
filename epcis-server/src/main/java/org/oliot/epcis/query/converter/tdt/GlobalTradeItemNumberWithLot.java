@@ -156,6 +156,7 @@ public class GlobalTradeItemNumberWithLot {
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("lotNumber", lotNumber);
+		obj.put("granularity", "class");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "LGTIN");
 		return obj;

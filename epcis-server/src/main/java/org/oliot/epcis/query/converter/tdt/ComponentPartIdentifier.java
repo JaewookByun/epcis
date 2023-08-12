@@ -168,10 +168,15 @@ public class ComponentPartIdentifier {
 		obj.put("dl", dl);
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("documentType", documentType);
-		if (cpidSerial != null && !cpidSerial.equals("*"))
-			obj.put("cpidSerial", cpidSerial);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "CPI");
+		if (cpidSerial != null && !cpidSerial.equals("*")) {
+			obj.put("cpidSerial", cpidSerial);
+			obj.put("granularity", "instance");
+		}else {
+			obj.put("granularity", "class");
+		}
+
 		return obj;
 	}
 

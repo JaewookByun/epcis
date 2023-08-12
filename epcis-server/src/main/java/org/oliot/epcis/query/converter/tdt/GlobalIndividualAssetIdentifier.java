@@ -100,6 +100,7 @@ public class GlobalIndividualAssetIdentifier {
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("assetReference", assetReference);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("granularity", "instance");
 		obj.put("type", "GIAI");
 		return obj;
 	}

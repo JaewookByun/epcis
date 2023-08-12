@@ -142,6 +142,7 @@ public class GlobalShipmentIdentificationNumber {
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("shipperRef", shipperRef);
 		obj.put("checkDigit", checkDigit);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "GSIN");
 		return obj;

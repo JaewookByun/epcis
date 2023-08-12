@@ -145,6 +145,7 @@ public class SerialShippingContainerCode {
 		obj.put("extension", extension);
 		obj.put("serialRef", serialRef);
 		obj.put("checkDigit", checkDigit);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "SSCC");
 		return obj;

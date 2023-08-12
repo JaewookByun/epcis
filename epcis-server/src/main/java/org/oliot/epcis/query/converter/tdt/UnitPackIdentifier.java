@@ -156,6 +156,7 @@ public class UnitPackIdentifier {
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("tpx", tpx);
+		obj.put("granularity", "instance");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "UPUI");
 		return obj;

@@ -253,8 +253,12 @@ public class IndividualTradeItemPiece {
 		obj.put("checkDigit", checkDigit);
 		obj.put("piece", piece);
 		obj.put("total", total);
-		if (serialNumber != null && !serialNumber.equals("*"))
+		if (serialNumber != null && !serialNumber.equals("*")) {
 			obj.put("serialNumber", serialNumber);
+			obj.put("granularity", "instance");
+		}else {
+			obj.put("granularity", "class");
+		}
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
 		obj.put("type", "ITIP");
 		return obj;
