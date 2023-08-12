@@ -64,14 +64,7 @@ public class DigitalLinkPatterns {
 			.compile("^https://id.gs1.org/8010/([!%-?A-Z_a-z\\\\x22]{7,30})/8011/([!%-?A-Z_a-z\\\\x22]{1,12})$");
 	public static final Pattern cCPI = Pattern.compile("^https://id.gs1.org/8010/([!%-?A-Z_a-z\\\\x22]{7,30})$");
 
-	public static final Pattern[] GSINList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{12})\\.([0-9]{4})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{11})\\.([0-9]{5})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{10})\\.([0-9]{6})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{9})\\.([0-9]{7})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{8})\\.([0-9]{8})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{7})\\.([0-9]{9})$"),
-			Pattern.compile("^urn:epc:id:gsin:([0-9]{6})\\.([0-9]{10})$") };
+	public static final Pattern GSIN = Pattern.compile("^https://id.gs1.org/402/([0-9]{16})([0-9]{1})$");
 
 	public static final Pattern GINC = Pattern.compile("^https://id.gs1.org/401/([!%-?A-Z_a-z\\\\x22]{7,30})$");
 
