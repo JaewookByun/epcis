@@ -524,9 +524,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.SGCN;
 		} else if (dl.startsWith("urn:epc:idpat:sgcn")) {
 			return IdentifierType.SGCN;
-		} else if (dl.startsWith("urn:epc:id:cpi")) {
-			return IdentifierType.CPI;
-		} else if (dl.startsWith("urn:epc:idpat:cpi")) {
+		} else if (dl.contains("/8010/")) {
 			return IdentifierType.CPI;
 		} else if (dl.startsWith("urn:epc:id:gsin")) {
 			return IdentifierType.GSIN;
@@ -547,7 +545,7 @@ public class TagDataTranslationEngine {
 	}
 
 	private static IdentifierType getClassLevelDLType(String dl) {
-		if (dl.startsWith("urn:epc:idpat:cpi")) {
+		if (dl.contains("/8010/")) {
 			return IdentifierType.CPI;
 		} else if (dl.startsWith("urn:epc:idpat:itip")) {
 			return IdentifierType.ITIP;
@@ -587,7 +585,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.UPUI;
 		} else if (dl.startsWith("urn:epc:id:sgcn")) {
 			return IdentifierType.SGCN;
-		} else if (dl.startsWith("urn:epc:id:cpi")) {
+		} else if (dl.contains("/8010/")) {
 			return IdentifierType.CPI;
 		} else if (dl.startsWith("urn:epc:id:gsin")) {
 			return IdentifierType.GSIN;
@@ -620,15 +618,39 @@ public class TagDataTranslationEngine {
 			return SerialShippingContainerCode.toEPC(dl);
 		} else if (type == IdentifierType.SGLN) {
 			return GlobalLocationNumber.toEPC(dl);
-		} else if (type == IdentifierType.PGLN) {
-			return GlobalLocationNumberOfParty.toEPC(dl);
-		} else if (type == IdentifierType.GDTI) {
-			return GlobalDocumentTypeIdentifier.toEPC(dl);
+		} else if (type == IdentifierType.GRAI) {
+			return GlobalReturnableAssetIdentifier.toEPC(dl);
 		} else if (type == IdentifierType.GIAI) {
 			return GlobalIndividualAssetIdentifier.toEPC(dl);
+		} else if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toEPC(dl);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toEPC(dl);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toEPC(dl);
+		} else if (type == IdentifierType.CPI) {
+			return ComponentPartIdentifier.toEPC(dl);
+		} else if (type == IdentifierType.PGLN) {
+			return GlobalLocationNumberOfParty.toEPC(dl);
 		} else
 			throw new ValidationException("Unsupported code scheme");
 	}
+
+	// O 1613 SGTIN, LGTIN, GTIN
+	// O 1758 SSCC
+	// O 1784 SGLN
+	// O 1835 GRAI
+	// O 1880 GIAI
+	// O 1912 GSRN
+	// O 1939 GSRNP
+	// O 1966 GDTI
+	// O 2006 CPI
+	// 2043 SGCN
+	// 2075 GINC
+	// 2107 GSIN
+	// 2133 ITIP
+	// 2173 UPUI
+	// O 2217 PGLN
 
 	public static String toClassLevelEPC(String dl) throws ValidationException {
 		IdentifierType type = getClassLevelDLType(dl);
@@ -637,8 +659,7 @@ public class TagDataTranslationEngine {
 		} else if (type == IdentifierType.GTIN) {
 			return GlobalTradeItemNumber.toEPC(dl);
 		} else if (type == IdentifierType.CPI) {
-			// TODO
-			throw new ValidationException("To be supported");
+			return ComponentPartIdentifier.toEPC(dl);
 		} else if (type == IdentifierType.ITIP) {
 			// TODO
 			throw new ValidationException("To be supported");
@@ -671,6 +692,8 @@ public class TagDataTranslationEngine {
 			return GlobalServiceRelationNumberProvider.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.GDTI) {
 			return GlobalDocumentTypeIdentifier.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.CPI) {
+			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
 		} else
@@ -685,7 +708,7 @@ public class TagDataTranslationEngine {
 	// O 1912 GSRN
 	// O 1939 GSRNP
 	// O 1966 GDTI
-	// 2006 CPI
+	// O 2006 CPI
 	// 2043 SGCN
 	// 2075 GINC
 	// 2107 GSIN
@@ -725,7 +748,10 @@ public class TagDataTranslationEngine {
 				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson();
 			} else if (type == IdentifierType.GSRNP) {
-				return new GlobalServiceRelationNumberProvider(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+				return new GlobalServiceRelationNumberProvider(StaticResource.gcpLength, id,
+						CodeScheme.EPCPureIdentitiyURI).toJson();
+			} else if (type == IdentifierType.CPI) {
+				return new ComponentPartIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
 						.toJson();
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
@@ -761,6 +787,8 @@ public class TagDataTranslationEngine {
 			} else if (type == IdentifierType.GSRNP) {
 				return new GlobalServiceRelationNumberProvider(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
 						.toJson();
+			} else if (type == IdentifierType.CPI) {
+				return new ComponentPartIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson();
 			}
 		}
 
@@ -772,7 +800,7 @@ public class TagDataTranslationEngine {
 		// O 1912 GSRN
 		// O 1939 GSRNP
 		// O 1966 GDTI
-		// 2006 CPI
+		// O 2006 CPI
 		// 2043 SGCN
 		// 2075 GINC
 		// 2107 GSIN

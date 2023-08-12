@@ -35,7 +35,6 @@ public class DigitalLinkPatterns {
 	public static final Pattern GSRN = Pattern.compile("^https://id.gs1.org/8018/([0-9]{17})([0-9]{1})$");
 
 	public static final Pattern GSRNP = Pattern.compile("^https://id.gs1.org/8017/([0-9]{17})([0-9]{1})$");
-	
 
 	public static final Pattern SGLN = Pattern
 			.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})/254/([!%-?A-Z_a-z\\x22]{1,20})$");
@@ -76,23 +75,9 @@ public class DigitalLinkPatterns {
 			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{7})\\.([0-9]{5})\\.\\*$"),
 			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{6})\\.([0-9]{6})\\.\\*$") };
 
-	public static final Pattern[] CPIList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.([!%-?A-Z_a-z\\x22]{1,12})$"),
-			Pattern.compile("^urn:epc:id:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.([!%-?A-Z_a-z\\x22]{1,12})$") };
-
-	public static final Pattern[] cCPIList = new Pattern[] {
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{12})\\.([!%-?A-Z_a-z\\x22]{1,18})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{11})\\.([!%-?A-Z_a-z\\x22]{1,19})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{10})\\.([!%-?A-Z_a-z\\x22]{1,20})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{9})\\.([!%-?A-Z_a-z\\x22]{1,21})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{8})\\.([!%-?A-Z_a-z\\x22]{1,22})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{7})\\.([!%-?A-Z_a-z\\x22]{1,23})\\.\\*$"),
-			Pattern.compile("^urn:epc:idpat:cpi:([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{1,24})\\.\\*$") };
+	public static final Pattern CPI = Pattern
+			.compile("^https://id.gs1.org/8010/([!%-?A-Z_a-z\\\\x22]{7,30})/8011/([!%-?A-Z_a-z\\\\x22]{1,12})$");
+	public static final Pattern cCPI = Pattern.compile("^https://id.gs1.org/8010/([!%-?A-Z_a-z\\\\x22]{7,30})$");
 
 	public static final Pattern[] GSINList = new Pattern[] {
 			Pattern.compile("^urn:epc:id:gsin:([0-9]{12})\\.([0-9]{4})$"),

@@ -36,6 +36,13 @@ public class GlobalLocationNumber {
 		return null;
 	}
 
+	public Matcher getClassDLMatcher(String dl) {
+		Matcher m = DigitalLinkPatterns.cSGLN.matcher(dl);
+		if (m.find())
+			return m;
+		return null;
+	}
+
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
 		for (int i = 0; i < EPCPatterns.SGLNList.length; i++) {
 			Matcher m = EPCPatterns.SGLNList[i].matcher(epc);
@@ -47,13 +54,6 @@ public class GlobalLocationNumber {
 
 	public static Matcher getSerialDigitalLinkMatcher(String dl) {
 		Matcher m = DigitalLinkPatterns.SGLN.matcher(dl);
-		if (m.find())
-			return m;
-		return null;
-	}
-
-	public Matcher getClassDLMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.cSGLN.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
