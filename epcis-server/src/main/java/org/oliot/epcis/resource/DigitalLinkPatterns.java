@@ -34,14 +34,8 @@ public class DigitalLinkPatterns {
 
 	public static final Pattern GSRN = Pattern.compile("^https://id.gs1.org/8018/([0-9]{17})([0-9]{1})$");
 
-	public static final Pattern[] GSRNPList = new Pattern[] {
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{12})\\.([0-9]{5})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{11})\\.([0-9]{6})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{10})\\.([0-9]{7})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{9})\\.([0-9]{8})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{8})\\.([0-9]{9})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{7})\\.([0-9]{10})$"),
-			Pattern.compile("^urn:epc:id:gsrnp:([0-9]{6})\\.([0-9]{11})$") };
+	public static final Pattern GSRNP = Pattern.compile("^https://id.gs1.org/8017/([0-9]{17})([0-9]{1})$");
+	
 
 	public static final Pattern SGLN = Pattern
 			.compile("^https://id.gs1.org/414/([0-9]{12})([0-9]{1})/254/([!%-?A-Z_a-z\\x22]{1,20})$");

@@ -36,7 +36,6 @@ public class SerialShippingContainerCode {
 		return null;
 	}
 
-
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
 		for (int i = 0; i < EPCPatterns.SSCCList.length; i++) {
 			Matcher m = EPCPatterns.SSCCList[i].matcher(epc);
@@ -147,6 +146,7 @@ public class SerialShippingContainerCode {
 		obj.put("serialRef", serialRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("type", "SSCC");
 		return obj;
 	}
 

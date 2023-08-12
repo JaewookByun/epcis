@@ -196,6 +196,7 @@ public class GlobalLocationNumber {
 		if (!glnExtension.equals("0"))
 			obj.put("glnExtension", glnExtension);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("type", "SGLN");
 		return obj;
 	}
 

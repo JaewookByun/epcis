@@ -451,10 +451,10 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GID;
 		} else if (epcString.startsWith("urn:epc:id:grai")) {
 			return IdentifierType.GRAI;
-		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
-			return IdentifierType.GSRN;
 		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
 			return IdentifierType.GSRNP;
+		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
+			return IdentifierType.GSRN;
 		} else if (epcString.startsWith("urn:epc:id:sgln")) {
 			return IdentifierType.SGLN;
 		} else if (epcString.startsWith("urn:epc:id:pgln")) {
@@ -506,7 +506,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GRAI;
 		} else if (dl.contains("/8018/")) {
 			return IdentifierType.GSRN;
-		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
+		} else if (dl.contains("/8017/")) {
 			return IdentifierType.GSRNP;
 		} else if (dl.contains("/414/")) {
 			return IdentifierType.SGLN;
@@ -575,7 +575,7 @@ public class TagDataTranslationEngine {
 			return IdentifierType.GRAI;
 		} else if (dl.contains("/8018/")) {
 			return IdentifierType.GSRN;
-		} else if (dl.startsWith("urn:epc:id:gsrnp")) {
+		} else if (dl.contains("/8017/")) {
 			return IdentifierType.GSRNP;
 		} else if (dl.contains("/414/")) {
 			return IdentifierType.SGLN;
@@ -659,79 +659,128 @@ public class TagDataTranslationEngine {
 			return GlobalLocationNumber.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GRAI) {
+			return GlobalReturnableAssetIdentifier.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GIAI) {
+			return GlobalIndividualAssetIdentifier.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.PGLN) {
+			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
 		} else
 			throw new ValidationException("Unsupported instance level code scheme");
 	}
+
+	// O 1613 SGTIN
+	// O 1758 SSCC
+	// O 1784 SGLN
+	// O 1835 GRAI
+	// O 1880 GIAI
+	// O 1912 GSRN
+	// O 1939 GSRNP
+	// O 1966 GDTI
+	// 2006 CPI
+	// 2043 SGCN
+	// 2075 GINC
+	// 2107 GSIN
+	// 2133 ITIP
+	// 2173 UPUI
+	// O 2217 PGLN
 
 	public static JsonObject parse(String id) throws IllegalArgumentException, ValidationException {
 		if (id.startsWith("urn:epc")) {
 			IdentifierType type = getEPCType(id);
 			if (type == IdentifierType.GTIN) {
-				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson()
-						.put("type", "GTIN");
+				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson();
 			} else if (type == IdentifierType.LGTIN) {
 				return new GlobalTradeItemNumberWithLot(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "LGTIN");
+						.toJson();
 			} else if (type == IdentifierType.SGTIN) {
 				return new SerializedGlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "SGTIN");
+						.toJson();
 			} else if (type == IdentifierType.SSCC) {
 				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "SSCC");
+						.toJson();
 			} else if (type == IdentifierType.SGLN) {
-				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson()
-						.put("type", "SGLN");
+				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI).toJson();
 			} else if (type == IdentifierType.GDTI) {
 				return new GlobalDocumentTypeIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "GDTI");
+						.toJson();
 			} else if (type == IdentifierType.PGLN) {
 				return new GlobalLocationNumberOfParty(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "PGLN");
+						.toJson();
 			} else if (type == IdentifierType.GIAI) {
 				return new GlobalIndividualAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "GIAI");
+						.toJson();
 			} else if (type == IdentifierType.GRAI) {
 				return new GlobalReturnableAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "GRAI");
+						.toJson();
 			} else if (type == IdentifierType.GSRN) {
 				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
-						.toJson().put("type", "GSRN");
+						.toJson();
+			} else if (type == IdentifierType.GSRNP) {
+				return new GlobalServiceRelationNumberProvider(StaticResource.gcpLength, id, CodeScheme.EPCPureIdentitiyURI)
+						.toJson();
 			}
 		} else if (id.startsWith("https://id.gs1.org/")) {
 			IdentifierType type = getDLType(id);
 			if (type == IdentifierType.GTIN) {
-				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
-						.put("type", "GTIN");
+				return new GlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson();
 			} else if (type == IdentifierType.LGTIN) {
 				return new GlobalTradeItemNumberWithLot(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
-						.toJson().put("type", "LGTIN");
+						.toJson();
 			} else if (type == IdentifierType.SGTIN) {
 				return new SerializedGlobalTradeItemNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
-						.toJson().put("type", "SGTIN");
+						.toJson();
 			} else if (type == IdentifierType.SSCC) {
-				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
-						.put("type", "SSCC");
+				return new SerialShippingContainerCode(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson();
 			} else if (type == IdentifierType.SGLN) {
-				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
-						.put("type", "SGLN");
+				return new GlobalLocationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson();
 			} else if (type == IdentifierType.GDTI) {
 				return new GlobalDocumentTypeIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
-						.toJson().put("type", "GDTI");
+						.toJson();
 			} else if (type == IdentifierType.PGLN) {
-				return new GlobalLocationNumberOfParty(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
-						.put("type", "PGLN");
+				return new GlobalLocationNumberOfParty(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson();
 			} else if (type == IdentifierType.GIAI) {
 				return new GlobalIndividualAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
-						.toJson().put("type", "GIAI");
+						.toJson();
 			} else if (type == IdentifierType.GRAI) {
 				return new GlobalReturnableAssetIdentifier(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
-						.toJson().put("type", "GRAI");
+						.toJson();
 			} else if (type == IdentifierType.GSRN) {
-				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink).toJson()
-						.put("type", "GSRN");
+				return new GlobalServiceRelationNumber(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson();
+			} else if (type == IdentifierType.GSRNP) {
+				return new GlobalServiceRelationNumberProvider(StaticResource.gcpLength, id, CodeScheme.GS1DigitalLink)
+						.toJson();
 			}
 		}
 
+		// O 1613 SGTIN, LGTIN, GTIN
+		// O 1758 SSCC
+		// O 1784 SGLN
+		// O 1835 GRAI
+		// O 1880 GIAI
+		// O 1912 GSRN
+		// O 1939 GSRNP
+		// O 1966 GDTI
+		// 2006 CPI
+		// 2043 SGCN
+		// 2075 GINC
+		// 2107 GSIN
+		// 2133 ITIP
+		// 2173 UPUI
+		// O 2217 PGLN
+
 		return null;
 	}
+
 }

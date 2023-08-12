@@ -149,6 +149,7 @@ public class GlobalTradeItemNumber {
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
+		obj.put("type", "GTIN");
 		return obj;
 	}
 
