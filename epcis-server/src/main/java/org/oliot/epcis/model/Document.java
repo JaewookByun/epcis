@@ -18,7 +18,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * 
- * EPCglobal document properties for all messages.
+ * epcglobal document properties for all messages.
  * 
  * 
  * <p>

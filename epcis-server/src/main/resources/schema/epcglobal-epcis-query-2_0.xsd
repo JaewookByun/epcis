@@ -34,7 +34,7 @@
     <xsd:import namespace="urn:epcglobal:epcis:xsd:2"
                 schemaLocation="epcglobal-epcis-2_0_detour.xsd"/>
 	<xsd:import namespace="urn:epcglobal:xsd:1"
-                schemaLocation="EPCglobal.xsd"/>
+                schemaLocation="epcglobal.xsd"/>
 
     <xsd:element name="EPCISQueryDocument" type="epcisq:EPCISQueryDocumentType"/>
     <xsd:complexType name="EPCISQueryDocumentType">
