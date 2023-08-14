@@ -46,6 +46,11 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.json.schema.OutputUnit;
 
 public class JSONCaptureService {
+	private EPCISDocumentConverter jsonCaptureConverter;
+
+	public JSONCaptureService() {
+		this.jsonCaptureConverter = new EPCISDocumentConverter();
+	}
 
 	public void postValidationResult(RoutingContext routingContext) {
 		String validationError = validateJSON(routingContext.body().asJsonObject());
@@ -172,7 +177,7 @@ public class JSONCaptureService {
 			bulk = eventList.stream().parallel().map(event -> {
 				Document obj = null;
 				try {
-					obj = EPCISDocumentConverter.convertEvent(context, (JsonObject) event, tx);
+					obj = jsonCaptureConverter.convertEvent(context, (JsonObject) event, tx);
 					obj.put("_tx", tx.getTxId());
 				} catch (ValidationException e) {
 					EPCISServer.logger.error(e.getReason());
@@ -225,7 +230,7 @@ public class JSONCaptureService {
 				JsonObject vocabulary = (JsonObject) v;
 				String type = vocabulary.getString("type");
 				JsonArray vocabularyElementList = vocabulary.getJsonArray("vocabularyElementList");
-				return EPCISDocumentConverter.convertVocabulary(context, type, vocabularyElementList);
+				return jsonCaptureConverter.convertVocabulary(context, type, vocabularyElementList);
 			}).filter(Objects::nonNull).collect(Collectors.toList());
 		} catch (RuntimeException e) {
 			ValidationException ve = (ValidationException) e.getCause();
@@ -305,7 +310,7 @@ public class JSONCaptureService {
 			EventBus eventBus) {
 		Document obj = null;
 		try {
-			obj = EPCISDocumentConverter.convertEvent(jsonContext, jsonEvent, null);
+			obj = jsonCaptureConverter.convertEvent(jsonContext, jsonEvent, null);
 		} catch (ValidationException e) {
 			EPCISServer.logger.error(e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),

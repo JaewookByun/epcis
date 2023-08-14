@@ -1,6 +1,7 @@
 package org.oliot.epcis.converter.data.json_to_bson;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.bson.Document;
 import org.oliot.epcis.capture.common.Transaction;
+import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
+import org.oliot.epcis.model.ActionType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.BusinessTransactionType;
@@ -26,10 +29,8 @@ import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
-import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.validation.IdentifierValidator;
-import org.oliot.gcp.core.DLConverter;
 
 import com.mongodb.client.model.ReplaceOneModel;
 
@@ -38,6 +39,7 @@ import io.vertx.core.json.JsonObject;
 
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 
+@SuppressWarnings("unused")
 public class EPCISDocumentConverter {
 
 	// instance EPC: parentID, childEPCs, epcList, inputEPCList, outputEPCList
@@ -64,7 +66,8 @@ public class EPCISDocumentConverter {
 	// resourceID
 	// GDTI
 
-	private static String getType(String type) throws ValidationException {
+	private void putType(Document original, Document converted) throws ValidationException {
+		String type = original.getString("type");
 		if (type == null) {
 			throw new ValidationException("type should exist");
 		}
@@ -73,13 +76,10 @@ public class EPCISDocumentConverter {
 		} catch (IllegalArgumentException e) {
 			throw new ValidationException(e.getMessage());
 		}
-		return type;
+		converted.put("type", type);
 	}
 
-	private static Long getTime(String time) throws ValidationException {
-		if (time == null) {
-			throw new ValidationException("type should exist");
-		}
+	private Long getTime(String time) throws ValidationException {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 		String timeString = (String) time;
 		try {
@@ -90,73 +90,631 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private static String getEventTimeZoneOffset(String eventTimeZoneOffset) throws ValidationException {
+	private void putEventTime(Document original, Document converted) throws ValidationException {
+		String eventTime = original.getString("eventTime");
+		if (eventTime == null)
+			throw new ValidationException("eventTime should exist");
+		converted.put("eventTime", getTime(eventTime));
+	}
+
+	private void putEventTimeZoneOffset(Document original, Document converted) throws ValidationException {
+		String eventTimeZoneOffset = original.getString("eventTimeZoneOffset");
 		if (eventTimeZoneOffset == null) {
-			throw new ValidationException("eventTimeZoneOffset should existe");
+			throw new ValidationException("eventTimeZoneOffset should exist");
 		}
 
 		SimpleDateFormat sdf = new SimpleDateFormat("XXX");
 		try {
 			sdf.parse(eventTimeZoneOffset);
+			converted.put("eventTimeZoneOffset", eventTimeZoneOffset);
 		} catch (ParseException e) {
 			ValidationException e1 = new ValidationException(e.getMessage());
 			throw e1;
 		}
-		return eventTimeZoneOffset;
 	}
 
-	private static Document getBaseEPCISEvent(Document event) throws ValidationException {
+	private void putParentID(Document original, Document converted) throws ValidationException {
+		String parentID = original.getString("parentID");
+		if (parentID != null) {
+			converted.put("parentID", TagDataTranslationEngine.toInstanceLevelEPC(parentID));
+		}
+	}
 
-		Document base = new Document();
+	private void putChildEPCs(Document original, Document converted) throws ValidationException {
+		List<String> childEPCs = original.getList("childEPCs", String.class);
+		if (childEPCs != null) {
+			List<String> newArray = new ArrayList<String>();
+			for (String elem : childEPCs) {
+				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+			}
+			converted.put("epcList", newArray);
+		}
+	}
 
-		// type
-		String type = event.getString("type");
-		base.put("type", getType(type));
+	private void putEPCList(Document original, Document converted) throws ValidationException {
+		List<String> newArray = new ArrayList<String>();
+		for (String elem : original.getList("epcList", String.class)) {
+			newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+		}
+		converted.put("epcList", newArray);
+	}
 
-		// Event Time
-		base.put("eventTime", getTime(event.getString("eventTime")));
+	private void putInputEPCList(Document original, Document converted) throws ValidationException {
+		if (original.containsKey("inputEPCList")) {
+			List<String> newArray = new ArrayList<String>();
+			for (String elem : original.getList("inputEPCList", String.class)) {
+				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+			}
+			original.put("inputEPCList", newArray);
+		}
+	}
 
-		// Event Time Zone
-		base.put("eventTimeZoneOffset", getEventTimeZoneOffset(event.getString("eventTimeZoneOffset")));
+	private void putOutputEPCList(Document original, Document converted) throws ValidationException {
+		if (original.containsKey("outputEPCList")) {
+			List<String> newArray = new ArrayList<String>();
+			for (String elem : original.getList("outputEPCList", String.class)) {
+				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+			}
+			original.put("outputEPCList", newArray);
+		}
+	}
 
-		// Record Time : according to M5
-		base.put("recordTime", System.currentTimeMillis());
+	private void putChildQuantityList(Document original, Document converted) throws ValidationException {
+		List<Document> array = original.getList("childQuantityList", Document.class);
+		if (array != null) {
+			List<Document> newArray = new ArrayList<Document>();
+			for (Document qElem : array) {
+				qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+				if (qElem.containsKey("quantity")) {
+					Object obj = qElem.get("quantity");
+					qElem.put("quantity", Double.valueOf(obj.toString()));
+				}
+				newArray.add(qElem);
+			}
+			converted.put("quantityList", newArray);
+		}
+	}
 
-		// Certification Info
-		String certificationInfo = event.getString("certificationInfo");
-		if (certificationInfo != null)
-			base.put("certificationInfo", certificationInfo);
+	private void putQuantityList(Document original, Document converted) throws ValidationException {
+		List<Document> newArray = new ArrayList<Document>();
+		for (Document qElem : original.getList("quantityList", Document.class)) {
+			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+			if (qElem.containsKey("quantity")) {
+				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+			}
+			newArray.add(qElem);
+		}
+		converted.put("quantityList", newArray);
+	}
 
-		// OtherAttributes
-		// TODO
-		// putOtherAttributes(dbo, obj.getOtherAttributes());
+	private void putInputQuantityList(Document original, Document converted) throws ValidationException {
+		List<Document> newArray = new ArrayList<Document>();
+		for (Document qElem : original.getList("inputQuantityList", Document.class)) {
+			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+			if (qElem.containsKey("quantity")) {
+				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+			}
+			newArray.add(qElem);
+		}
+		converted.put("inputQuantityList", newArray);
+	}
 
-		// Event ID
-		String eventID = event.getString("eventID");
-		if (eventID != null)
-			base.put("eventID", eventID);
+	private void putOutputQuantityList(Document original, Document converted) throws ValidationException {
+		List<Document> newArray = new ArrayList<Document>();
+		for (Document qElem : original.getList("outputQuantityList", Document.class)) {
+			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+			if (qElem.containsKey("quantity")) {
+				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+			}
+			newArray.add(qElem);
+		}
+		converted.put("outputQuantityList", newArray);
+	}
 
+	private void putAction(Document original, Document converted) throws ValidationException {
+		String action = original.getString("action");
+		if (action == null)
+			throw new ValidationException("action should exist");
+		try {
+			ActionType.valueOf(action);
+		} catch (IllegalArgumentException e) {
+			throw e;
+		}
+		converted.put("action", original.getString("action"));
+	}
+
+	private void putBizStep(Document original, Document converted) {
+		if (original.containsKey("bizStep")) {
+			converted.put("bizStep", BusinessStep.getFullVocabularyName(original.getString("bizStep")));
+		}
+	}
+
+	private void putDisposition(Document original, Document converted) {
+		if (original.containsKey("disposition")) {
+			// standard vocabulary in brief form should change to its full name
+			// (compatibility with XML)
+			converted.put("disposition", Disposition.getFullVocabularyName(original.getString("disposition")));
+		}
+	}
+
+	private void putReadPoint(Document original, Document converted) throws ValidationException {
+		// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
+		if (original.containsKey("readPoint")) {
+			Document readPoint = original.get("readPoint", Document.class);
+			converted.put("readPoint", GlobalLocationNumber.toEPC(readPoint.getString("id")));
+		}
+	}
+
+	private void putBusinessLocation(Document original, Document converted) throws ValidationException {
+		// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
+		// string
+		if (original.containsKey("bizLocation")) {
+			Document bizLocation = original.get("bizLocation", Document.class);
+			converted.put("bizLocation", GlobalLocationNumber.toEPC(bizLocation.getString("id")));
+		}
+	}
+
+	private void putBusinessTransactionList(Document original, Document converted) throws ValidationException {
+		// bizTransactionList
+		if (original.containsKey("bizTransactionList")) {
+			List<Document> arr = original.getList("bizTransactionList", Document.class);
+			List<Document> newBizTransactionArr = new ArrayList<Document>();
+			for (Document elemObj : arr) {
+				Document t = new Document();
+				// type is optional field
+				String ttype = elemObj.getString("type");
+				if (ttype != null) {
+					t.append("type", encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(ttype)));
+				}
+				t.append("value",
+						TagDataTranslationEngine.toBusinessTransactionEPC(elemObj.getString("bizTransaction")));
+				newBizTransactionArr.add(t);
+			}
+			converted.put("bizTransactionList", newBizTransactionArr);
+		}
+	}
+
+	private void putSourceList(Document original, Document converted) throws ValidationException {
+		// sourceList
+		if (original.containsKey("sourceList")) {
+			List<Document> arr = original.getList("sourceList", Document.class);
+			List<Document> newSourceArr = new ArrayList<Document>();
+			for (Document elemObj : arr) {
+				Document source = new Document();
+				// type is mandatory
+				String shortType = elemObj.getString("type");
+				source.put("type", encodeMongoObjectKey(SourceDestinationType.getFullVocabularyName(shortType)));
+				if (shortType.equals("location")) {
+					source.put("value", GlobalLocationNumber.toEPC(elemObj.getString("source")));
+				} else {
+					source.put("value", GlobalLocationNumberOfParty.toEPC(elemObj.getString("source")));
+				}
+				newSourceArr.add(source);
+			}
+			converted.put("sourceList", newSourceArr);
+		}
+
+	}
+
+	private void putDestinationList(Document original, Document converted) throws ValidationException {
+		// destinationList
+		if (original.containsKey("destinationList")) {
+			List<Document> arr = original.getList("destinationList", Document.class);
+			List<Document> newDestinationArr = new ArrayList<Document>();
+			for (Document elemObj : arr) {
+				Document destination = new Document();
+				// type is mandatory
+				String shortType = elemObj.getString("type");
+				destination.put("type", encodeMongoObjectKey(SourceDestinationType.getFullVocabularyName(shortType)));
+				if (shortType.equals("location")) {
+					destination.put("value", GlobalLocationNumber.toEPC(elemObj.getString("destination")));
+				} else {
+					destination.put("value", GlobalLocationNumberOfParty.toEPC(elemObj.getString("destination")));
+				}
+				newDestinationArr.add(destination);
+			}
+			converted.put("destinationList", newDestinationArr);
+		}
+	}
+
+	private void putSensorElementList(Document original, Document context, Document converted)
+			throws ValidationException {
+		// sensorElementList
+		if (original.containsKey("sensorElementList")) {
+			List<Document> sensorElementList = original.getList("sensorElementList", Document.class);
+			for (Document sensorElement : sensorElementList) {
+				sensorElement.remove("isA");
+				if (sensorElement.containsKey("sensorMetadata")) {
+					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
+					if (sensorMetadata.containsKey("time")) {
+						sensorMetadata.put("time", getTime(sensorMetadata.getString("time")));
+					}
+					if (sensorMetadata.containsKey("startTime")) {
+						sensorMetadata.put("startTime", getTime(sensorMetadata.getString("startTime")));
+					}
+					if (sensorMetadata.containsKey("endTime")) {
+						sensorMetadata.put("endTime", getTime(sensorMetadata.getString("endTime")));
+					}
+					if (sensorMetadata.containsKey("deviceID")) {
+						sensorMetadata.put("deviceID",
+								TagDataTranslationEngine.toEPC(sensorMetadata.getString("deviceID")));
+					}
+					if (sensorMetadata.containsKey("deviceMetadata")) {
+						sensorMetadata.put("deviceMetadata",
+								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("deviceMetadata")));
+					}
+					if (sensorMetadata.containsKey("rawData")) {
+						sensorMetadata.put("rawData",
+								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("rawData")));
+					}
+					if (sensorMetadata.containsKey("dataProcessingMethod")) {
+						sensorMetadata.put("dataProcessingMethod",
+								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("dataProcessingMethod")));
+					}
+					if (sensorMetadata.containsKey("bizRules")) {
+						sensorMetadata.put("bizRules",
+								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
+					}
+					Document extension = retrieveExtension(sensorMetadata);
+					Document convertedExt = getStorableExtension(context, extension);
+					if (!convertedExt.isEmpty())
+						sensorMetadata.put("otherAttributes", convertedExt);
+				}
+
+				if (sensorElement.containsKey("sensorReport")) {
+					List<Document> sensorReport = sensorElement.getList("sensorReport", Document.class);
+					for (Document sensorReportElement : sensorReport) {
+
+						/*
+						 * 
+						 * "value", "minValue", "maxValue", "meanValue", "sDev", "percValue", "uom"
+						 */
+
+						String ttype = sensorReportElement.getString("type");
+						String exception = sensorReportElement.getString("exception");
+
+						if ((ttype == null && exception == null) || (ttype != null && exception != null)) {
+							throw new ValidationException("sensorReport should have one of 'type' or 'exception'");
+						}
+
+						if (exception != null) {
+							if (!exception.equals("ALARM_CONDITION") && !exception.equals("ERROR_CONDITION"))
+								throw new ValidationException(
+										"sensorReport - exception should be one of 'ERROR_CONDITION' or 'ALARM_CONDITION'");
+						}
+
+						if (sensorReportElement.containsKey("microorganism")
+								&& sensorReportElement.containsKey("chemicalSubstance")) {
+							throw new ValidationException(
+									"microorganism and chemicalSubstance fields should not coexist in sensorReport field");
+						}
+
+						if (sensorReportElement.containsKey("deviceID")) {
+							sensorReportElement.put("deviceID",
+									TagDataTranslationEngine.toEPC(sensorReportElement.getString("deviceID")));
+						}
+
+						if (sensorReportElement.containsKey("deviceMetadata")) {
+							sensorReportElement.put("deviceMetadata", GlobalDocumentTypeIdentifier
+									.toEPC(sensorReportElement.getString("deviceMetadata")));
+						}
+
+						if (sensorReportElement.containsKey("rawData")) {
+							sensorReportElement.put("rawData",
+									GlobalDocumentTypeIdentifier.toEPC(sensorReportElement.getString("rawData")));
+						}
+
+						if (sensorReportElement.containsKey("dataProcessingMethod")) {
+							sensorReportElement.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
+									.toEPC(sensorReportElement.getString("dataProcessingMethod")));
+						}
+
+						if (sensorReportElement.containsKey("time")) {
+							sensorReportElement.put("time", getTime(sensorReportElement.getString("time")));
+						}
+
+						if (sensorReportElement.containsKey("microorganism")) {
+							IdentifierValidator.checkMicroorganismValue(sensorReportElement.getString("microorganism"));
+						}
+
+						if (sensorReportElement.containsKey("chemicalSubstance")) {
+							IdentifierValidator
+									.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
+						}
+
+						if (sensorReportElement.containsKey("component")) {
+							IdentifierValidator.checkComponent(sensorReportElement.getString("chemicalSubstance"));
+						}
+
+						if (sensorReportElement.containsKey("hexBinaryValue")) {
+							sensorReportElement.put("hexBinaryValue",
+									DatatypeConverter.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
+							// sensorReportElement.put("hexBinaryValue",
+							// new Document().append("$binary", DatatypeConverter
+							// .parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
+						}
+
+						if (sensorReportElement.containsKey("stringValue")) {
+							sensorReportElement.getString("stringValue");
+						}
+
+						if (sensorReportElement.containsKey("booleanValue")) {
+							sensorReportElement.getBoolean("booleanValue");
+						}
+
+						if (sensorReportElement.containsKey("uriValue")) {
+							try {
+								new URI(sensorReportElement.getString("uriValue"));
+							} catch (URISyntaxException e) {
+								throw new ValidationException(e.getMessage());
+							}
+						}
+
+						if (sensorReportElement.containsKey("coordinateReferenceSystem")) {
+							// Do nothing
+						}
+
+						// TODO: otherAttributes
+
+						if (ttype != null) {
+							sensorReportElement.put("type",
+									Measurement.getFullVocabularyName(sensorReportElement.getString("type")));
+
+							if (sensorReportElement.containsKey("percRank")) {
+								sensorReportElement.put("percRank",
+										Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
+							}
+
+							String uom = null;
+							if (!sensorReportElement.containsKey("uriValue")) {
+								uom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
+								sensorReportElement.put("uom", uom);
+							} else {
+								uom = sensorReportElement.getString("uom");
+								EPCISServer.unitConverter.checkUnitOfMeasure(ttype, uom);
+							}
+
+							// value / minValue / maxValue / meanValue
+							String rUom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
+							sensorReportElement.put("rUom", rUom);
+
+							// value
+							if (sensorReportElement.containsKey("value")) {
+								double value = sensorReportElement.getDouble("value");
+								sensorReportElement.put("value", value);
+								sensorReportElement.put("rValue",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, value));
+							}
+
+							// minValue
+							if (sensorReportElement.containsKey("minValue")) {
+								double minValue = sensorReportElement.getDouble("minValue");
+								sensorReportElement.put("minValue", minValue);
+								sensorReportElement.put("rMinValue",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, minValue));
+							}
+
+							// maxValue
+							if (sensorReportElement.containsKey("maxValue")) {
+								double maxValue = sensorReportElement.getDouble("maxValue");
+								sensorReportElement.put("maxValue", maxValue);
+								sensorReportElement.put("rMaxValue",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, maxValue));
+							}
+
+							// meanValue
+							if (sensorReportElement.containsKey("meanValue")) {
+								double meanValue = sensorReportElement.getDouble("meanValue");
+								sensorReportElement.put("meanValue", meanValue);
+								sensorReportElement.put("rMeanValue",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, meanValue));
+							}
+
+							// percValue
+							if (sensorReportElement.containsKey("percValue")) {
+								double percValue = sensorReportElement.getDouble("percValue");
+								sensorReportElement.put("percValue", percValue);
+								sensorReportElement.put("rPercValue",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, percValue));
+							}
+
+							// sDev
+							if (sensorReportElement.containsKey("sDev")) {
+								double sDev = sensorReportElement.getDouble("sDev");
+								sensorReportElement.put("sDev", sDev);
+								sensorReportElement.put("rSDev",
+										EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, sDev));
+							}
+
+						}
+
+						/*
+						 * TODO
+						 * 
+						 * if (sensorReportElement.containsKey("value")) {
+						 * sensorReportElement.put("value", sensorReportElement.getDouble("value")); }
+						 * if (sensorReportElement.containsKey("minValue")) {
+						 * sensorReportElement.put("minValue",
+						 * sensorReportElement.getDouble("minValue")); } if
+						 * (sensorReportElement.containsKey("maxValue")) {
+						 * sensorReportElement.put("maxValue",
+						 * sensorReportElement.getDouble("maxValue")); } if
+						 * (sensorReportElement.containsKey("sDev")) { sensorReportElement.put("sDev",
+						 * sensorReportElement.getDouble("sDev")); } if
+						 * (sensorReportElement.containsKey("meanValue")) {
+						 * sensorReportElement.put("meanValue",
+						 * sensorReportElement.getDouble("meanValue")); } if
+						 * (sensorReportElement.containsKey("percRank")) {
+						 * sensorReportElement.put("percRank",
+						 * sensorReportElement.getDouble("percRank")); } if
+						 * (sensorReportElement.containsKey("percValue")) {
+						 * sensorReportElement.put("percValue",
+						 * sensorReportElement.getDouble("percValue")); } JsonObject extension =
+						 * retrieveExtension(sensorReportElement); JsonObject convertedExt =
+						 * getStorableExtension(context, extension); if (!convertedExt.isEmpty())
+						 * sensorReportElement.put("otherAttributes", convertedExt);
+						 * 
+						 * String uom = sensorReportElement.getString("uom"); Double value =
+						 * sensorReportElement.getDouble("value"); if (uom != null && value != null) {
+						 * String rType = EPCISServer.unitConverter.getRepresentativeType(uom); Double
+						 * rValue = EPCISServer.unitConverter.getRepresentativeValue(uom, value); if
+						 * (rValue != null && rType != null) { sensorReportElement.put("rValue",
+						 * rValue); sensorReportElement.put("rType", rType); } }
+						 */
+					}
+				}
+
+				Document extension = retrieveExtension(sensorElement);
+				if (!extension.isEmpty()) {
+					extension = getStorableExtension(context, extension);
+					sensorElement.put("extension", extension);
+					putFlatten(sensorElement, "sef", extension);
+				}
+
+			}
+		}
+	}
+
+	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
+		// ILMD
+		if (original.containsKey("ilmd")) {
+			Document ilmd = original.get("ilmd", Document.class);
+			ilmd = getStorableExtension(context, ilmd);
+			converted.put("ilmd", ilmd);
+			putFlatten(converted, "ilmdf", ilmd);
+		}
+	}
+
+	private void putPersistentDisposition(Document original, Document converted) {
+		// persistent disposition
+		if (original.containsKey("persistentDisposition")) {
+			Document pd = original.get("persistentDisposition", Document.class);
+			if (pd.containsKey("set")) {
+				List<String> oldSet = pd.getList("set", String.class);
+				List<String> newSet = new ArrayList<String>();
+				for (int i = 0; i < oldSet.size(); i++) {
+					newSet.add(Disposition.getFullVocabularyName(oldSet.get(i)));
+				}
+				pd.put("set", newSet);
+			}
+			if (pd.containsKey("unset")) {
+				List<String> oldSet = pd.getList("unset", String.class);
+				List<String> newSet = new ArrayList<String>();
+				for (int i = 0; i < oldSet.size(); i++) {
+					newSet.add(Disposition.getFullVocabularyName(oldSet.get(i)));
+				}
+				pd.put("unset", newSet);
+			}
+		}
+	}
+
+	private void putErrorDeclaration(Document original, Document context, Document converted)
+			throws ValidationException {
 		// Error Declaration
-		// TODO
-		// Document errExtension = putErrorDeclaration(dbo, obj.getErrorDeclaration());
-		// if (errExtension != null)
-		// putFlatten(dbo, "errf", errExtension.get("extension", Document.class));
+		if (original.containsKey("errorDeclaration")) {
+			Document errorDeclaration = original.get("errorDeclaration", Document.class);
+			errorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
 
-		return base;
+			if (errorDeclaration.containsKey("reason")) {
+				errorDeclaration.put("reason", ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
+			}
+
+			Document extension = retrieveExtension(errorDeclaration);
+			if (!extension.isEmpty()) {
+				extension = getStorableExtension(context, extension);
+				errorDeclaration.put("extension", getStorableExtension(context, extension));
+				putFlatten(converted, "errf", extension);
+			}
+		}
 	}
 
-	public static Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
+	private void putBaseExtension(Document original, Document context, Document converted) throws ValidationException {
+		Document extension = retrieveExtension(original);
+		if (!extension.isEmpty()) {
+			extension = getStorableExtension(context, extension);
+			converted.put("extension", extension);
+			putFlatten(converted, "extf", extension);
+		}
+	}
+
+	private void putEventHashID(Document converted) {
+		// put event id
+		if (!converted.containsKey("eventID")) {
+			POJOtoBSONUtil.putEventHashID(converted);
+		}
+	}
+
+	private void putTransactionID(Document converted, Transaction tx) {
+		if (tx != null)
+			converted.put("_tx", tx.getTxId());
+	}
+
+	private void putRecordTime(Document converted) {
+		converted.put("recordTime", System.currentTimeMillis());
+	}
+
+	private void putCertificationInfo(Document original, Document converted) throws ValidationException {
+		String certificationInfo = original.getString("certificationInfo");
+		if (certificationInfo != null) {
+			try {
+				new URI(certificationInfo);
+				converted.put("certificationInfo", certificationInfo);
+			} catch (URISyntaxException e) {
+				throw new ValidationException(e.getMessage());
+			}
+		}
+	}
+
+	private void putEventID(Document original, Document converted) {
+		String eventID = original.getString("eventID");
+		if (eventID != null) {
+			converted.put("eventID", eventID);
+		}
+	}
+
+	private Document getBaseEPCISEvent(Document original) throws ValidationException {
+
+		Document converted = new Document();
+
+		putType(original, converted);
+		putEventTime(original, converted);
+		putEventTimeZoneOffset(original, converted);
+		putRecordTime(converted);
+		putCertificationInfo(original, converted);
+		putEventID(original, converted);
+		putErrorDeclaration(original, original, converted);
+
+		return converted;
+	}
+
+	void putAggregationEventFields(Document original, Document context, Document converted) throws ValidationException {
+		putParentID(original, converted);
+		putChildEPCs(original, converted);
+		putChildQuantityList(original, converted);
+		putAction(original, converted);
+		putBizStep(original, converted);
+		putDisposition(original, converted);
+		putReadPoint(original, converted);
+		putBusinessLocation(original, converted);
+		putBusinessTransactionList(original, converted);
+		putSourceList(original, converted);
+		putDestinationList(original, converted);
+		putSensorElementList(original, context, converted);
+		putEventHashID(converted);
+	}
+
+	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
 
 		try {
-			Document event = Document.parse(jsonEvent.toString());
+			Document original = Document.parse(jsonEvent.toString());
 			Document context = Document.parse(jsonContext.toString());
 
 			// type: use as itself
-			String type = getType(event.getString("type"));
-			Document convertedEvent = getBaseEPCISEvent(event);
+			String type = original.getString("type");
+			Document converted = getBaseEPCISEvent(original);
 			if (type.equals("AggregationEvent")) {
-
+				putAggregationEventFields(original, context, converted);
 			} else if (type.equals("ObjectEvent")) {
 
 			} else if (type.equals("TransactionEvent")) {
@@ -165,513 +723,18 @@ public class EPCISDocumentConverter {
 
 			} else if (type.equals("AssociationEvent")) {
 
+			} else {
+				throw new ValidationException("invalid event type: " + type);
 			}
 
-			// eventID: use as itself
-			// certificationInfo: new in ratified schema
-			// parent ID
-
-			String parentID = event.getString("parentID");
-			if (parentID != null) {
-				convertedEvent.put("parentID", TagDataTranslationEngine.toInstanceLevelEPC(parentID));
-			}
-
-			List<String> childEPCs = event.getList("childEPCs", String.class);
-			List<String> epcList = event.getList("epcList", String.class);
-
-			if (childEPCs != null && !childEPCs.isEmpty()) {
-				// child EPCs: using epcList for query efficiency
-				List<String> newArray = new ArrayList<String>();
-				for (String elem : childEPCs) {
-					newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
-				}
-				convertedEvent.put("epcList", newArray);
-			} else if (epcList != null && !epcList.isEmpty()) {
-				// epcList
-				List<String> newArray = new ArrayList<String>();
-				for (String elem : event.getList("epcList", String.class)) {
-					newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
-				}
-				event.put("epcList", newArray);
-			}
-			// inputEPCList
-			if (event.containsKey("inputEPCList")) {
-				List<String> newArray = new ArrayList<String>();
-				for (String elem : event.getList("inputEPCList", String.class)) {
-					newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
-				}
-				event.put("inputEPCList", newArray);
-			}
-			// outputEPCList
-			if (event.containsKey("outputEPCList")) {
-				List<String> newArray = new ArrayList<String>();
-				for (String elem : event.getList("outputEPCList", String.class)) {
-					newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
-				}
-				event.put("outputEPCList", newArray);
-			}
-			if (event.containsKey("childQuantityList")) {
-				// child quantityList in association event: using QuantityList for query
-				// efficiency
-				List<Document> newArray = new ArrayList<Document>();
-				List<Document> array = event.getList("childQuantityList", Document.class);
-				event.remove("childQuantityList");
-				for (Document qElem : array) {
-					qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-					if (qElem.containsKey("quantity")) {
-						Object obj = qElem.get("quantity");
-						qElem.put("quantity", Double.valueOf(obj.toString()));
-					}
-					newArray.add(qElem);
-				}
-				event.put("quantityList", newArray);
-			} else if (event.containsKey("quantityList")) {
-				// quantityList
-				List<Document> newArray = new ArrayList<Document>();
-				for (Document qElem : event.getList("quantityList", Document.class)) {
-					qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-					if (qElem.containsKey("quantity")) {
-						qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
-					}
-					newArray.add(qElem);
-				}
-				event.put("quantityList", newArray);
-			}
-			// inputQuantityList
-			if (event.containsKey("inputQuantityList")) {
-				List<Document> newArray = new ArrayList<Document>();
-				for (Document qElem : event.getList("inputQuantityList", Document.class)) {
-					qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-					if (qElem.containsKey("quantity")) {
-						qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
-					}
-					newArray.add(qElem);
-				}
-				event.put("inputQuantityList", newArray);
-			}
-			// outputQuantityList
-			if (event.containsKey("outputQuantityList")) {
-				List<Document> newArray = new ArrayList<Document>();
-				for (Document qElem : event.getList("outputQuantityList", Document.class)) {
-					qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-					if (qElem.containsKey("quantity")) {
-						qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
-					}
-					newArray.add(qElem);
-				}
-				event.put("outputQuantityList", newArray);
-			}
-			// action: No change
-			// bizStep: No change -> change
-			if (event.containsKey("bizStep")) {
-				// standard vocabulary in brief form should change to its full name
-				// (compatibility with XML)
-				event.put("bizStep", BusinessStep.getFullVocabularyName(event.getString("bizStep")));
-			}
-			// disposition: No change
-			if (event.containsKey("disposition")) {
-				// standard vocabulary in brief form should change to its full name
-				// (compatibility with XML)
-				event.put("disposition", Disposition.getFullVocabularyName(event.getString("disposition")));
-			}
-			// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
-			if (event.containsKey("readPoint")) {
-				Document readPoint = event.get("readPoint", Document.class);
-				event.put("readPoint", GlobalLocationNumber.toEPC(readPoint.getString("id")));
-			}
-			// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
-			// string
-			if (event.containsKey("bizLocation")) {
-				Document bizLocation = event.get("bizLocation", Document.class);
-				event.put("bizLocation", GlobalLocationNumber.toEPC(bizLocation.getString("id")));
-			}
-			// bizTransactionList
-			if (event.containsKey("bizTransactionList")) {
-				List<Document> arr = event.getList("bizTransactionList", Document.class);
-				List<Document> newBizTransactionArr = new ArrayList<Document>();
-				for (Document elemObj : arr) {
-					Document t = new Document();
-					// type is optional field
-					String ttype = elemObj.getString("type");
-					if (ttype != null) {
-						t.append("type", encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(ttype)));
-					}
-					t.append("value",
-							TagDataTranslationEngine.toBusinessTransactionEPC(elemObj.getString("bizTransaction")));
-					newBizTransactionArr.add(t);
-				}
-				event.put("bizTransactionList", newBizTransactionArr);
-			}
-			// sourceList
-			if (event.containsKey("sourceList")) {
-				List<Document> arr = event.getList("sourceList", Document.class);
-				List<Document> newSourceArr = new ArrayList<Document>();
-				for (Document elemObj : arr) {
-					Document source = new Document();
-					// type is mandatory
-					String shortType = elemObj.getString("type");
-					source.put("type", encodeMongoObjectKey(SourceDestinationType.getFullVocabularyName(shortType)));
-					if (shortType.equals("location")) {
-						source.put("value", GlobalLocationNumber.toEPC(elemObj.getString("source")));
-					} else {
-						source.put("value", GlobalLocationNumberOfParty.toEPC(elemObj.getString("source")));
-					}
-					newSourceArr.add(source);
-				}
-				event.put("sourceList", newSourceArr);
-			}
-			// destinationList
-			if (event.containsKey("destinationList")) {
-				List<Document> arr = event.getList("destinationList", Document.class);
-				List<Document> newDestinationArr = new ArrayList<Document>();
-				for (Document elemObj : arr) {
-					Document destination = new Document();
-					// type is mandatory
-					String shortType = elemObj.getString("type");
-					destination.put("type",
-							encodeMongoObjectKey(SourceDestinationType.getFullVocabularyName(shortType)));
-					if (shortType.equals("location")) {
-						destination.put("value", GlobalLocationNumber.toEPC(elemObj.getString("destination")));
-					} else {
-						destination.put("value", GlobalLocationNumberOfParty.toEPC(elemObj.getString("destination")));
-					}
-					newDestinationArr.add(destination);
-				}
-				event.put("destinationList", newDestinationArr);
-			}
-
-			// sensorElementList
-			if (event.containsKey("sensorElementList")) {
-				List<Document> sensorElementList = event.getList("sensorElementList", Document.class);
-				for (Document sensorElement : sensorElementList) {
-					sensorElement.remove("isA");
-					if (sensorElement.containsKey("sensorMetadata")) {
-						Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
-						if (sensorMetadata.containsKey("time")) {
-							sensorMetadata.put("time", getTime(sensorMetadata.getString("time")));
-						}
-						if (sensorMetadata.containsKey("startTime")) {
-							sensorMetadata.put("startTime", getTime(sensorMetadata.getString("startTime")));
-						}
-						if (sensorMetadata.containsKey("endTime")) {
-							sensorMetadata.put("endTime", getTime(sensorMetadata.getString("endTime")));
-						}
-						if (sensorMetadata.containsKey("deviceID")) {
-							sensorMetadata.put("deviceID",
-									TagDataTranslationEngine.toEPC(sensorMetadata.getString("deviceID")));
-						}
-						if (sensorMetadata.containsKey("deviceMetadata")) {
-							sensorMetadata.put("deviceMetadata",
-									GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("deviceMetadata")));
-						}
-						if (sensorMetadata.containsKey("rawData")) {
-							sensorMetadata.put("rawData",
-									GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("rawData")));
-						}
-						if (sensorMetadata.containsKey("dataProcessingMethod")) {
-							sensorMetadata.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
-									.toEPC(sensorMetadata.getString("dataProcessingMethod")));
-						}
-						if (sensorMetadata.containsKey("bizRules")) {
-							sensorMetadata.put("bizRules",
-									GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
-						}
-						Document extension = retrieveExtension(sensorMetadata);
-						Document convertedExt = getStorableExtension(context, extension);
-						if (!convertedExt.isEmpty())
-							sensorMetadata.put("otherAttributes", convertedExt);
-					}
-
-					if (sensorElement.containsKey("sensorReport")) {
-						List<Document> sensorReport = sensorElement.getList("sensorReport", Document.class);
-						for (Document sensorReportElement : sensorReport) {
-
-							/*
-							 * 
-							 * "value", "minValue", "maxValue", "meanValue", "sDev", "percValue", "uom"
-							 */
-
-							String ttype = sensorReportElement.getString("type");
-							String exception = sensorReportElement.getString("exception");
-
-							if ((ttype == null && exception == null) || (ttype != null && exception != null)) {
-								throw new ValidationException("sensorReport should have one of 'type' or 'exception'");
-							}
-
-							if (exception != null) {
-								if (!exception.equals("ALARM_CONDITION") && !exception.equals("ERROR_CONDITION"))
-									throw new ValidationException(
-											"sensorReport - exception should be one of 'ERROR_CONDITION' or 'ALARM_CONDITION'");
-							}
-
-							if (sensorReportElement.containsKey("microorganism")
-									&& sensorReportElement.containsKey("chemicalSubstance")) {
-								throw new ValidationException(
-										"microorganism and chemicalSubstance fields should not coexist in sensorReport field");
-							}
-
-							if (sensorReportElement.containsKey("deviceID")) {
-								sensorReportElement.put("deviceID",
-										TagDataTranslationEngine.toEPC(sensorReportElement.getString("deviceID")));
-							}
-
-							if (sensorReportElement.containsKey("deviceMetadata")) {
-								sensorReportElement.put("deviceMetadata", GlobalDocumentTypeIdentifier
-										.toEPC(sensorReportElement.getString("deviceMetadata")));
-							}
-
-							if (sensorReportElement.containsKey("rawData")) {
-								sensorReportElement.put("rawData",
-										GlobalDocumentTypeIdentifier.toEPC(sensorReportElement.getString("rawData")));
-							}
-
-							if (sensorReportElement.containsKey("dataProcessingMethod")) {
-								sensorReportElement.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
-										.toEPC(sensorReportElement.getString("dataProcessingMethod")));
-							}
-
-							if (sensorReportElement.containsKey("time")) {
-								sensorReportElement.put("time",
-										getTime(sensorReportElement.getString("time")));
-							}
-
-							if (sensorReportElement.containsKey("microorganism")) {
-								IdentifierValidator
-										.checkMicroorganismValue(sensorReportElement.getString("microorganism"));
-							}
-
-							if (sensorReportElement.containsKey("chemicalSubstance")) {
-								IdentifierValidator
-										.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
-							}
-
-							if (sensorReportElement.containsKey("component")) {
-								IdentifierValidator.checkComponent(sensorReportElement.getString("chemicalSubstance"));
-							}
-
-							if (sensorReportElement.containsKey("hexBinaryValue")) {
-								sensorReportElement.put("hexBinaryValue", DatatypeConverter
-										.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
-								// sensorReportElement.put("hexBinaryValue",
-								// new Document().append("$binary", DatatypeConverter
-								// .parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
-							}
-
-							if (sensorReportElement.containsKey("stringValue")) {
-								sensorReportElement.getString("stringValue");
-							}
-
-							if (sensorReportElement.containsKey("booleanValue")) {
-								sensorReportElement.getBoolean("booleanValue");
-							}
-
-							if (sensorReportElement.containsKey("uriValue")) {
-								new URI(sensorReportElement.getString("uriValue"));
-							}
-
-							if (sensorReportElement.containsKey("coordinateReferenceSystem")) {
-								// Do nothing
-							}
-
-							// TODO: otherAttributes
-
-							if (ttype != null) {
-								sensorReportElement.put("type",
-										Measurement.getFullVocabularyName(sensorReportElement.getString("type")));
-
-								if (sensorReportElement.containsKey("percRank")) {
-									sensorReportElement.put("percRank",
-											Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
-								}
-
-								String uom = null;
-								if (!sensorReportElement.containsKey("uriValue")) {
-									uom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
-									sensorReportElement.put("uom", uom);
-								} else {
-									uom = sensorReportElement.getString("uom");
-									EPCISServer.unitConverter.checkUnitOfMeasure(ttype, uom);
-								}
-
-								// value / minValue / maxValue / meanValue
-								String rUom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
-								sensorReportElement.put("rUom", rUom);
-
-								// value
-								if (sensorReportElement.containsKey("value")) {
-									double value = sensorReportElement.getDouble("value");
-									sensorReportElement.put("value", value);
-									sensorReportElement.put("rValue",
-											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, value));
-								}
-
-								// minValue
-								if (sensorReportElement.containsKey("minValue")) {
-									double minValue = sensorReportElement.getDouble("minValue");
-									sensorReportElement.put("minValue", minValue);
-									sensorReportElement.put("rMinValue",
-											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, minValue));
-								}
-
-								// maxValue
-								if (sensorReportElement.containsKey("maxValue")) {
-									double maxValue = sensorReportElement.getDouble("maxValue");
-									sensorReportElement.put("maxValue", maxValue);
-									sensorReportElement.put("rMaxValue",
-											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, maxValue));
-								}
-
-								// meanValue
-								if (sensorReportElement.containsKey("meanValue")) {
-									double meanValue = sensorReportElement.getDouble("meanValue");
-									sensorReportElement.put("meanValue", meanValue);
-									sensorReportElement.put("rMeanValue",
-											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, meanValue));
-								}
-
-								// percValue
-								if (sensorReportElement.containsKey("percValue")) {
-									double percValue = sensorReportElement.getDouble("percValue");
-									sensorReportElement.put("percValue", percValue);
-									sensorReportElement.put("rPercValue",
-											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, percValue));
-								}
-
-								// sDev
-								if (sensorReportElement.containsKey("sDev")) {
-									double sDev = sensorReportElement.getDouble("sDev");
-									sensorReportElement.put("sDev", sDev);
-									sensorReportElement.put("rSDev",
-											EPCISServer.unitConverter.getRepresentativeValue(type, uom, sDev));
-								}
-
-							}
-
-							/*
-							 * TODO
-							 * 
-							 * if (sensorReportElement.containsKey("value")) {
-							 * sensorReportElement.put("value", sensorReportElement.getDouble("value")); }
-							 * if (sensorReportElement.containsKey("minValue")) {
-							 * sensorReportElement.put("minValue",
-							 * sensorReportElement.getDouble("minValue")); } if
-							 * (sensorReportElement.containsKey("maxValue")) {
-							 * sensorReportElement.put("maxValue",
-							 * sensorReportElement.getDouble("maxValue")); } if
-							 * (sensorReportElement.containsKey("sDev")) { sensorReportElement.put("sDev",
-							 * sensorReportElement.getDouble("sDev")); } if
-							 * (sensorReportElement.containsKey("meanValue")) {
-							 * sensorReportElement.put("meanValue",
-							 * sensorReportElement.getDouble("meanValue")); } if
-							 * (sensorReportElement.containsKey("percRank")) {
-							 * sensorReportElement.put("percRank",
-							 * sensorReportElement.getDouble("percRank")); } if
-							 * (sensorReportElement.containsKey("percValue")) {
-							 * sensorReportElement.put("percValue",
-							 * sensorReportElement.getDouble("percValue")); } JsonObject extension =
-							 * retrieveExtension(sensorReportElement); JsonObject convertedExt =
-							 * getStorableExtension(context, extension); if (!convertedExt.isEmpty())
-							 * sensorReportElement.put("otherAttributes", convertedExt);
-							 * 
-							 * String uom = sensorReportElement.getString("uom"); Double value =
-							 * sensorReportElement.getDouble("value"); if (uom != null && value != null) {
-							 * String rType = EPCISServer.unitConverter.getRepresentativeType(uom); Double
-							 * rValue = EPCISServer.unitConverter.getRepresentativeValue(uom, value); if
-							 * (rValue != null && rType != null) { sensorReportElement.put("rValue",
-							 * rValue); sensorReportElement.put("rType", rType); } }
-							 */
-						}
-					}
-
-					Document extension = retrieveExtension(sensorElement);
-					if (!extension.isEmpty()) {
-						extension = getStorableExtension(context, extension);
-						sensorElement.put("extension", extension);
-						putFlatten(sensorElement, "sef", extension);
-					}
-
-				}
-			}
-
-			// TODO -----------------------------------------------------------------------
-			// quantityList: No change
-			// ILMD
-			if (event.containsKey("ilmd")) {
-				Document ilmd = event.get("ilmd", Document.class);
-				ilmd = getStorableExtension(context, ilmd);
-				event.put("ilmd", ilmd);
-				putFlatten(event, "ilmdf", ilmd);
-			}
-
-			// persistent disposition
-			if (event.containsKey("persistentDisposition")) {
-				Document pd = event.get("persistentDisposition", Document.class);
-				if (pd.containsKey("set")) {
-					List<String> oldSet = pd.getList("set", String.class);
-					List<String> newSet = new ArrayList<String>();
-					for (int i = 0; i < oldSet.size(); i++) {
-						newSet.add(Disposition.getFullVocabularyName(oldSet.get(i)));
-					}
-					pd.put("set", newSet);
-				}
-				if (pd.containsKey("unset")) {
-					List<String> oldSet = pd.getList("unset", String.class);
-					List<String> newSet = new ArrayList<String>();
-					for (int i = 0; i < oldSet.size(); i++) {
-						newSet.add(Disposition.getFullVocabularyName(oldSet.get(i)));
-					}
-					pd.put("unset", newSet);
-				}
-			}
-
-			// Error Declaration
-			if (event.containsKey("errorDeclaration")) {
-				Document errorDeclaration = event.get("errorDeclaration", Document.class);
-				errorDeclaration.put("declarationTime",
-						getTime(errorDeclaration.getString("declarationTime")));
-
-				if (errorDeclaration.containsKey("reason")) {
-					errorDeclaration.put("reason",
-							ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
-				}
-
-				Document extension = retrieveExtension(errorDeclaration);
-				if (!extension.isEmpty()) {
-					extension = getStorableExtension(context, extension);
-					errorDeclaration.put("extension", getStorableExtension(context, extension));
-					putFlatten(event, "errf", extension);
-				}
-			}
-
-			// vendor extension
-			// Collect extension fields
-			Document extension = retrieveExtension(event);
-			if (!extension.isEmpty()) {
-				extension = getStorableExtension(context, extension);
-				event.put("extension", extension);
-				putFlatten(event, "extf", extension);
-			}
-
-			// remove unnecessary fields
-			event.remove("@context");
-			event.remove("otherAttributes");
-
-			// put event id
-			if (!event.containsKey("eventID")) {
-				putEventHashID(event);
-			}
-
-			if (tx != null)
-				event.put("_tx", tx.getTxId());
-
-			return event;
-
+			putTransactionID(converted, tx);
+			return converted;
 		} catch (Exception e) {
 			throw new ValidationException(e.getMessage());
 		}
 	}
 
-	public static Document retrieveExtension(Document object) {
+	public Document retrieveExtension(Document object) {
 		Iterator<String> extFieldIter = object.keySet().iterator();
 		Document extension = new Document();
 		while (extFieldIter.hasNext()) {
@@ -686,7 +749,7 @@ public class EPCISDocumentConverter {
 		return extension;
 	}
 
-	public static Document getStorableExtension(Document context, Document ext) throws ValidationException {
+	public Document getStorableExtension(Document context, Document ext) throws ValidationException {
 		Document storable = new Document();
 		for (String key : ext.keySet()) {
 			String[] fieldArr = key.split(":");
@@ -719,7 +782,7 @@ public class EPCISDocumentConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<Object> getStorableExtension(Document context, List<Object> extRawValue) throws ValidationException {
+	public List<Object> getStorableExtension(Document context, List<Object> extRawValue) throws ValidationException {
 		List<Object> newExtArray = new ArrayList<Object>();
 		for (Object elem : extRawValue) {
 			if (elem instanceof Document) {
@@ -734,7 +797,7 @@ public class EPCISDocumentConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Object getStorableExtension(Document context, String key, Object extRawValue) throws ValidationException {
+	public Object getStorableExtension(Document context, String key, Object extRawValue) throws ValidationException {
 		if (extRawValue instanceof String) {
 			if (context.containsKey(key) && context.get(key, Document.class).containsKey("@type")) {
 				String type = context.get(key, Document.class).getString("@type");
@@ -788,7 +851,7 @@ public class EPCISDocumentConverter {
 		return null;
 	}
 
-	public static Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) throws ValidationException {
+	public Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) throws ValidationException {
 
 		Document ext = Document.parse(jsonExt.toString());
 		Document context = Document.parse(jsonContext.toString());
@@ -854,8 +917,8 @@ public class EPCISDocumentConverter {
 		return namespace + "#" + fieldArr[1];
 	}
 
-	public static Stream<ReplaceOneModel<Document>> convertVocabulary(JsonObject context, String type,
-			JsonArray vocabularyElementList)  {
+	public Stream<ReplaceOneModel<Document>> convertVocabulary(JsonObject context, String type,
+			JsonArray vocabularyElementList) {
 		return vocabularyElementList.stream().parallel().map(v -> {
 			JsonObject vocabularyElement = (JsonObject) v;
 			JsonObject find = new JsonObject();
@@ -929,98 +992,5 @@ public class EPCISDocumentConverter {
 	public static String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
-	}
-
-	public static String getEPC2(String uri) throws ValidationException {
-		if (uri == null)
-			return null;
-		if (!uri.contains("https://id.gs1.org"))
-			return null;
-		String _01 = null;
-		String _21 = null;
-		String _10 = null;
-		String _00 = null;
-		boolean is01 = false;
-		boolean is21 = false;
-		boolean is10 = false;
-		boolean is00 = false;
-		String[] arr = uri.split("\\/");
-		for (String elem : arr) {
-			switch (elem) {
-			case "01" -> {
-				is01 = true;
-				is21 = false;
-				is10 = false;
-				continue;
-			}
-			case "10" -> {
-				is01 = false;
-				is21 = false;
-				is10 = true;
-				continue;
-			}
-			case "21" -> {
-				is01 = false;
-				is21 = true;
-				is10 = false;
-				continue;
-			}
-			case "00" -> {
-				is01 = false;
-				is21 = false;
-				is10 = false;
-				is00 = true;
-				continue;
-			}
-			}
-			if (is01) {
-				is01 = false;
-				_01 = elem;
-			} else if (is10) {
-				is10 = false;
-				_10 = elem;
-			} else if (is21) {
-				is21 = false;
-				_21 = elem;
-			} else if (is00) {
-				_00 = elem;
-			}
-		}
-
-		if (_01 != null) {
-//			String _01back = _01.substring(1);
-//			Integer gcpLength = null;
-//			while (!_01back.equals("")) {
-//				if (_01back.length() == 0)
-//					return null;
-//
-//				gcpLength = StaticResource.gcpLength.get(_01back);
-//
-//				if (gcpLength != null)
-//					break;
-//
-//				_01back = _01back.substring(0, _01back.length() - 1);
-//			}
-//
-//			if (gcpLength == null)
-//				return null;
-			Integer gcpLength = DLConverter.getGCPLength(StaticResource.gcpLength, _01.substring(1));
-
-			if (_01 != null && _21 != null) {
-				// 01 & 21 formulate SGTIN
-				return DLConverter.generateSgtin(_01, _21, gcpLength);
-			} else if (_01 != null && _10 != null) {
-				// 01 & 10 formulate LGTIN
-				return DLConverter.generateLgtin(_01, _10, gcpLength);
-			} else if (_01 != null) {
-				// 01 formulate GTIN
-				return DLConverter.generateGtin(_01, gcpLength);
-			}
-		} else if (_00 != null) {
-			Integer gcpLength = DLConverter.getGCPLength(StaticResource.gcpLength, _00.substring(1));
-			return DLConverter.generateSscc(_00, gcpLength);
-		}
-
-		return null;
 	}
 }
