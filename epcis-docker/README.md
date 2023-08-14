@@ -1,12 +1,15 @@
 # EPCIS Docker
 
 This docker compose configuration will Build and Run the EPCIS server, together with a Mongo database server.
+
+### Requirements
+To use this docker configuration, you need to install [Docker](https://www.docker.com). It is recommended to install the newest version available, but if that is not possible, then simply install version 24 or any newer version.
  
 ### Configurations
 The 2 files in the `/epcis-docker/configs` folder will get copied into the EPCIS server container and used by the server process. Updating them will change the settings of the server.
 
 ### Connection Ports
-The EPCIS server will be exposed on port 8080, while the mongo server will be on port 27017. If these ports are not available on your system, please modify the `docker compose.yaml` file to use different ports.
+The EPCIS server will be exposed on port `8080`, while the mongo server will be on port `27017`. If these ports are not available on your system, please modify the `docker-compose.yaml` file to use different ports. For example, changing `- 8080:8080` to `- 3000:8080` will make it so that port 8080 on the container gets mapped to port 3000 on your computer.
 
 ### Database Connection
 The database connection string is: `mongodb://root:example@localhost:27017`
