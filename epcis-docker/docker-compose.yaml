@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    hostname: mongo
+    container_name: mongo
+    restart: always
+    volumes:
+      - epcis_mongo_volume:/data/db
+    networks:
+      - epcis_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  oliot_epcis:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    hostname: oliot_epcis
+    container_name: oliot_epcis
+    restart: always
+    volumes:
+      - ./configs/configuration.json:/app/configuration.json
+      - ./configs/log4j.xml:/app/log4j.xml
+    networks:
+      - epcis_network
+    ports:
+      - 8080:8080
+    depends_on:
+      - mongo
+
+volumes:
+  epcis_mongo_volume:
+    driver: local
+
+networks:
+  epcis_network:
+    driver: bridge
