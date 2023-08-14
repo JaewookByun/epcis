@@ -677,6 +677,11 @@ public class POJOtoBSONUtil {
 						sensorReportObj.put("exception", e1.getException());
 				}
 
+				if (e1.getMicroorganism() != null && e1.getChemicalSubstance() != null) {
+					throw new ValidationException(
+							"microorganism and chemicalSubstance fields should not coexist in sensorReport field");
+				}
+
 				if (e1.getDeviceID() != null) {
 					// EPC
 					IdentifierValidator.checkEPCPureIdentity(gcpLength, e1.getDeviceID());

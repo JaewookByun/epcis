@@ -18,15 +18,16 @@ import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.BusinessTransactionType;
 import org.oliot.epcis.model.cbv.Disposition;
+import org.oliot.epcis.model.cbv.EPCISEventType;
 import org.oliot.epcis.model.cbv.ErrorReason;
 import org.oliot.epcis.model.cbv.Measurement;
-import org.oliot.epcis.model.cbv.SensorAlertType;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.resource.StaticResource;
+import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.validation.IdentifierValidator;
 import org.oliot.gcp.core.DLConverter;
 
@@ -38,33 +39,154 @@ import io.vertx.core.json.JsonObject;
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 
 public class EPCISDocumentConverter {
-	@SuppressWarnings({ "unchecked" })
+
+	// instance EPC: parentID, childEPCs, epcList, inputEPCList, outputEPCList
+	// SGTIN, SSCC, SGLN, GRAI, GAIAI, GSRN, GSRNP, GDTI, CPI, SGCN, GINC, GSIN,
+	// ITIP, UPUI, PGLN
+
+	// class EPC: childQuantityList, quantityList, inputQuantityList,
+	// outputQuantityList
+	// LGTIN, GTIN, CPI, ITIP
+
+	// readPoint, businessLocation
+	// SGLN
+
+	// sourceDestID
+	// owning_party, possessing_party: pgln
+	// location: sgln
+
+	// businessTransactionID
+	// GDTI, GSRN, CBV 8.5
+
+	// transformationID
+	// GDTI, CBV 8.8
+
+	// resourceID
+	// GDTI
+
+	private static String getType(String type) throws ValidationException {
+		if (type == null) {
+			throw new ValidationException("type should exist");
+		}
+		try {
+			EPCISEventType.valueOf(type);
+		} catch (IllegalArgumentException e) {
+			throw new ValidationException(e.getMessage());
+		}
+		return type;
+	}
+
+	private static Long getTime(String time) throws ValidationException {
+		if (time == null) {
+			throw new ValidationException("type should exist");
+		}
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		String timeString = (String) time;
+		try {
+			Date t = sdf.parse(timeString);
+			return t.getTime();
+		} catch (ParseException e) {
+			throw new ValidationException(e.getMessage());
+		}
+	}
+
+	private static String getEventTimeZoneOffset(String eventTimeZoneOffset) throws ValidationException {
+		if (eventTimeZoneOffset == null) {
+			throw new ValidationException("eventTimeZoneOffset should existe");
+		}
+
+		SimpleDateFormat sdf = new SimpleDateFormat("XXX");
+		try {
+			sdf.parse(eventTimeZoneOffset);
+		} catch (ParseException e) {
+			ValidationException e1 = new ValidationException(e.getMessage());
+			throw e1;
+		}
+		return eventTimeZoneOffset;
+	}
+
+	private static Document getBaseEPCISEvent(Document event) throws ValidationException {
+
+		Document base = new Document();
+
+		// type
+		String type = event.getString("type");
+		base.put("type", getType(type));
+
+		// Event Time
+		base.put("eventTime", getTime(event.getString("eventTime")));
+
+		// Event Time Zone
+		base.put("eventTimeZoneOffset", getEventTimeZoneOffset(event.getString("eventTimeZoneOffset")));
+
+		// Record Time : according to M5
+		base.put("recordTime", System.currentTimeMillis());
+
+		// Certification Info
+		String certificationInfo = event.getString("certificationInfo");
+		if (certificationInfo != null)
+			base.put("certificationInfo", certificationInfo);
+
+		// OtherAttributes
+		// TODO
+		// putOtherAttributes(dbo, obj.getOtherAttributes());
+
+		// Event ID
+		String eventID = event.getString("eventID");
+		if (eventID != null)
+			base.put("eventID", eventID);
+
+		// Error Declaration
+		// TODO
+		// Document errExtension = putErrorDeclaration(dbo, obj.getErrorDeclaration());
+		// if (errExtension != null)
+		// putFlatten(dbo, "errf", errExtension.get("extension", Document.class));
+
+		return base;
+	}
+
 	public static Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
 
 		try {
 			Document event = Document.parse(jsonEvent.toString());
 			Document context = Document.parse(jsonContext.toString());
+
 			// type: use as itself
-			// Event Time
-			event.put("eventTime", getStorableDateTime(event.getString("eventTime")));
-			// Event Time Zone: No change
-			// Record Time
-			event.put("recordTime", System.currentTimeMillis());
+			String type = getType(event.getString("type"));
+			Document convertedEvent = getBaseEPCISEvent(event);
+			if (type.equals("AggregationEvent")) {
+
+			} else if (type.equals("ObjectEvent")) {
+
+			} else if (type.equals("TransactionEvent")) {
+
+			} else if (type.equals("TransformationEvent")) {
+
+			} else if (type.equals("AssociationEvent")) {
+
+			}
+
 			// eventID: use as itself
 			// certificationInfo: new in ratified schema
 			// parent ID
-			if (event.containsKey("parentID")) {
-				event.put("parentID", TagDataTranslationEngine.toInstanceLevelEPC(event.getString("parentID")));
+
+			String parentID = event.getString("parentID");
+			if (parentID != null) {
+				convertedEvent.put("parentID", TagDataTranslationEngine.toInstanceLevelEPC(parentID));
 			}
-			if (event.containsKey("childEPCs")) {
+
+			List<String> childEPCs = event.getList("childEPCs", String.class);
+			List<String> epcList = event.getList("epcList", String.class);
+
+			if (childEPCs != null && !childEPCs.isEmpty()) {
 				// child EPCs: using epcList for query efficiency
 				List<String> newArray = new ArrayList<String>();
-				for (String elem : (List<String>) event.remove("childEPCs")) {
+				for (String elem : childEPCs) {
 					newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
 				}
-				event.put("epcList", newArray);
-			} else if (event.containsKey("epcList")) {
+				convertedEvent.put("epcList", newArray);
+			} else if (epcList != null && !epcList.isEmpty()) {
 				// epcList
 				List<String> newArray = new ArrayList<String>();
 				for (String elem : event.getList("epcList", String.class)) {
@@ -170,11 +292,12 @@ public class EPCISDocumentConverter {
 				for (Document elemObj : arr) {
 					Document t = new Document();
 					// type is optional field
-					String type = elemObj.getString("type");
-					if (type != null) {
-						t.append("type", encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(type)));
+					String ttype = elemObj.getString("type");
+					if (ttype != null) {
+						t.append("type", encodeMongoObjectKey(BusinessTransactionType.getFullVocabularyName(ttype)));
 					}
-					t.append("value", GlobalDocumentTypeIdentifier.toEPC(elemObj.getString("bizTransaction")));
+					t.append("value",
+							TagDataTranslationEngine.toBusinessTransactionEPC(elemObj.getString("bizTransaction")));
 					newBizTransactionArr.add(t);
 				}
 				event.put("bizTransactionList", newBizTransactionArr);
@@ -225,13 +348,13 @@ public class EPCISDocumentConverter {
 					if (sensorElement.containsKey("sensorMetadata")) {
 						Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
 						if (sensorMetadata.containsKey("time")) {
-							sensorMetadata.put("time", getStorableDateTime(sensorMetadata.getString("time")));
+							sensorMetadata.put("time", getTime(sensorMetadata.getString("time")));
 						}
 						if (sensorMetadata.containsKey("startTime")) {
-							sensorMetadata.put("startTime", getStorableDateTime(sensorMetadata.getString("startTime")));
+							sensorMetadata.put("startTime", getTime(sensorMetadata.getString("startTime")));
 						}
 						if (sensorMetadata.containsKey("endTime")) {
-							sensorMetadata.put("endTime", getStorableDateTime(sensorMetadata.getString("endTime")));
+							sensorMetadata.put("endTime", getTime(sensorMetadata.getString("endTime")));
 						}
 						if (sensorMetadata.containsKey("deviceID")) {
 							sensorMetadata.put("deviceID",
@@ -265,51 +388,53 @@ public class EPCISDocumentConverter {
 
 							/*
 							 * 
-							 * "coordinateReferenceSystem", "value", "component", "minValue", "maxValue",
-							 * "meanValue", "sDev", "percValue", "uom"
+							 * "value", "minValue", "maxValue", "meanValue", "sDev", "percValue", "uom"
 							 */
 
-							if ((sensorReportElement.containsKey("type")
-									&& sensorReportElement.containsKey("exception"))
-									|| (!sensorReportElement.containsKey("type")
-											&& !sensorReportElement.containsKey("exception"))) {
-								throw new ValidationException(
-										"One of type and exception fields should exist in sensorReport field");
+							String ttype = sensorReportElement.getString("type");
+							String exception = sensorReportElement.getString("exception");
+
+							if ((ttype == null && exception == null) || (ttype != null && exception != null)) {
+								throw new ValidationException("sensorReport should have one of 'type' or 'exception'");
 							}
+
+							if (exception != null) {
+								if (!exception.equals("ALARM_CONDITION") && !exception.equals("ERROR_CONDITION"))
+									throw new ValidationException(
+											"sensorReport - exception should be one of 'ERROR_CONDITION' or 'ALARM_CONDITION'");
+							}
+
 							if (sensorReportElement.containsKey("microorganism")
 									&& sensorReportElement.containsKey("chemicalSubstance")) {
 								throw new ValidationException(
 										"microorganism and chemicalSubstance fields should not coexist in sensorReport field");
 							}
 
-							if (sensorReportElement.containsKey("type")) {
-								sensorReportElement.put("type",
-										Measurement.getFullVocabularyName(sensorReportElement.getString("type")));
-							} else {
-								SensorAlertType.valueOf(sensorReportElement.getString("exception"));
-							}
-
-							if (sensorReportElement.containsKey("time")) {
-								sensorReportElement.put("time",
-										getStorableDateTime(sensorReportElement.getString("time")));
-							}
-
 							if (sensorReportElement.containsKey("deviceID")) {
 								sensorReportElement.put("deviceID",
 										TagDataTranslationEngine.toEPC(sensorReportElement.getString("deviceID")));
 							}
+
 							if (sensorReportElement.containsKey("deviceMetadata")) {
 								sensorReportElement.put("deviceMetadata", GlobalDocumentTypeIdentifier
 										.toEPC(sensorReportElement.getString("deviceMetadata")));
 							}
+
 							if (sensorReportElement.containsKey("rawData")) {
 								sensorReportElement.put("rawData",
 										GlobalDocumentTypeIdentifier.toEPC(sensorReportElement.getString("rawData")));
 							}
+
 							if (sensorReportElement.containsKey("dataProcessingMethod")) {
 								sensorReportElement.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
 										.toEPC(sensorReportElement.getString("dataProcessingMethod")));
 							}
+
+							if (sensorReportElement.containsKey("time")) {
+								sensorReportElement.put("time",
+										getTime(sensorReportElement.getString("time")));
+							}
+
 							if (sensorReportElement.containsKey("microorganism")) {
 								IdentifierValidator
 										.checkMicroorganismValue(sensorReportElement.getString("microorganism"));
@@ -318,6 +443,10 @@ public class EPCISDocumentConverter {
 							if (sensorReportElement.containsKey("chemicalSubstance")) {
 								IdentifierValidator
 										.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
+							}
+
+							if (sensorReportElement.containsKey("component")) {
+								IdentifierValidator.checkComponent(sensorReportElement.getString("chemicalSubstance"));
 							}
 
 							if (sensorReportElement.containsKey("hexBinaryValue")) {
@@ -340,9 +469,82 @@ public class EPCISDocumentConverter {
 								new URI(sensorReportElement.getString("uriValue"));
 							}
 
-							if (sensorReportElement.containsKey("percRank")) {
-								sensorReportElement.put("percRank",
-										Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
+							if (sensorReportElement.containsKey("coordinateReferenceSystem")) {
+								// Do nothing
+							}
+
+							// TODO: otherAttributes
+
+							if (ttype != null) {
+								sensorReportElement.put("type",
+										Measurement.getFullVocabularyName(sensorReportElement.getString("type")));
+
+								if (sensorReportElement.containsKey("percRank")) {
+									sensorReportElement.put("percRank",
+											Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
+								}
+
+								String uom = null;
+								if (!sensorReportElement.containsKey("uriValue")) {
+									uom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
+									sensorReportElement.put("uom", uom);
+								} else {
+									uom = sensorReportElement.getString("uom");
+									EPCISServer.unitConverter.checkUnitOfMeasure(ttype, uom);
+								}
+
+								// value / minValue / maxValue / meanValue
+								String rUom = EPCISServer.unitConverter.getRepresentativeUoMFromType(ttype);
+								sensorReportElement.put("rUom", rUom);
+
+								// value
+								if (sensorReportElement.containsKey("value")) {
+									double value = sensorReportElement.getDouble("value");
+									sensorReportElement.put("value", value);
+									sensorReportElement.put("rValue",
+											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, value));
+								}
+
+								// minValue
+								if (sensorReportElement.containsKey("minValue")) {
+									double minValue = sensorReportElement.getDouble("minValue");
+									sensorReportElement.put("minValue", minValue);
+									sensorReportElement.put("rMinValue",
+											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, minValue));
+								}
+
+								// maxValue
+								if (sensorReportElement.containsKey("maxValue")) {
+									double maxValue = sensorReportElement.getDouble("maxValue");
+									sensorReportElement.put("maxValue", maxValue);
+									sensorReportElement.put("rMaxValue",
+											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, maxValue));
+								}
+
+								// meanValue
+								if (sensorReportElement.containsKey("meanValue")) {
+									double meanValue = sensorReportElement.getDouble("meanValue");
+									sensorReportElement.put("meanValue", meanValue);
+									sensorReportElement.put("rMeanValue",
+											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, meanValue));
+								}
+
+								// percValue
+								if (sensorReportElement.containsKey("percValue")) {
+									double percValue = sensorReportElement.getDouble("percValue");
+									sensorReportElement.put("percValue", percValue);
+									sensorReportElement.put("rPercValue",
+											EPCISServer.unitConverter.getRepresentativeValue(ttype, uom, percValue));
+								}
+
+								// sDev
+								if (sensorReportElement.containsKey("sDev")) {
+									double sDev = sensorReportElement.getDouble("sDev");
+									sensorReportElement.put("sDev", sDev);
+									sensorReportElement.put("rSDev",
+											EPCISServer.unitConverter.getRepresentativeValue(type, uom, sDev));
+								}
+
 							}
 
 							/*
@@ -426,7 +628,7 @@ public class EPCISDocumentConverter {
 			if (event.containsKey("errorDeclaration")) {
 				Document errorDeclaration = event.get("errorDeclaration", Document.class);
 				errorDeclaration.put("declarationTime",
-						getStorableDateTime(errorDeclaration.getString("declarationTime")));
+						getTime(errorDeclaration.getString("declarationTime")));
 
 				if (errorDeclaration.containsKey("reason")) {
 					errorDeclaration.put("reason",
@@ -484,7 +686,7 @@ public class EPCISDocumentConverter {
 		return extension;
 	}
 
-	public static Document getStorableExtension(Document context, Document ext) {
+	public static Document getStorableExtension(Document context, Document ext) throws ValidationException {
 		Document storable = new Document();
 		for (String key : ext.keySet()) {
 			String[] fieldArr = key.split(":");
@@ -517,7 +719,7 @@ public class EPCISDocumentConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<Object> getStorableExtension(Document context, List<Object> extRawValue) {
+	public static List<Object> getStorableExtension(Document context, List<Object> extRawValue) throws ValidationException {
 		List<Object> newExtArray = new ArrayList<Object>();
 		for (Object elem : extRawValue) {
 			if (elem instanceof Document) {
@@ -532,7 +734,7 @@ public class EPCISDocumentConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Object getStorableExtension(Document context, String key, Object extRawValue) {
+	public static Object getStorableExtension(Document context, String key, Object extRawValue) throws ValidationException {
 		if (extRawValue instanceof String) {
 			if (context.containsKey(key) && context.get(key, Document.class).containsKey("@type")) {
 				String type = context.get(key, Document.class).getString("@type");
@@ -544,7 +746,7 @@ public class EPCISDocumentConverter {
 					} else if (type.equals("xsd:boolean")) {
 						return Boolean.parseBoolean((String) extRawValue);
 					} else if (type.equals("xsd:dateTimeStamp")) {
-						Long time = getStorableDateTime((String) extRawValue);
+						Long time = getTime((String) extRawValue);
 						if (time == null)
 							return extRawValue;
 						else
@@ -586,17 +788,7 @@ public class EPCISDocumentConverter {
 		return null;
 	}
 
-	public static Long getStorableDateTime(String string) {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-		try {
-			Date time = sdf.parse(string);
-			return time.getTime();
-		} catch (ParseException e) {
-			return null;
-		}
-	}
-
-	public static Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) {
+	public static Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) throws ValidationException {
 
 		Document ext = Document.parse(jsonExt.toString());
 		Document context = Document.parse(jsonContext.toString());
@@ -639,7 +831,7 @@ public class EPCISDocumentConverter {
 			String eNewKey = encodeMongoObjectKey(context.getString(keyArr[0]) + "#" + keyArr[1]);
 			Object eNewValue = null;
 			if (value instanceof String) {
-				Long time = getStorableDateTime((String) value);
+				Long time = getTime((String) value);
 				eNewValue = Objects.requireNonNullElseGet(time, () -> (String) value);
 			} else if (value instanceof Integer || value instanceof Double || value instanceof Boolean) {
 				eNewValue = value;
@@ -663,7 +855,7 @@ public class EPCISDocumentConverter {
 	}
 
 	public static Stream<ReplaceOneModel<Document>> convertVocabulary(JsonObject context, String type,
-			JsonArray vocabularyElementList) {
+			JsonArray vocabularyElementList)  {
 		return vocabularyElementList.stream().parallel().map(v -> {
 			JsonObject vocabularyElement = (JsonObject) v;
 			JsonObject find = new JsonObject();
@@ -678,9 +870,14 @@ public class EPCISDocumentConverter {
 				JsonObject attribute = (JsonObject) a;
 				Object value = attribute.getValue("attribute");
 				String attrKey = encodeMongoObjectKey(resolveKey(attribute.getString("id"), context));
-				Object attrValue;
+				Object attrValue = null;
 				if (value instanceof JsonObject) {
-					attrValue = getMasterStorableExtension(context, attribute.getJsonObject("attribute"));
+					try {
+						attrValue = getMasterStorableExtension(context, attribute.getJsonObject("attribute"));
+					} catch (ValidationException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} else {
 					attrValue = attribute.getValue("attribute").toString();
 				}

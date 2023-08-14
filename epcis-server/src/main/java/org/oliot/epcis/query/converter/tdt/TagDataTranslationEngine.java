@@ -616,6 +616,16 @@ public class TagDataTranslationEngine {
 			throw new ValidationException("Unsupported code scheme");
 	}
 
+	/**
+	 * 
+	 * // class EPC: childQuantityList, quantityList, inputQuantityList,
+	 * outputQuantityList // LGTIN, GTIN, CPI, ITIP
+	 *
+	 * 
+	 * @param dl
+	 * @return
+	 * @throws ValidationException
+	 */
 	public static String toClassLevelEPC(String dl) throws ValidationException {
 		IdentifierType type = getClassLevelDLType(dl);
 		if (type == IdentifierType.LGTIN) {
@@ -630,6 +640,17 @@ public class TagDataTranslationEngine {
 			throw new ValidationException("Unsupported class level code scheme");
 	}
 
+	/**
+	 * instance EPC: parentID, childEPCs, epcList, inputEPCList, outputEPCList //
+	 * SGTIN, SSCC, SGLN, GRAI, GAIAI, GSRN, GSRNP, GDTI, CPI, SGCN, GINC, GSIN,
+	 * ITIP, UPUI, PGLN
+	 * 
+	 * 
+	 * 
+	 * @param instanceLevelDL
+	 * @return
+	 * @throws ValidationException
+	 */
 	public static String toInstanceLevelEPC(String instanceLevelDL) throws ValidationException {
 		IdentifierType type = getInstanceLevelDLType(instanceLevelDL);
 		if (type == IdentifierType.SGTIN) {
@@ -662,6 +683,26 @@ public class TagDataTranslationEngine {
 			return UnitPackIdentifier.toEPC(instanceLevelDL);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toEPC(instanceLevelDL);
+		} else
+			throw new ValidationException("Unsupported instance level code scheme");
+	}
+
+	/**
+	 * 
+	 * GDTI, GSRN, GSRNP
+	 * 
+	 * @param instanceLevelDL
+	 * @return
+	 * @throws ValidationException
+	 */
+	public static String toBusinessTransactionEPC(String instanceLevelDL) throws ValidationException {
+		IdentifierType type = getInstanceLevelDLType(instanceLevelDL);
+		if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toEPC(instanceLevelDL);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toEPC(instanceLevelDL);
 		} else
 			throw new ValidationException("Unsupported instance level code scheme");
 	}
