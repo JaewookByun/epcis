@@ -475,13 +475,13 @@ GS1 retains the right to make changes to this document at any time, without noti
   </wsdl:binding>
 
   <!-- EPCISSERVICE -->
-  <wsdl:service name="epcglobalEPCISService">
-    <wsdl:port binding="impl:EPCISServiceBinding" name="epcglobalEPCISServicePort">
+  <wsdl:service name="EPCglobalEPCISService">
+    <wsdl:port binding="impl:EPCISServiceBinding" name="EPCglobalEPCISServicePort">
     <!-- The address shown below is an example; an implementation MAY specify
          any port it wishes
      -->
       <wsdlsoap:address
-         location="http://localhost:6060/axis/services/epcglobalEPCISService"/>
+         location="http://localhost:6060/axis/services/EPCglobalEPCISService"/>
     </wsdl:port>
   </wsdl:service>
 
