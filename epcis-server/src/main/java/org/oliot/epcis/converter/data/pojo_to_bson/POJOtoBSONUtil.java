@@ -738,6 +738,9 @@ public class POJOtoBSONUtil {
 				if (e1.getOtherAttributes() != null && !e1.getOtherAttributes().isEmpty())
 					sensorReportObj.put("otherAttributes", getOtherAttributesMap(e1.getOtherAttributes()));
 
+				if (e1.getPercRank() != null)
+					sensorReportObj.put("percRank", Double.valueOf(e1.getPercRank().toString()));
+
 				if (type != null) {
 					if (measurements.contains(e1.getType())) {
 						sensorReportObj.put("type", e1.getType());
@@ -746,9 +749,6 @@ public class POJOtoBSONUtil {
 								"unsupported sensor measurement: " + e1.getType());
 						throw e;
 					}
-
-					if (e1.getPercRank() != null)
-						sensorReportObj.put("percRank", Double.valueOf(e1.getPercRank().toString()));
 
 					String uom = null;
 					if (e1.getUom() == null) {
