@@ -358,7 +358,7 @@ public class EPCISDocumentConverter {
 								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
 					}
 					Document extension = retrieveExtension(sensorMetadata);
-					Document convertedExt = getStorableExtension(context, extension);
+					Document convertedExt = getExtension(context, extension);
 					if (!convertedExt.isEmpty())
 						newSensorMetadata.put("otherAttributes", convertedExt);
 
@@ -472,18 +472,16 @@ public class EPCISDocumentConverter {
 							newSensorReport.put("coordinateReferenceSystem",
 									sensorReportElement.getString("coordinateReferenceSystem"));
 						}
-						
+
 						if (sensorReportElement.containsKey("percRank")) {
 							newSensorReport.put("percRank",
 									Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
-						}						
+						}
 
 						// TODO: otherAttributes
 
 						if (type != null) {
 							newSensorReport.put("type", Measurement.getFullVocabularyName(type));
-
-							
 
 							String uom = null;
 							if (!sensorReportElement.containsKey("uom")) {
@@ -595,7 +593,7 @@ public class EPCISDocumentConverter {
 
 				Document extension = retrieveExtension(sensorElement);
 				if (!extension.isEmpty()) {
-					extension = getStorableExtension(context, extension);
+					extension = getExtension(context, extension);
 					newSensorElement.put("extension", extension);
 					putFlatten(newSensorElement, "sef", extension);
 				}
@@ -613,7 +611,7 @@ public class EPCISDocumentConverter {
 		// ILMD
 		if (original.containsKey("ilmd")) {
 			Document ilmd = original.get("ilmd", Document.class);
-			ilmd = getStorableExtension(context, ilmd);
+			ilmd = getExtension(context, ilmd);
 			converted.put("ilmd", ilmd);
 			putFlatten(converted, "ilmdf", ilmd);
 		}
@@ -655,8 +653,8 @@ public class EPCISDocumentConverter {
 
 			Document extension = retrieveExtension(errorDeclaration);
 			if (!extension.isEmpty()) {
-				extension = getStorableExtension(context, extension);
-				errorDeclaration.put("extension", getStorableExtension(context, extension));
+				extension = getExtension(context, extension);
+				errorDeclaration.put("extension", getExtension(context, extension));
 				putFlatten(converted, "errf", extension);
 			}
 		}
@@ -665,7 +663,7 @@ public class EPCISDocumentConverter {
 	private void putBaseExtension(Document original, Document context, Document converted) throws ValidationException {
 		Document extension = retrieveExtension(original);
 		if (!extension.isEmpty()) {
-			extension = getStorableExtension(context, extension);
+			extension = getExtension(context, extension);
 			converted.put("extension", extension);
 			putFlatten(converted, "extf", extension);
 		}
@@ -706,7 +704,7 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private Document getBaseEPCISEvent(Document original) throws ValidationException {
+	private Document getBaseEPCISEvent(Document original, Document context) throws ValidationException {
 
 		Document converted = new Document();
 
@@ -717,6 +715,7 @@ public class EPCISDocumentConverter {
 		putCertificationInfo(original, converted);
 		putEventID(original, converted);
 		putErrorDeclaration(original, original, converted);
+		putBaseExtension(original, context, converted);
 
 		return converted;
 	}
@@ -746,7 +745,7 @@ public class EPCISDocumentConverter {
 
 			// type: use as itself
 			String type = original.getString("type");
-			Document converted = getBaseEPCISEvent(original);
+			Document converted = getBaseEPCISEvent(original, context);
 			if (type.equals("AggregationEvent")) {
 				putAggregationEventFields(original, context, converted);
 			} else if (type.equals("ObjectEvent")) {
@@ -783,56 +782,54 @@ public class EPCISDocumentConverter {
 		return extension;
 	}
 
-	public Document getStorableExtension(Document context, Document ext) throws ValidationException {
-		Document storable = new Document();
+	public Document getExtension(Document context, Document ext) throws ValidationException {
+		Document extension = new Document();
 		for (String key : ext.keySet()) {
 			String[] fieldArr = key.split(":");
 			String extKey;
 			if (fieldArr.length == 1) {
 				extKey = "#" + key;
 			} else {
+				String namespace = context.getString(fieldArr[0]);
+				if (namespace == null)
+					throw new ValidationException("Cannot find a namespace " + namespace + " in the context.");
 				extKey = context.getString(fieldArr[0]) + "#" + fieldArr[1];
 			}
 			Object extRawValue = ext.get(key);
-
-			storable.put(encodeMongoObjectKey(extKey), getStorableExtension(context, key, extRawValue));
-
-			/*
-			 * if (extRawValue instanceof String) { Long time = getStorableDateTime((String)
-			 * extRawValue); if (time == null) { storable.put(encodeMongoObjectKey(extKey),
-			 * (String) extRawValue); } else { storable.put(encodeMongoObjectKey(extKey),
-			 * time); } } else if (extRawValue instanceof Integer) {
-			 * storable.put(encodeMongoObjectKey(extKey), (Integer) extRawValue); } else if
-			 * (extRawValue instanceof Double) { storable.put(encodeMongoObjectKey(extKey),
-			 * (Double) extRawValue); } else if (extRawValue instanceof Boolean) {
-			 * storable.put(encodeMongoObjectKey(extKey), (Boolean) extRawValue); } else if
-			 * (extRawValue instanceof JsonObject) { JsonObject extValue = (JsonObject)
-			 * extRawValue; Object extObj = getStorableExtension(context, extValue);
-			 * storable.put(encodeMongoObjectKey(extKey), extObj); }
-			 *
-			 */
+			extension.put(encodeMongoObjectKey(extKey), getExtension(context, key, extRawValue));
 		}
-		return storable;
+		return extension;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object> getStorableExtension(Document context, List<Object> extRawValue) throws ValidationException {
+	public List<Object> getExtension(Document context, List<Object> extRawValue) throws ValidationException {
 		List<Object> newExtArray = new ArrayList<Object>();
 		for (Object elem : extRawValue) {
 			if (elem instanceof Document) {
-				newExtArray.add(getStorableExtension(context, (Document) elem));
+				newExtArray.add(getExtension(context, (Document) elem));
 			} else if (elem instanceof List) {
-				newExtArray.add(getStorableExtension(context, (List<Object>) elem));
+				newExtArray.add(getExtension(context, (List<Object>) elem));
+			} else if (elem instanceof Integer) {
+				newExtArray.add((Integer) elem);
+			} else if (elem instanceof Double) {
+				newExtArray.add((Double) elem);
 			} else {
-				newExtArray.add(elem.toString());
+				String inner = elem.toString();
+				try {
+					Long t = getTime(inner);
+					newExtArray.add(t);
+				} catch (ValidationException e) {
+					newExtArray.add(inner);
+				}
+
 			}
 		}
 		return newExtArray;
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object getStorableExtension(Document context, String key, Object extRawValue) throws ValidationException {
-		if (extRawValue instanceof String) {
+	public Object getExtension(Document context, String key, Object extRawValue) throws ValidationException {
+		if (extRawValue instanceof String) {	
 			if (context.containsKey(key) && context.get(key, Document.class).containsKey("@type")) {
 				String type = context.get(key, Document.class).getString("@type");
 				try {
@@ -840,14 +837,8 @@ public class EPCISDocumentConverter {
 						return Integer.parseInt((String) extRawValue);
 					} else if (type.equals("xsd:double")) {
 						return Double.parseDouble((String) extRawValue);
-					} else if (type.equals("xsd:boolean")) {
-						return Boolean.parseBoolean((String) extRawValue);
 					} else if (type.equals("xsd:dateTimeStamp")) {
-						Long time = getTime((String) extRawValue);
-						if (time == null)
-							return extRawValue;
-						else
-							return time;
+						return getTime((String) extRawValue);
 					} else {
 						return extRawValue;
 					}
@@ -856,10 +847,14 @@ public class EPCISDocumentConverter {
 				}
 			}
 			return extRawValue;
+		} else if (extRawValue instanceof Integer) {
+			return (Integer) extRawValue;
+		} else if (extRawValue instanceof Double) {
+			return (Double) extRawValue;
 		} else if (extRawValue instanceof Document) {
-			return getStorableExtension(context, (Document) extRawValue);
-		} else if (extRawValue instanceof JsonArray) {
-			return getStorableExtension(context, (List<Object>) extRawValue);
+			return getExtension(context, (Document) extRawValue);
+		} else if (extRawValue instanceof List<?>) {
+			return getExtension(context, (List<Object>) extRawValue);
 		}
 		/*
 		 * if (extRawValue instanceof String) { System.out.println(extRawValue); // key:
@@ -914,7 +909,7 @@ public class EPCISDocumentConverter {
 			}
 		}
 		if (innerKeyWONamespace != null) {
-			attrWONamespace = getStorableExtension(context, attrWONamespace);
+			attrWONamespace = getExtension(context, attrWONamespace);
 			storable.put(innerKeyWONamespace, attrWONamespace);
 		}
 
@@ -933,7 +928,7 @@ public class EPCISDocumentConverter {
 			} else if (value instanceof Integer || value instanceof Double || value instanceof Boolean) {
 				eNewValue = value;
 			} else if (value instanceof Document) {
-				eNewValue = getStorableExtension(context, (Document) value);
+				eNewValue = getExtension(context, (Document) value);
 			}
 			storable.put(eNewKey, eNewValue);
 		}
