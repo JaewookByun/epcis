@@ -42,29 +42,109 @@ import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 @SuppressWarnings("unused")
 public class EPCISDocumentConverter {
 
-	// instance EPC: parentID, childEPCs, epcList, inputEPCList, outputEPCList
-	// SGTIN, SSCC, SGLN, GRAI, GAIAI, GSRN, GSRNP, GDTI, CPI, SGCN, GINC, GSIN,
-	// ITIP, UPUI, PGLN
+	private Long getTime(String time) throws ValidationException {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+		String timeString = (String) time;
+		try {
+			Date t = sdf.parse(timeString);
+			return t.getTime();
+		} catch (ParseException e) {
+			throw new ValidationException(e.getMessage());
+		}
+	}
 
-	// class EPC: childQuantityList, quantityList, inputQuantityList,
-	// outputQuantityList
-	// LGTIN, GTIN, CPI, ITIP
+	private Document retrieveExtension(Document object) {
+		Iterator<String> extFieldIter = object.keySet().iterator();
+		Document extension = new Document();
+		while (extFieldIter.hasNext()) {
+			String extField = extFieldIter.next();
+			if (extField.contains(":")) {
+				extension.put(extField, object.get(extField));
+			}
+		}
+		for (String removalField : extension.keySet()) {
+			object.remove(removalField);
+		}
+		return extension;
+	}
 
-	// readPoint, businessLocation
-	// SGLN
+	private Document getExtension(Document context, Document ext) throws ValidationException {
+		Document extension = new Document();
+		for (String key : ext.keySet()) {
+			String[] fieldArr = key.split(":");
+			String extKey;
+			if (fieldArr.length == 1) {
+				extKey = "#" + key;
+			} else {
+				String namespace = context.getString(fieldArr[0]);
+				if (namespace == null)
+					throw new ValidationException("Cannot find a namespace " + namespace + " in the context.");
+				extKey = context.getString(fieldArr[0]) + "#" + fieldArr[1];
+			}
+			Object extRawValue = ext.get(key);
+			extension.put(encodeMongoObjectKey(extKey), getExtension(context, key, extRawValue));
+		}
+		return extension;
+	}
 
-	// sourceDestID
-	// owning_party, possessing_party: pgln
-	// location: sgln
+	@SuppressWarnings("unchecked")
+	private Object getExtension(Document context, String key, Object extRawValue) throws ValidationException {
+		if (extRawValue instanceof String) {
+			if (context.containsKey(key) && context.get(key, Document.class).containsKey("@type")) {
+				String type = context.get(key, Document.class).getString("@type");
+				try {
+					if (type.equals("xsd:int")) {
+						return Integer.parseInt((String) extRawValue);
+					} else if (type.equals("xsd:double")) {
+						return Double.parseDouble((String) extRawValue);
+					} else if (type.equals("xsd:dateTimeStamp")) {
+						return getTime((String) extRawValue);
+					} else {
+						return extRawValue;
+					}
+				} catch (Exception e) {
+					return extRawValue;
+				}
+			}
+			return extRawValue;
+		} else if (extRawValue instanceof Integer) {
+			return (Integer) extRawValue;
+		} else if (extRawValue instanceof Double) {
+			return (Double) extRawValue;
+		} else if (extRawValue instanceof Document) {
+			return getExtension(context, (Document) extRawValue);
+		} else if (extRawValue instanceof List<?>) {
+			return getExtension(context, (List<Object>) extRawValue);
+		}
 
-	// businessTransactionID
-	// GDTI, GSRN, CBV 8.5
+		return null;
+	}
 
-	// transformationID
-	// GDTI, CBV 8.8
+	@SuppressWarnings("unchecked")
+	private List<Object> getExtension(Document context, List<Object> extRawValue) throws ValidationException {
+		List<Object> newExtArray = new ArrayList<Object>();
+		for (Object elem : extRawValue) {
+			if (elem instanceof Document) {
+				newExtArray.add(getExtension(context, (Document) elem));
+			} else if (elem instanceof List) {
+				newExtArray.add(getExtension(context, (List<Object>) elem));
+			} else if (elem instanceof Integer) {
+				newExtArray.add((Integer) elem);
+			} else if (elem instanceof Double) {
+				newExtArray.add((Double) elem);
+			} else {
+				String inner = elem.toString();
+				try {
+					Long t = getTime(inner);
+					newExtArray.add(t);
+				} catch (ValidationException e) {
+					newExtArray.add(inner);
+				}
 
-	// resourceID
-	// GDTI
+			}
+		}
+		return newExtArray;
+	}
 
 	private void putType(Document original, Document converted) throws ValidationException {
 		String type = original.getString("type");
@@ -77,17 +157,6 @@ public class EPCISDocumentConverter {
 			throw new ValidationException(e.getMessage());
 		}
 		converted.put("type", type);
-	}
-
-	private Long getTime(String time) throws ValidationException {
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-		String timeString = (String) time;
-		try {
-			Date t = sdf.parse(timeString);
-			return t.getTime();
-		} catch (ParseException e) {
-			throw new ValidationException(e.getMessage());
-		}
 	}
 
 	private void putEventTime(Document original, Document converted) throws ValidationException {
@@ -110,6 +179,58 @@ public class EPCISDocumentConverter {
 		} catch (ParseException e) {
 			ValidationException e1 = new ValidationException(e.getMessage());
 			throw e1;
+		}
+	}
+
+	private void putRecordTime(Document converted) {
+		converted.put("recordTime", System.currentTimeMillis());
+	}
+
+	private void putCertificationInfo(Document original, Document converted) throws ValidationException {
+		String certificationInfo = original.getString("certificationInfo");
+		if (certificationInfo != null) {
+			try {
+				new URI(certificationInfo);
+				converted.put("certificationInfo", certificationInfo);
+			} catch (URISyntaxException e) {
+				throw new ValidationException(e.getMessage());
+			}
+		}
+	}
+
+	private void putEventID(Document original, Document converted) {
+		String eventID = original.getString("eventID");
+		if (eventID != null) {
+			converted.put("eventID", eventID);
+		}
+	}
+
+	private void putErrorDeclaration(Document original, Document context, Document converted)
+			throws ValidationException {
+		// Error Declaration
+		if (original.containsKey("errorDeclaration")) {
+			Document errorDeclaration = original.get("errorDeclaration", Document.class);
+			errorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
+
+			if (errorDeclaration.containsKey("reason")) {
+				errorDeclaration.put("reason", ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
+			}
+
+			Document extension = retrieveExtension(errorDeclaration);
+			if (!extension.isEmpty()) {
+				extension = getExtension(context, extension);
+				errorDeclaration.put("extension", getExtension(context, extension));
+				putFlatten(converted, "errf", extension);
+			}
+		}
+	}
+
+	private void putBaseExtension(Document original, Document context, Document converted) throws ValidationException {
+		Document extension = retrieveExtension(original);
+		if (!extension.isEmpty()) {
+			extension = getExtension(context, extension);
+			converted.put("extension", extension);
+			putFlatten(converted, "extf", extension);
 		}
 	}
 
@@ -237,20 +358,36 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putReadPoint(Document original, Document converted) throws ValidationException {
+	private void putReadPoint(Document original, Document context, Document converted) throws ValidationException {
 		// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
 		if (original.containsKey("readPoint")) {
 			Document readPoint = original.get("readPoint", Document.class);
 			converted.put("readPoint", GlobalLocationNumber.toEPC(readPoint.getString("id")));
+
+			Document extension = retrieveExtension(readPoint);
+			if (!extension.isEmpty()) {
+				extension = getExtension(context, extension);
+				converted.put("readPointExt", extension);
+				putFlatten(converted, "rpf", extension);
+			}
+
 		}
 	}
 
-	private void putBusinessLocation(Document original, Document converted) throws ValidationException {
+	private void putBusinessLocation(Document original, Document context, Document converted)
+			throws ValidationException {
 		// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
 		// string
 		if (original.containsKey("bizLocation")) {
 			Document bizLocation = original.get("bizLocation", Document.class);
 			converted.put("bizLocation", GlobalLocationNumber.toEPC(bizLocation.getString("id")));
+
+			Document extension = retrieveExtension(bizLocation);
+			if (!extension.isEmpty()) {
+				extension = getExtension(context, extension);
+				converted.put("bizLocationExt", extension);
+				putFlatten(converted, "blf", extension);
+			}
 		}
 	}
 
@@ -547,40 +684,6 @@ public class EPCISDocumentConverter {
 
 						}
 
-						/*
-						 * TODO
-						 * 
-						 * if (sensorReportElement.containsKey("value")) {
-						 * sensorReportElement.put("value", sensorReportElement.getDouble("value")); }
-						 * if (sensorReportElement.containsKey("minValue")) {
-						 * sensorReportElement.put("minValue",
-						 * sensorReportElement.getDouble("minValue")); } if
-						 * (sensorReportElement.containsKey("maxValue")) {
-						 * sensorReportElement.put("maxValue",
-						 * sensorReportElement.getDouble("maxValue")); } if
-						 * (sensorReportElement.containsKey("sDev")) { sensorReportElement.put("sDev",
-						 * sensorReportElement.getDouble("sDev")); } if
-						 * (sensorReportElement.containsKey("meanValue")) {
-						 * sensorReportElement.put("meanValue",
-						 * sensorReportElement.getDouble("meanValue")); } if
-						 * (sensorReportElement.containsKey("percRank")) {
-						 * sensorReportElement.put("percRank",
-						 * sensorReportElement.getDouble("percRank")); } if
-						 * (sensorReportElement.containsKey("percValue")) {
-						 * sensorReportElement.put("percValue",
-						 * sensorReportElement.getDouble("percValue")); } JsonObject extension =
-						 * retrieveExtension(sensorReportElement); JsonObject convertedExt =
-						 * getStorableExtension(context, extension); if (!convertedExt.isEmpty())
-						 * sensorReportElement.put("otherAttributes", convertedExt);
-						 * 
-						 * String uom = sensorReportElement.getString("uom"); Double value =
-						 * sensorReportElement.getDouble("value"); if (uom != null && value != null) {
-						 * String rType = EPCISServer.unitConverter.getRepresentativeType(uom); Double
-						 * rValue = EPCISServer.unitConverter.getRepresentativeValue(uom, value); if
-						 * (rValue != null && rType != null) { sensorReportElement.put("rValue",
-						 * rValue); sensorReportElement.put("rType", rType); } }
-						 */
-
 						if (!newSensorReport.isEmpty())
 							newSensorReportList.add(newSensorReport);
 
@@ -607,8 +710,7 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
-		// ILMD
+	private void put(Document original, Document context, Document converted) throws ValidationException {
 		if (original.containsKey("ilmd")) {
 			Document ilmd = original.get("ilmd", Document.class);
 			ilmd = getExtension(context, ilmd);
@@ -618,7 +720,6 @@ public class EPCISDocumentConverter {
 	}
 
 	private void putPersistentDisposition(Document original, Document converted) {
-		// persistent disposition
 		if (original.containsKey("persistentDisposition")) {
 			Document pd = original.get("persistentDisposition", Document.class);
 			if (pd.containsKey("set")) {
@@ -640,37 +741,7 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putErrorDeclaration(Document original, Document context, Document converted)
-			throws ValidationException {
-		// Error Declaration
-		if (original.containsKey("errorDeclaration")) {
-			Document errorDeclaration = original.get("errorDeclaration", Document.class);
-			errorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
-
-			if (errorDeclaration.containsKey("reason")) {
-				errorDeclaration.put("reason", ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
-			}
-
-			Document extension = retrieveExtension(errorDeclaration);
-			if (!extension.isEmpty()) {
-				extension = getExtension(context, extension);
-				errorDeclaration.put("extension", getExtension(context, extension));
-				putFlatten(converted, "errf", extension);
-			}
-		}
-	}
-
-	private void putBaseExtension(Document original, Document context, Document converted) throws ValidationException {
-		Document extension = retrieveExtension(original);
-		if (!extension.isEmpty()) {
-			extension = getExtension(context, extension);
-			converted.put("extension", extension);
-			putFlatten(converted, "extf", extension);
-		}
-	}
-
 	private void putEventHashID(Document converted) {
-		// put event id
 		if (!converted.containsKey("eventID")) {
 			POJOtoBSONUtil.putEventHashID(converted);
 		}
@@ -681,33 +752,9 @@ public class EPCISDocumentConverter {
 			converted.put("_tx", tx.getTxId());
 	}
 
-	private void putRecordTime(Document converted) {
-		converted.put("recordTime", System.currentTimeMillis());
-	}
-
-	private void putCertificationInfo(Document original, Document converted) throws ValidationException {
-		String certificationInfo = original.getString("certificationInfo");
-		if (certificationInfo != null) {
-			try {
-				new URI(certificationInfo);
-				converted.put("certificationInfo", certificationInfo);
-			} catch (URISyntaxException e) {
-				throw new ValidationException(e.getMessage());
-			}
-		}
-	}
-
-	private void putEventID(Document original, Document converted) {
-		String eventID = original.getString("eventID");
-		if (eventID != null) {
-			converted.put("eventID", eventID);
-		}
-	}
-
-	private Document getBaseEPCISEvent(Document original, Document context) throws ValidationException {
+	Document getBaseEPCISEvent(Document original, Document context) throws ValidationException {
 
 		Document converted = new Document();
-
 		putType(original, converted);
 		putEventTime(original, converted);
 		putEventTimeZoneOffset(original, converted);
@@ -727,8 +774,8 @@ public class EPCISDocumentConverter {
 		putAction(original, converted);
 		putBizStep(original, converted);
 		putDisposition(original, converted);
-		putReadPoint(original, converted);
-		putBusinessLocation(original, converted);
+		putReadPoint(original, context, converted);
+		putBusinessLocation(original, context, converted);
 		putBusinessTransactionList(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
@@ -743,7 +790,6 @@ public class EPCISDocumentConverter {
 			Document original = Document.parse(jsonEvent.toString());
 			Document context = Document.parse(jsonContext.toString());
 
-			// type: use as itself
 			String type = original.getString("type");
 			Document converted = getBaseEPCISEvent(original, context);
 			if (type.equals("AggregationEvent")) {
@@ -765,119 +811,6 @@ public class EPCISDocumentConverter {
 		} catch (Exception e) {
 			throw new ValidationException(e.getMessage());
 		}
-	}
-
-	public Document retrieveExtension(Document object) {
-		Iterator<String> extFieldIter = object.keySet().iterator();
-		Document extension = new Document();
-		while (extFieldIter.hasNext()) {
-			String extField = extFieldIter.next();
-			if (extField.contains(":")) {
-				extension.put(extField, object.get(extField));
-			}
-		}
-		for (String removalField : extension.keySet()) {
-			object.remove(removalField);
-		}
-		return extension;
-	}
-
-	public Document getExtension(Document context, Document ext) throws ValidationException {
-		Document extension = new Document();
-		for (String key : ext.keySet()) {
-			String[] fieldArr = key.split(":");
-			String extKey;
-			if (fieldArr.length == 1) {
-				extKey = "#" + key;
-			} else {
-				String namespace = context.getString(fieldArr[0]);
-				if (namespace == null)
-					throw new ValidationException("Cannot find a namespace " + namespace + " in the context.");
-				extKey = context.getString(fieldArr[0]) + "#" + fieldArr[1];
-			}
-			Object extRawValue = ext.get(key);
-			extension.put(encodeMongoObjectKey(extKey), getExtension(context, key, extRawValue));
-		}
-		return extension;
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<Object> getExtension(Document context, List<Object> extRawValue) throws ValidationException {
-		List<Object> newExtArray = new ArrayList<Object>();
-		for (Object elem : extRawValue) {
-			if (elem instanceof Document) {
-				newExtArray.add(getExtension(context, (Document) elem));
-			} else if (elem instanceof List) {
-				newExtArray.add(getExtension(context, (List<Object>) elem));
-			} else if (elem instanceof Integer) {
-				newExtArray.add((Integer) elem);
-			} else if (elem instanceof Double) {
-				newExtArray.add((Double) elem);
-			} else {
-				String inner = elem.toString();
-				try {
-					Long t = getTime(inner);
-					newExtArray.add(t);
-				} catch (ValidationException e) {
-					newExtArray.add(inner);
-				}
-
-			}
-		}
-		return newExtArray;
-	}
-
-	@SuppressWarnings("unchecked")
-	public Object getExtension(Document context, String key, Object extRawValue) throws ValidationException {
-		if (extRawValue instanceof String) {	
-			if (context.containsKey(key) && context.get(key, Document.class).containsKey("@type")) {
-				String type = context.get(key, Document.class).getString("@type");
-				try {
-					if (type.equals("xsd:int")) {
-						return Integer.parseInt((String) extRawValue);
-					} else if (type.equals("xsd:double")) {
-						return Double.parseDouble((String) extRawValue);
-					} else if (type.equals("xsd:dateTimeStamp")) {
-						return getTime((String) extRawValue);
-					} else {
-						return extRawValue;
-					}
-				} catch (Exception e) {
-					return extRawValue;
-				}
-			}
-			return extRawValue;
-		} else if (extRawValue instanceof Integer) {
-			return (Integer) extRawValue;
-		} else if (extRawValue instanceof Double) {
-			return (Double) extRawValue;
-		} else if (extRawValue instanceof Document) {
-			return getExtension(context, (Document) extRawValue);
-		} else if (extRawValue instanceof List<?>) {
-			return getExtension(context, (List<Object>) extRawValue);
-		}
-		/*
-		 * if (extRawValue instanceof String) { System.out.println(extRawValue); // key:
-		 * rail:vehicleMasterGIAI if(context.containsKey(key) &&
-		 * context.getJsonObject(key).containsKey("@type")){ String type =
-		 * context.getJsonObject(key).getString("@type");
-		 * if(type.equals("xsd:integer")){
-		 * 
-		 * }else if(type.equals()) }
-		 * 
-		 * Long time = getStorableDateTime((String) extRawValue); return
-		 * Objects.requireNonNullElseGet(time, () -> (String) extRawValue); } else if
-		 * (extRawValue instanceof Integer || extRawValue instanceof Double ||
-		 * extRawValue instanceof Boolean) { return extRawValue; } else if (extRawValue
-		 * instanceof Double) { return new BigDecimal((double)
-		 * extRawValue).stripTrailingZeros().doubleValue(); } else if (extRawValue
-		 * instanceof JsonObject) { return getStorableExtension(context, (JsonObject)
-		 * extRawValue); } else if (extRawValue instanceof JsonArray) { // JsonArray
-		 * JsonArray extValueArray = (JsonArray) extRawValue; JsonArray newExtArray =
-		 * new JsonArray(); for (Object elem : extValueArray) {
-		 * newExtArray.add(getStorableExtension(context, elem)); } return newExtArray; }
-		 */
-		return null;
 	}
 
 	public Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) throws ValidationException {
