@@ -297,39 +297,51 @@ public class EPCISDocumentConverter {
 	}
 
 	private void putQuantityList(Document original, Document converted) throws ValidationException {
-		List<Document> newArray = new ArrayList<Document>();
-		for (Document qElem : original.getList("quantityList", Document.class)) {
-			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-			if (qElem.containsKey("quantity")) {
-				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+		List<Document> array = original.getList("quantityList", Document.class);
+		if (array != null) {
+			List<Document> newArray = new ArrayList<Document>();
+			for (Document qElem : array) {
+				qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+				if (qElem.containsKey("quantity")) {
+					Object obj = qElem.get("quantity");
+					qElem.put("quantity", Double.valueOf(obj.toString()));
+				}
+				newArray.add(qElem);
 			}
-			newArray.add(qElem);
+			converted.put("quantityList", newArray);
 		}
-		converted.put("quantityList", newArray);
 	}
 
 	private void putInputQuantityList(Document original, Document converted) throws ValidationException {
-		List<Document> newArray = new ArrayList<Document>();
-		for (Document qElem : original.getList("inputQuantityList", Document.class)) {
-			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-			if (qElem.containsKey("quantity")) {
-				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+		List<Document> array = original.getList("inputQuantityList", Document.class);
+		if (array != null) {
+			List<Document> newArray = new ArrayList<Document>();
+			for (Document qElem : array) {
+				qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+				if (qElem.containsKey("quantity")) {
+					Object obj = qElem.get("quantity");
+					qElem.put("quantity", Double.valueOf(obj.toString()));
+				}
+				newArray.add(qElem);
 			}
-			newArray.add(qElem);
+			converted.put("inputQuantityList", newArray);
 		}
-		converted.put("inputQuantityList", newArray);
 	}
 
 	private void putOutputQuantityList(Document original, Document converted) throws ValidationException {
-		List<Document> newArray = new ArrayList<Document>();
-		for (Document qElem : original.getList("outputQuantityList", Document.class)) {
-			qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
-			if (qElem.containsKey("quantity")) {
-				qElem.put("quantity", Double.valueOf(qElem.getDouble("quantity").toString()));
+		List<Document> array = original.getList("outputQuantityList", Document.class);
+		if (array != null) {
+			List<Document> newArray = new ArrayList<Document>();
+			for (Document qElem : array) {
+				qElem.put("epcClass", TagDataTranslationEngine.toClassLevelEPC(qElem.getString("epcClass")));
+				if (qElem.containsKey("quantity")) {
+					Object obj = qElem.get("quantity");
+					qElem.put("quantity", Double.valueOf(obj.toString()));
+				}
+				newArray.add(qElem);
 			}
-			newArray.add(qElem);
+			converted.put("outputQuantityList", newArray);
 		}
-		converted.put("outputQuantityList", newArray);
 	}
 
 	private void putAction(Document original, Document converted) throws ValidationException {
@@ -710,7 +722,7 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void put(Document original, Document context, Document converted) throws ValidationException {
+	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
 		if (original.containsKey("ilmd")) {
 			Document ilmd = original.get("ilmd", Document.class);
 			ilmd = getExtension(context, ilmd);
@@ -782,6 +794,23 @@ public class EPCISDocumentConverter {
 		putSensorElementList(original, context, converted);
 		putEventHashID(converted);
 	}
+	
+	void putObjectEventFields(Document original, Document context, Document converted) throws ValidationException {
+		putEPCList(original, converted);
+		putQuantityList(original, converted);
+		putAction(original, converted);
+		putBizStep(original, converted);
+		putDisposition(original, converted);
+		putPersistentDisposition(original, converted);
+		putReadPoint(original, context, converted);
+		putBusinessLocation(original, context, converted);
+		putBusinessTransactionList(original, converted);
+		putSourceList(original, converted);
+		putDestinationList(original, converted);
+		putILMD(original, context, converted);
+		putSensorElementList(original, context, converted);
+		putEventHashID(converted);
+	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
@@ -792,10 +821,12 @@ public class EPCISDocumentConverter {
 
 			String type = original.getString("type");
 			Document converted = getBaseEPCISEvent(original, context);
-			if (type.equals("AggregationEvent")) {
+			if(type == null) {
+				throw new ValidationException("invalid event type: " + type);
+			}else if (type.equals("AggregationEvent")) {
 				putAggregationEventFields(original, context, converted);
 			} else if (type.equals("ObjectEvent")) {
-
+				putObjectEventFields(original, context, converted);
 			} else if (type.equals("TransactionEvent")) {
 
 			} else if (type.equals("TransformationEvent")) {

@@ -288,22 +288,7 @@ public class JSONCaptureService {
 			return;
 		}
 
-		String type = epcisEvent.getString("type");
-		if (type == null) {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get400ValidationException(validationError), 400);
-			return;
-		} else if (type.equals("AggregationEvent")) {
-			captureEvent(routingContext, context, epcisEvent, eventBus);
-		} else if (type.equals("AssociationEvent")) {
-			captureEvent(routingContext, context, epcisEvent, eventBus);
-		} else if (type.equals("ObjectEvent")) {
-			captureEvent(routingContext, context, epcisEvent, eventBus);
-		} else if (type.equals("TransactionEvent")) {
-			captureEvent(routingContext, context, epcisEvent, eventBus);
-		} else if (type.equals("TransformationEvent")) {
-			captureEvent(routingContext, context, epcisEvent, eventBus);
-		}
+		captureEvent(routingContext, context, epcisEvent, eventBus);
 	}
 
 	private void captureEvent(RoutingContext routingContext, JsonObject jsonContext, JsonObject jsonEvent,
