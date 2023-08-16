@@ -24,7 +24,7 @@
         </xsd:documentation>
     </xsd:annotation>
     <xsd:import namespace="urn:epcglobal:xsd:1"
-                schemaLocation="EPCglobal.xsd"/>
+                schemaLocation="epcglobal.xsd"/>
     <xsd:import namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
                 schemaLocation="StandardBusinessDocumentHeader.xsd"/>
     <!-- EPCIS CORE ELEMENTS -->

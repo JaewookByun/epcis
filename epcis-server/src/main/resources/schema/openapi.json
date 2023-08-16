@@ -6237,8 +6237,8 @@
 					"namespace": "urn:epcglobal:epcis-query:xsd:2"
 				},
 				"externalDocs": {
-					"description": "An EPCIS document that must be validated with the [XML Schema](../XSD/EPCglobal-epcis-query-2_0.xsd)\n",
-					"url": "../XSD/EPCglobal-epcis-query-2_0.xsd"
+					"description": "An EPCIS document that must be validated with the [XML Schema](../XSD/epcglobal-epcis-query-2_0.xsd)\n",
+					"url": "../XSD/epcglobal-epcis-query-2_0.xsd"
 				}
 			},
 			"Link": {
