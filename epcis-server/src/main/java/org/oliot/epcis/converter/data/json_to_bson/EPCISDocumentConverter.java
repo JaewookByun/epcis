@@ -207,21 +207,25 @@ public class EPCISDocumentConverter {
 
 	private void putErrorDeclaration(Document original, Document context, Document converted)
 			throws ValidationException {
-		// Error Declaration
 		if (original.containsKey("errorDeclaration")) {
 			Document errorDeclaration = original.get("errorDeclaration", Document.class);
-			errorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
+			Document newErrorDeclaration = new Document();
+			newErrorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
 
 			if (errorDeclaration.containsKey("reason")) {
-				errorDeclaration.put("reason", ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
+				newErrorDeclaration.put("reason",
+						ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
 			}
 
 			Document extension = retrieveExtension(errorDeclaration);
 			if (!extension.isEmpty()) {
 				extension = getExtension(context, extension);
-				errorDeclaration.put("extension", getExtension(context, extension));
+				newErrorDeclaration.put("extension", extension);
 				putFlatten(converted, "errf", extension);
 			}
+
+			if (!newErrorDeclaration.isEmpty())
+				converted.put("errorDeclaration", newErrorDeclaration);
 		}
 	}
 
@@ -773,7 +777,7 @@ public class EPCISDocumentConverter {
 		putRecordTime(converted);
 		putCertificationInfo(original, converted);
 		putEventID(original, converted);
-		putErrorDeclaration(original, original, converted);
+		putErrorDeclaration(original, context, converted);
 		putBaseExtension(original, context, converted);
 
 		return converted;
@@ -794,7 +798,7 @@ public class EPCISDocumentConverter {
 		putSensorElementList(original, context, converted);
 		putEventHashID(converted);
 	}
-	
+
 	void putObjectEventFields(Document original, Document context, Document converted) throws ValidationException {
 		putEPCList(original, converted);
 		putQuantityList(original, converted);
@@ -821,9 +825,9 @@ public class EPCISDocumentConverter {
 
 			String type = original.getString("type");
 			Document converted = getBaseEPCISEvent(original, context);
-			if(type == null) {
+			if (type == null) {
 				throw new ValidationException("invalid event type: " + type);
-			}else if (type.equals("AggregationEvent")) {
+			} else if (type.equals("AggregationEvent")) {
 				putAggregationEventFields(original, context, converted);
 			} else if (type.equals("ObjectEvent")) {
 				putObjectEventFields(original, context, converted);
@@ -836,7 +840,6 @@ public class EPCISDocumentConverter {
 			} else {
 				throw new ValidationException("invalid event type: " + type);
 			}
-
 			putTransactionID(converted, tx);
 			return converted;
 		} catch (Exception e) {
