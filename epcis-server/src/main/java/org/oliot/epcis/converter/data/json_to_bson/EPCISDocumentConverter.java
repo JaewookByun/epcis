@@ -932,7 +932,6 @@ public class EPCISDocumentConverter {
 					try {
 						attrValue = getMasterStorableExtension(context, attribute.getJsonObject("attribute"));
 					} catch (ValidationException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} else {
