@@ -510,10 +510,10 @@ public class EPCISDocumentConverter {
 						newSensorMetadata.put("bizRules",
 								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
 					}
-					Document extension = retrieveExtension(sensorMetadata);
-					Document convertedExt = getExtension(context, extension);
-					if (!convertedExt.isEmpty())
-						newSensorMetadata.put("otherAttributes", convertedExt);
+					Document otherAttributes = retrieveExtension(sensorMetadata);
+					Document convertedOtherAttributes = getExtension(context, otherAttributes);
+					if (!convertedOtherAttributes.isEmpty())
+						newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
 
 					if (!newSensorMetadata.isEmpty()) {
 						newSensorElement.put("sensorMetadata", newSensorMetadata);
@@ -524,12 +524,7 @@ public class EPCISDocumentConverter {
 					List<Document> newSensorReportList = new ArrayList<Document>();
 					List<Document> sensorReport = sensorElement.getList("sensorReport", Document.class);
 					for (Document sensorReportElement : sensorReport) {
-
-						/*
-						 * 
-						 * "value", "minValue", "maxValue", "meanValue", "sDev", "percValue", "uom"
-						 */
-
+						
 						Document newSensorReport = new Document();
 
 						String type = sensorReportElement.getString("type");
@@ -631,7 +626,10 @@ public class EPCISDocumentConverter {
 									Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
 						}
 
-						// TODO: otherAttributes
+						Document otherAttributes = retrieveExtension(sensorReportElement);
+						Document convertedOtherAttributes = getExtension(context, otherAttributes);
+						if (!convertedOtherAttributes.isEmpty())
+							newSensorReport.put("otherAttributes", convertedOtherAttributes);
 
 						if (type != null) {
 							newSensorReport.put("type", Measurement.getFullVocabularyName(type));
