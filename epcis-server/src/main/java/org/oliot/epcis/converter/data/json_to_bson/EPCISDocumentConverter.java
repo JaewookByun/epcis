@@ -360,13 +360,13 @@ public class EPCISDocumentConverter {
 		converted.put("action", original.getString("action"));
 	}
 
-	private void putBizStep(Document original, Document converted) {
+	private void putBizStep(Document original, Document converted) throws IllegalArgumentException {
 		if (original.containsKey("bizStep")) {
 			converted.put("bizStep", BusinessStep.getFullVocabularyName(original.getString("bizStep")));
 		}
 	}
 
-	private void putDisposition(Document original, Document converted) {
+	private void putDisposition(Document original, Document converted) throws IllegalArgumentException {
 		if (original.containsKey("disposition")) {
 			// standard vocabulary in brief form should change to its full name
 			// (compatibility with XML)
@@ -726,6 +726,10 @@ public class EPCISDocumentConverter {
 
 	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
 		if (original.containsKey("ilmd")) {
+			String action = original.getString("action");
+			if(action != null && !action.equals("ADD"))
+				throw new ValidationException("action should be ADD if ilmd is provided.");
+			
 			Document ilmd = original.get("ilmd", Document.class);
 			ilmd = getExtension(context, ilmd);
 			converted.put("ilmd", ilmd);
@@ -752,6 +756,7 @@ public class EPCISDocumentConverter {
 				}
 				pd.put("unset", newSet);
 			}
+			converted.put("persistentDisposition", pd);
 		}
 	}
 
@@ -794,7 +799,7 @@ public class EPCISDocumentConverter {
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 		putSensorElementList(original, context, converted);
-		putEventHashID(converted);
+		
 	}
 
 	void putObjectEventFields(Document original, Document context, Document converted) throws ValidationException {
@@ -811,7 +816,6 @@ public class EPCISDocumentConverter {
 		putDestinationList(original, converted);
 		putILMD(original, context, converted);
 		putSensorElementList(original, context, converted);
-		putEventHashID(converted);
 	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
@@ -838,6 +842,7 @@ public class EPCISDocumentConverter {
 			} else {
 				throw new ValidationException("invalid event type: " + type);
 			}
+			putEventHashID(converted);
 			putTransactionID(converted, tx);
 			return converted;
 		} catch (Exception e) {

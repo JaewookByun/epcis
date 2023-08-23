@@ -31,7 +31,7 @@ public enum Disposition {
 	public String getDisposition() {
 		return disposition;
 	}
-	
+
 	/**
 	 * @param shortCBV
 	 * @return CBV or shortCBV if it is not defined in standard
@@ -39,21 +39,21 @@ public enum Disposition {
 	public static String getFullVocabularyName(String shortCBV) {
 		try {
 			return Disposition.valueOf(shortCBV).disposition;
-		}catch(IllegalArgumentException e) {
-			return shortCBV;
+		} catch (IllegalArgumentException e) {
+			throw e;
 		}
 	}
-	
+
 	/**
 	 * @param cbv
 	 * @return shortCBV or cbv if it is not defined in standard
 	 */
 	public static String getShortVocabularyName(String cbv) {
 		Disposition[] cbvs = Disposition.values();
-		for(Disposition v: cbvs) {
-			if(cbv.equals(v.disposition))
+		for (Disposition v : cbvs) {
+			if (cbv.equals(v.disposition))
 				return v.name();
 		}
-		return cbv;
+		throw new IllegalArgumentException("non-CBV disposition: " + cbv);
 	}
 }

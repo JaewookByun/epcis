@@ -22,7 +22,7 @@ public enum SourceDestinationType {
 		try {
 			return SourceDestinationType.valueOf(shortCBV).sourceDestinationType;
 		}catch(IllegalArgumentException e) {
-			return shortCBV;
+			throw e;
 		}
 	}
 	
@@ -36,6 +36,6 @@ public enum SourceDestinationType {
 			if(cbv.equals(v.sourceDestinationType))
 				return v.name();
 		}
-		return cbv;
+		throw new IllegalArgumentException("non-CBV source destination type: " + cbv);
 	}
 }

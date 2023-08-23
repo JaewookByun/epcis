@@ -25,7 +25,7 @@ public enum BusinessTransactionType {
 		try {
 			return BusinessTransactionType.valueOf(shortCBV).businessTransactionType;
 		}catch(IllegalArgumentException e) {
-			return shortCBV;
+			throw e;
 		}
 	}
 	
@@ -39,6 +39,6 @@ public enum BusinessTransactionType {
 			if(cbv.equals(v.businessTransactionType))
 				return v.name();
 		}
-		return cbv;
+		throw new IllegalArgumentException("non-CBV business transaction type: " + cbv);
 	}
 }

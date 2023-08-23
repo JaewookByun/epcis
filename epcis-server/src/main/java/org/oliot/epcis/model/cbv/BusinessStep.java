@@ -33,7 +33,7 @@ public enum BusinessStep {
 	public String getBusinessStep() {
 		return businessStep;
 	}
-	
+
 	/**
 	 * @param shortCBV
 	 * @return CBV or shortCBV if it is not defined in standard
@@ -41,21 +41,21 @@ public enum BusinessStep {
 	public static String getFullVocabularyName(String shortCBV) {
 		try {
 			return BusinessStep.valueOf(shortCBV).businessStep;
-		}catch(IllegalArgumentException e) {
-			return shortCBV;
+		} catch (IllegalArgumentException e) {
+			throw e;
 		}
 	}
-	
+
 	/**
 	 * @param cbv
 	 * @return shortCBV or cbv if it is not defined in standard
 	 */
 	public static String getShortVocabularyName(String cbv) {
 		BusinessStep[] cbvs = BusinessStep.values();
-		for(BusinessStep v: cbvs) {
-			if(cbv.equals(v.businessStep))
+		for (BusinessStep v : cbvs) {
+			if (cbv.equals(v.businessStep))
 				return v.name();
 		}
-		return cbv;
+		throw new IllegalArgumentException("non-CBV business step: " + cbv);
 	}
 }
