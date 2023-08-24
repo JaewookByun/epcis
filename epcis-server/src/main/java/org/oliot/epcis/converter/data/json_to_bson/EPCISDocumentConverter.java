@@ -257,11 +257,14 @@ public class EPCISDocumentConverter {
 	}
 
 	private void putEPCList(Document original, Document converted) throws ValidationException {
-		List<String> newArray = new ArrayList<String>();
-		for (String elem : original.getList("epcList", String.class)) {
-			newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+		List<String> epcList = original.getList("epcList", String.class);
+		if (epcList != null) {
+			List<String> newArray = new ArrayList<String>();
+			for (String elem : epcList) {
+				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
+			}
+			converted.put("epcList", newArray);
 		}
-		converted.put("epcList", newArray);
 	}
 
 	private void putInputEPCList(Document original, Document converted) throws ValidationException {
@@ -817,6 +820,21 @@ public class EPCISDocumentConverter {
 		putILMD(original, context, converted);
 		putSensorElementList(original, context, converted);
 	}
+	
+	void putTransactionEventFields(Document original, Document context, Document converted) throws ValidationException {
+		putBusinessTransactionList(original, converted);
+		putParentID(original, converted);
+		putEPCList(original, converted);
+		putQuantityList(original, converted);
+		putAction(original, converted);
+		putBizStep(original, converted);
+		putDisposition(original, converted);
+		putReadPoint(original, context, converted);
+		putBusinessLocation(original, context, converted);
+		putSourceList(original, converted);
+		putDestinationList(original, converted);
+		putSensorElementList(original, context, converted);
+	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
@@ -834,7 +852,9 @@ public class EPCISDocumentConverter {
 			} else if (type.equals("ObjectEvent")) {
 				putObjectEventFields(original, context, converted);
 			} else if (type.equals("TransactionEvent")) {
-
+				putTransactionEventFields(original, context, converted);
+				
+				
 			} else if (type.equals("TransformationEvent")) {
 
 			} else if (type.equals("AssociationEvent")) {
