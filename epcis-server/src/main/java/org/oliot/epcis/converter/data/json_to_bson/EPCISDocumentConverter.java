@@ -833,7 +833,7 @@ public class EPCISDocumentConverter {
 		putBusinessLocation(original, context, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
-		putSensorElementList(original, context, converted);
+		putSensorElementList(original, context, converted);   
 	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
