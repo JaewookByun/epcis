@@ -267,23 +267,32 @@ public class EPCISDocumentConverter {
 		}
 	}
 
+	private void putTransformationID(Document original, Document converted) throws ValidationException {
+		String tid = original.getString("transformationID");
+		if (tid != null) {
+			converted.put("transformationID", GlobalDocumentTypeIdentifier.toEPC(tid));
+		}
+	}
+
 	private void putInputEPCList(Document original, Document converted) throws ValidationException {
-		if (original.containsKey("inputEPCList")) {
+		List<String> epcList = original.getList("inputEPCList", String.class);
+		if (epcList != null) {
 			List<String> newArray = new ArrayList<String>();
-			for (String elem : original.getList("inputEPCList", String.class)) {
+			for (String elem : epcList) {
 				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
 			}
-			original.put("inputEPCList", newArray);
+			converted.put("inputEPCList", newArray);
 		}
 	}
 
 	private void putOutputEPCList(Document original, Document converted) throws ValidationException {
-		if (original.containsKey("outputEPCList")) {
+		List<String> epcList = original.getList("outputEPCList", String.class);
+		if (epcList != null) {
 			List<String> newArray = new ArrayList<String>();
-			for (String elem : original.getList("outputEPCList", String.class)) {
+			for (String elem : epcList) {
 				newArray.add(TagDataTranslationEngine.toInstanceLevelEPC(elem));
 			}
-			original.put("outputEPCList", newArray);
+			converted.put("outputEPCList", newArray);
 		}
 	}
 
@@ -527,7 +536,7 @@ public class EPCISDocumentConverter {
 					List<Document> newSensorReportList = new ArrayList<Document>();
 					List<Document> sensorReport = sensorElement.getList("sensorReport", Document.class);
 					for (Document sensorReportElement : sensorReport) {
-						
+
 						Document newSensorReport = new Document();
 
 						String type = sensorReportElement.getString("type");
@@ -730,9 +739,9 @@ public class EPCISDocumentConverter {
 	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
 		if (original.containsKey("ilmd")) {
 			String action = original.getString("action");
-			if(action != null && !action.equals("ADD"))
+			if (action != null && !action.equals("ADD"))
 				throw new ValidationException("action should be ADD if ilmd is provided.");
-			
+
 			Document ilmd = original.get("ilmd", Document.class);
 			ilmd = getExtension(context, ilmd);
 			converted.put("ilmd", ilmd);
@@ -802,7 +811,7 @@ public class EPCISDocumentConverter {
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 		putSensorElementList(original, context, converted);
-		
+
 	}
 
 	void putObjectEventFields(Document original, Document context, Document converted) throws ValidationException {
@@ -820,7 +829,7 @@ public class EPCISDocumentConverter {
 		putILMD(original, context, converted);
 		putSensorElementList(original, context, converted);
 	}
-	
+
 	void putTransactionEventFields(Document original, Document context, Document converted) throws ValidationException {
 		putBusinessTransactionList(original, converted);
 		putParentID(original, converted);
@@ -833,7 +842,26 @@ public class EPCISDocumentConverter {
 		putBusinessLocation(original, context, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
-		putSensorElementList(original, context, converted);   
+		putSensorElementList(original, context, converted);
+	}
+
+	void putTransformationEventFields(Document original, Document context, Document converted)
+			throws ValidationException {
+		putInputEPCList(original, converted);
+		putOutputEPCList(original, converted);
+		putInputQuantityList(original, converted);
+		putOutputQuantityList(original, converted);
+		putTransformationID(original, converted);
+		putBusinessTransactionList(original, converted);
+		putBizStep(original, converted);
+		putDisposition(original, converted);
+		putPersistentDisposition(original, converted);
+		putReadPoint(original, context, converted);
+		putBusinessLocation(original, context, converted);
+		putSourceList(original, converted);
+		putDestinationList(original, converted);
+		putILMD(original, context, converted);
+		putSensorElementList(original, context, converted);
 	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
@@ -853,10 +881,8 @@ public class EPCISDocumentConverter {
 				putObjectEventFields(original, context, converted);
 			} else if (type.equals("TransactionEvent")) {
 				putTransactionEventFields(original, context, converted);
-				
-				
 			} else if (type.equals("TransformationEvent")) {
-
+				putTransformationEventFields(original, context, converted);
 			} else if (type.equals("AssociationEvent")) {
 
 			} else {

@@ -687,6 +687,10 @@ public class TagDataTranslationEngine {
 			throw new ValidationException("Unsupported instance level code scheme");
 	}
 
+	public static String toDocumentEPC(String documentDL) throws ValidationException {
+		return GlobalDocumentTypeIdentifier.toEPC(documentDL);
+	}
+
 	/**
 	 * 
 	 * GDTI, GSRN, GSRNP
