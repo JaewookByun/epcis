@@ -53,12 +53,15 @@ public class JSONCaptureService {
 	}
 
 	public void postValidationResult(RoutingContext routingContext) {
-		String validationError = validateJSON(routingContext.body().asJsonObject());
-		if (validationError == null) {
+		OutputUnit res = EPCISServer.jsonValidator.validate(routingContext.body().asJsonObject());
+		if (res.getValid()) {
 			routingContext.response().setStatusCode(200).end();
 		} else {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get400ValidationException(validationError), 400);
+			JsonArray arr = new JsonArray();
+			for(OutputUnit o : res.getErrors()) {
+				arr.add(o.toJson());
+			}
+			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(400).end(arr.toString());
 		}
 	}
 
@@ -67,7 +70,11 @@ public class JSONCaptureService {
 		if (res.getValid()) {
 			return null;
 		} else {
-			return res.getError();
+			JsonArray arr = new JsonArray();
+			for(OutputUnit o : res.getErrors()) {
+				arr.add(o.toJson());
+			}
+			return arr.toString();
 		}
 	}
 

@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.json.schema.Draft;
 import io.vertx.json.schema.JsonSchemaOptions;
+import io.vertx.json.schema.OutputFormat;
 import io.vertx.rxjava.json.schema.JsonSchema;
 import io.vertx.rxjava.json.schema.Validator;
 
@@ -210,7 +211,7 @@ public class BootstrapUtil {
 		}
 		
 		JsonSchema sc = JsonSchema.of(schemaObj);
-		JsonSchemaOptions opt = new JsonSchemaOptions().setBaseUri("http://http://dfpl.sejong.ac.kr/").setDraft(Draft.DRAFT7);
+		JsonSchemaOptions opt = new JsonSchemaOptions().setBaseUri("http://http://dfpl.sejong.ac.kr/").setDraft(Draft.DRAFT7).setOutputFormat(OutputFormat.Basic);
 	
 		EPCISServer.jsonValidator = Validator.create(sc, opt);
 	}

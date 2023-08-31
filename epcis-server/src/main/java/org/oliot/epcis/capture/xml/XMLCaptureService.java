@@ -60,9 +60,9 @@ public class XMLCaptureService {
 		InputStream validateStream = XMLUtil.getXMLDocumentInputStream(FileUtil.getByteArray(inputString));
 		try {
 			validateXML(validateStream);
-			routingContext.response().end();
+			routingContext.response().setStatusCode(200).end();
 		} catch (ValidationException e) {
-			routingContext.response().setStatusCode(400).end(e.getMessage());
+			routingContext.response().setStatusCode(400).end(e.getReason());
 		}
 	}
 

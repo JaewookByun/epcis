@@ -164,12 +164,11 @@ public class JSONCaptureServiceHandler {
 	 * non-standard to provide validation service
 	 *
 	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
+	 * @param jsonCaptureService jsonCaptureService
 	 */
-	public static void registerValidationHandler(Router router, XMLCaptureService xmlCaptureService) {
-		// TODO
-		router.post("/epcis/validation").consumes("*/xml").handler(xmlCaptureService::postValidationResult);
-		EPCISServer.logger.info("[GET /epcis/validation] - router added");
+	public static void registerValidationHandler(Router router, JSONCaptureService jsonCaptureService) {
+		router.post("/epcis/validation").consumes("*/json").handler(jsonCaptureService::postValidationResult);
+		EPCISServer.logger.info("[POST /epcis/validation (JSON)] - router added");
 	}
 
 	/**

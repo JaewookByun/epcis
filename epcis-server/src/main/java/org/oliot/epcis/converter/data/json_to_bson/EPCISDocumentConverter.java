@@ -39,7 +39,6 @@ import io.vertx.core.json.JsonObject;
 
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 
-@SuppressWarnings("unused")
 public class EPCISDocumentConverter {
 
 	private Long getTime(String time) throws ValidationException {
