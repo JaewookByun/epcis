@@ -862,6 +862,21 @@ public class EPCISDocumentConverter {
 		putILMD(original, context, converted);
 		putSensorElementList(original, context, converted);
 	}
+	
+	void putAssociationEventFields(Document original, Document context, Document converted) throws ValidationException {
+		putParentID(original, converted);
+		putChildEPCs(original, converted);
+		putChildQuantityList(original, converted);
+		putAction(original, converted);
+		putBizStep(original, converted);
+		putDisposition(original, converted);
+		putReadPoint(original, context, converted);
+		putBusinessLocation(original, context, converted);
+		putBusinessTransactionList(original, converted);
+		putSourceList(original, converted);
+		putDestinationList(original, converted);
+		putSensorElementList(original, context, converted);
+	}
 
 	public Document convertEvent(JsonObject jsonContext, JsonObject jsonEvent, Transaction tx)
 			throws ValidationException {
@@ -883,7 +898,7 @@ public class EPCISDocumentConverter {
 			} else if (type.equals("TransformationEvent")) {
 				putTransformationEventFields(original, context, converted);
 			} else if (type.equals("AssociationEvent")) {
-
+				putAssociationEventFields(original, context, converted);
 			} else {
 				throw new ValidationException("invalid event type: " + type);
 			}
