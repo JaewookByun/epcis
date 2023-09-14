@@ -64,6 +64,21 @@ public class XMLCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/capture (application/xml)] - router added");
 	}
+	
+	/**
+	 * Returns information about the capture job.
+	 *
+	 * @param router            router
+	 * @param xmlCaptureService xmlCaptureService
+	 */
+	public static void registerGetCaptureIDHandler(Router router, XMLCaptureService xmlCaptureService) {
+		router.get("/epcis/capture/:captureID").consumes("application/xml").handler(routingContext -> {
+			if (!checkEPCISMinMaxVersion(routingContext))
+				return;
+			xmlCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
+		});
+		EPCISServer.logger.info("[GET /epcis/capture/:captureID (application/xml)] - router added");
+	}
 
 	/**
 	 * Returns a list of capture jobs. When EPCIS events are added through the
@@ -90,20 +105,7 @@ public class XMLCaptureServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/capture (application/xml)] - router added");
 	}
 
-	/**
-	 * Returns information about the capture job.
-	 *
-	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
-	 */
-	public static void registerGetCaptureIDHandler(Router router, XMLCaptureService xmlCaptureService) {
-		router.get("/epcis/capture/:captureID").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
-				return;
-			xmlCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
-		});
-		EPCISServer.logger.info("[GET /epcis/capture/:captureID (application/xml)] - router added");
-	}
+
 
 	/**
 	 * Synchronous capture interface for a single EPCIS event. An individual EPCIS

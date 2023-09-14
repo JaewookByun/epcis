@@ -47,9 +47,9 @@ public class JSONCaptureServiceHandler {
 	 * events will be stored. Instead, the server returns a\ncapture id, which the
 	 * client can use to obtain information about the capture job.\n"
 	 *
-	 * @param router            router
-	 * @param jsonCaptureService xmlCaptureService
-	 * @param eventBus          eventBus
+	 * @param router           		router
+	 * @param jsonCaptureService 	jsonCaptureService
+	 * @param eventBus          	eventBus
 	 */
 	public static void registerPostCaptureHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
@@ -65,6 +65,22 @@ public class JSONCaptureServiceHandler {
 			jsonCaptureService.post(routingContext, eventBus);
 		});
 		EPCISServer.logger.info("[POST /epcis/capture (application/json)] - router added");
+	}
+	
+	/**
+	 * Returns information about the capture job.
+	 *
+	 * @param router            	router
+	 * @param jsonCaptureService 	jsonCaptureService
+	 */
+	public static void registerGetCaptureIDHandler(Router router, JSONCaptureService jsonCaptureService) {
+		// TODO: 
+		router.get("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
+			if (!checkEPCISMinMaxVersion(routingContext))
+				return;
+			jsonCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
+		});
+		EPCISServer.logger.info("[GET /epcis/capture/:captureID (application/json)] - router added");
 	}
 	
 	/**
@@ -87,6 +103,9 @@ public class JSONCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/events (application/json)] - router added");
 	}
+	
+	
+	
 	
 	// TODO: --------------------------------------------------------------------------------
 
@@ -116,21 +135,7 @@ public class JSONCaptureServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/capture] - router added");
 	}
 
-	/**
-	 * Returns information about the capture job.
-	 *
-	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
-	 */
-	public static void registerGetCaptureIDHandler(Router router, XMLCaptureService xmlCaptureService) {
-		// TODO
-		router.get("/epcis/capture/:captureID").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
-				return;
-			xmlCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
-		});
-		EPCISServer.logger.info("[GET /epcis/capture/:captureID] - router added");
-	}
+
 
 
 
