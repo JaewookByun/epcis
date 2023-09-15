@@ -58,10 +58,11 @@ public class JSONCaptureService {
 			routingContext.response().setStatusCode(200).end();
 		} else {
 			JsonArray arr = new JsonArray();
-			for(OutputUnit o : res.getErrors()) {
+			for (OutputUnit o : res.getErrors()) {
 				arr.add(o.toJson());
 			}
-			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(400).end(arr.toString());
+			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(400)
+					.end(arr.toString());
 		}
 	}
 
@@ -71,7 +72,7 @@ public class JSONCaptureService {
 			return null;
 		} else {
 			JsonArray arr = new JsonArray();
-			for(OutputUnit o : res.getErrors()) {
+			for (OutputUnit o : res.getErrors()) {
 				arr.add(o.toJson());
 			}
 			return arr.toString();
@@ -533,6 +534,12 @@ public class JSONCaptureService {
 		}
 	}
 
+	/**
+	 * 
+	 * 
+	 * @param routingContext
+	 * @param captureID
+	 */
 	public void postCaptureJob(RoutingContext routingContext, String captureID) {
 		SOAPMessage message = new SOAPMessage();
 
@@ -553,15 +560,11 @@ public class JSONCaptureService {
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
 		} else {
 			try {
-				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(0));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
+				JsonObject captureJob = Transaction.toJson(jobs.get(0));
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200)
-						.end(XMLUtil.toString(retDoc));
+						.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
+						.end(captureJob.toString());
 			} catch (Exception throwable) {
 				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
 						null, throwable.getMessage());

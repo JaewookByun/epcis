@@ -195,6 +195,35 @@ public class Transaction {
 		return captureJob;
 	}
 
+	public static JsonObject toJson(Document jobDoc) {
+		JsonObject jobObj = new JsonObject();
+
+		jobObj.put("captureID", jobDoc.get("_id").toString());
+		if (jobDoc.containsKey("createdAt"))
+			jobObj.put("createdAt", BSONReadUtil.getDate(jobDoc.getLong("createdAt")));
+		if (jobDoc.containsKey("finishedAt"))
+			jobObj.put("finishedAt", BSONReadUtil.getDate(jobDoc.getLong("finishedAt")));
+		if (jobDoc.containsKey("running"))
+			jobObj.put("running", jobDoc.getBoolean("running"));
+		if (jobDoc.containsKey("success"))
+			jobObj.put("success", jobDoc.getBoolean("success"));
+		if (jobDoc.containsKey("isRollback") && jobDoc.getBoolean("isRollback"))
+			jobObj.put("captureErrorBehaviour", "rollback");
+		else
+			jobObj.put("captureErrorBehaviour", "proceed");
+		if (jobDoc.containsKey("errorType") && jobDoc.getString("errorType") != null) {
+			JsonObject err = new JsonObject();
+			err.put("type", jobDoc.getString("errorType"));
+			err.put("title", jobDoc.getString("errorMessage"));
+			JsonArray errArr = new JsonArray();
+			errArr.add(err);
+			jobObj.put("errors", errArr);
+		} else {
+			jobObj.put("errors", new JsonArray());
+		}
+		return jobObj;
+	}
+
 	@Override
 	public String toString() {
 		return "Transaction{" + "txId=" + txId + ", isRollback=" + isRollback + ", running=" + running + ", success="

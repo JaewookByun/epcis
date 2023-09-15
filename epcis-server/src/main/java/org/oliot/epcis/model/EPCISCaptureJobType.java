@@ -84,7 +84,8 @@ public class EPCISCaptureJobType {
 	protected String captureID;
 	@XmlAnyAttribute
 	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
-
+	
+	
 	/**
 	 * Gets the value of the captureErrorBehaviour property.
 	 * 
