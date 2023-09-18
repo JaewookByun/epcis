@@ -244,8 +244,7 @@ public class JSONCaptureService {
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.get400ValidationException(e.getReason()), 400);
 				return;
-			}
-			
+			} 			
 		}
 
 		EPCISServer.logger.debug("ready to capture");

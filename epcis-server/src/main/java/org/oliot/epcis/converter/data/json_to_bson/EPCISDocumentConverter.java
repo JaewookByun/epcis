@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -31,10 +30,8 @@ import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.server.EPCISServer;
-import org.oliot.epcis.util.CBVAttributeUtil;
 import org.oliot.epcis.validation.IdentifierValidator;
 
-import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
 import com.mongodb.client.model.WriteModel;
@@ -867,7 +864,7 @@ public class EPCISDocumentConverter {
 		putILMD(original, context, converted);
 		putSensorElementList(original, context, converted);
 	}
-	
+
 	void putAssociationEventFields(Document original, Document context, Document converted) throws ValidationException {
 		putParentID(original, converted);
 		putChildEPCs(original, converted);
@@ -971,16 +968,16 @@ public class EPCISDocumentConverter {
 		return storable;
 	}
 
-	public static String resolveKey(String key, JsonObject context) {
+	public static String resolveKey(String key, JsonObject context) throws ValidationException {
 		String[] fieldArr = key.split(":");
 		String namespace = context.getString(fieldArr[0]);
 		if (namespace == null)
-			throw new RuntimeException(fieldArr[0] + " not found in @context");
+			throw new ValidationException(fieldArr[0] + " not found in @context");
 		if (namespace.endsWith("/") || namespace.endsWith(":"))
 			namespace = namespace.substring(0, namespace.length() - 1);
-		if(namespace.contains("urn:epcglobal:cbv:mda")) {
+		if (namespace.contains("urn:epcglobal:cbv:mda")) {
 			return namespace + ":" + fieldArr[1];
-		}else {
+		} else {
 			return namespace + "#" + fieldArr[1];
 		}
 
@@ -989,22 +986,31 @@ public class EPCISDocumentConverter {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<WriteModel<Document>> convertVocabulary(JsonObject context, String type,
 			JsonArray vocabularyElementList) throws ValidationException {
-		
+
 		List<WriteModel<Document>> list = new ArrayList<WriteModel<Document>>();
-		
-		for(int i = 0 ; i < vocabularyElementList.size() ; i++) {
+
+		for (int i = 0; i < vocabularyElementList.size(); i++) {
 			JsonObject vocabularyElement = vocabularyElementList.getJsonObject(i);
 			Document find = new Document();
 			String id = vocabularyElement.getString("id");
-			id = TagDataTranslationEngine.toEPC(id);
+			try {
+				id = TagDataTranslationEngine.toEPC(id);
+			} catch (ValidationException e) {
+				try {
+					TagDataTranslationEngine.checkMicroorganismValue(id);
+				} catch (ValidationException e1) {
+					TagDataTranslationEngine.checkChemicalSubstance(id);
+				}
+			}
+
 			// check id is compatible with type
 			MasterDataConverter.checkVocabularyTypeID(type, id);
 			find.put("id", id);
 			find.put("type", type);
-			Document update = new Document();			
+			Document update = new Document();
 			JsonArray attributes = vocabularyElement.getJsonArray("attributes");
 			Document newAttribute = new Document();
-			for(int j = 0 ; j < attributes.size() ; j++) {
+			for (int j = 0; j < attributes.size(); j++) {
 				JsonObject attribute = attributes.getJsonObject(j);
 				String attrKey = encodeMongoObjectKey(resolveKey(attribute.getString("id"), context));
 				Object value = attribute.getValue("attribute");
@@ -1020,8 +1026,7 @@ public class EPCISDocumentConverter {
 				}
 				if (!newAttribute.containsKey(attrKey)) {
 					newAttribute.put(attrKey, attrValue);
-				} else if (newAttribute.containsKey(attrKey)
-						&& !(newAttribute.get(attrKey) instanceof JsonArray)) {
+				} else if (newAttribute.containsKey(attrKey) && !(newAttribute.get(attrKey) instanceof JsonArray)) {
 					Object existing = newAttribute.remove(attrKey);
 					JsonArray arr = new JsonArray();
 					arr.add(existing);
@@ -1040,7 +1045,7 @@ public class EPCISDocumentConverter {
 				ArrayList childArray = new ArrayList();
 				if (vocabularyElement.containsKey("children")) {
 					JsonArray children = vocabularyElement.getJsonArray("children");
-					for(Object c: children) {
+					for (Object c : children) {
 						childArray.add(TagDataTranslationEngine.toEPC(c.toString()));
 					}
 				}
@@ -1050,7 +1055,7 @@ public class EPCISDocumentConverter {
 				e.printStackTrace();
 			}
 			update.append("$set", updateElement);
-			list.add(new UpdateOneModel<Document>(find, update, new UpdateOptions().upsert(true)));	
+			list.add(new UpdateOneModel<Document>(find, update, new UpdateOptions().upsert(true)));
 		}
 		return list;
 	}
