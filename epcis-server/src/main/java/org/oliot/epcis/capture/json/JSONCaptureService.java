@@ -232,19 +232,20 @@ public class JSONCaptureService {
 	}
 
 	private void captureMasterData(RoutingContext routingContext, JsonObject context, JsonArray vocabularyList) {
-		List<WriteModel<Document>> bulk = null;
-		try {
-			bulk = vocabularyList.stream().parallel().flatMap(v -> {
-				JsonObject vocabulary = (JsonObject) v;
-				String type = vocabulary.getString("type");
-				JsonArray vocabularyElementList = vocabulary.getJsonArray("vocabularyElementList");
-				return jsonCaptureConverter.convertVocabulary(context, type, vocabularyElementList);
-			}).filter(Objects::nonNull).collect(Collectors.toList());
-		} catch (RuntimeException e) {
-			ValidationException ve = (ValidationException) e.getCause();
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get400ValidationException(ve.getReason()), 400);
-			return;
+		List<WriteModel<Document>> bulk = new ArrayList<WriteModel<Document>>();
+		
+		for(int i = 0; i < vocabularyList.size() ; i ++) {
+			JsonObject vocabulary = vocabularyList.getJsonObject(i);
+			String type = vocabulary.getString("type");
+			JsonArray vocabularyElementList = vocabulary.getJsonArray("vocabularyElementList");
+			try {
+				bulk.addAll(jsonCaptureConverter.convertVocabulary(context, type, vocabularyElementList));
+			} catch (ValidationException e) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get400ValidationException(e.getReason()), 400);
+				return;
+			}
+			
 		}
 
 		EPCISServer.logger.debug("ready to capture");
@@ -259,7 +260,7 @@ public class JSONCaptureService {
 			ImplementationException ie = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(ie.getReason()), 400);
+					JSONMessageFactory.get500ImplementationException(ie.getReason()), 500);
 			return;
 		}
 

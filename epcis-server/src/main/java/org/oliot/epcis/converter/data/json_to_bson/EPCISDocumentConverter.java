@@ -15,6 +15,7 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.bson.Document;
 import org.oliot.epcis.capture.common.Transaction;
+import org.oliot.epcis.converter.data.pojo_to_bson.MasterDataConverter;
 import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
 import org.oliot.epcis.model.ActionType;
 import org.oliot.epcis.model.ValidationException;
@@ -30,9 +31,13 @@ import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
 import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.util.CBVAttributeUtil;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 import com.mongodb.client.model.ReplaceOneModel;
+import com.mongodb.client.model.UpdateOneModel;
+import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.WriteModel;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -973,25 +978,36 @@ public class EPCISDocumentConverter {
 			throw new RuntimeException(fieldArr[0] + " not found in @context");
 		if (namespace.endsWith("/") || namespace.endsWith(":"))
 			namespace = namespace.substring(0, namespace.length() - 1);
-		return namespace + "#" + fieldArr[1];
+		if(namespace.contains("urn:epcglobal:cbv:mda")) {
+			return namespace + ":" + fieldArr[1];
+		}else {
+			return namespace + "#" + fieldArr[1];
+		}
+
 	}
 
-	public Stream<ReplaceOneModel<Document>> convertVocabulary(JsonObject context, String type,
-			JsonArray vocabularyElementList) {
-		return vocabularyElementList.stream().parallel().map(v -> {
-			JsonObject vocabularyElement = (JsonObject) v;
-			JsonObject find = new JsonObject();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List<WriteModel<Document>> convertVocabulary(JsonObject context, String type,
+			JsonArray vocabularyElementList) throws ValidationException {
+		
+		List<WriteModel<Document>> list = new ArrayList<WriteModel<Document>>();
+		
+		for(int i = 0 ; i < vocabularyElementList.size() ; i++) {
+			JsonObject vocabularyElement = vocabularyElementList.getJsonObject(i);
+			Document find = new Document();
 			String id = vocabularyElement.getString("id");
+			id = TagDataTranslationEngine.toEPC(id);
+			// check id is compatible with type
+			MasterDataConverter.checkVocabularyTypeID(type, id);
 			find.put("id", id);
 			find.put("type", type);
-
+			Document update = new Document();			
 			JsonArray attributes = vocabularyElement.getJsonArray("attributes");
-			JsonObject newAttribute = new JsonObject();
-
-			attributes.stream().parallel().forEach(a -> {
-				JsonObject attribute = (JsonObject) a;
-				Object value = attribute.getValue("attribute");
+			Document newAttribute = new Document();
+			for(int j = 0 ; j < attributes.size() ; j++) {
+				JsonObject attribute = attributes.getJsonObject(j);
 				String attrKey = encodeMongoObjectKey(resolveKey(attribute.getString("id"), context));
+				Object value = attribute.getValue("attribute");
 				Object attrValue = null;
 				if (value instanceof JsonObject) {
 					try {
@@ -1002,49 +1018,41 @@ public class EPCISDocumentConverter {
 				} else {
 					attrValue = attribute.getValue("attribute").toString();
 				}
-				synchronized (newAttribute) {
-					if (!newAttribute.containsKey(attrKey)) {
-						newAttribute.put(attrKey, attrValue);
-					} else if (newAttribute.containsKey(attrKey)
-							&& !(newAttribute.getValue(attrKey) instanceof JsonArray)) {
-						Object existing = newAttribute.remove(attrKey);
-						JsonArray arr = new JsonArray();
-						arr.add(existing);
-						arr.add(attrValue);
-						newAttribute.put(attrKey, arr);
-					} else {
-						JsonArray arr = (JsonArray) newAttribute.remove(attrKey);
-						arr.add(attrValue);
-						newAttribute.put(attrKey, arr);
+				if (!newAttribute.containsKey(attrKey)) {
+					newAttribute.put(attrKey, attrValue);
+				} else if (newAttribute.containsKey(attrKey)
+						&& !(newAttribute.get(attrKey) instanceof JsonArray)) {
+					Object existing = newAttribute.remove(attrKey);
+					JsonArray arr = new JsonArray();
+					arr.add(existing);
+					arr.add(attrValue);
+					newAttribute.put(attrKey, arr);
+				} else {
+					JsonArray arr = (JsonArray) newAttribute.remove(attrKey);
+					arr.add(attrValue);
+					newAttribute.put(attrKey, arr);
+				}
+			}
+			newAttribute.put("lastUpdate", System.currentTimeMillis());
+			Document updateElement = new Document();
+			updateElement.put("attributes", newAttribute);
+			try {
+				ArrayList childArray = new ArrayList();
+				if (vocabularyElement.containsKey("children")) {
+					JsonArray children = vocabularyElement.getJsonArray("children");
+					for(Object c: children) {
+						childArray.add(TagDataTranslationEngine.toEPC(c.toString()));
 					}
 				}
-			});
-			newAttribute.put("lastUpdate", System.currentTimeMillis());
-			JsonObject update = new JsonObject();
-			JsonObject updateSet = new JsonObject();
-			updateSet.put("attributes", newAttribute);
-			if (vocabularyElement.containsKey("children")) {
-				updateSet.put("children", vocabularyElement.getJsonArray("children"));
-				// update.put("$addToSet", new JsonObject().put("children", new
-				// JsonObject().put("$each", vocabularyElement.getJsonArray("children"))));
+				updateElement.put("children", childArray);
+
+			} catch (NullPointerException e) {
+				e.printStackTrace();
 			}
-			update.put("$set", updateSet);
-
-			/*
-			 * JsonObject update = new JsonObject();
-			 *
-			 * JsonObject attributes = retrieveExtension(vocabularyElement); if(attributes
-			 * != null && !attributes.isEmpty()){ attributes =
-			 * getStorableVocabulary(context, attributes); } attributes.put("lastUpdated",
-			 * System.currentTimeMillis()); update.put("$set", new
-			 * JsonObject().put("attributes", attributes)); update.put("$addToSet", new
-			 * JsonObject().put("children", new JsonObject().put("$each",
-			 * vocabularyElement.getJsonArray("children"))));
-			 */
-
-			// return new ReplaceOneModel<Document>(find, update);
-			return new ReplaceOneModel<Document>(null, null);
-		});
+			update.append("$set", updateElement);
+			list.add(new UpdateOneModel<Document>(find, update, new UpdateOptions().upsert(true)));	
+		}
+		return list;
 	}
 
 	public static String encodeMongoObjectKey(String key) {

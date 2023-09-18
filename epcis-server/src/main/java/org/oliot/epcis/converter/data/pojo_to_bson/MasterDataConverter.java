@@ -32,7 +32,7 @@ import com.mongodb.client.model.WriteModel;
  */
 public class MasterDataConverter {
 
-	private static void checkVocabularyTypeID(String type, String id) throws ValidationException {
+	public static void checkVocabularyTypeID(String type, String id) throws ValidationException {
 		if (type.equals("urn:epcglobal:epcis:vtype:ReadPoint")) {
 			IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:BusinessLocation")) {
