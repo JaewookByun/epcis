@@ -16,6 +16,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
 import org.oliot.epcis.capture.common.CaptureMetadataHandler;
+import org.oliot.epcis.capture.common.CommonHandler;
 import org.oliot.epcis.capture.common.TransactionManager;
 import org.oliot.epcis.capture.json.JSONCaptureService;
 import org.oliot.epcis.capture.json.JSONCaptureServiceHandler;
@@ -107,6 +108,7 @@ public class EPCISServer extends AbstractVerticle {
 		setRouter(router);
 		loadStaticResponses();
 
+		registerCommonHandler(router);
 		registerTDTServiceHandler(router);
 		registerCaptureServiceHandler(router, eventBus);
 		registerXMLCaptureServiceHandler(router, eventBus);
@@ -118,6 +120,11 @@ public class EPCISServer extends AbstractVerticle {
 
 		new DynamicResource(vertx).start();
 	}
+	
+	private void registerCommonHandler(Router router) {
+		CommonHandler.registerPingHandler(router);
+		CommonHandler.registerDeleteHandler(router);
+	}
 
 	private void registerTDTServiceHandler(Router router) {
 		TagDataTranslationServiceHandler.registerPostEventsHandler(router);
@@ -125,8 +132,6 @@ public class EPCISServer extends AbstractVerticle {
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryMetadataHandler.registerBaseHandler(router);
-		SOAPQueryServiceHandler.registerPingHandler(router);
-		SOAPQueryServiceHandler.registerDeleteHandler(router);
 		SOAPQueryServiceHandler.registerStatisticsHandler(router);
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);

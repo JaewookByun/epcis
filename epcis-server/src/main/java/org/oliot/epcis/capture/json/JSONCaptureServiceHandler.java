@@ -74,7 +74,6 @@ public class JSONCaptureServiceHandler {
 	 * @param jsonCaptureService 	jsonCaptureService
 	 */
 	public static void registerGetCaptureIDHandler(Router router, JSONCaptureService jsonCaptureService) {
-		// TODO: 
 		router.get("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
@@ -104,11 +103,17 @@ public class JSONCaptureServiceHandler {
 		EPCISServer.logger.info("[POST /epcis/events (application/json)] - router added");
 	}
 	
+	/**
+	 * non-standard to provide validation service
+	 *
+	 * @param router            router
+	 * @param jsonCaptureService jsonCaptureService
+	 */
+	public static void registerValidationHandler(Router router, JSONCaptureService jsonCaptureService) {
+		router.post("/epcis/validation").consumes("*/json").handler(jsonCaptureService::postValidationResult);
+		EPCISServer.logger.info("[POST /epcis/validation (JSON)] - router added");
+	}
 	
-	
-	
-	// TODO: --------------------------------------------------------------------------------
-
 	/**
 	 * Returns a list of capture jobs. When EPCIS events are added through the
 	 * capture interface, the capture process can run asynchronously. If the payload
@@ -134,6 +139,11 @@ public class JSONCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/capture] - router added");
 	}
+	
+	
+	// TODO: --------------------------------------------------------------------------------
+
+
 
 
 
@@ -165,27 +175,5 @@ public class JSONCaptureServiceHandler {
 		EPCISServer.logger.info("[DELETE /nextPageToken/:token] - router added");
 	}
 
-	/**
-	 * non-standard to provide validation service
-	 *
-	 * @param router            router
-	 * @param jsonCaptureService jsonCaptureService
-	 */
-	public static void registerValidationHandler(Router router, JSONCaptureService jsonCaptureService) {
-		router.post("/epcis/validation").consumes("*/json").handler(jsonCaptureService::postValidationResult);
-		EPCISServer.logger.info("[POST /epcis/validation (JSON)] - router added");
-	}
-
-	/**
-	 * non-standard service to provide 'ping'
-	 *
-	 * @param router router
-	 */
-	public static void registerPingHandler(Router router) {
-		// TODO
-		router.get("/epcis").handler(routingContext -> {
-			routingContext.response().setStatusCode(200).end();
-		});
-		EPCISServer.logger.info("[GET /epcis] - router added");
-	}
+	
 }

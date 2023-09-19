@@ -59,33 +59,7 @@ public class SOAPQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/vocabularies] - router added");
 	}
 
-	/**
-	 * non-standard service to provide 'ping'
-	 *
-	 * @param router router
-	 */
-	public static void registerPingHandler(Router router) {
-		router.get("/epcis").handler(routingContext -> {
-			routingContext.response().setStatusCode(200).end();
-		});
-		EPCISServer.logger.info("[GET /epcis] - router added");
-	}
-
-	public static void registerDeleteHandler(Router router) {
-		router.delete("/epcis").handler(routingContext -> {
-			EPCISServer.logger.debug("DB reset starts");
-
-			try {
-				EPCISServer.mDatabase.drop();
-			} catch (Throwable e) {
-				routingContext.response().end(e.getMessage());
-				return;
-			}
-			EPCISServer.logger.debug("DB reset finished");
-
-			routingContext.response().setStatusCode(200).end();
-		});
-	}
+	
 
 	public static void registerEchoHandler(Router router) {
 		router.post("/epcis/echo").handler(routingContext -> {
