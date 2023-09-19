@@ -1046,7 +1046,20 @@ public class EPCISDocumentConverter {
 				if (vocabularyElement.containsKey("children")) {
 					JsonArray children = vocabularyElement.getJsonArray("children");
 					for (Object c : children) {
-						childArray.add(TagDataTranslationEngine.toEPC(c.toString()));
+						String cstr = c.toString();
+						try {
+							childArray.add(TagDataTranslationEngine.toEPC(cstr));
+						} catch (ValidationException e) {
+							try {
+								TagDataTranslationEngine.checkMicroorganismValue(cstr);
+								childArray.add(cstr);
+							} catch (ValidationException e1) {
+								TagDataTranslationEngine.checkChemicalSubstance(cstr);
+								childArray.add(cstr);
+							}
+						}
+						
+						
 					}
 				}
 				updateElement.put("children", childArray);
