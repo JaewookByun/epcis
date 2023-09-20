@@ -462,10 +462,10 @@ public class XMLCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		} else {
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/xml")
 					.setStatusCode(200).end(result);
 		}
 	}
@@ -552,13 +552,13 @@ public class XMLCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		} else {
 			EPCISServer.captureIDPageMap.remove(uuid);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
 					.setStatusCode(200).end(result);
 		}
 	}

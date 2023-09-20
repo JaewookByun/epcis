@@ -34,12 +34,12 @@ public class HTTPUtil {
 	public static void sendQueryResults(HttpServerResponse serverResponse, SOAPMessage message, Object result,
 			Class<?> resultType, int statusCode) {
 		message.putResult(result, resultType);
-		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(statusCode)
+		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
 				.end(message.toString());
 	}
 	
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject message, int statusCode) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(statusCode)
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
 				.end(message.toString());
 	}
 
@@ -105,12 +105,12 @@ public class HTTPUtil {
 	}
 
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonArray result, int code) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(code)
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(code)
 				.end(result.encodePrettily().toString());
 	}
 
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject result) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200)
 				.end(result.encodePrettily().toString());
 	}
 }
