@@ -91,7 +91,7 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerGetCaptureHandler(Router router, XMLCaptureService xmlCaptureService) {
-		router.get("/epcis/capture").handler(routingContext -> {
+		router.get("/epcis/capture").consumes("application/xml").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
 
@@ -118,7 +118,7 @@ public class XMLCaptureServiceHandler {
 	 */
 	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
-		router.post("/epcis/events").consumes("*/xml").blockingHandler(routingContext -> {
+		router.post("/epcis/events").consumes("application/xml").blockingHandler(routingContext -> {
 			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
 				return;
 			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
@@ -135,7 +135,7 @@ public class XMLCaptureServiceHandler {
 	 * @param router
 	 */
 	public static void registerDeletePageToken(Router router) {
-		router.delete("/epcis/nextPageToken/:token").handler(routingContext -> {
+		router.delete("/epcis/nextPageToken/:token").consumes("application/xml").handler(routingContext -> {
 			UUID uuid = UUID.fromString(routingContext.pathParam("token"));
 			Page page = EPCISServer.captureIDPageMap.remove(uuid);
 			try {
@@ -160,7 +160,7 @@ public class XMLCaptureServiceHandler {
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerValidationHandler(Router router, XMLCaptureService xmlCaptureService) {
-		router.post("/epcis/validation").consumes("*/xml").handler(xmlCaptureService::postValidationResult);
+		router.post("/epcis/validation").consumes("application/xml").handler(xmlCaptureService::postValidationResult);
 		EPCISServer.logger.info("[POST /epcis/validation (xml)] - router added");
 	}
 

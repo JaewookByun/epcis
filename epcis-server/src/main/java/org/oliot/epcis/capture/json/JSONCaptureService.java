@@ -9,16 +9,11 @@ import java.util.Timer;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.json_to_bson.EPCISDocumentConverter;
-import org.oliot.epcis.model.EPCISCaptureJobType;
 import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
@@ -29,7 +24,6 @@ import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.util.TimeUtil;
-import org.oliot.epcis.util.XMLUtil;
 
 import com.mongodb.MongoException;
 import com.mongodb.bulk.BulkWriteResult;
@@ -233,8 +227,8 @@ public class JSONCaptureService {
 
 	private void captureMasterData(RoutingContext routingContext, JsonObject context, JsonArray vocabularyList) {
 		List<WriteModel<Document>> bulk = new ArrayList<WriteModel<Document>>();
-		
-		for(int i = 0; i < vocabularyList.size() ; i ++) {
+
+		for (int i = 0; i < vocabularyList.size(); i++) {
 			JsonObject vocabulary = vocabularyList.getJsonObject(i);
 			String type = vocabulary.getString("type");
 			JsonArray vocabularyElementList = vocabulary.getJsonArray("vocabularyElementList");
@@ -244,7 +238,7 @@ public class JSONCaptureService {
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.get400ValidationException(e.getReason()), 400);
 				return;
-			} 			
+			}
 		}
 
 		EPCISServer.logger.debug("ready to capture");
@@ -352,11 +346,7 @@ public class JSONCaptureService {
 		}
 	}
 
-	// TODO:
-	// -----------------------------------------------------------------------------------
-
 	public void postCaptureJobList(RoutingContext routingContext) {
-		SOAPMessage message = new SOAPMessage();
 		String perPageParam = routingContext.request().getParam("PerPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -376,36 +366,20 @@ public class JSONCaptureService {
 		} catch (MongoException e) {
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(e1.getMessage()), 500);
 			return;
 		}
-		String result = "<epcisCaptureJobList>";
+
 		// there are remaining list
 		int jobSize = jobs.size();
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		for (int j = 0; j < jobSize; j++) {
-			try {
-				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(j));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
-				String resultString = XMLUtil.toString(retDoc, true);
-				String[] lines = resultString.split("\n");
-				for (int i = 1; i < lines.length; i++) {
-					result += lines[i] + "\n";
-				}
-			} catch (Exception throwable) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-				return;
-			}
+		JsonArray result = new JsonArray();
+		for (int i = 0; i < jobSize; i++) {
+			result.add(Transaction.toJson(jobs.get(i)));
 		}
-		result += "</epcisCaptureJobList>";
-
 		// There are remaining lists
 		if (perPage < jobs.size()) {
 			UUID uuid;
@@ -433,16 +407,16 @@ public class JSONCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result.toString());
 		} else {
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
-					.setStatusCode(200).end(result);
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/json")
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result.toString());
 		}
 	}
 
 	public void postRemainingCaptureJobList(RoutingContext routingContext, String nextPagetoken) {
-		SOAPMessage message = new SOAPMessage();
 		String perPageParam = routingContext.request().getParam("PerPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -460,7 +434,8 @@ public class JSONCaptureService {
 		if (!EPCISServer.captureIDPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 406);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(e.getReason()), 500);
 			return;
 		} else {
 			page = EPCISServer.captureIDPageMap.get(uuid);
@@ -474,35 +449,20 @@ public class JSONCaptureService {
 		} catch (MongoException e) {
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(e1.getReason()), 500);
 			return;
 		}
 
-		String result = "<epcisCaptureJobList>";
 		// there are remaining list
 		int jobSize = jobs.size();
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		for (int j = 0; j < jobSize; j++) {
-			try {
-				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(j));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
-				String[] lines = XMLUtil.toString(retDoc, true).split("\n");
-				for (int i = 1; i < lines.length; i++) {
-					result += lines[i] + "\n";
-				}
-			} catch (Exception throwable) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-				return;
-			}
+		JsonArray result = new JsonArray();
+		for (int i = 0; i < jobSize; i++) {
+			result.add(Transaction.toJson(jobs.get(i)));
 		}
-		result += "</epcisCaptureJobList>";
 		if (perPage < jobs.size()) {
 			page.incrSkip(perPage);
 			long currentTime = System.currentTimeMillis();
@@ -523,14 +483,15 @@ public class JSONCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result.toString());
 		} else {
 			EPCISServer.captureIDPageMap.remove(uuid);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
-					.setStatusCode(200).end(result);
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("content-type", "application/json").setStatusCode(200).end(result.toString());
 		}
 	}
 

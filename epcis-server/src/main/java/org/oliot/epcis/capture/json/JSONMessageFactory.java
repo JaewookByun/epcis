@@ -9,6 +9,9 @@ public class JSONMessageFactory {
 	private static JsonObject exception400ValidationException = new JsonObject()
 			.put("type", "epcisException:ValidationException").put("status", 400);
 
+	private static JsonObject exception404NoSuchResourceException = new JsonObject()
+			.put("type", "epcisException:NoSuchResourceException").put("status", 404);
+
 	private static JsonObject exception406NotAcceptableException = new JsonObject()
 			.put("type", "epcisException:NotAcceptableException").put("status", 406);
 
@@ -23,6 +26,12 @@ public class JSONMessageFactory {
 
 	public static JsonObject get406NotAcceptableException(String title) {
 		JsonObject cloned = exception406NotAcceptableException.copy();
+		cloned.put("title", title);
+		return cloned;
+	}
+
+	public static JsonObject get404NoSuchResourceException(String title) {
+		JsonObject cloned = exception404NoSuchResourceException.copy();
 		cloned.put("title", title);
 		return cloned;
 	}

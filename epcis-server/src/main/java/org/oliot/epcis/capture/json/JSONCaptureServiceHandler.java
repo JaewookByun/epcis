@@ -3,12 +3,10 @@ package org.oliot.epcis.capture.json;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 
-import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
-import org.oliot.epcis.util.SOAPMessage;
 
 import java.util.UUID;
 
@@ -47,9 +45,9 @@ public class JSONCaptureServiceHandler {
 	 * events will be stored. Instead, the server returns a\ncapture id, which the
 	 * client can use to obtain information about the capture job.\n"
 	 *
-	 * @param router           		router
-	 * @param jsonCaptureService 	jsonCaptureService
-	 * @param eventBus          	eventBus
+	 * @param router             router
+	 * @param jsonCaptureService jsonCaptureService
+	 * @param eventBus           eventBus
 	 */
 	public static void registerPostCaptureHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
@@ -66,12 +64,12 @@ public class JSONCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/capture (application/json)] - router added");
 	}
-	
+
 	/**
 	 * Returns information about the capture job.
 	 *
-	 * @param router            	router
-	 * @param jsonCaptureService 	jsonCaptureService
+	 * @param router             router
+	 * @param jsonCaptureService jsonCaptureService
 	 */
 	public static void registerGetCaptureIDHandler(Router router, JSONCaptureService jsonCaptureService) {
 		router.get("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
@@ -81,7 +79,7 @@ public class JSONCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/capture/:captureID (application/json)] - router added");
 	}
-	
+
 	/**
 	 * Synchronous capture interface for a single EPCIS event. An individual EPCIS
 	 * event can be created by making a `POST` request on the `/events` resource.
@@ -102,18 +100,18 @@ public class JSONCaptureServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/events (application/json)] - router added");
 	}
-	
+
 	/**
 	 * non-standard to provide validation service
 	 *
-	 * @param router            router
+	 * @param router             router
 	 * @param jsonCaptureService jsonCaptureService
 	 */
 	public static void registerValidationHandler(Router router, JSONCaptureService jsonCaptureService) {
 		router.post("/epcis/validation").consumes("*/json").handler(jsonCaptureService::postValidationResult);
-		EPCISServer.logger.info("[POST /epcis/validation (JSON)] - router added");
+		EPCISServer.logger.info("[POST /epcis/validation (application/json)] - router added");
 	}
-	
+
 	/**
 	 * Returns a list of capture jobs. When EPCIS events are added through the
 	 * capture interface, the capture process can run asynchronously. If the payload
@@ -121,33 +119,22 @@ public class JSONCaptureServiceHandler {
 	 * server returns a `202` HTTP response code. This endpoint returns all capture
 	 * jobs that were created and supports pagination.
 	 *
-	 * @param router            router
-	 * @param xmlCaptureService xmlCaptureService
+	 * @param router             router
+	 * @param jsonCaptureService jsonCaptureService
 	 */
-	public static void registerGetCaptureHandler(Router router, XMLCaptureService xmlCaptureService) {
-		// TODO
-		router.get("/epcis/capture").handler(routingContext -> {
+	public static void registerGetCaptureHandler(Router router, JSONCaptureService jsonCaptureService) {
+		router.get("/epcis/capture").consumes("application/json").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
-
 			String nextPageToken = routingContext.request().getParam("NextPageToken");
 			if (nextPageToken == null) {
-				xmlCaptureService.postCaptureJobList(routingContext);
+				jsonCaptureService.postCaptureJobList(routingContext);
 			} else {
-				xmlCaptureService.postRemainingCaptureJobList(routingContext, nextPageToken);
+				jsonCaptureService.postRemainingCaptureJobList(routingContext, nextPageToken);
 			}
 		});
-		EPCISServer.logger.info("[GET /epcis/capture] - router added");
+		EPCISServer.logger.info("[GET /epcis/capture (application/json)] - router added");
 	}
-	
-	
-	// TODO: --------------------------------------------------------------------------------
-
-
-
-
-
-
 
 	/**
 	 * Optional endpoint that allows on-demand release of any resources associated
@@ -156,8 +143,7 @@ public class JSONCaptureServiceHandler {
 	 * @param router
 	 */
 	public static void registerDeletePageToken(Router router) {
-		// TODO
-		router.delete("/epcis/nextPageToken/:token").handler(routingContext -> {
+		router.delete("/epcis/nextPageToken/:token").consumes("application/json").handler(routingContext -> {
 			UUID uuid = UUID.fromString(routingContext.pathParam("token"));
 			Page page = EPCISServer.captureIDPageMap.remove(uuid);
 			try {
@@ -169,11 +155,10 @@ public class JSONCaptureServiceHandler {
 				routingContext.response().setStatusCode(204).end();
 			} else {
 				EPCISException e = new EPCISException("There is no page with token: " + uuid.toString());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(e.getMessage()), 404);
 			}
 		});
-		EPCISServer.logger.info("[DELETE /nextPageToken/:token] - router added");
+		EPCISServer.logger.info("[DELETE /nextPageToken/:token (application/json)] - router added");
 	}
-
-	
 }

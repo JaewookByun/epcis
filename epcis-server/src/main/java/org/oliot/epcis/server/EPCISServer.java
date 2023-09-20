@@ -165,6 +165,8 @@ public class EPCISServer extends AbstractVerticle {
 		JSONCaptureServiceHandler.registerPostCaptureHandler(router, jsonCaptureCoreService, eventBus);
 		JSONCaptureServiceHandler.registerGetCaptureIDHandler(router, jsonCaptureCoreService);
 		JSONCaptureServiceHandler.registerPostEventsHandler(router, jsonCaptureCoreService, eventBus);
+		JSONCaptureServiceHandler.registerGetCaptureHandler(router, jsonCaptureCoreService);
+		JSONCaptureServiceHandler.registerDeletePageToken(router);
 		JSONCaptureServiceHandler.registerValidationHandler(router, jsonCaptureCoreService);
 	}
 
