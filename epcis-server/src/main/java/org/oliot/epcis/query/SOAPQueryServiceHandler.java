@@ -58,13 +58,4 @@ public class SOAPQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/vocabularies] - router added");
 	}
-
-	
-
-	public static void registerEchoHandler(Router router) {
-		router.post("/epcis/echo").handler(routingContext -> {
-			EPCISServer.logger.info(routingContext.body().asString());
-			routingContext.response().setStatusCode(200).end();
-		});
-	}
 }

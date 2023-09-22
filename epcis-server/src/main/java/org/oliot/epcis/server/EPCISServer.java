@@ -4,6 +4,7 @@ import javax.xml.validation.Validator;
 
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -27,6 +28,7 @@ import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.query.SOAPQueryMetadataHandler;
 import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
+import org.oliot.epcis.query.SubscriptionMonitor;
 import org.oliot.epcis.query.TriggerEngine;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationServiceHandler;
 import org.oliot.epcis.query.response.StaticResponseBuilder;
@@ -102,6 +104,7 @@ public class EPCISServer extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> startPromise) {
 		final HttpServer server = vertx.createHttpServer();
+		final HttpClient client = vertx.createHttpClient();
 		final Router router = Router.router(vertx);
 		final EventBus eventBus = vertx.eventBus();
 		clientForSubscriptionCallback = WebClient.create(vertx);
@@ -113,14 +116,19 @@ public class EPCISServer extends AbstractVerticle {
 		registerCaptureServiceHandler(router, eventBus);
 		registerXMLCaptureServiceHandler(router, eventBus);
 		registerSOAPQueryServiceHandler(router, eventBus);
-
 		registerJSONCaptureServiceHandler(router, eventBus);
+		registerSubscriptionMonitorHandler(client, router, eventBus);
 
 		server.requestHandler(router).listen(port);
 
 		new DynamicResource(vertx).start();
 	}
-	
+
+	public void registerSubscriptionMonitorHandler(HttpClient client, Router router, EventBus eventBus) {
+		SubscriptionMonitor.registerEchoHandler(router, eventBus);
+		SubscriptionMonitor.addSubscriptionMonitorWebSocket(client, eventBus);
+	}
+
 	private void registerCommonHandler(Router router) {
 		CommonHandler.registerPingHandler(router);
 		CommonHandler.registerDeleteHandler(router);
@@ -135,7 +143,6 @@ public class EPCISServer extends AbstractVerticle {
 		SOAPQueryServiceHandler.registerStatisticsHandler(router);
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
-		SOAPQueryServiceHandler.registerEchoHandler(router);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 
