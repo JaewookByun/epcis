@@ -15,15 +15,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
+import org.oliot.epcis.server.EPCISServer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.web.client.WebClient;
 
 public class HTTPUtil {
 	public static HttpResponse<String> post(URI uri, String body) throws IOException, InterruptedException {
@@ -34,25 +33,32 @@ public class HTTPUtil {
 	public static void sendQueryResults(HttpServerResponse serverResponse, SOAPMessage message, Object result,
 			Class<?> resultType, int statusCode) {
 		message.putResult(result, resultType);
-		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
-				.end(message.toString());
+		serverResponse.putHeader("content-type", "application/xml; charset=utf-8")
+				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode).end(message.toString());
 	}
-	
+
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject message, int statusCode) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
-				.end(message.toString());
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8")
+				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode).end(message.toString());
 	}
 
-
-	public static void sendQueryResults(WebClient webClient, URI uri, Logger logger, SOAPMessage message, Object result,
-			Class<?> resultType) {
+	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, SOAPMessage message,
+			Object result, Class<?> resultType) {
 		message.putResult(result, resultType);
-		webClient.post(uri.getPort(), uri.getHost(), uri.getPath()).sendBuffer(Buffer.buffer(message.toString()))
-				.onSuccess(handler -> {
-					logger.debug("Subscription result sent to " + uri.toString());
-				}).onFailure(handler -> {
-					logger.debug("Subscription result delivery failed: " + handler.getMessage());
-				});
+		webClient = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder().uri(uri)
+				.POST(HttpRequest.BodyPublishers.ofString(message.toString())).build();
+		try {
+			HttpResponse<String> response = webClient.send(request, HttpResponse.BodyHandlers.ofString());
+			if (response.statusCode() == 200) {
+				EPCISServer.logger.debug("subscription result successfully sent");
+			} else {
+				EPCISServer.logger.debug("subscription result delivery fails");
+			}
+		} catch (Exception e) {
+			EPCISServer.logger.debug("subscription result delivery fails: " + e.getMessage());
+		}
+		
 	}
 
 //	@SuppressWarnings("rawtypes")
@@ -105,12 +111,14 @@ public class HTTPUtil {
 	}
 
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonArray result, int code) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(code)
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8")
+				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(code)
 				.end(result.encodePrettily().toString());
 	}
 
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject result) {
-		serverResponse.putHeader("content-type", "application/json; charset=utf-8").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200)
+		serverResponse.putHeader("content-type", "application/json; charset=utf-8")
+				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200)
 				.end(result.encodePrettily().toString());
 	}
 }

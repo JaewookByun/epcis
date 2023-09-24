@@ -11,7 +11,6 @@ import org.oliot.epcis.util.SOAPMessage;
 
 import io.vertx.ext.web.Router;
 
-
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
  * <p>
@@ -29,12 +28,14 @@ public class SOAPQueryServiceHandler {
 
 	public static void registerStatisticsHandler(Router router) {
 		router.get("/epcis/statistics").handler(routingContext -> {
-			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200).end(DynamicResource.getCounts().toString());
+			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
+					.end(DynamicResource.getCounts().toString());
 		});
 		EPCISServer.logger.info("[POST /epcis/query] - router added");
 	}
-	
-	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService) {
+
+	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService,
+			SubscriptionManager subscriptionManager) {
 		router.post("/epcis/query").consumes("*/xml").handler(routingContext -> {
 			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
 					routingContext.body().asString());

@@ -145,7 +145,7 @@ public class BootstrapUtil {
 			// ping for checking connection
 			logger.info("Backend configured: (# event: " + eCount + ", # vocabularies: " + vCount + ")");
 			timer.cancel();
-			
+
 			monitoringClient = MongoClients.create(configuration.getString("db_connection_string"));
 			monitoringDatabase = monitoringClient.getDatabase(configuration.getString("db_name"));
 			monitoringVocCollection = monitoringDatabase.getCollection("MasterData", Document.class);
@@ -185,23 +185,23 @@ public class BootstrapUtil {
 			}
 		}
 	}
-	
-	private static void setJSONValidator(Vertx vertx) {		
+
+	private static void setJSONValidator(Vertx vertx) {
 		JsonObject schemaObj = null;
 		try {
 			schemaObj = new JsonObject(
-					FileUtil.readFile(EPCISServer.class.getResourceAsStream("/schema/epcis-json-schema.json")));	
+					FileUtil.readFile(EPCISServer.class.getResourceAsStream("/schema/epcis-json-schema.json")));
 			logger.info("Schema Validator (XML) configured as a developer mode");
 		} catch (Exception e) {
 			try {
-				schemaObj = new JsonObject(FileUtil.readFile(
-						EPCISServer.class.getResourceAsStream("/resources/schema/epcis-json-schema.json")));		
+				schemaObj = new JsonObject(FileUtil
+						.readFile(EPCISServer.class.getResourceAsStream("/resources/schema/epcis-json-schema.json")));
 				logger.info("Schema Validator (XML) configured as a user mode");
 			} catch (Exception e1) {
 				logger.info("/schema/* not found");
 				try {
-					schemaObj = new JsonObject(FileUtil.readFile(EPCISServer.class
-							.getResourceAsStream(configuration.getString("json_schema_location"))));	
+					schemaObj = new JsonObject(FileUtil.readFile(
+							EPCISServer.class.getResourceAsStream(configuration.getString("json_schema_location"))));
 					logger.info("Schema Validator (XML) configured");
 				} catch (Exception e2) {
 					e.printStackTrace();
@@ -209,10 +209,11 @@ public class BootstrapUtil {
 				}
 			}
 		}
-		
+
 		JsonSchema sc = JsonSchema.of(schemaObj);
-		JsonSchemaOptions opt = new JsonSchemaOptions().setBaseUri("http://http://dfpl.sejong.ac.kr/").setDraft(Draft.DRAFT7).setOutputFormat(OutputFormat.Basic);
-	
+		JsonSchemaOptions opt = new JsonSchemaOptions().setBaseUri("http://http://dfpl.sejong.ac.kr/")
+				.setDraft(Draft.DRAFT7).setOutputFormat(OutputFormat.Basic);
+
 		EPCISServer.jsonValidator = Validator.create(sc, opt);
 	}
 
@@ -366,7 +367,7 @@ public class BootstrapUtil {
 		sub.init();
 	}
 
-	static void configureServer(Vertx vertx, String[] args) {
+	static void configureServer(Vertx vertx, String[] args, SubscriptionManager sm) {
 		// Set Configuration (JSON)
 		setConfigurationJson(args);
 		// Set Logger

@@ -12,7 +12,6 @@ import org.bson.Document;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
@@ -28,6 +27,7 @@ import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.query.SOAPQueryMetadataHandler;
 import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
+import org.oliot.epcis.query.SubscriptionManager;
 import org.oliot.epcis.query.SubscriptionMonitor;
 import org.oliot.epcis.query.TriggerEngine;
 import org.oliot.epcis.query.converter.tdt.TagDataTranslationServiceHandler;
@@ -80,6 +80,7 @@ public class EPCISServer extends AbstractVerticle {
 
 	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
 	final SOAPQueryService soapQueryService = new SOAPQueryService();
+	public SubscriptionManager subscriptionManager;
 	public static TriggerEngine triggerEngine = new TriggerEngine();
 
 	final JSONCaptureService jsonCaptureCoreService = new JSONCaptureService();
@@ -91,7 +92,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static String getQueryNamesResponse;
 	public static String subscribeResponse;
 
-	public static WebClient clientForSubscriptionCallback;
+	public static java.net.http.HttpClient clientForSubscriptionCallback;
 
 	// resource monitor
 	public static MongoClient monitoringClient;
@@ -107,7 +108,7 @@ public class EPCISServer extends AbstractVerticle {
 		final HttpClient client = vertx.createHttpClient();
 		final Router router = Router.router(vertx);
 		final EventBus eventBus = vertx.eventBus();
-		clientForSubscriptionCallback = WebClient.create(vertx);
+		clientForSubscriptionCallback = java.net.http.HttpClient.newHttpClient();
 		setRouter(router);
 		loadStaticResponses();
 
@@ -126,7 +127,7 @@ public class EPCISServer extends AbstractVerticle {
 
 	public void registerSubscriptionMonitorHandler(HttpClient client, Router router, EventBus eventBus) {
 		SubscriptionMonitor.registerEchoHandler(router, eventBus);
-		SubscriptionMonitor.addSubscriptionMonitorWebSocket(client, eventBus);
+		SubscriptionMonitor.addSubscriptionMonitorWebSocket(router, eventBus);
 	}
 
 	private void registerCommonHandler(Router router) {
@@ -141,7 +142,7 @@ public class EPCISServer extends AbstractVerticle {
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryMetadataHandler.registerBaseHandler(router);
 		SOAPQueryServiceHandler.registerStatisticsHandler(router);
-		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
+		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService, subscriptionManager);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
@@ -204,7 +205,8 @@ public class EPCISServer extends AbstractVerticle {
 	public static void main(String[] args) {
 
 		Vertx vertx = Vertx.vertx();
-		BootstrapUtil.configureServer(vertx, args);
+		SubscriptionManager sm = null;
+		BootstrapUtil.configureServer(vertx, args, sm);
 		vertx.deployVerticle(new EPCISServer());
 
 		// DeploymentOptions dOptions = new
