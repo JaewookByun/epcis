@@ -10,8 +10,7 @@ import org.oliot.epcis.util.SOAPMessage;
 
 import java.util.UUID;
 
-import static org.oliot.epcis.validation.HeaderValidator.checkEPCISMinMaxVersion;
-import static org.oliot.epcis.validation.HeaderValidator.isEqualHeader;
+import static org.oliot.epcis.validation.HeaderValidator.*;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -53,18 +52,18 @@ public class XMLCaptureServiceHandler {
 			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/xml").handler(routingContext -> {
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
 				return;
 
 			xmlCaptureService.post(routingContext, eventBus);
 		});
 		EPCISServer.logger.info("[POST /epcis/capture (application/xml)] - router added");
 	}
-	
+
 	/**
 	 * Returns information about the capture job.
 	 *
@@ -105,8 +104,6 @@ public class XMLCaptureServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/capture (application/xml)] - router added");
 	}
 
-
-
 	/**
 	 * Synchronous capture interface for a single EPCIS event. An individual EPCIS
 	 * event can be created by making a `POST` request on the `/events` resource.
@@ -119,9 +116,9 @@ public class XMLCaptureServiceHandler {
 	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
 		router.post("/epcis/events").consumes("application/xml").blockingHandler(routingContext -> {
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version"))
 				return;
 			xmlCaptureService.postEvent(routingContext, eventBus);
 		});
@@ -164,5 +161,4 @@ public class XMLCaptureServiceHandler {
 		EPCISServer.logger.info("[POST /epcis/validation (xml)] - router added");
 	}
 
-	
 }

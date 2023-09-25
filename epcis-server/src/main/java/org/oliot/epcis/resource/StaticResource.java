@@ -6,6 +6,10 @@ import java.util.HashSet;
 import org.oliot.epcis.converter.unit.UnitConverter;
 import org.oliot.epcis.query.converter.SimpleEventQueryFactory;
 import org.oliot.epcis.query.converter.SimpleMasterDataQueryFactory;
+import org.oliot.epcis.util.TimeUtil;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class StaticResource {
 	public static HashSet<String> unitOfMeasure;
@@ -25,4 +29,9 @@ public class StaticResource {
 
 	public static SimpleEventQueryFactory simpleEventQueryFactory = new SimpleEventQueryFactory();
 	public static SimpleMasterDataQueryFactory simpleMasterDataQueryFactory = new SimpleMasterDataQueryFactory();
+
+	public static JsonObject simpleEventQueryResults = new JsonObject().put("type", "EPCISQueryDocument")
+			.put("schemaVersion", "2.0").put("creationDate", TimeUtil.getDateTimeStamp(System.currentTimeMillis()))
+			.put("epcisBody", new JsonObject().put("queryResults", new JsonObject().put("queryName", "SimpleEventQuery")
+					.put("resultsBody", new JsonObject().put("eventList", new JsonArray()))));
 }

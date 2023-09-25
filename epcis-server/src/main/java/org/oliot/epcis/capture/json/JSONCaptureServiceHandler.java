@@ -10,8 +10,7 @@ import org.oliot.epcis.util.HTTPUtil;
 
 import java.util.UUID;
 
-import static org.oliot.epcis.validation.HeaderValidator.checkEPCISMinMaxVersion;
-import static org.oliot.epcis.validation.HeaderValidator.isEqualHeader;
+import static org.oliot.epcis.validation.HeaderValidator.*;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -53,11 +52,11 @@ public class JSONCaptureServiceHandler {
 			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/json").handler(routingContext -> {
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
 				return;
 
 			jsonCaptureService.post(routingContext, eventBus);
@@ -92,9 +91,9 @@ public class JSONCaptureServiceHandler {
 	public static void registerPostEventsHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
 		router.post("/epcis/events").consumes("*/json").blockingHandler(routingContext -> {
-			if (!isEqualHeader(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version"))
 				return;
-			if (!isEqualHeader(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version"))
 				return;
 			jsonCaptureService.postEvent(routingContext, eventBus);
 		});

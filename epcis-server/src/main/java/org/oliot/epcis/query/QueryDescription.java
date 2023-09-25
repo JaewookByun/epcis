@@ -21,6 +21,9 @@ import org.oliot.epcis.util.BSONReadUtil;
 import org.oliot.epcis.util.TimeUtil;
 import org.w3c.dom.Element;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
  * <p>
@@ -85,6 +88,17 @@ public class QueryDescription {
 			makeSimpleEventQuery(poll.getParams().getParam());
 		} else if (poll.getQueryName().equals("SimpleMasterDataQuery")) {
 			makeSimpleMasterDataQuery(poll.getParams().getParam());
+		}
+	}
+
+	public QueryDescription(JsonObject query, JsonObject context)
+			throws QueryParameterException, ImplementationException {
+		String queryName = query.getString("queryName");
+
+		if (queryName == null || queryName.equals("SimpleEventQuery")) {
+			makeSimpleEventQuery(query, context);
+		} else {
+			// makeSimpleMasterDataQuery(poll.getParams().getParam());
 		}
 	}
 
@@ -240,6 +254,43 @@ public class QueryDescription {
 		}
 	}
 
+	private List<QueryParam> convertToQueryParams(JsonObject query) throws QueryParameterException {
+		List<QueryParam> queryParams = new ArrayList<QueryParam>();
+
+		for (String field : query.fieldNames()) {
+			Object value = query.getValue(field);
+
+			if (value == null) {
+				queryParams.add(new QueryParam(field, new VoidHolder()));
+			} else if (value instanceof JsonArray) {
+				List<String> arrayOfString = new ArrayList<String>();
+				JsonArray arr = (JsonArray) value;
+				for (Object arrValue : arr) {
+					arrayOfString.add(arrValue.toString());
+				}
+				queryParams.add(new QueryParam(field, arrayOfString));
+			} else if (value instanceof String) {
+				try {
+					long t = TimeUtil.toUnixEpoch(value.toString());
+					queryParams.add(new QueryParam(field, t));
+
+				} catch (ParseException | NullPointerException e) {
+					queryParams.add(new QueryParam(field, value.toString()));
+				}
+			} else if (value instanceof Boolean) {
+				queryParams.add(new QueryParam(field, value.toString()));
+			} else if (value instanceof Double) {
+				queryParams.add(new QueryParam(field, (Double) value));
+			} else if (value instanceof Integer) {
+				queryParams.add(new QueryParam(field, (Integer) value));
+			} else {
+				throw new QueryParameterException(
+						"value of REST Query Parameter should be one of JsonArray, String, Time, Boolean, Double, Integer");
+			}
+		}
+		return queryParams;
+	}
+
 	private boolean getBoolean(Object value) throws QueryParameterException {
 		try {
 			return ((Boolean) value).booleanValue();
@@ -356,12 +407,9 @@ public class QueryDescription {
 
 	void makeSimpleEventQuery(List<QueryParam> paramList) throws QueryParameterException, ImplementationException {
 		queryName = "SimpleEventQuery";
-		List<Document> mongoQueryElements = new ArrayList<Document>();
 		mongoSort = new Document();
-
-		// convert values
 		convertQueryParams(paramList);
-
+		List<Document> mongoQueryElements = new ArrayList<Document>();
 		for (QueryParam param : paramList) {
 			String name = param.getName();
 			Object value = param.getValue();
@@ -597,7 +645,8 @@ public class QueryDescription {
 			}
 
 			if (name.startsWith("EXISTS_INNER_ERROR_DECLARATION_")) {
-				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_INNER_ERROR_DECLARATION_");
+				converter = StaticResource.simpleEventQueryFactory.getConverterMap()
+						.get("EXISTS_INNER_ERROR_DECLARATION_");
 				mongoQueryElements.add(converter.convert(name, value));
 				continue;
 			}
@@ -1114,4 +1163,13 @@ public class QueryDescription {
 
 	}
 
+	void makeSimpleEventQuery(JsonObject query, JsonObject context)
+			throws QueryParameterException, ImplementationException {
+		queryName = "SimpleEventQuery";
+		mongoSort = new Document();
+
+		// convert values
+		List<QueryParam> paramList = convertToQueryParams(query);
+		makeSimpleEventQuery(paramList);
+	}
 }

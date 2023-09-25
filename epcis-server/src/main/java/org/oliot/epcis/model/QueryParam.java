@@ -44,6 +44,11 @@ public class QueryParam {
 	@XmlElement(required = true)
 	protected Object value;
 
+	public QueryParam(String name, Object value) {
+		this.name = name;
+		this.value = value;
+	}
+
 	/**
 	 * Gets the value of the name property.
 	 * 

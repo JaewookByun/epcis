@@ -22,4 +22,8 @@ public class Metadata {
 	public static String GS1_CBV_Version = Version.v2_0_0.getVersion();
 	public static String GS1_Extensions = "";
 	public static String GS1_Vendor_Version = "org.oliot.epcis-2.2.0";
+	public static String GS1_EPC_Format_SOAP = "Always_EPC_URN";
+	public static String GS1_EPC_Format_REST = "Always_GS1_Digital_Link";
+	public static String GS1_CBV_XML_Format_SOAP = "Always_URN";
+	public static String GS1_CBV_XML_Format_REST = "Always_Web_URI";
 }

@@ -4,7 +4,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
-import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
@@ -26,17 +25,8 @@ import io.vertx.ext.web.Router;
  */
 public class SOAPQueryServiceHandler {
 
-	public static void registerStatisticsHandler(Router router) {
-		router.get("/epcis/statistics").handler(routingContext -> {
-			routingContext.response().putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
-					.end(DynamicResource.getCounts().toString());
-		});
-		EPCISServer.logger.info("[POST /epcis/query] - router added");
-	}
-
-	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService,
-			SubscriptionManager subscriptionManager) {
-		router.post("/epcis/query").consumes("*/xml").handler(routingContext -> {
+	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService) {
+		router.post("/epcis/query").consumes("application/xml").handler(routingContext -> {
 			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
 					routingContext.body().asString());
 		});
@@ -44,11 +34,11 @@ public class SOAPQueryServiceHandler {
 	}
 
 	public static void registerPaginationHandler(Router router, SOAPQueryService soapQueryService) {
-		router.get("/epcis/events").handler(routingContext -> {
+		router.get("/epcis/events").consumes("application/xml").handler(routingContext -> {
 			soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
 		});
-		EPCISServer.logger.info("[GET /epcis/events] - router added");
-		router.get("/epcis/vocabularies").handler(routingContext -> {
+		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
+		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
 			try {
 				soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
 			} catch (ParserConfigurationException e) {
@@ -57,6 +47,6 @@ public class SOAPQueryServiceHandler {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
 			}
 		});
-		EPCISServer.logger.info("[GET /epcis/vocabularies] - router added");
+		EPCISServer.logger.info("[GET /epcis/vocabularies (application/xml)] - router added");
 	}
 }

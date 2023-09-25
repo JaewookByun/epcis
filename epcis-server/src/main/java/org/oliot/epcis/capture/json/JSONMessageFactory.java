@@ -14,6 +14,9 @@ public class JSONMessageFactory {
 
 	private static JsonObject exception406NotAcceptableException = new JsonObject()
 			.put("type", "epcisException:NotAcceptableException").put("status", 406);
+	
+	private static JsonObject exception413QueryTooLargeException = new JsonObject()
+			.put("type", "epcisException:QueryTooLargeException").put("status", 413);
 
 	private static JsonObject exception500ImplementationException = new JsonObject()
 			.put("type", "epcisException:ImplementationException").put("status", 500);
@@ -36,6 +39,13 @@ public class JSONMessageFactory {
 		return cloned;
 	}
 
+	public static JsonObject get413QueryTooLargeException(String title) {
+		JsonObject cloned = exception413QueryTooLargeException.copy();
+		cloned.put("title", title);
+		return cloned;
+	}
+
+	
 	public static JsonObject get500ImplementationException(String title) {
 		JsonObject cloned = exception500ImplementationException.copy();
 		cloned.put("title", title);

@@ -4,7 +4,6 @@ import javax.xml.validation.Validator;
 
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -15,16 +14,17 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
-import org.oliot.epcis.capture.common.CaptureMetadataHandler;
 import org.oliot.epcis.capture.common.CommonHandler;
 import org.oliot.epcis.capture.common.TransactionManager;
 import org.oliot.epcis.capture.json.JSONCaptureService;
 import org.oliot.epcis.capture.json.JSONCaptureServiceHandler;
 import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.capture.xml.XMLCaptureServiceHandler;
+import org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter;
 import org.oliot.epcis.converter.unit.UnitConverter;
 import org.oliot.epcis.pagination.Page;
-import org.oliot.epcis.query.SOAPQueryMetadataHandler;
+import org.oliot.epcis.query.RESTQueryService;
+import org.oliot.epcis.query.RESTQueryServiceHandler;
 import org.oliot.epcis.query.SOAPQueryService;
 import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.SubscriptionManager;
@@ -80,6 +80,8 @@ public class EPCISServer extends AbstractVerticle {
 
 	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
 	final SOAPQueryService soapQueryService = new SOAPQueryService();
+	final RESTQueryService restQueryService = new RESTQueryService();
+	public static org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter bsonToJsonConverter = new EPCISDocumentConverter();
 	public SubscriptionManager subscriptionManager;
 	public static TriggerEngine triggerEngine = new TriggerEngine();
 
@@ -105,7 +107,6 @@ public class EPCISServer extends AbstractVerticle {
 	@Override
 	public void start(Promise<Void> startPromise) {
 		final HttpServer server = vertx.createHttpServer();
-		final HttpClient client = vertx.createHttpClient();
 		final Router router = Router.router(vertx);
 		final EventBus eventBus = vertx.eventBus();
 		clientForSubscriptionCallback = java.net.http.HttpClient.newHttpClient();
@@ -118,21 +119,31 @@ public class EPCISServer extends AbstractVerticle {
 		registerXMLCaptureServiceHandler(router, eventBus);
 		registerSOAPQueryServiceHandler(router, eventBus);
 		registerJSONCaptureServiceHandler(router, eventBus);
-		registerSubscriptionMonitorHandler(client, router, eventBus);
+		registerSubscriptionMonitorHandler(router, eventBus);
+		registerRESTQueryServiceHandler(router, eventBus);
 
 		server.requestHandler(router).listen(port);
 
 		new DynamicResource(vertx).start();
 	}
 
-	public void registerSubscriptionMonitorHandler(HttpClient client, Router router, EventBus eventBus) {
+	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
+		RESTQueryServiceHandler.registerGetEventsHandler(router, restQueryService);
+	}
+
+	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {
 		SubscriptionMonitor.registerEchoHandler(router, eventBus);
 		SubscriptionMonitor.addSubscriptionMonitorWebSocket(router, eventBus);
 	}
 
 	private void registerCommonHandler(Router router) {
+		CommonHandler.registerBaseHandler(router);
+		CommonHandler.registerCaptureHandler(router);
+		CommonHandler.registerCaptureIDHandler(router);
+		CommonHandler.registerEventsHandler(router);
 		CommonHandler.registerPingHandler(router);
 		CommonHandler.registerDeleteHandler(router);
+		CommonHandler.registerStatisticsHandler(router);
 	}
 
 	private void registerTDTServiceHandler(Router router) {
@@ -140,20 +151,12 @@ public class EPCISServer extends AbstractVerticle {
 	}
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
-		SOAPQueryMetadataHandler.registerBaseHandler(router);
-		SOAPQueryServiceHandler.registerStatisticsHandler(router);
-		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService, subscriptionManager);
+		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 
 	private void registerCaptureServiceHandler(Router router, EventBus eventBus) {
-		CaptureMetadataHandler.registerBaseHandler(router);
-		CaptureMetadataHandler.registerCaptureHandler(router);
-		CaptureMetadataHandler.registerCaptureIDHandler(router);
-		CaptureMetadataHandler.registerEventsHandler(router);
-		CaptureMetadataHandler.registerPingHandler(router);
-
 		TransactionManager.registerTransactionStartHandler(eventBus);
 		TransactionManager.registerTransactionSuccessHandler(eventBus);
 		TransactionManager.registerTransactionProceedHandler(eventBus);

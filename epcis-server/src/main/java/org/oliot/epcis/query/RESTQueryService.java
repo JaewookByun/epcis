@@ -1,0 +1,946 @@
+package org.oliot.epcis.query;
+
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Timer;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.oliot.epcis.capture.json.JSONMessageFactory;
+import org.oliot.epcis.common.Metadata;
+import org.oliot.epcis.model.*;
+import org.oliot.epcis.pagination.Page;
+import org.oliot.epcis.pagination.PageExpiryTimerTask;
+import org.oliot.epcis.resource.StaticResource;
+import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.util.FileUtil;
+import org.oliot.epcis.util.HTTPUtil;
+import org.oliot.epcis.util.SOAPMessage;
+import org.oliot.epcis.util.TimeUtil;
+import org.oliot.epcis.util.XMLUtil;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobExecutionContext;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.result.InsertOneResult;
+
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
+
+import static org.quartz.CronScheduleBuilder.cronSchedule;
+import static org.quartz.JobBuilder.newJob;
+import static org.quartz.TriggerBuilder.newTrigger;
+
+/**
+ * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
+ * <p>
+ * This project is an open source implementation of Electronic Product Code
+ * Information Service (EPCIS) v2.0,
+ * <p>
+ * SOAPQueryService provides methods for enabling Query Service.
+ * <p>
+ *
+ * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,
+ *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
+ *         bjw0829@gmail.com
+ */
+@SuppressWarnings("unused")
+public class RESTQueryService {
+
+	final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
+
+	public JsonObject retrieveContext(JsonObject query) {
+		JsonObject context = new JsonObject();
+		Object contextObj = query.getValue("@context");
+		if (contextObj instanceof JsonObject) {
+			context = (JsonObject) contextObj;
+		} else if (contextObj instanceof JsonArray) {
+			JsonArray contextArr = (JsonArray) contextObj;
+			context = new JsonObject();
+			for (Object contextElemObj : contextArr) {
+				if (contextElemObj instanceof JsonObject) {
+					JsonObject contextElem = (JsonObject) contextElemObj;
+					context.mergeIn(contextElem, true);
+				}
+			}
+		}
+		return context;
+	}
+
+	public void query(RoutingContext routingContext) {
+
+		JsonObject query = null;
+		try {
+			query = new JsonObject(routingContext.body().asString());
+		} catch (NullPointerException | DecodeException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getMessage()),
+					406);
+		}
+
+		JsonObject context = retrieveContext(query);
+
+		try {
+			poll(routingContext, query, context);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+		} catch (ImplementationException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e.getReason()),
+					500);
+		}
+	}
+
+	public void poll(RoutingContext routingContext, JsonObject query, JsonObject context)
+			throws QueryParameterException, ImplementationException {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(routingContext.request());
+		} catch (QueryParameterException e) {
+			throw e;
+		}
+
+		// create query description
+		QueryDescription qd = null;
+		try {
+			qd = new QueryDescription(query, context);
+		} catch (QueryParameterException e1) {
+			throw e1;
+		} catch (ImplementationException e2) {
+			throw e2;
+		}
+
+		if (qd.getQueryName().equals("SimpleEventQuery")) {
+			// SimpleEventQuery
+			invokeSimpleEventQuery(routingContext.response(), qd, perPage, context);
+		} else {
+			// SimpleMasterDataQuery
+			// invokeSimpleMasterDataQuery(serverResponse, message, qd, perPage);
+		}
+	}
+
+	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage,
+			JsonObject context) {
+
+		// CREATE MONGODB QUERY
+		FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(qd.getMongoQuery());
+
+		if (!qd.getMongoSort().isEmpty())
+			query.sort(qd.getMongoSort());
+
+		boolean needPagination = true;
+		int qLimit = perPage;
+		if (qd.getMaxCount() != null && qd.getMaxCount() > perPage) {
+			qLimit = qd.getMaxCount();
+		} else {
+			qLimit = perPage;
+		}
+		if (qd.getEventCountLimit() != null) {
+			if (qLimit < qd.getEventCountLimit()) {
+				query.limit(qLimit + 1);
+			} else {
+				query.limit(qd.getEventCountLimit());
+				needPagination = false;
+			}
+		} else {
+			query.limit(qLimit + 1);
+		}
+
+		// RETRIEVE
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
+			return;
+		}
+
+		if (qd.getMaxCount() != null && (resultList.size() > qd.getMaxCount())) {
+			QueryTooLargeException e = new QueryTooLargeException(
+					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )");
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get413QueryTooLargeException(
+							"[413QueryTooLargeException] The server cannot return the response as requested: "
+									+ e.getMessage()),
+					413);
+			return;
+		}
+
+		// conversion
+		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(qd), resultList);
+
+		if (needPagination == true && perPage >= convertedResultList.size()) {
+			needPagination = false;
+		} else if (needPagination == true && perPage < convertedResultList.size()) {
+			if (!convertedResultList.isEmpty())
+				convertedResultList = convertedResultList.subList(0, perPage);
+		}
+
+		JsonObject queryResultDocument = StaticResource.simpleEventQueryResults.copy();
+		JsonArray eventList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("eventList");
+		for (JsonObject list : convertedResultList) {
+			eventList.add(list);
+		}
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.eventPageMap.containsKey(uuid))
+					break;
+			}
+
+			Page page = new Page(uuid, "SimpleEventQuery", qd.getMongoQuery(), null, qd.getMongoSort(),
+					qd.getEventCountLimit(), perPage);
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.eventPageMap.put(uuid, page);
+			EPCISServer.logger.debug(
+					"[GET /events] page - " + uuid + " added. # remaining pages - " + EPCISServer.eventPageMap.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+					.putHeader("Link",
+							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
+									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+	}
+
+	// ------------TODO-------------------------------------------------------------------------------------------
+
+	private int getPerPage(HttpServerRequest serverRequest) throws QueryParameterException {
+		String perPageParam = serverRequest.getParam("PerPage");
+		int perPage = 30;
+		if (perPageParam != null) {
+			try {
+				int t = Integer.parseInt(perPageParam);
+				if (t > 0)
+					perPage = t;
+			} catch (NumberFormatException e) {
+				throw new QueryParameterException("invalid PerPage - " + perPageParam);
+			}
+		}
+		return perPage;
+	}
+
+	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, SOAPMessage message,
+			QueryDescription qd, int perPage) {
+
+		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(qd.getMongoQuery());
+		if (!qd.getMongoProjection().isEmpty())
+			query.projection(qd.getMongoProjection());
+
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+					e1.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		}
+
+		if (qd.getMaxCount() != null && (resultList.size() > qd.getMaxCount())) {
+			QueryTooLargeException e = new QueryTooLargeException(
+					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )");
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 413);
+			return;
+		}
+
+		/*
+		 * TODO List<VocabularyType> vList =
+		 * resultList.parallelStream().map(TypeDocument::new)
+		 * .collect(Collectors.groupingBy(TypeDocument::getType,
+		 * Collectors.mapping(TypeDocument::getDocument, Collectors.toSet())))
+		 * .entrySet().parallelStream() .map(e -> new
+		 * MasterdataConverter().convert(e.getKey(), e.getValue(), message))
+		 * .collect(Collectors.toList());
+		 * 
+		 * boolean needPagination = false; if (perPage < vList.size()) { needPagination
+		 * = true; vList = vList.subList(0, perPage); }
+		 * 
+		 * QueryResults queryResults = new QueryResults();
+		 * queryResults.setQueryName("SimpleMasterDataQuery");
+		 * 
+		 * QueryResultsBody resultsBody = new QueryResultsBody(); VocabularyListType vlt
+		 * = new VocabularyListType(); vlt.setVocabulary(vList);
+		 * resultsBody.setVocabularyList(vlt);
+		 * 
+		 * queryResults.setResultsBody(resultsBody);
+		 * 
+		 * if (needPagination) { UUID uuid; long currentTime =
+		 * System.currentTimeMillis();
+		 * 
+		 * while (true) { uuid = UUID.randomUUID(); if
+		 * (!EPCISServer.vocabularyPageMap.containsKey(uuid)) break; }
+		 * 
+		 * Page page = new Page(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(),
+		 * qd.getMongoProjection(), null, null, perPage);
+		 * 
+		 * Timer timer = new Timer(); page.setTimer(timer); timer.schedule(new
+		 * PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+		 * EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+		 * EPCISServer.vocabularyPageMap.put(uuid, page);
+		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
+		 * " added. # remaining pages - " + EPCISServer.vocabularyPageMap.size());
+		 * 
+		 * serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+		 * .putHeader("GS1-Extension", Metadata.GS1_Extensions) .putHeader("Link",
+		 * "http://" + EPCISServer.host + ":" + EPCISServer.port +
+		 * "/epcis/vocabularies?PerPage=" + perPage + "&NextPageToken=" +
+		 * uuid.toString()) .putHeader("GS1-Next-Page-Token-Expires",
+		 * TimeUtil.getDateTimeStamp(currentTime +
+		 * Metadata.GS1_Next_Page_Token_Expires));
+		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
+		 * QueryResults.class, 200); } else { HTTPUtil.sendQueryResults(serverResponse,
+		 * message, queryResults, QueryResults.class, 200); }
+		 */
+	}
+
+	public void getNextVocabularyPage(HttpServerRequest serverRequest, HttpServerResponse serverResponse)
+			throws ParserConfigurationException {
+		SOAPMessage message = new SOAPMessage();
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
+		} catch (Exception e) {
+			QueryParameterException e1 = new QueryParameterException("nextPageToken should exist - " + uuid);
+			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
+		}
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		// get Page
+		Page page = null;
+		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 406);
+			return;
+		} else {
+			page = EPCISServer.vocabularyPageMap.get(uuid);
+		}
+
+		// CREATE QUERY
+		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(page.getQuery());
+		if (!page.getProjection().isEmpty())
+			query.projection(page.getProjection());
+		query.skip(page.getSkip());
+		query.limit(perPage + 1);
+
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e1.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		}
+
+		/*
+		 * TODO List<VocabularyType> vList =
+		 * resultList.parallelStream().map(TypeDocument::new)
+		 * .collect(Collectors.groupingBy(TypeDocument::getType,
+		 * Collectors.mapping(TypeDocument::getDocument, Collectors.toSet())))
+		 * .entrySet().parallelStream() .map(e -> new
+		 * MasterdataConverter().convert(e.getKey(), e.getValue(), message))
+		 * .collect(Collectors.toList());
+		 * 
+		 * boolean needPagination = false; if (perPage < vList.size()) { needPagination
+		 * = true; vList = vList.subList(0, perPage); }
+		 * 
+		 * QueryResults queryResults = new QueryResults();
+		 * queryResults.setQueryName("SimpleMasterDataQuery");
+		 * 
+		 * QueryResultsBody resultsBody = new QueryResultsBody(); VocabularyListType vlt
+		 * = new VocabularyListType(); vlt.setVocabulary(vList);
+		 * resultsBody.setVocabularyList(vlt);
+		 * 
+		 * queryResults.setResultsBody(resultsBody);
+		 * 
+		 * if (needPagination) { page.incrSkip(perPage); long currentTime =
+		 * System.currentTimeMillis(); Timer timer = page.getTimer(); if (timer != null)
+		 * timer.cancel();
+		 * 
+		 * Timer newTimer = new Timer(); page.setTimer(newTimer); newTimer.schedule(new
+		 * PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+		 * EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
+		 * " token expiry time extended to " + TimeUtil.getDateTimeStamp(currentTime +
+		 * Metadata.GS1_Next_Page_Token_Expires));
+		 * 
+		 * serverResponse .putHeader("Link", "http://" + EPCISServer.host + ":" +
+		 * EPCISServer.port + "/epcis/vocabularies?PerPage=" + perPage +
+		 * "&NextPageToken=" + uuid.toString())
+		 * .putHeader("GS1-Next-Page-Token-Expires",
+		 * TimeUtil.getDateTimeStamp(currentTime +
+		 * Metadata.GS1_Next_Page_Token_Expires));
+		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
+		 * QueryResults.class, 200); } else {
+		 * EPCISServer.vocabularyPageMap.remove(uuid);
+		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
+		 * " expired. # remaining pages - " + EPCISServer.vocabularyPageMap.size());
+		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
+		 * QueryResults.class, 200); }
+		 */
+	}
+
+	public void getNextEventPage(HttpServerRequest serverRequest, HttpServerResponse serverResponse) {
+		SOAPMessage message = new SOAPMessage();
+
+		// get UUID
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
+		} catch (Exception e) {
+			QueryParameterException e1 = new QueryParameterException("invalid nextPageToken - " + uuid);
+			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
+			return;
+		}
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		Page page = null;
+		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 406);
+			return;
+		} else {
+			page = EPCISServer.eventPageMap.get(uuid);
+		}
+
+		org.bson.Document query = (org.bson.Document) page.getQuery();
+		org.bson.Document sort = (org.bson.Document) page.getSort();
+		int skip = page.getSkip();
+		Integer limit = page.getLimit();
+		int qLimit;
+		page.setSkip(skip + perPage);
+
+		boolean needPagination = true;
+
+		if (limit != null) {
+			if (perPage < limit - skip) {
+				qLimit = perPage + 1;
+			} else {
+				qLimit = limit - skip;
+				needPagination = false;
+			}
+		} else {
+			qLimit = perPage + 1;
+		}
+
+		List<org.bson.Document> results = new ArrayList<org.bson.Document>();
+
+		try {
+			EPCISServer.mEventCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
+		} catch (Throwable e) {
+			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+					e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
+			return;
+		}
+
+		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), results);
+
+		if (needPagination == true && perPage >= convertedResultList.size()) {
+			needPagination = false;
+		} else if (needPagination == true && perPage < convertedResultList.size()) {
+			convertedResultList = convertedResultList.subList(0, perPage);
+		}
+
+		QueryResults queryResults = new QueryResults();
+		queryResults.setQueryName("SimpleEventQuery");
+
+		QueryResultsBody resultsBody = new QueryResultsBody();
+
+		EventListType elt = new EventListType();
+		// elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
+		resultsBody.setEventList(elt);
+		queryResults.setResultsBody(resultsBody);
+
+		if (perPage < results.size()) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(
+					new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse
+					.putHeader("Link",
+							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
+									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		} else {
+			EPCISServer.eventPageMap.remove(uuid);
+			EPCISServer.logger.debug("[GET /events] page - " + uuid + " expired. # remaining pages - "
+					+ EPCISServer.eventPageMap.size());
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		}
+	}
+
+	public void getSubscriptionIDs(HttpServerResponse serverResponse) {
+		try {
+			Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			Element envelope = retDoc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soapenv:Envelope");
+			Element body = retDoc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soapenv:Body");
+			Element response = retDoc.createElementNS("urn:epcglobal:epcis-query:xsd:1",
+					"query:GetSubscriptionIDsResult");
+
+			List<org.bson.Document> results = new ArrayList<org.bson.Document>();
+
+			try {
+				EPCISServer.mSubscriptionCollection.find(new org.bson.Document())
+						.projection(new org.bson.Document("_id", true)).into(results);
+			} catch (Throwable e) {
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+						e.getMessage());
+				HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			}
+
+			for (org.bson.Document obj : results) {
+				Element item = retDoc.createElement("string");
+				item.setTextContent(obj.getString("_id"));
+				response.appendChild(item);
+			}
+			envelope.appendChild(body);
+			body.appendChild(response);
+			retDoc.appendChild(envelope);
+
+			serverResponse.putHeader("content-type", "*/xml; charset=utf-8").end(XMLUtil.toString(retDoc));
+
+		} catch (ParserConfigurationException e) {
+			ImplementationException err = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+					"GetSubscriptionIDs", e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), err, err.getClass(), 400);
+			EPCISServer.logger.error(e.getMessage());
+		} catch (Throwable e) {
+			ImplementationException err = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+					"GetSubscriptionIDs", e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), err, err.getClass(), 500);
+			EPCISServer.logger.error(e.getMessage());
+		}
+	}
+
+	public void subscribe(HttpServerResponse serverResponse, Subscribe subscribe) {
+
+		SOAPMessage message = new SOAPMessage();
+
+		Subscription subscription = null;
+		try {
+			subscription = new Subscription(subscribe, soapQueryUnmarshaller);
+		} catch (ImplementationException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		} catch (InvalidURIException | SubscriptionControlsException | QueryParameterException
+				| SubscribeNotPermittedException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		// Existing subscription Check
+		org.bson.Document result = null;
+		try {
+			result = EPCISServer.mSubscriptionCollection
+					.find(new org.bson.Document().append("_id", subscription.getSubscriptionID())).first();
+		} catch (Throwable e2) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e2.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+		}
+
+		if (result != null) {
+			DuplicateSubscriptionException e = new DuplicateSubscriptionException(
+					"The specified subscriptionID is identical to a previous subscription that was created and not yet unsubscribed.: "
+							+ subscription.getSubscriptionID());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		// cron Example
+		// 0/10 * * * * ? : every 10 second
+		String schedule = subscription.getSchedule();
+		@SuppressWarnings("unused")
+		URI trigger = subscription.getTrigger();
+		if (schedule != null) {
+			try {
+				cronSchedule(schedule);
+				addScheduleToQuartz(subscription);
+				addScheduleToDB(subscription);
+				sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+				return;
+			} catch (Throwable e) {
+				SubscriptionControlsException e1 = new SubscriptionControlsException(
+						"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc."
+								+ e.getMessage());
+				HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
+				return;
+			}
+		} else {
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
+			addScheduleToDB(subscription);
+			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+		}
+	}
+
+	void addScheduleToQuartz(Subscription subscription) throws SchedulerException {
+		JobDataMap map = new JobDataMap();
+		map.put("jobData", subscription);
+		String subscriptionID = subscription.getSubscriptionID();
+		String schedule = subscription.getSchedule();
+		JobDetail job = newJob(SubscriptionTask.class).withIdentity(subscriptionID, "SimpleEventQuery").setJobData(map)
+				.storeDurably(false).build();
+
+		Trigger trigger = newTrigger().withIdentity(subscriptionID, "SimpleEventQuery").startNow()
+				.withSchedule(cronSchedule(schedule)).build();
+
+		if (!SubscriptionManager.sched.isStarted())
+			SubscriptionManager.sched.start();
+		SubscriptionManager.sched.scheduleJob(job, trigger);
+	}
+
+	void addScheduleToDB(Subscription subscription) {
+		try {
+			InsertOneResult result = EPCISServer.mSubscriptionCollection.insertOne(subscription.toMongoDocument());
+			EPCISServer.logger.debug(result);
+		} catch (Exception e) {
+			EPCISServer.logger.error(e.getMessage());
+		} catch (Throwable e) {
+			EPCISServer.logger.error(e.getMessage());
+		}
+	}
+
+	private boolean isResultSorted(QueryDescription qd) {
+		if (qd.getMongoSort() == null || qd.getMongoSort().isEmpty()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private boolean isResultSorted(org.bson.Document sort) {
+		if (sort == null || sort.isEmpty()) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private List<JsonObject> getConvertedResultList(boolean isResultSorted, List<org.bson.Document> resultList)
+			throws RuntimeException {
+		Stream<org.bson.Document> resultStream;
+		if (isResultSorted == true) {
+			resultStream = resultList.stream();
+		} else {
+			resultStream = resultList.parallelStream();
+		}
+
+		ArrayList<String> nsList = new ArrayList<>();
+
+		try {
+			List<JsonObject> results = resultStream.map(result -> {
+				try {
+					switch (result.getString("type")) {
+					case "AggregationEvent":
+						return EPCISServer.bsonToJsonConverter.convertAggregationEvent(result);
+
+					case "ObjectEvent":
+						return EPCISServer.bsonToJsonConverter.convertObjectEvent(result);
+
+					case "TransactionEvent":
+						return EPCISServer.bsonToJsonConverter.convertTransactionEvent(result);
+
+					case "TransformationEvent":
+						return EPCISServer.bsonToJsonConverter.convertTransformationEvent(result);
+
+					case "AssociationEvent":
+						return EPCISServer.bsonToJsonConverter.convertAssociationEvent(result);
+
+					default:
+						return null;
+					}
+				} catch (ValidationException e) {
+					throw new RuntimeException(e.getReason());
+				}
+			}).filter(Objects::nonNull).collect(Collectors.toList());
+			return results;
+		} catch (RuntimeException e) {
+			throw e;
+		}
+	}
+
+	private void updateInitialRecordTime(String subscriptionID, long initialRecordTime) throws ImplementationException {
+
+		try {
+			EPCISServer.mSubscriptionCollection.findOneAndUpdate(new org.bson.Document("_id", subscriptionID),
+					new org.bson.Document("$set", new org.bson.Document("initialRecordTime", initialRecordTime)));
+			EPCISServer.logger.debug("initialRecordTime updated to " + initialRecordTime);
+		} catch (Throwable e2) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e2.getMessage());
+			EPCISServer.logger.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	public void unsubscribe(HttpServerResponse serverResponse, Document doc) {
+
+		SOAPMessage message = new SOAPMessage();
+		String subscriptionID = null;
+		try {
+			NodeList nodeList = doc.getElementsByTagName("subscriptionID");
+			if (nodeList.getLength() == 1) {
+				subscriptionID = nodeList.item(0).getTextContent();
+			}
+
+			if (subscriptionID == null) {
+				QueryParameterException e = new QueryParameterException();
+				e.setStackTrace(new StackTraceElement[0]);
+				e.setReason("Invalid unsubscribe invocation: missing subscriptionID");
+				HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+				return;
+			}
+
+			Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			Element envelope = retDoc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soapenv:Envelope");
+			Element body = retDoc.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soapenv:Body");
+			Element response = retDoc.createElementNS("urn:epcglobal:epcis-query:xsd:1", "query:UnsubscribeResult");
+			body.appendChild(response);
+			envelope.appendChild(body);
+			body.appendChild(response);
+			retDoc.appendChild(envelope);
+
+			org.bson.Document result = null;
+
+			try {
+				result = EPCISServer.mSubscriptionCollection
+						.findOneAndDelete(new org.bson.Document("_id", subscriptionID));
+			} catch (Throwable e2) {
+				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
+						null, e2.getMessage());
+				HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			}
+
+			if (result == null) {
+				NoSuchSubscriptionException err = new NoSuchSubscriptionException("No such subscription exception");
+				HTTPUtil.sendQueryResults(serverResponse, message, err, err.getClass(), 400);
+				EPCISServer.logger.error("No such subscription exception");
+				return;
+			} else {
+				try {
+					SubscriptionManager.sched.unscheduleJob(
+							org.quartz.TriggerKey.triggerKey(result.getString("_id"), result.getString("queryName")));
+					SubscriptionManager.sched.deleteJob(
+							org.quartz.JobKey.jobKey(result.getString("_id"), result.getString("queryName")));
+					serverResponse.putHeader("content-type", "*/xml; charset=utf-8").setStatusCode(200)
+							.end(XMLUtil.toString(retDoc));
+				} catch (org.quartz.SchedulerException e) {
+					ImplementationException err = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+							"Subscribe", subscriptionID, e.getMessage());
+					HTTPUtil.sendQueryResults(serverResponse, message, err, err.getClass(), 500);
+					EPCISServer.logger.error("Implementation Exception: " + e.getMessage());
+				}
+			}
+		} catch (IllegalStateException | ParserConfigurationException e) {
+			QueryParameterException e1 = new QueryParameterException(e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
+		} catch (Throwable e) {
+			ImplementationException err = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+					"Subscribe", subscriptionID, e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, err, err.getClass(), 500);
+		}
+	}
+
+	private Document createDocument(String soapMessage) throws ValidationException {
+		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+		docFactory.setNamespaceAware(true);
+		Document doc;
+		try {
+			doc = docFactory.newDocumentBuilder()
+					.parse(XMLUtil.getXMLDocumentInputStream(FileUtil.getByteArray(soapMessage)));
+			return doc;
+		} catch (SAXException | IOException | ParserConfigurationException e) {
+			ValidationException e1 = new ValidationException();
+			e1.setStackTrace(new StackTraceElement[0]);
+			e1.setReason(
+					"The input to the operation was not syntactically valid according to the syntax defined by the binding. Each binding specifies the particular circumstances under which this exception is raised.: "
+							+ e.getMessage());
+			throw e1;
+		}
+	}
+
+	public void sendQueryResults(HttpServerResponse serverResponse, String result) {
+		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200).end(result);
+	}
+
+	public void sendSubscriptionResult(JobExecutionContext context) {
+		SOAPMessage message = new SOAPMessage();
+		JobDetail detail = context.getJobDetail();
+		JobDataMap map = detail.getJobDataMap();
+
+		Subscription sub = (Subscription) map.get("jobData");
+		String subscriptionID = sub.getSubscriptionID();
+		URI dest = sub.getDest();
+		Long initialRecordTime = sub.getInitialRecordTime();
+		boolean reportIfEmpty = sub.getReportIfEmpty();
+
+		QueryDescription qd = sub.getQueryDescription();
+		org.bson.Document mongoQuery = qd.getMongoQuery();
+		org.bson.Document sort = qd.getMongoSort();
+		Integer eventCountLimit = qd.getEventCountLimit();
+		Integer maxCount = qd.getMaxCount();
+
+		try {
+			if (initialRecordTime != null) {
+				mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+			}
+
+			FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
+
+			if (sort != null)
+				query.sort(sort);
+			if (eventCountLimit != null)
+				query.limit(eventCountLimit);
+
+			List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+			try {
+				query.into(resultList);
+			} catch (Throwable e1) {
+				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+						"Subscribe", subscriptionID, e1.getMessage());
+				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+						e, e.getClass());
+				return;
+			}
+
+			if (maxCount != null && (resultList.size() > maxCount)) {
+				QueryTooLargeException e = new QueryTooLargeException(
+						"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+								+ resultList.size() + " )");
+				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+						e, e.getClass());
+				return;
+			}
+
+			List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList);
+
+			if (reportIfEmpty == false && convertedResultList.size() == 0) {
+				EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+				return;
+			}
+
+			QueryResults queryResults = new QueryResults();
+			queryResults.setQueryName("SimpleEventQuery");
+			queryResults.setSubscriptionID(subscriptionID);
+
+			QueryResultsBody resultsBody = new QueryResultsBody();
+
+			EventListType elt = new EventListType();
+			// elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
+			resultsBody.setEventList(elt);
+			queryResults.setResultsBody(resultsBody);
+
+			// InitialRecordTime limits recordTime
+			if (initialRecordTime != null) {
+				try {
+					long cur = System.currentTimeMillis();
+					sub.setInitialRecordTime(cur);
+					updateInitialRecordTime(subscriptionID, cur);
+					map.put("jobData", sub);
+					SubscriptionManager.sched.addJob(detail, true, true);
+				} catch (SchedulerException e) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				} catch (ImplementationException e) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				}
+			}
+
+			HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+					queryResults, QueryResults.class);
+
+		} catch (IllegalStateException e) {
+			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Subscribe",
+					subscriptionID, e.getMessage());
+			HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message, e1,
+					e1.getClass());
+		}
+		// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
+		// NoSuchNameException, SecurityException, ValidationException,
+		// ImplementationException
+	}
+}
