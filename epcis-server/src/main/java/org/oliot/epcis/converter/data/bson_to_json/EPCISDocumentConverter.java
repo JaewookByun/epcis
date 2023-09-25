@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 
 import javax.xml.bind.DatatypeConverter;
@@ -190,13 +191,12 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putBaseExtension(Document original, Document context, Document converted) throws ValidationException {
-		Document extension = retrieveExtension(original);
-		if (!extension.isEmpty()) {
-			extension = getExtension(context, extension);
-			converted.put("extension", extension);
-			putFlatten(converted, "extf", extension);
-		}
+	private void putBaseExtension(Document original, JsonObject converted, ArrayList<String> namespaces,
+			JsonObject extType) throws ValidationException {
+		if (!original.containsKey("extension"))
+			return;
+		JsonObject ext = getExtension(original.get("extension", org.bson.Document.class), namespaces, extType);
+		ext.forEach(entry -> converted.put(entry.getKey(), entry.getValue()));
 	}
 
 	private void putParentID(Document original, JsonObject converted) throws ValidationException {
@@ -719,7 +719,6 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-
 	private void putILMD(Document original, Document context, Document converted) throws ValidationException {
 		if (original.containsKey("ilmd")) {
 			String action = original.getString("action");
@@ -757,7 +756,8 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	void convertBase(Document original, JsonObject converted) throws ValidationException {
+	void convertBase(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		putEventTime(original, converted);
 		putEventTimeZoneOffset(original, converted);
 		putRecordTime(original, converted);
@@ -765,13 +765,14 @@ public class EPCISDocumentConverter {
 		putEventID(original, converted);
 
 		// putErrorDeclaration(original, context, converted);
-		// putBaseExtension(original, context, converted);
+		putBaseExtension(original, converted, namespaces, extType);
 	}
 
-	public JsonObject convertAggregationEvent(Document original) throws ValidationException {
+	public JsonObject convertAggregationEvent(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "AggregationEvent");
-		convertBase(original, converted);
+		convertBase(original, converted, namespaces, extType);
 
 		putParentID(original, converted);
 		putChildEPCs(original, converted);
@@ -789,10 +790,11 @@ public class EPCISDocumentConverter {
 		return converted;
 	}
 
-	public JsonObject convertObjectEvent(Document original) throws ValidationException {
+	public JsonObject convertObjectEvent(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "ObjectEvent");
-		convertBase(original, converted);
+		convertBase(original, converted, namespaces, extType);
 
 		putEPCList(original, converted);
 		putQuantityList(original, converted);
@@ -811,10 +813,11 @@ public class EPCISDocumentConverter {
 		return converted;
 	}
 
-	public JsonObject convertTransactionEvent(Document original) throws ValidationException {
+	public JsonObject convertTransactionEvent(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "TransactionEvent");
-		convertBase(original, converted);
+		convertBase(original, converted, namespaces, extType);
 
 		putBusinessTransactionList(original, converted);
 		putParentID(original, converted);
@@ -831,10 +834,11 @@ public class EPCISDocumentConverter {
 		return converted;
 	}
 
-	public JsonObject convertTransformationEvent(Document original) throws ValidationException {
+	public JsonObject convertTransformationEvent(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "TransformationEvent");
-		convertBase(original, converted);
+		convertBase(original, converted, namespaces, extType);
 		putInputEPCList(original, converted);
 		putOutputEPCList(original, converted);
 		putInputQuantityList(original, converted);
@@ -853,10 +857,11 @@ public class EPCISDocumentConverter {
 		return converted;
 	}
 
-	public JsonObject convertAssociationEvent(Document original) throws ValidationException {
+	public JsonObject convertAssociationEvent(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "AssociationEvent");
-		convertBase(original, converted);
+		convertBase(original, converted, namespaces, extType);
 
 		putParentID(original, converted);
 		putChildEPCs(original, converted);
@@ -1036,5 +1041,113 @@ public class EPCISDocumentConverter {
 	public static String encodeMongoObjectKey(String key) {
 		key = key.replace(".", "\uff0e");
 		return key;
+	}
+
+	public static String decodeMongoObjectKey(String key) {
+		key = key.replace("\uff0e", ".");
+		return key;
+	}
+
+	public static JsonArray getExtension(List<?> innerList, ArrayList<String> namespaces, JsonObject extType) {
+		JsonArray convertedInnerArray = new JsonArray();
+		for (Object inner : innerList) {
+			if (inner instanceof org.bson.Document) {
+				convertedInnerArray.add(getExtension((Document) inner, namespaces, extType));
+			} else {
+				convertedInnerArray.add(inner);
+			}
+		}
+		return convertedInnerArray;
+	}
+
+	public static JsonObject getExtension(Document document, ArrayList<String> namespaces, JsonObject extType) {
+		JsonObject convertedExt = new JsonObject();
+		for (Entry<String, Object> entry : document.entrySet()) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			String[] arr = key.split("#");
+			if (arr.length > 1) {
+				int idx = namespaces.indexOf(arr[0]);
+				if (idx != -1) {
+					key = "ext" + idx + ":" + decodeMongoObjectKey(arr[1]);
+				}
+			} else {
+				key = decodeMongoObjectKey(key);
+			}
+			if (value instanceof org.bson.Document) {
+				convertedExt.put(key, getExtension((Document) value, namespaces, extType));
+			} else if (value instanceof List) {
+				convertedExt.put(key, getExtension((List<?>) value, namespaces, extType));
+			} else {
+				if (value instanceof Double) {
+					extType.put(key, new JsonObject().put("@type", "xsd:double"));
+					convertedExt.put(key, value.toString());
+				} else if (value instanceof Integer) {
+					extType.put(key, new JsonObject().put("@type", "xsd:int"));
+					convertedExt.put(key, value.toString());
+				} else if (value instanceof Long) {
+					extType.put(key, new JsonObject().put("@type", "xsd:dateTime"));
+					convertedExt.put(key, TimeUtil.getDateTimeStamp((Long) value));
+				} else if (value instanceof Boolean) {
+					extType.put(key, new JsonObject().put("@type", "xsd:boolean"));
+					convertedExt.put(key, value.toString());
+				} else {
+					convertedExt.put(key, value.toString());
+				}
+			}
+		}
+		return convertedExt;
+	}
+
+	public static JsonArray getExtension(JsonArray innerArray, ArrayList<String> namespaces, JsonObject extType) {
+		JsonArray convertedInnerArray = new JsonArray();
+		for (Object inner : innerArray) {
+			if (inner instanceof JsonObject) {
+				convertedInnerArray.add(getExtension((JsonObject) inner, namespaces, extType));
+			} else if (inner instanceof JsonArray) {
+				convertedInnerArray.add(getExtension((JsonArray) inner, namespaces, extType));
+			} else {
+				convertedInnerArray.add(inner.toString());
+			}
+		}
+		return convertedInnerArray;
+	}
+
+	public static JsonObject getExtension(JsonObject jsonObject, ArrayList<String> namespaces, JsonObject extType) {
+		JsonObject convertedExt = new JsonObject();
+		for (String key : jsonObject.fieldNames()) {
+			Object value = jsonObject.getValue(key);
+			String[] arr = key.split("#");
+			if (arr.length > 1) {
+				int idx = namespaces.indexOf(arr[0]);
+				if (idx != -1) {
+					key = "ext" + idx + ":" + decodeMongoObjectKey(arr[1]);
+				}
+			} else {
+				key = decodeMongoObjectKey(key);
+			}
+			if (value instanceof JsonObject) {
+				convertedExt.put(key, getExtension((JsonObject) value, namespaces, extType));
+			} else if (value instanceof JsonArray) {
+				convertedExt.put(key, getExtension((JsonArray) value, namespaces, extType));
+			} else {
+				if (value instanceof Double) {
+					extType.put(key, new JsonObject().put("@type", "xsd:double"));
+					convertedExt.put(key, value.toString());
+				} else if (value instanceof Integer) {
+					extType.put(key, new JsonObject().put("@type", "xsd:int"));
+					convertedExt.put(key, value.toString());
+				} else if (value instanceof Long) {
+					extType.put(key, new JsonObject().put("@type", "xsd:dateTime"));
+					convertedExt.put(key, TimeUtil.getDateTimeStamp((Long) value));
+				} else if (value instanceof Boolean) {
+					extType.put(key, new JsonObject().put("@type", "xsd:boolean"));
+					convertedExt.put(key, value.toString());
+				} else {
+					convertedExt.put(key, value.toString());
+				}
+			}
+		}
+		return convertedExt;
 	}
 }

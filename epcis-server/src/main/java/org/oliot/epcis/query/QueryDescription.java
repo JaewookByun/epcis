@@ -91,12 +91,11 @@ public class QueryDescription {
 		}
 	}
 
-	public QueryDescription(JsonObject query, JsonObject context)
-			throws QueryParameterException, ImplementationException {
+	public QueryDescription(JsonObject query) throws QueryParameterException, ImplementationException {
 		String queryName = query.getString("queryName");
 
 		if (queryName == null || queryName.equals("SimpleEventQuery")) {
-			makeSimpleEventQuery(query, context);
+			makeSimpleEventQuery(query);
 		} else {
 			// makeSimpleMasterDataQuery(poll.getParams().getParam());
 		}
@@ -1163,8 +1162,7 @@ public class QueryDescription {
 
 	}
 
-	void makeSimpleEventQuery(JsonObject query, JsonObject context)
-			throws QueryParameterException, ImplementationException {
+	void makeSimpleEventQuery(JsonObject query) throws QueryParameterException, ImplementationException {
 		queryName = "SimpleEventQuery";
 		mongoSort = new Document();
 

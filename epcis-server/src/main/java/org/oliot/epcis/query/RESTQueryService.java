@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.UUID;
@@ -67,22 +68,20 @@ public class RESTQueryService {
 
 	final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
-	public JsonObject retrieveContext(JsonObject query) {
-		JsonObject context = new JsonObject();
-		Object contextObj = query.getValue("@context");
-		if (contextObj instanceof JsonObject) {
-			context = (JsonObject) contextObj;
-		} else if (contextObj instanceof JsonArray) {
-			JsonArray contextArr = (JsonArray) contextObj;
-			context = new JsonObject();
-			for (Object contextElemObj : contextArr) {
-				if (contextElemObj instanceof JsonObject) {
-					JsonObject contextElem = (JsonObject) contextElemObj;
-					context.mergeIn(contextElem, true);
-				}
-			}
+	public static String decodeMongoObjectKey(String key) {
+		key = key.replace("\uff0e", ".");
+		return key;
+	}
+
+	public JsonObject retrieveContext(List<org.bson.Document> resultList) {
+		// JsonArray context = new JsonArray();
+		// context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(resultList);
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
 		}
-		return context;
+		return extContext;
 	}
 
 	public void query(RoutingContext routingContext) {
@@ -97,10 +96,8 @@ public class RESTQueryService {
 					406);
 		}
 
-		JsonObject context = retrieveContext(query);
-
 		try {
-			poll(routingContext, query, context);
+			poll(routingContext, query);
 		} catch (QueryParameterException e) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
@@ -115,7 +112,7 @@ public class RESTQueryService {
 		}
 	}
 
-	public void poll(RoutingContext routingContext, JsonObject query, JsonObject context)
+	public void poll(RoutingContext routingContext, JsonObject query)
 			throws QueryParameterException, ImplementationException {
 
 		// get perPage
@@ -130,7 +127,7 @@ public class RESTQueryService {
 		// create query description
 		QueryDescription qd = null;
 		try {
-			qd = new QueryDescription(query, context);
+			qd = new QueryDescription(query);
 		} catch (QueryParameterException e1) {
 			throw e1;
 		} catch (ImplementationException e2) {
@@ -139,15 +136,14 @@ public class RESTQueryService {
 
 		if (qd.getQueryName().equals("SimpleEventQuery")) {
 			// SimpleEventQuery
-			invokeSimpleEventQuery(routingContext.response(), qd, perPage, context);
+			invokeSimpleEventQuery(routingContext.response(), qd, perPage);
 		} else {
 			// SimpleMasterDataQuery
 			// invokeSimpleMasterDataQuery(serverResponse, message, qd, perPage);
 		}
 	}
 
-	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage,
-			JsonObject context) {
+	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage) {
 
 		// CREATE MONGODB QUERY
 		FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(qd.getMongoQuery());
@@ -198,9 +194,19 @@ public class RESTQueryService {
 			return;
 		}
 
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(resultList);
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
 		// conversion
-		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(qd), resultList);
-
+		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(qd), resultList, namespaces,
+				extType);
+		context.add(extType);
 		if (needPagination == true && perPage >= convertedResultList.size()) {
 			needPagination = false;
 		} else if (needPagination == true && perPage < convertedResultList.size()) {
@@ -214,6 +220,7 @@ public class RESTQueryService {
 		for (JsonObject list : convertedResultList) {
 			eventList.add(list);
 		}
+		queryResultDocument.put("@context", context);
 
 		if (needPagination) {
 			UUID uuid;
@@ -502,7 +509,7 @@ public class RESTQueryService {
 			return;
 		}
 
-		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), results);
+		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), results, null, null);
 
 		if (needPagination == true && perPage >= convertedResultList.size()) {
 			needPagination = false;
@@ -696,8 +703,8 @@ public class RESTQueryService {
 		}
 	}
 
-	private List<JsonObject> getConvertedResultList(boolean isResultSorted, List<org.bson.Document> resultList)
-			throws RuntimeException {
+	private List<JsonObject> getConvertedResultList(boolean isResultSorted, List<org.bson.Document> resultList,
+			ArrayList<String> namespaces, JsonObject extType) throws RuntimeException {
 		Stream<org.bson.Document> resultStream;
 		if (isResultSorted == true) {
 			resultStream = resultList.stream();
@@ -712,19 +719,19 @@ public class RESTQueryService {
 				try {
 					switch (result.getString("type")) {
 					case "AggregationEvent":
-						return EPCISServer.bsonToJsonConverter.convertAggregationEvent(result);
+						return EPCISServer.bsonToJsonConverter.convertAggregationEvent(result, namespaces, extType);
 
 					case "ObjectEvent":
-						return EPCISServer.bsonToJsonConverter.convertObjectEvent(result);
+						return EPCISServer.bsonToJsonConverter.convertObjectEvent(result, namespaces, extType);
 
 					case "TransactionEvent":
-						return EPCISServer.bsonToJsonConverter.convertTransactionEvent(result);
+						return EPCISServer.bsonToJsonConverter.convertTransactionEvent(result, namespaces, extType);
 
 					case "TransformationEvent":
-						return EPCISServer.bsonToJsonConverter.convertTransformationEvent(result);
+						return EPCISServer.bsonToJsonConverter.convertTransformationEvent(result, namespaces, extType);
 
 					case "AssociationEvent":
-						return EPCISServer.bsonToJsonConverter.convertAssociationEvent(result);
+						return EPCISServer.bsonToJsonConverter.convertAssociationEvent(result, namespaces, extType);
 
 					default:
 						return null;
@@ -892,7 +899,7 @@ public class RESTQueryService {
 				return;
 			}
 
-			List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList);
+			List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList, null, null);
 
 			if (reportIfEmpty == false && convertedResultList.size() == 0) {
 				EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
@@ -941,5 +948,49 @@ public class RESTQueryService {
 		// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
 		// NoSuchNameException, SecurityException, ValidationException,
 		// ImplementationException
+	}
+
+	public static ArrayList<String> getNamespaces(List<org.bson.Document> events) {
+		ArrayList<String> namespaces = new ArrayList<String>();
+		for (org.bson.Document event : events) {
+			org.bson.Document ext = event.get("extension", org.bson.Document.class);
+			if (ext != null) {
+				getNamespaces(namespaces, ext);
+			}
+			List<org.bson.Document> sel = event.getList("sensorElementList", org.bson.Document.class);
+			if (sel != null) {
+				for (org.bson.Document se : sel) {
+					org.bson.Document seExt = se.get("extension", org.bson.Document.class);
+					if (seExt != null) {
+						getNamespaces(namespaces, seExt);
+					}
+				}
+			}
+
+			org.bson.Document errorDeclaration = event.get("errorDeclaration", org.bson.Document.class);
+			if (errorDeclaration != null) {
+				org.bson.Document errExt = errorDeclaration.get("extension", org.bson.Document.class);
+				if (errExt != null) {
+					getNamespaces(namespaces, errExt);
+				}
+			}
+		}
+		return namespaces;
+	}
+
+	public static void getNamespaces(ArrayList<String> namespaces, org.bson.Document inner) {
+		for (Entry<String, Object> entry : inner.entrySet()) {
+			String nonDecodedNamespace = entry.getKey();
+			String[] arr = nonDecodedNamespace.split("#");
+			if (arr.length == 2) {
+				if (!namespaces.contains(arr[0])) {
+					namespaces.add(arr[0]);
+				}
+				if (entry.getValue() instanceof org.bson.Document) {
+					getNamespaces(namespaces, (org.bson.Document) entry.getValue());
+				}
+			}
+
+		}
 	}
 }
