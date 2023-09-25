@@ -631,7 +631,6 @@ public class RESTQueryService {
 		// cron Example
 		// 0/10 * * * * ? : every 10 second
 		String schedule = subscription.getSchedule();
-		@SuppressWarnings("unused")
 		URI trigger = subscription.getTrigger();
 		if (schedule != null) {
 			try {
