@@ -180,17 +180,18 @@ public class EPCISDocumentConverter {
 				newErrorDeclaration.put("reason",
 						ErrorReason.getShortVocabularyName(errorDeclaration.getString("reason")));
 			}
-			
-			if(errorDeclaration.containsKey("correctiveEventIDs")) {
+
+			if (errorDeclaration.containsKey("correctiveEventIDs")) {
 				JsonArray newCorrectiveEventIDs = new JsonArray();
-				for(String cid: errorDeclaration.getList("correctiveEventIDs", String.class)) {
+				for (String cid : errorDeclaration.getList("correctiveEventIDs", String.class)) {
 					newCorrectiveEventIDs.add(cid);
 				}
 				newErrorDeclaration.put("correctiveEventIDs", newCorrectiveEventIDs);
 			}
-			
+
 			if (errorDeclaration.containsKey("extension")) {
-				JsonObject ext = getExtension(errorDeclaration.get("extension", org.bson.Document.class), namespaces, extType);
+				JsonObject ext = getExtension(errorDeclaration.get("extension", org.bson.Document.class), namespaces,
+						extType);
 				ext.forEach(entry -> newErrorDeclaration.put(entry.getKey(), entry.getValue()));
 			}
 
@@ -469,11 +470,11 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putSensorElementList(Document original, Document context, Document converted)
-			throws ValidationException {
+	private void putSensorElementList(Document original, JsonObject converted, ArrayList<String> namespace,
+			JsonObject extType) throws ValidationException {
 		// sensorElementList
 		if (original.containsKey("sensorElementList")) {
-			List<Document> newSensorElementList = new ArrayList<Document>();
+			JsonArray newSensorElementList = new JsonArray();
 			List<Document> sensorElementList = original.getList("sensorElementList", Document.class);
 			for (Document sensorElement : sensorElementList) {
 				Document newSensorElement = new Document();
@@ -510,9 +511,9 @@ public class EPCISDocumentConverter {
 								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
 					}
 					Document otherAttributes = retrieveExtension(sensorMetadata);
-					Document convertedOtherAttributes = getExtension(context, otherAttributes);
-					if (!convertedOtherAttributes.isEmpty())
-						newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
+					// Document convertedOtherAttributes = getExtension(context, otherAttributes);
+					//if (!convertedOtherAttributes.isEmpty())
+					//	newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
 
 					if (!newSensorMetadata.isEmpty()) {
 						newSensorElement.put("sensorMetadata", newSensorMetadata);
@@ -626,9 +627,9 @@ public class EPCISDocumentConverter {
 						}
 
 						Document otherAttributes = retrieveExtension(sensorReportElement);
-						Document convertedOtherAttributes = getExtension(context, otherAttributes);
-						if (!convertedOtherAttributes.isEmpty())
-							newSensorReport.put("otherAttributes", convertedOtherAttributes);
+						//Document convertedOtherAttributes = getExtension(context, otherAttributes);
+						//if (!convertedOtherAttributes.isEmpty())
+						//	newSensorReport.put("otherAttributes", convertedOtherAttributes);
 
 						if (type != null) {
 							newSensorReport.put("type", Measurement.getFullVocabularyName(type));
@@ -709,7 +710,7 @@ public class EPCISDocumentConverter {
 
 				Document extension = retrieveExtension(sensorElement);
 				if (!extension.isEmpty()) {
-					extension = getExtension(context, extension);
+				//	extension = getExtension(context, extension);
 					newSensorElement.put("extension", extension);
 					putFlatten(newSensorElement, "sef", extension);
 				}
@@ -787,7 +788,7 @@ public class EPCISDocumentConverter {
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 
-//		putSensorElementList(original, context, converted);
+		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
 	}
 
