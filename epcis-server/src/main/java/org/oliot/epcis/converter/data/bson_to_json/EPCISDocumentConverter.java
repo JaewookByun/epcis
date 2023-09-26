@@ -732,6 +732,16 @@ public class EPCISDocumentConverter {
 		}
 	}
 
+	private void putILMD(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
+		if (!original.containsKey("ilmd"))
+			return;
+		JsonObject ext = getExtension(original.get("ilmd", org.bson.Document.class), namespaces, extType);
+		JsonObject newIlmd = new JsonObject();
+		ext.forEach(entry -> newIlmd.put(entry.getKey(), entry.getValue()));
+		converted.put("ilmd", newIlmd);
+	}
+
 	private void putPersistentDisposition(Document original, JsonObject converted) {
 		if (original.containsKey("persistentDisposition")) {
 			Document pd = original.get("persistentDisposition", Document.class);
@@ -808,7 +818,7 @@ public class EPCISDocumentConverter {
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 
-//		putILMD(original, context, converted);
+		putILMD(original, converted, namespaces, extType);
 //		putSensorElementList(original, context, converted);
 		return converted;
 	}
@@ -852,7 +862,7 @@ public class EPCISDocumentConverter {
 		putBusinessLocation(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
-//		putILMD(original, context, converted);
+		putILMD(original, converted, namespaces, extType);
 //		putSensorElementList(original, context, converted);
 		return converted;
 	}
