@@ -1092,6 +1092,7 @@ public class EPCISDocumentConverter {
 					extType.put(key, new JsonObject().put("@type", "xsd:boolean"));
 					convertedExt.put(key, value.toString());
 				} else {
+					extType.put(key, new JsonObject().put("@type", "xsd:string"));
 					convertedExt.put(key, value.toString());
 				}
 			}
@@ -1144,6 +1145,7 @@ public class EPCISDocumentConverter {
 					extType.put(key, new JsonObject().put("@type", "xsd:boolean"));
 					convertedExt.put(key, value.toString());
 				} else {
+					extType.put(key, new JsonObject().put("@type", "xsd:string"));
 					convertedExt.put(key, value.toString());
 				}
 			}
