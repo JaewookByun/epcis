@@ -167,27 +167,34 @@ public class EPCISDocumentConverter {
 		converted.put("eventID", original.getString("eventID"));
 	}
 
-	private void putErrorDeclaration(Document original, Document context, Document converted)
-			throws ValidationException {
+	private void putErrorDeclaration(Document original, JsonObject converted, ArrayList<String> namespaces,
+			JsonObject extType) throws ValidationException {
 		if (original.containsKey("errorDeclaration")) {
 			Document errorDeclaration = original.get("errorDeclaration", Document.class);
-			Document newErrorDeclaration = new Document();
-			newErrorDeclaration.put("declarationTime", getTime(errorDeclaration.getString("declarationTime")));
+			JsonObject newErrorDeclaration = new JsonObject();
+
+			newErrorDeclaration.put("declarationTime",
+					TimeUtil.getDateTimeStamp(errorDeclaration.getLong("declarationTime")));
 
 			if (errorDeclaration.containsKey("reason")) {
 				newErrorDeclaration.put("reason",
-						ErrorReason.getFullVocabularyName(errorDeclaration.getString("reason")));
+						ErrorReason.getShortVocabularyName(errorDeclaration.getString("reason")));
+			}
+			
+			if(errorDeclaration.containsKey("correctiveEventIDs")) {
+				JsonArray newCorrectiveEventIDs = new JsonArray();
+				for(String cid: errorDeclaration.getList("correctiveEventIDs", String.class)) {
+					newCorrectiveEventIDs.add(cid);
+				}
+				newErrorDeclaration.put("correctiveEventIDs", newCorrectiveEventIDs);
+			}
+			
+			if (errorDeclaration.containsKey("extension")) {
+				JsonObject ext = getExtension(errorDeclaration.get("extension", org.bson.Document.class), namespaces, extType);
+				ext.forEach(entry -> newErrorDeclaration.put(entry.getKey(), entry.getValue()));
 			}
 
-			Document extension = retrieveExtension(errorDeclaration);
-			if (!extension.isEmpty()) {
-				extension = getExtension(context, extension);
-				newErrorDeclaration.put("extension", extension);
-				putFlatten(converted, "errf", extension);
-			}
-
-			if (!newErrorDeclaration.isEmpty())
-				converted.put("errorDeclaration", newErrorDeclaration);
+			converted.put("errorDeclaration", newErrorDeclaration);
 		}
 	}
 
@@ -366,9 +373,10 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putReadPoint(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType) throws ValidationException {
+	private void putReadPoint(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
 		// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
-		// TODO: epc to dl, extension
+		// TODO: epc to dl
 		if (original.containsKey("readPoint")) {
 			JsonObject obj = new JsonObject();
 			obj.put("id", original.getString("readPoint"));
@@ -377,29 +385,22 @@ public class EPCISDocumentConverter {
 			JsonObject ext = getExtension(original.get("readPointExt", org.bson.Document.class), namespaces, extType);
 			ext.forEach(entry -> obj.put(entry.getKey(), entry.getValue()));
 			converted.put("readPoint", obj);
-			/*
-			 * Document extension = retrieveExtension(readPoint); if (!extension.isEmpty())
-			 * { extension = getExtension(context, extension); converted.put("readPointExt",
-			 * extension); putFlatten(converted, "rpf", extension); }
-			 */
 		}
 	}
 
-	private void putBusinessLocation(Document original, JsonObject converted) throws ValidationException {
+	private void putBusinessLocation(Document original, JsonObject converted, ArrayList<String> namespaces,
+			JsonObject extType) throws ValidationException {
 		// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
 		// string
-		// TODO: epc to dl, extension
+		// TODO: epc to dl
 		if (original.containsKey("bizLocation")) {
 			JsonObject obj = new JsonObject();
 			obj.put("id", original.getString("bizLocation"));
+			if (!original.containsKey("bizLocationExt"))
+				return;
+			JsonObject ext = getExtension(original.get("bizLocationExt", org.bson.Document.class), namespaces, extType);
+			ext.forEach(entry -> obj.put(entry.getKey(), entry.getValue()));
 			converted.put("bizLocation", obj);
-
-			/*
-			 * Document extension = retrieveExtension(bizLocation); if
-			 * (!extension.isEmpty()) { extension = getExtension(context, extension);
-			 * converted.put("bizLocationExt", extension); putFlatten(converted, "blf",
-			 * extension); }
-			 */
 		}
 
 	}
@@ -764,7 +765,7 @@ public class EPCISDocumentConverter {
 		putCertificationInfo(original, converted);
 		putEventID(original, converted);
 
-		// putErrorDeclaration(original, context, converted);
+		putErrorDeclaration(original, converted, namespaces, extType);
 		putBaseExtension(original, converted, namespaces, extType);
 	}
 
@@ -781,7 +782,7 @@ public class EPCISDocumentConverter {
 		putBizStep(original, converted);
 		putDisposition(original, converted);
 		putReadPoint(original, converted, namespaces, extType);
-		putBusinessLocation(original, converted);
+		putBusinessLocation(original, converted, namespaces, extType);
 		putBusinessTransactionList(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
@@ -803,7 +804,7 @@ public class EPCISDocumentConverter {
 		putDisposition(original, converted);
 		putPersistentDisposition(original, converted);
 		putReadPoint(original, converted, namespaces, extType);
-		putBusinessLocation(original, converted);
+		putBusinessLocation(original, converted, namespaces, extType);
 		putBusinessTransactionList(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
@@ -827,7 +828,7 @@ public class EPCISDocumentConverter {
 		putBizStep(original, converted);
 		putDisposition(original, converted);
 		putReadPoint(original, converted, namespaces, extType);
-		putBusinessLocation(original, converted);
+		putBusinessLocation(original, converted, namespaces, extType);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 //		putSensorElementList(original, context, converted);
@@ -849,7 +850,7 @@ public class EPCISDocumentConverter {
 		putDisposition(original, converted);
 		putPersistentDisposition(original, converted);
 		putReadPoint(original, converted, namespaces, extType);
-		putBusinessLocation(original, converted);
+		putBusinessLocation(original, converted, namespaces, extType);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 		putILMD(original, converted, namespaces, extType);
@@ -870,7 +871,7 @@ public class EPCISDocumentConverter {
 		putBizStep(original, converted);
 		putDisposition(original, converted);
 		putReadPoint(original, converted, namespaces, extType);
-		putBusinessLocation(original, converted);
+		putBusinessLocation(original, converted, namespaces, extType);
 		putBusinessTransactionList(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
