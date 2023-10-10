@@ -5,6 +5,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Objects;
 import javax.xml.bind.DatatypeConverter;
 
 import org.bson.Document;
+import org.bson.types.Binary;
 import org.oliot.epcis.converter.data.pojo_to_bson.MasterDataConverter;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.BusinessStep;
@@ -49,6 +51,10 @@ public class EPCISDocumentConverter {
 		} catch (ParseException e) {
 			throw new ValidationException(e.getMessage());
 		}
+	}
+
+	private String getTime(Long time) {
+		return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(new Date(time));
 	}
 
 	private Document retrieveExtension(Document object) {
@@ -470,50 +476,57 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	private void putSensorElementList(Document original, JsonObject converted, ArrayList<String> namespace,
+	private void putSensorElementList(Document original, JsonObject converted, ArrayList<String> namespaces,
 			JsonObject extType) throws ValidationException {
 		// sensorElementList
 		if (original.containsKey("sensorElementList")) {
 			JsonArray newSensorElementList = new JsonArray();
 			List<Document> sensorElementList = original.getList("sensorElementList", Document.class);
 			for (Document sensorElement : sensorElementList) {
-				Document newSensorElement = new Document();
+				JsonObject newSensorElement = new JsonObject();
 				if (sensorElement.containsKey("sensorMetadata")) {
-					Document newSensorMetadata = new Document();
+					JsonObject newSensorMetadata = new JsonObject();
 					Document sensorMetadata = sensorElement.get("sensorMetadata", Document.class);
 					if (sensorMetadata.containsKey("time")) {
-						newSensorMetadata.put("time", getTime(sensorMetadata.getString("time")));
+						newSensorMetadata.put("time", getTime(sensorMetadata.getLong("time")));
 					}
 					if (sensorMetadata.containsKey("startTime")) {
-						newSensorMetadata.put("startTime", getTime(sensorMetadata.getString("startTime")));
+						newSensorMetadata.put("startTime", getTime(sensorMetadata.getLong("startTime")));
 					}
 					if (sensorMetadata.containsKey("endTime")) {
-						newSensorMetadata.put("endTime", getTime(sensorMetadata.getString("endTime")));
+						newSensorMetadata.put("endTime", getTime(sensorMetadata.getLong("endTime")));
 					}
 					if (sensorMetadata.containsKey("deviceID")) {
-						newSensorMetadata.put("deviceID",
-								TagDataTranslationEngine.toEPC(sensorMetadata.getString("deviceID")));
+						// TODO: epc to DL
+						newSensorMetadata.put("deviceID", sensorMetadata.getString("deviceID"));
 					}
 					if (sensorMetadata.containsKey("deviceMetadata")) {
-						newSensorMetadata.put("deviceMetadata",
-								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("deviceMetadata")));
+						// TODO: resource to DL
+						newSensorMetadata.put("deviceMetadata", sensorMetadata.getString("deviceMetadata"));
 					}
 					if (sensorMetadata.containsKey("rawData")) {
-						newSensorMetadata.put("rawData",
-								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("rawData")));
+						// TODO: resource to DL
+						newSensorMetadata.put("rawData", sensorMetadata.getString("rawData"));
 					}
 					if (sensorMetadata.containsKey("dataProcessingMethod")) {
-						newSensorMetadata.put("dataProcessingMethod",
-								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("dataProcessingMethod")));
+						// TODO: resource to DL
+						newSensorMetadata.put("dataProcessingMethod", sensorMetadata.getString("dataProcessingMethod"));
 					}
 					if (sensorMetadata.containsKey("bizRules")) {
-						newSensorMetadata.put("bizRules",
-								GlobalDocumentTypeIdentifier.toEPC(sensorMetadata.getString("bizRules")));
+						// TODO: resource to DL
+						newSensorMetadata.put("bizRules", sensorMetadata.getString("bizRules"));
 					}
-					Document otherAttributes = retrieveExtension(sensorMetadata);
+
+					// Document otherAttributes = retrieveExtension(sensorMetadata);
 					// Document convertedOtherAttributes = getExtension(context, otherAttributes);
-					//if (!convertedOtherAttributes.isEmpty())
-					//	newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
+					// if (!convertedOtherAttributes.isEmpty())
+					// newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
+
+					if (sensorMetadata.containsKey("otherAttributes")) {
+						JsonObject otherAttributes = getExtension(
+								sensorMetadata.get("otherAttributes", org.bson.Document.class), namespaces, extType);
+						otherAttributes.forEach(entry -> newSensorMetadata.put(entry.getKey(), entry.getValue()));
+					}
 
 					if (!newSensorMetadata.isEmpty()) {
 						newSensorElement.put("sensorMetadata", newSensorMetadata);
@@ -521,81 +534,59 @@ public class EPCISDocumentConverter {
 				}
 
 				if (sensorElement.containsKey("sensorReport")) {
-					List<Document> newSensorReportList = new ArrayList<Document>();
+					JsonArray newSensorReportList = new JsonArray();
 					List<Document> sensorReport = sensorElement.getList("sensorReport", Document.class);
 					for (Document sensorReportElement : sensorReport) {
+						JsonObject newSensorReport = new JsonObject();
 
-						Document newSensorReport = new Document();
+						if (sensorReportElement.containsKey("exception"))
+							newSensorReport.put("exception", sensorReportElement.getString("exception"));
 
-						String type = sensorReportElement.getString("type");
-						String exception = sensorReportElement.getString("exception");
+						if (sensorReportElement.containsKey("microorganism"))
+							newSensorReport.put("microorganism", sensorReportElement.getString("microorganism"));
 
-						if ((type == null && exception == null) || (type != null && exception != null)) {
-							throw new ValidationException("sensorReport should have one of 'type' or 'exception'");
-						}
-
-						if (exception != null) {
-							if (!exception.equals("ALARM_CONDITION") && !exception.equals("ERROR_CONDITION"))
-								throw new ValidationException(
-										"sensorReport - exception should be one of 'ERROR_CONDITION' or 'ALARM_CONDITION'");
-							newSensorReport.put("exception", exception);
-						}
-
-						String microorganism = sensorReportElement.getString("microorganism");
-						String chemicalSubstance = sensorReportElement.getString("chemicalSubstance");
-
-						if (microorganism != null && chemicalSubstance != null) {
-							throw new ValidationException(
-									"microorganism and chemicalSubstance fields should not coexist in sensorReport field");
-						}
+						if (sensorReportElement.containsKey("chemicalSubstance"))
+							newSensorReport.put("chemicalSubstance",
+									sensorReportElement.getString("chemicalSubstance"));
 
 						if (sensorReportElement.containsKey("deviceID")) {
-							newSensorReport.put("deviceID",
-									TagDataTranslationEngine.toEPC(sensorReportElement.getString("deviceID")));
+							// TODO: epc to DL
+							newSensorReport.put("deviceID", sensorReportElement.getString("deviceID"));
 						}
 
 						if (sensorReportElement.containsKey("deviceMetadata")) {
-							newSensorReport.put("deviceMetadata", GlobalDocumentTypeIdentifier
-									.toEPC(sensorReportElement.getString("deviceMetadata")));
+							// TODO: epc to DL
+							newSensorReport.put("deviceMetadata", sensorReportElement.getString("deviceMetadata"));
 						}
 
 						if (sensorReportElement.containsKey("rawData")) {
-							newSensorReport.put("rawData",
-									GlobalDocumentTypeIdentifier.toEPC(sensorReportElement.getString("rawData")));
+							// TODO: epc to DL
+							newSensorReport.put("rawData", sensorReportElement.getString("rawData"));
 						}
 
 						if (sensorReportElement.containsKey("dataProcessingMethod")) {
-							newSensorReport.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
-									.toEPC(sensorReportElement.getString("dataProcessingMethod")));
+							// TODO: epc to DL
+							newSensorReport.put("dataProcessingMethod",
+									sensorReportElement.getString("dataProcessingMethod"));
 						}
 
 						if (sensorReportElement.containsKey("time")) {
-							newSensorReport.put("time", getTime(sensorReportElement.getString("time")));
+							newSensorReport.put("time", getTime(sensorReportElement.getLong("time")));
 						}
 
-						if (microorganism != null) {
-							IdentifierValidator.checkMicroorganismValue(microorganism);
-							newSensorReport.put("microorganism", microorganism);
-						}
-
-						if (chemicalSubstance != null) {
-							IdentifierValidator
-									.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
-							newSensorReport.put("chemicalSubstance", chemicalSubstance);
-						}
-
-						String component = sensorReportElement.getString("component");
-						if (component != null) {
-							IdentifierValidator.checkComponent(component);
-							newSensorReport.put("component", component);
+						if (sensorReportElement.containsKey("component")) {
+							newSensorReport.put("component", sensorReportElement.getString("component"));
 						}
 
 						if (sensorReportElement.containsKey("hexBinaryValue")) {
-							newSensorReport.put("hexBinaryValue",
-									DatatypeConverter.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
+							// newSensorReport.put("hexBinaryValue",
+							// DatatypeConverter.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
 							// sensorReportElement.put("hexBinaryValue",
 							// new Document().append("$binary", DatatypeConverter
 							// .parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
+							newSensorReport.put("hexBinaryValue", DatatypeConverter
+									.printHexBinary(sensorReportElement.get("hexBinaryValue", Binary.class).getData()));
+
 						}
 
 						if (sensorReportElement.containsKey("stringValue")) {
@@ -606,14 +597,8 @@ public class EPCISDocumentConverter {
 							newSensorReport.put("booleanValue", sensorReportElement.getBoolean("booleanValue"));
 						}
 
-						String uriValue = sensorReportElement.getString("uriValue");
-						if (uriValue != null) {
-							try {
-								new URI(uriValue);
-								newSensorReport.put("uriValue", uriValue);
-							} catch (URISyntaxException e) {
-								throw new ValidationException(e.getMessage());
-							}
+						if (sensorReportElement.containsKey("uriValue")) {
+							newSensorReport.put("uriValue", sensorReportElement.getString("uriValue"));
 						}
 
 						if (sensorReportElement.containsKey("coordinateReferenceSystem")) {
@@ -622,80 +607,52 @@ public class EPCISDocumentConverter {
 						}
 
 						if (sensorReportElement.containsKey("percRank")) {
-							newSensorReport.put("percRank",
-									Double.valueOf(sensorReportElement.getDouble("percRank").toString()));
+							newSensorReport.put("percRank", sensorReportElement.getDouble("percRank"));
 						}
 
-						Document otherAttributes = retrieveExtension(sensorReportElement);
-						//Document convertedOtherAttributes = getExtension(context, otherAttributes);
-						//if (!convertedOtherAttributes.isEmpty())
-						//	newSensorReport.put("otherAttributes", convertedOtherAttributes);
+						if (sensorReportElement.containsKey("otherAttributes")) {
+							JsonObject otherAttributes = getExtension(
+									sensorReportElement.get("otherAttributes", org.bson.Document.class), namespaces,
+									extType);
+							otherAttributes.forEach(entry -> newSensorReport.put(entry.getKey(), entry.getValue()));
+						}
 
-						if (type != null) {
-							newSensorReport.put("type", Measurement.getFullVocabularyName(type));
+						// Document otherAttributes = retrieveExtension(sensorReportElement);
+						// Document convertedOtherAttributes = getExtension(context, otherAttributes);
+						// if (!convertedOtherAttributes.isEmpty())
+						// newSensorReport.put("otherAttributes", convertedOtherAttributes);
 
-							String uom = null;
-							if (!sensorReportElement.containsKey("uom")) {
-								uom = EPCISServer.unitConverter.getRepresentativeUoMFromType(type);
-								newSensorReport.put("uom", uom);
-							} else {
-								uom = sensorReportElement.getString("uom");
-								EPCISServer.unitConverter.checkUnitOfMeasure(type, uom);
-								newSensorReport.put("uom", uom);
-							}
+						if (sensorReportElement.containsKey("type")) {
+							newSensorReport.put("type",
+									Measurement.getShortVocabularyName(sensorReportElement.getString("type")));
+						}
 
-							// value / minValue / maxValue / meanValue
-							String rUom = EPCISServer.unitConverter.getRepresentativeUoMFromType(type);
-							newSensorReport.put("rUom", rUom);
+						if (sensorReportElement.containsKey("uom")) {
+							newSensorReport.put("uom", sensorReportElement.getString("uom"));
+						}
 
-							// value
-							if (sensorReportElement.containsKey("value")) {
-								double value = sensorReportElement.getDouble("value");
-								newSensorReport.put("value", value);
-								newSensorReport.put("rValue",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, value));
-							}
+						if (sensorReportElement.containsKey("value")) {
+							newSensorReport.put("value", sensorReportElement.getDouble("value"));
+						}
 
-							// minValue
-							if (sensorReportElement.containsKey("minValue")) {
-								double minValue = sensorReportElement.getDouble("minValue");
-								newSensorReport.put("minValue", minValue);
-								newSensorReport.put("rMinValue",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, minValue));
-							}
+						if (sensorReportElement.containsKey("minValue")) {
+							newSensorReport.put("minValue", sensorReportElement.getDouble("minValue"));
+						}
 
-							// maxValue
-							if (sensorReportElement.containsKey("maxValue")) {
-								double maxValue = sensorReportElement.getDouble("maxValue");
-								newSensorReport.put("maxValue", maxValue);
-								newSensorReport.put("rMaxValue",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, maxValue));
-							}
+						if (sensorReportElement.containsKey("maxValue")) {
+							newSensorReport.put("maxValue", sensorReportElement.getDouble("maxValue"));
+						}
 
-							// meanValue
-							if (sensorReportElement.containsKey("meanValue")) {
-								double meanValue = sensorReportElement.getDouble("meanValue");
-								newSensorReport.put("meanValue", meanValue);
-								newSensorReport.put("rMeanValue",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, meanValue));
-							}
+						if (sensorReportElement.containsKey("meanValue")) {
+							newSensorReport.put("meanValue", sensorReportElement.getDouble("meanValue"));
+						}
 
-							// percValue
-							if (sensorReportElement.containsKey("percValue")) {
-								double percValue = sensorReportElement.getDouble("percValue");
-								newSensorReport.put("percValue", percValue);
-								newSensorReport.put("rPercValue",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, percValue));
-							}
+						if (sensorReportElement.containsKey("percValue")) {
+							newSensorReport.put("percValue", sensorReportElement.getDouble("percValue"));
+						}
 
-							// sDev
-							if (sensorReportElement.containsKey("sDev")) {
-								double sDev = sensorReportElement.getDouble("sDev");
-								newSensorReport.put("sDev", sDev);
-								newSensorReport.put("rSDev",
-										EPCISServer.unitConverter.getRepresentativeValue(type, uom, sDev));
-							}
-
+						if (sensorReportElement.containsKey("sDev")) {
+							newSensorReport.put("sDev", sensorReportElement.getDouble("sDev"));
 						}
 
 						if (!newSensorReport.isEmpty())
@@ -708,12 +665,12 @@ public class EPCISDocumentConverter {
 					}
 				}
 
-				Document extension = retrieveExtension(sensorElement);
-				if (!extension.isEmpty()) {
-				//	extension = getExtension(context, extension);
-					newSensorElement.put("extension", extension);
-					putFlatten(newSensorElement, "sef", extension);
+				if (sensorElement.containsKey("extension")) {
+					JsonObject extension = getExtension(sensorElement.get("extension", org.bson.Document.class),
+							namespaces, extType);
+					extension.forEach(entry -> newSensorElement.put(entry.getKey(), entry.getValue()));
 				}
+
 				if (!newSensorElement.isEmpty())
 					newSensorElementList.add(newSensorElement);
 			}

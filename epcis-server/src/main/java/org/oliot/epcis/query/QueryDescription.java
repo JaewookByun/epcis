@@ -259,6 +259,9 @@ public class QueryDescription {
 		for (String field : query.fieldNames()) {
 			Object value = query.getValue(field);
 
+			if (field.equals("@context"))
+				continue;
+
 			if (value == null) {
 				queryParams.add(new QueryParam(field, new VoidHolder()));
 			} else if (value instanceof JsonArray) {
