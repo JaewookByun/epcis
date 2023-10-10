@@ -1,4 +1,4 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.server.EPCISServer;

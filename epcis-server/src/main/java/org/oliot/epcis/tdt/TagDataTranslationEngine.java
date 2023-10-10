@@ -1,4 +1,4 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import java.util.HashMap;
 
@@ -955,6 +955,18 @@ public class TagDataTranslationEngine {
 			return UnitPackIdentifier.toDL(epc);
 		} else if (type == IdentifierType.PGLN) {
 			return GlobalLocationNumberOfParty.toDL(epc);
+		} else
+			throw new ValidationException("Unsupported instance level code scheme");
+	}
+
+	public static String toBusinessTransactionDL(String epc) throws ValidationException {
+		IdentifierType type = getInstanceLevelDLType(epc);
+		if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toDL(epc);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toDL(epc);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toDL(epc);
 		} else
 			throw new ValidationException("Unsupported instance level code scheme");
 	}

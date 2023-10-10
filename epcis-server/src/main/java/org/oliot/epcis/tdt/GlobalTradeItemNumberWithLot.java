@@ -1,8 +1,7 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.resource.DigitalLinkPatterns;
@@ -11,21 +10,20 @@ import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
 
-public class SerializedGlobalTradeItemNumber {
+public class GlobalTradeItemNumberWithLot {
 	private String companyPrefix;
 	private String indicator;
 	private String itemRef;
 	private String checkDigit;
-	private String serialNumber;
+	private String lotNumber;
 	private boolean isLicensedCompanyPrefix;
 
 	private String epc;
 	private String dl;
 
 	public Matcher getEPCMatcher(String epc) {
-		Pattern[] patterns = EPCPatterns.SGTINList;
-		for (int i = 0; i < patterns.length; i++) {
-			Matcher m = EPCPatterns.SGTINList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.LGTINList.length; i++) {
+			Matcher m = EPCPatterns.LGTINList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -33,16 +31,15 @@ public class SerializedGlobalTradeItemNumber {
 	}
 
 	public Matcher getDLMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.SGTIN.matcher(dl);
+		Matcher m = DigitalLinkPatterns.LGTIN.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
-		Pattern[] patterns = EPCPatterns.SGTINList;
-		for (int i = 0; i < patterns.length; i++) {
-			Matcher m = EPCPatterns.SGTINList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.LGTINList.length; i++) {
+			Matcher m = EPCPatterns.LGTINList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -50,31 +47,31 @@ public class SerializedGlobalTradeItemNumber {
 	}
 
 	public static Matcher getDigitalLinkMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.SGTIN.matcher(dl);
+		Matcher m = DigitalLinkPatterns.LGTIN.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
-	public SerializedGlobalTradeItemNumber(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
+	public GlobalTradeItemNumberWithLot(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
 			Matcher m = getEPCMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal SGTIN");
+				throw new ValidationException("Illegal LGTIN");
+
 			companyPrefix = m.group(1);
 			indicator = m.group(2);
 			itemRef = m.group(3);
 			checkDigit = getCheckDigit(indicator + companyPrefix + itemRef);
-			serialNumber = m.group(4);
+			lotNumber = m.group(4);
 			isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
 			this.epc = id;
-			this.dl = "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/21/"
-					+ serialNumber;
+			this.dl = "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/10/" + lotNumber;
 		} else if (scheme == CodeScheme.GS1DigitalLink) {
 			Matcher m = getDLMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal SGTIN");
+				throw new ValidationException("Illegal LGTIN");
 			indicator = m.group(1);
 			String companyPrefixItemRef = m.group(2);
 			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
@@ -83,11 +80,13 @@ public class SerializedGlobalTradeItemNumber {
 			checkDigit = m.group(3);
 			if (!checkDigit.equals(getCheckDigit(indicator + companyPrefix + itemRef)))
 				throw new ValidationException("Invalid check digit");
-			serialNumber = m.group(4);
+			lotNumber = m.group(4);
 			isLicensedCompanyPrefix = true;
 			this.dl = id;
-			this.epc = "urn:epc:id:sgtin:" + companyPrefix + "." + indicator + itemRef + "." + serialNumber;
+			this.epc = "urn:epc:class:lgtin:" + companyPrefix + "." + indicator + itemRef + "." + lotNumber;
+
 		}
+
 	}
 
 	public String getCheckDigit(String indicatorGtin) {
@@ -107,7 +106,7 @@ public class SerializedGlobalTradeItemNumber {
 
 		return String.valueOf(correctCheckDigit);
 	}
-	
+
 	public static String retrieveCheckDigit(String indicatorGtin) {
 		if (indicatorGtin.length() != 13) {
 			return null;
@@ -149,7 +148,7 @@ public class SerializedGlobalTradeItemNumber {
 		if (m == null) {
 			m = getElectronicProductCodeMatcher(dl);
 			if (m == null)
-				throw new ValidationException("Illegal SGTIN");
+				throw new ValidationException("Illegal LGTIN");
 			else
 				return dl;
 		}
@@ -162,8 +161,8 @@ public class SerializedGlobalTradeItemNumber {
 		String checkDigit = m.group(3);
 		if (!isValidCheckDigit(indicator + companyPrefix + itemRef, checkDigit))
 			throw new ValidationException("Invalid check digit");
-		String serialNumber = m.group(4);
-		return "urn:epc:id:sgtin:" + companyPrefix + "." + indicator + itemRef + "." + serialNumber;
+		String lotNumber = m.group(4);
+		return "urn:epc:class:lgtin:" + companyPrefix + "." + indicator + itemRef + "." + lotNumber;
 	}
 
 	public static String toDL(String epc) throws ValidationException {
@@ -171,7 +170,7 @@ public class SerializedGlobalTradeItemNumber {
 		if (m == null) {
 			m = getDigitalLinkMatcher(epc);
 			if (m == null)
-				throw new ValidationException("Illegal SGTIN");
+				throw new ValidationException("Illegal LGTIN");
 			else
 				return epc;
 		}
@@ -180,12 +179,12 @@ public class SerializedGlobalTradeItemNumber {
 		String indicator = m.group(2);
 		String itemRef = m.group(3);
 		String checkDigit = retrieveCheckDigit(indicator + companyPrefix + itemRef);
-		String serialNumber = m.group(4);
+		String lotNumber = m.group(4);
 		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
 			throw new ValidationException("unlicensed global company prefix");
 		}
 
-		return "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/21/" + serialNumber;
+		return "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/10/" + lotNumber;
 	}
 
 	public JsonObject toJson() {
@@ -196,10 +195,10 @@ public class SerializedGlobalTradeItemNumber {
 		obj.put("indicator", indicator);
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
-		obj.put("serialNumber", serialNumber);
-		obj.put("granularity", "instance");
+		obj.put("lotNumber", lotNumber);
+		obj.put("granularity", "class");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
-		obj.put("type", "SGTIN");
+		obj.put("type", "LGTIN");
 		return obj;
 	}
 

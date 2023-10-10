@@ -30,9 +30,9 @@ import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.SubscriptionManager;
 import org.oliot.epcis.query.SubscriptionMonitor;
 import org.oliot.epcis.query.TriggerEngine;
-import org.oliot.epcis.query.converter.tdt.TagDataTranslationServiceHandler;
 import org.oliot.epcis.query.response.StaticResponseBuilder;
 import org.oliot.epcis.resource.DynamicResource;
+import org.oliot.epcis.tdt.TagDataTranslationServiceHandler;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;

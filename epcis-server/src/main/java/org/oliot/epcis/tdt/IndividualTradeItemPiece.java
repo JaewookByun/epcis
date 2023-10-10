@@ -1,4 +1,4 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;

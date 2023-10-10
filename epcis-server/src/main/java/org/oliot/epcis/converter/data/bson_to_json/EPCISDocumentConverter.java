@@ -24,9 +24,11 @@ import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.model.cbv.ErrorReason;
 import org.oliot.epcis.model.cbv.Measurement;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
-import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
-import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.tdt.GlobalDocumentTypeIdentifier;
+import org.oliot.epcis.tdt.GlobalLocationNumber;
+import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.TimeUtil;
 import org.oliot.epcis.validation.IdentifierValidator;
 
@@ -216,8 +218,7 @@ public class EPCISDocumentConverter {
 	private void putParentID(Document original, JsonObject converted) throws ValidationException {
 		if (original.containsKey("parentID")) {
 			String parentID = original.getString("parentID");
-			// TODO: epc to dl
-			converted.put("parentID", parentID);
+			converted.put("parentID", TagDataTranslationEngine.toInstanceLevelDL(parentID));
 		}
 	}
 
@@ -226,8 +227,7 @@ public class EPCISDocumentConverter {
 			List<String> childEPCs = original.getList("epcList", String.class);
 			JsonArray childEPCArray = new JsonArray();
 			for (String childEPC : childEPCs) {
-				// TODO: epc to dl
-				childEPCArray.add(childEPC);
+				childEPCArray.add(TagDataTranslationEngine.toInstanceLevelDL(childEPC));
 			}
 			converted.put("childEPCs", childEPCArray);
 		}
@@ -235,44 +235,41 @@ public class EPCISDocumentConverter {
 
 	private void putEPCList(Document original, JsonObject converted) throws ValidationException {
 		if (original.containsKey("epcList")) {
-			List<String> childEPCs = original.getList("epcList", String.class);
-			JsonArray childEPCArray = new JsonArray();
-			for (String childEPC : childEPCs) {
-				// TODO: epc to dl
-				childEPCArray.add(childEPC);
+			List<String> epcList = original.getList("epcList", String.class);
+			JsonArray epcListArray = new JsonArray();
+			for (String epc : epcList) {
+				epcListArray.add(TagDataTranslationEngine.toInstanceLevelDL(epc));
 			}
-			converted.put("epcList", childEPCArray);
+			converted.put("epcList", epcListArray);
 		}
 	}
 
 	private void putInputEPCList(Document original, JsonObject converted) throws ValidationException {
 		if (original.containsKey("inputEPCList")) {
-			List<String> childEPCs = original.getList("inputEPCList", String.class);
-			JsonArray childEPCArray = new JsonArray();
-			for (String childEPC : childEPCs) {
-				// TODO: epc to dl
-				childEPCArray.add(childEPC);
+			List<String> epcList = original.getList("inputEPCList", String.class);
+			JsonArray epcListArray = new JsonArray();
+			for (String epc : epcList) {
+				epcListArray.add(TagDataTranslationEngine.toInstanceLevelDL(epc));
 			}
-			converted.put("inputEPCList", childEPCArray);
+			converted.put("inputEPCList", epcListArray);
 		}
 	}
 
 	private void putOutputEPCList(Document original, JsonObject converted) throws ValidationException {
 		if (original.containsKey("outputEPCList")) {
-			List<String> childEPCs = original.getList("outputEPCList", String.class);
-			JsonArray childEPCArray = new JsonArray();
-			for (String childEPC : childEPCs) {
-				// TODO: epc to dl
-				childEPCArray.add(childEPC);
+			List<String> epcList = original.getList("outputEPCList", String.class);
+			JsonArray epcListArray = new JsonArray();
+			for (String epc : epcList) {
+				epcListArray.add(TagDataTranslationEngine.toInstanceLevelDL(epc));
 			}
-			converted.put("outputEPCList", childEPCArray);
+			converted.put("outputEPCList", epcListArray);
 		}
 	}
 
 	private void putTransformationID(Document original, JsonObject converted) throws ValidationException {
-		// TODO: epc to dl
 		if (original.containsKey("transformationID")) {
-			converted.put("transformationID", original.getString("transformationID"));
+			converted.put("transformationID",
+					GlobalDocumentTypeIdentifier.toDL(original.getString("transformationID")));
 		}
 	}
 
@@ -282,9 +279,8 @@ public class EPCISDocumentConverter {
 			if (array != null) {
 				List<JsonObject> newArray = new ArrayList<JsonObject>();
 				for (Document qElem : array) {
-					// TODO: epc to dl
 					JsonObject newObject = new JsonObject();
-					newObject.put("epcClass", qElem.getString("epcClass"));
+					newObject.put("epcClass", TagDataTranslationEngine.toClassLevelDL(qElem.getString("epcClass")));
 					if (qElem.containsKey("quantity")) {
 						newObject.put("quantity", qElem.getDouble("quantity"));
 					}
@@ -304,9 +300,8 @@ public class EPCISDocumentConverter {
 			if (array != null) {
 				List<JsonObject> newArray = new ArrayList<JsonObject>();
 				for (Document qElem : array) {
-					// TODO: epc to dl
 					JsonObject newObject = new JsonObject();
-					newObject.put("epcClass", qElem.getString("epcClass"));
+					newObject.put("epcClass", TagDataTranslationEngine.toClassLevelDL(qElem.getString("epcClass")));
 					if (qElem.containsKey("quantity")) {
 						newObject.put("quantity", qElem.getDouble("quantity"));
 					}
@@ -326,9 +321,8 @@ public class EPCISDocumentConverter {
 			if (array != null) {
 				List<JsonObject> newArray = new ArrayList<JsonObject>();
 				for (Document qElem : array) {
-					// TODO: epc to dl
 					JsonObject newObject = new JsonObject();
-					newObject.put("epcClass", qElem.getString("epcClass"));
+					newObject.put("epcClass", TagDataTranslationEngine.toClassLevelDL(qElem.getString("epcClass")));
 					if (qElem.containsKey("quantity")) {
 						newObject.put("quantity", qElem.getDouble("quantity"));
 					}
@@ -348,9 +342,8 @@ public class EPCISDocumentConverter {
 			if (array != null) {
 				List<JsonObject> newArray = new ArrayList<JsonObject>();
 				for (Document qElem : array) {
-					// TODO: epc to dl
 					JsonObject newObject = new JsonObject();
-					newObject.put("epcClass", qElem.getString("epcClass"));
+					newObject.put("epcClass", TagDataTranslationEngine.toClassLevelDL(qElem.getString("epcClass")));
 					if (qElem.containsKey("quantity")) {
 						newObject.put("quantity", qElem.getDouble("quantity"));
 					}
@@ -383,10 +376,9 @@ public class EPCISDocumentConverter {
 	private void putReadPoint(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
 			throws ValidationException {
 		// readPoint: "readPoint": {"id": "urn:epc:id:sgln:4012345.00001.0"}, -> string
-		// TODO: epc to dl
 		if (original.containsKey("readPoint")) {
 			JsonObject obj = new JsonObject();
-			obj.put("id", original.getString("readPoint"));
+			obj.put("id", GlobalLocationNumber.toDL(original.getString("readPoint")));
 			if (!original.containsKey("readPointExt"))
 				return;
 			JsonObject ext = getExtension(original.get("readPointExt", org.bson.Document.class), namespaces, extType);
@@ -399,10 +391,9 @@ public class EPCISDocumentConverter {
 			JsonObject extType) throws ValidationException {
 		// bizLocation: "bizLocation": {"id": "urn:epc:id:sgln:4012345.00002.0"}, ->
 		// string
-		// TODO: epc to dl
 		if (original.containsKey("bizLocation")) {
 			JsonObject obj = new JsonObject();
-			obj.put("id", original.getString("bizLocation"));
+			obj.put("id", GlobalLocationNumber.toDL(original.getString("bizLocation")));
 			if (!original.containsKey("bizLocationExt"))
 				return;
 			JsonObject ext = getExtension(original.get("bizLocationExt", org.bson.Document.class), namespaces, extType);
@@ -424,8 +415,7 @@ public class EPCISDocumentConverter {
 				if (ttype != null) {
 					t.put("type", BusinessTransactionType.getShortVocabularyName(ttype));
 				}
-				// TODO: epc to dl
-				t.put("bizTransaction", elemObj.getString("value"));
+				t.put("bizTransaction", TagDataTranslationEngine.toBusinessTransactionDL(elemObj.getString("value")));
 				newBizTransactionArr.add(t);
 			}
 			converted.put("bizTransactionList", newBizTransactionArr);
@@ -434,7 +424,6 @@ public class EPCISDocumentConverter {
 
 	private void putSourceList(Document original, JsonObject converted) throws ValidationException {
 		// sourceList
-		// TODO: epc to dl
 		if (original.containsKey("sourceList")) {
 			List<Document> arr = original.getList("sourceList", Document.class);
 			List<JsonObject> newSourceArr = new ArrayList<JsonObject>();
@@ -444,9 +433,9 @@ public class EPCISDocumentConverter {
 				String shortType = SourceDestinationType.getShortVocabularyName(elemObj.getString("type"));
 				source.put("type", shortType);
 				if (shortType.equals("location")) {
-					source.put("source", elemObj.getString("value"));
+					source.put("source", GlobalLocationNumber.toDL(elemObj.getString("value")));
 				} else {
-					source.put("source", elemObj.getString("value="));
+					source.put("source", GlobalLocationNumberOfParty.toDL(elemObj.getString("value")));
 				}
 				newSourceArr.add(source);
 			}
@@ -456,7 +445,6 @@ public class EPCISDocumentConverter {
 
 	private void putDestinationList(Document original, JsonObject converted) throws ValidationException {
 		// destinationList
-		// TODO: epc to dl
 		if (original.containsKey("destinationList")) {
 			List<Document> arr = original.getList("destinationList", Document.class);
 			List<JsonObject> newDestinationArr = new ArrayList<JsonObject>();
@@ -466,9 +454,9 @@ public class EPCISDocumentConverter {
 				String shortType = SourceDestinationType.getShortVocabularyName(elemObj.getString("type"));
 				destination.put("type", shortType);
 				if (shortType.equals("location")) {
-					destination.put("destination", elemObj.getString("value"));
+					destination.put("destination", GlobalLocationNumber.toDL(elemObj.getString("value")));
 				} else {
-					destination.put("destination", elemObj.getString("value"));
+					destination.put("destination", GlobalLocationNumberOfParty.toDL(elemObj.getString("value")));
 				}
 				newDestinationArr.add(destination);
 			}
@@ -497,24 +485,24 @@ public class EPCISDocumentConverter {
 						newSensorMetadata.put("endTime", getTime(sensorMetadata.getLong("endTime")));
 					}
 					if (sensorMetadata.containsKey("deviceID")) {
-						// TODO: epc to DL
-						newSensorMetadata.put("deviceID", sensorMetadata.getString("deviceID"));
+						newSensorMetadata.put("deviceID",
+								TagDataTranslationEngine.toDL(sensorMetadata.getString("deviceID")));
 					}
 					if (sensorMetadata.containsKey("deviceMetadata")) {
-						// TODO: resource to DL
-						newSensorMetadata.put("deviceMetadata", sensorMetadata.getString("deviceMetadata"));
+						newSensorMetadata.put("deviceMetadata",
+								GlobalDocumentTypeIdentifier.toDL(sensorMetadata.getString("deviceMetadata")));
 					}
 					if (sensorMetadata.containsKey("rawData")) {
-						// TODO: resource to DL
-						newSensorMetadata.put("rawData", sensorMetadata.getString("rawData"));
+						newSensorMetadata.put("rawData",
+								GlobalDocumentTypeIdentifier.toDL(sensorMetadata.getString("rawData")));
 					}
 					if (sensorMetadata.containsKey("dataProcessingMethod")) {
-						// TODO: resource to DL
-						newSensorMetadata.put("dataProcessingMethod", sensorMetadata.getString("dataProcessingMethod"));
+						newSensorMetadata.put("dataProcessingMethod",
+								GlobalDocumentTypeIdentifier.toDL(sensorMetadata.getString("dataProcessingMethod")));
 					}
 					if (sensorMetadata.containsKey("bizRules")) {
-						// TODO: resource to DL
-						newSensorMetadata.put("bizRules", sensorMetadata.getString("bizRules"));
+						newSensorMetadata.put("bizRules",
+								GlobalDocumentTypeIdentifier.toDL(sensorMetadata.getString("bizRules")));
 					}
 
 					if (sensorMetadata.containsKey("otherAttributes")) {
@@ -545,24 +533,22 @@ public class EPCISDocumentConverter {
 									sensorReportElement.getString("chemicalSubstance"));
 
 						if (sensorReportElement.containsKey("deviceID")) {
-							// TODO: epc to DL
-							newSensorReport.put("deviceID", sensorReportElement.getString("deviceID"));
+							newSensorReport.put("deviceID",
+									TagDataTranslationEngine.toDL(sensorReportElement.getString("deviceID")));
 						}
 
 						if (sensorReportElement.containsKey("deviceMetadata")) {
-							// TODO: epc to DL
-							newSensorReport.put("deviceMetadata", sensorReportElement.getString("deviceMetadata"));
+							newSensorReport.put("deviceMetadata",
+									GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("deviceMetadata")));
 						}
 
 						if (sensorReportElement.containsKey("rawData")) {
-							// TODO: epc to DL
-							newSensorReport.put("rawData", sensorReportElement.getString("rawData"));
+							newSensorReport.put("rawData", GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("rawData")));
 						}
 
 						if (sensorReportElement.containsKey("dataProcessingMethod")) {
-							// TODO: epc to DL
 							newSensorReport.put("dataProcessingMethod",
-									sensorReportElement.getString("dataProcessingMethod"));
+									GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("dataProcessingMethod")));
 						}
 
 						if (sensorReportElement.containsKey("time")) {

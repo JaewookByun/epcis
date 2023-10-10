@@ -1,8 +1,7 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.resource.DigitalLinkPatterns;
@@ -11,21 +10,19 @@ import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
 
-public class UnitPackIdentifier {
+public class GlobalTradeItemNumber {
 	private String companyPrefix;
 	private String indicator;
 	private String itemRef;
 	private String checkDigit;
-	private String tpx;
 	private boolean isLicensedCompanyPrefix;
 
 	private String epc;
 	private String dl;
 
 	public Matcher getEPCMatcher(String epc) {
-		Pattern[] patterns = EPCPatterns.UPUIList;
-		for (int i = 0; i < patterns.length; i++) {
-			Matcher m = EPCPatterns.UPUIList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.GTINList.length; i++) {
+			Matcher m = EPCPatterns.GTINList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -33,16 +30,15 @@ public class UnitPackIdentifier {
 	}
 
 	public Matcher getDLMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.UPUI.matcher(dl);
+		Matcher m = DigitalLinkPatterns.GTIN.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
-		Pattern[] patterns = EPCPatterns.UPUIList;
-		for (int i = 0; i < patterns.length; i++) {
-			Matcher m = EPCPatterns.UPUIList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.GTINList.length; i++) {
+			Matcher m = EPCPatterns.GTINList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -50,30 +46,30 @@ public class UnitPackIdentifier {
 	}
 
 	public static Matcher getDigitalLinkMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.UPUI.matcher(dl);
+		Matcher m = DigitalLinkPatterns.GTIN.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
-	public UnitPackIdentifier(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
+	public GlobalTradeItemNumber(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
 			Matcher m = getEPCMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal UPUI");
+				throw new ValidationException("Illegal GTIN");
+
 			companyPrefix = m.group(1);
 			indicator = m.group(2);
 			itemRef = m.group(3);
 			checkDigit = getCheckDigit(indicator + companyPrefix + itemRef);
-			tpx = m.group(4);
 			isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
 			this.epc = id;
-			this.dl = "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/235/" + tpx;
+			this.dl = "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit;
 		} else if (scheme == CodeScheme.GS1DigitalLink) {
 			Matcher m = getDLMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal UPUI");
+				throw new ValidationException("Illegal GTIN");
 			indicator = m.group(1);
 			String companyPrefixItemRef = m.group(2);
 			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
@@ -82,11 +78,50 @@ public class UnitPackIdentifier {
 			checkDigit = m.group(3);
 			if (!checkDigit.equals(getCheckDigit(indicator + companyPrefix + itemRef)))
 				throw new ValidationException("Invalid check digit");
-			tpx = m.group(4);
 			isLicensedCompanyPrefix = true;
 			this.dl = id;
-			this.epc = "urn:epc:id:upui:" + companyPrefix + "." + indicator + itemRef + "." + tpx;
+			this.epc = "urn:epc:idpat:sgtin:" + companyPrefix + "." + indicator + itemRef + ".*";
 		}
+	}
+
+	public static String toEPC(String dl) throws ValidationException {
+		Matcher m = getDigitalLinkMatcher(dl);
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal GTIN");
+			else
+				return dl;
+		}
+		String indicator = m.group(1);
+		String companyPrefixItemRef = m.group(2);
+		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
+		String companyPrefix = companyPrefixItemRef.substring(0, gcpLength);
+		String itemRef = companyPrefixItemRef.substring(gcpLength);
+		String checkDigit = m.group(3);
+		if (!isValidCheckDigit(indicator + companyPrefix + itemRef, checkDigit))
+			throw new ValidationException("Invalid check digit");
+		return "urn:epc:idpat:sgtin:" + companyPrefix + "." + indicator + itemRef + ".*";
+	}
+
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getDigitalLinkMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal GTIN");
+			else
+				return epc;
+		}
+		String companyPrefix = m.group(1);
+		String indicator = m.group(2);
+		String itemRef = m.group(3);
+		String checkDigit = retrieveCheckDigit(indicator + companyPrefix + itemRef);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+
+		return "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit;
 	}
 
 	public String getCheckDigit(String indicatorGtin) {
@@ -143,49 +178,6 @@ public class UnitPackIdentifier {
 		return String.valueOf(correctCheckDigit).equals(checkDigit);
 	}
 
-	public static String toEPC(String dl) throws ValidationException {
-		Matcher m = getDigitalLinkMatcher(dl);
-		if (m == null) {
-			m = getElectronicProductCodeMatcher(dl);
-			if (m == null)
-				throw new ValidationException("Illegal UPUI");
-			else
-				return dl;
-		}
-
-		String indicator = m.group(1);
-		String companyPrefixItemRef = m.group(2);
-		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixItemRef);
-		String companyPrefix = companyPrefixItemRef.substring(0, gcpLength);
-		String itemRef = companyPrefixItemRef.substring(gcpLength);
-		String checkDigit = m.group(3);
-		if (!isValidCheckDigit(indicator + companyPrefix + itemRef, checkDigit))
-			throw new ValidationException("Invalid check digit");
-		String tpx = m.group(4);
-		return "urn:epc:id:upui:" + companyPrefix + "." + indicator + itemRef + "." + tpx;
-	}
-
-	public static String toDL(String epc) throws ValidationException {
-		Matcher m = getElectronicProductCodeMatcher(epc);
-		if (m == null) {
-			m = getDigitalLinkMatcher(epc);
-			if (m == null)
-				throw new ValidationException("Illegal UPUI");
-			else
-				return epc;
-		}
-
-		String companyPrefix = m.group(1);
-		String indicator = m.group(2);
-		String itemRef = m.group(3);
-		String checkDigit = retrieveCheckDigit(indicator + companyPrefix + itemRef);
-		String tpx = m.group(4);
-		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
-			throw new ValidationException("unlicensed global company prefix");
-		}
-		return "https://id.gs1.org/01/" + indicator + companyPrefix + itemRef + checkDigit + "/235/" + tpx;
-	}
-
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 		obj.put("epc", epc);
@@ -194,10 +186,9 @@ public class UnitPackIdentifier {
 		obj.put("indicator", indicator);
 		obj.put("itemRef", itemRef);
 		obj.put("checkDigit", checkDigit);
-		obj.put("tpx", tpx);
-		obj.put("granularity", "instance");
+		obj.put("granularity", "class");
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
-		obj.put("type", "UPUI");
+		obj.put("type", "GTIN");
 		return obj;
 	}
 

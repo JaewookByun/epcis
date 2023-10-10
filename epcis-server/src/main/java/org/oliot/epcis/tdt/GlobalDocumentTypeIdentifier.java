@@ -1,4 +1,4 @@
-package org.oliot.epcis.query.converter.tdt;
+package org.oliot.epcis.tdt;
 
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -10,18 +10,19 @@ import org.oliot.epcis.resource.StaticResource;
 
 import io.vertx.core.json.JsonObject;
 
-public class GlobalLocationNumberOfParty {
+public class GlobalDocumentTypeIdentifier {
 	private String companyPrefix;
-	private String partyRef;
+	private String documentType;
 	private String checkDigit;
+	private String serial;
 	private boolean isLicensedCompanyPrefix;
 
 	private String epc;
 	private String dl;
 
 	public Matcher getEPCMatcher(String epc) {
-		for (int i = 0; i < EPCPatterns.PGLNList.length; i++) {
-			Matcher m = EPCPatterns.PGLNList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.GDTIList.length; i++) {
+			Matcher m = EPCPatterns.GDTIList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -29,15 +30,15 @@ public class GlobalLocationNumberOfParty {
 	}
 
 	public Matcher getDLMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.PGLN.matcher(dl);
+		Matcher m = DigitalLinkPatterns.GDTI.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
 	public static Matcher getElectronicProductCodeMatcher(String epc) {
-		for (int i = 0; i < EPCPatterns.PGLNList.length; i++) {
-			Matcher m = EPCPatterns.PGLNList[i].matcher(epc);
+		for (int i = 0; i < EPCPatterns.GDTIList.length; i++) {
+			Matcher m = EPCPatterns.GDTIList[i].matcher(epc);
 			if (m.find())
 				return m;
 		}
@@ -45,41 +46,43 @@ public class GlobalLocationNumberOfParty {
 	}
 
 	public static Matcher getDigitalLinkMatcher(String dl) {
-		Matcher m = DigitalLinkPatterns.PGLN.matcher(dl);
+		Matcher m = DigitalLinkPatterns.GDTI.matcher(dl);
 		if (m.find())
 			return m;
 		return null;
 	}
 
-	public GlobalLocationNumberOfParty(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
+	public GlobalDocumentTypeIdentifier(HashMap<String, Integer> gcpLengthList, String id, CodeScheme scheme)
 			throws ValidationException {
 		if (scheme == CodeScheme.EPCPureIdentitiyURI) {
 			Matcher m = getEPCMatcher(id);
 			if (m == null)
-				throw new ValidationException("Illegal PGLN");
+				throw new ValidationException("Illegal GDTI");
 
 			companyPrefix = m.group(1);
-			partyRef = m.group(2);
-			checkDigit = getCheckDigit(companyPrefix + partyRef);
+			documentType = m.group(2);
+			checkDigit = getCheckDigit(companyPrefix + documentType);
+			serial = m.group(3);
 			isLicensedCompanyPrefix = TagDataTranslationEngine.isGlobalCompanyPrefix(gcpLengthList, companyPrefix);
 			this.epc = id;
-			this.dl = "https://id.gs1.org/417/" + companyPrefix + partyRef + checkDigit;
+			this.dl = "https://id.gs1.org/253/" + companyPrefix + documentType + checkDigit + serial;
 		} else if (scheme == CodeScheme.GS1DigitalLink) {
 			Matcher m = getDLMatcher(id);
 			if (m == null) {
-				throw new ValidationException("Illegal PGLN");
+				throw new ValidationException("Illegal GDTI");
+
 			}
 			String companyPrefixLocationRef = m.group(1);
 			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
 			companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
-			partyRef = companyPrefixLocationRef.substring(gcpLength);
+			documentType = companyPrefixLocationRef.substring(gcpLength);
 			checkDigit = m.group(2);
-			if (!checkDigit.equals(getCheckDigit(companyPrefix + partyRef)))
+			if (!checkDigit.equals(getCheckDigit(companyPrefix + documentType)))
 				throw new ValidationException("Invalid check digit");
+			serial = m.group(3);
 			isLicensedCompanyPrefix = true;
 			this.dl = id;
-			this.epc = "urn:epc:id:pgln:" + companyPrefix + "." + partyRef;
-
+			this.epc = "urn:epc:id:gdti:" + companyPrefix + "." + documentType + "." + serial;
 		}
 	}
 
@@ -136,52 +139,43 @@ public class GlobalLocationNumberOfParty {
 
 	public static String toEPC(String dl) throws ValidationException {
 		Matcher m = getDigitalLinkMatcher(dl);
-		if (m != null) {
-			String companyPrefixLocationRef = m.group(1);
-			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
-			String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
-			String partyRef = companyPrefixLocationRef.substring(gcpLength);
-			String checkDigit = m.group(2);
-			if (!isValidCheckDigit(companyPrefix + partyRef, checkDigit))
-				throw new ValidationException("Invalid check digit");
-			return "urn:epc:id:pgln:" + companyPrefix + "." + partyRef;
-		} else {
-			m = getDigitalLinkMatcher(dl);
-			if (m == null) {
-				m = getElectronicProductCodeMatcher(dl);
-				if (m == null)
-					throw new ValidationException("Illegal PGLN");
-				else
-					return dl;
-			}
-			String companyPrefixLocationRef = m.group(1);
-			int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
-			String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
-			String partyRef = companyPrefixLocationRef.substring(gcpLength);
-			String checkDigit = m.group(2);
-			if (!isValidCheckDigit(companyPrefix + partyRef, checkDigit))
-				throw new ValidationException("Invalid check digit");
-			return "urn:epc:id:pgln:" + companyPrefix + "." + partyRef;
+		if (m == null) {
+			m = getElectronicProductCodeMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal GDTI");
+			else
+				return dl;
 		}
+
+		String companyPrefixLocationRef = m.group(1);
+		int gcpLength = TagDataTranslationEngine.getGCPLength(StaticResource.gcpLength, companyPrefixLocationRef);
+		String companyPrefix = companyPrefixLocationRef.substring(0, gcpLength);
+		String documentType = companyPrefixLocationRef.substring(gcpLength);
+		String checkDigit = m.group(2);
+		if (!isValidCheckDigit(companyPrefix + documentType, checkDigit))
+			throw new ValidationException("Invalid check digit");
+		String serial = m.group(3);
+		return "urn:epc:id:gdti:" + companyPrefix + "." + documentType + "." + serial;
 	}
 
 	public static String toDL(String epc) throws ValidationException {
 		Matcher m = getElectronicProductCodeMatcher(epc);
 		if (m == null) {
-			m = getDigitalLinkMatcher(epc);
-			if (m == null) {
-				throw new ValidationException("Illegal PGLN");
-			}
-			return epc;
+			m = getElectronicProductCodeMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal GDTI");
+			else
+				return epc;
 		}
 
 		String companyPrefix = m.group(1);
-		String partyRef = m.group(2);
-		String checkDigit = retrieveCheckDigit(companyPrefix + partyRef);
+		String documentType = m.group(2);
+		String checkDigit = retrieveCheckDigit(companyPrefix + documentType);
+		String serial = m.group(3);
 		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
 			throw new ValidationException("unlicensed global company prefix");
 		}
-		return "https://id.gs1.org/417/" + companyPrefix + partyRef + checkDigit;
+		return "https://id.gs1.org/253/" + companyPrefix + documentType + checkDigit + serial;
 	}
 
 	public JsonObject toJson() {
@@ -189,11 +183,12 @@ public class GlobalLocationNumberOfParty {
 		obj.put("epc", epc);
 		obj.put("dl", dl);
 		obj.put("companyPrefix", companyPrefix);
-		obj.put("partyRef", partyRef);
+		obj.put("documentType", documentType);
 		obj.put("checkDigit", checkDigit);
-		obj.put("granularity", "instance");
+		obj.put("serial", serial);
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);
-		obj.put("type", "PGLN");
+		obj.put("granularity", "instance");
+		obj.put("type", "GDTI");
 		return obj;
 	}
 

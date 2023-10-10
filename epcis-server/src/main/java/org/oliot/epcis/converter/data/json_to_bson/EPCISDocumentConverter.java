@@ -25,11 +25,11 @@ import org.oliot.epcis.model.cbv.EPCISEventType;
 import org.oliot.epcis.model.cbv.ErrorReason;
 import org.oliot.epcis.model.cbv.Measurement;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
-import org.oliot.epcis.query.converter.tdt.GlobalDocumentTypeIdentifier;
-import org.oliot.epcis.query.converter.tdt.GlobalLocationNumber;
-import org.oliot.epcis.query.converter.tdt.GlobalLocationNumberOfParty;
-import org.oliot.epcis.query.converter.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.tdt.GlobalDocumentTypeIdentifier;
+import org.oliot.epcis.tdt.GlobalLocationNumber;
+import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.validation.IdentifierValidator;
 
 import com.mongodb.client.model.UpdateOneModel;
