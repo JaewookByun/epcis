@@ -16,7 +16,7 @@ import org.oliot.epcis.resource.StaticResource;
  * returned regardless of the value of the type attribute or whether a
  * sensorElement field exists at all.
  * 
- * TODO: v2.0.0
+ * v2.0.0
  * 
  */
 public class EQSensorReportSensorTypeConverter extends BaseConverter implements QueryConverter {

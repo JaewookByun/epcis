@@ -5,7 +5,6 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
 
-// TODO: need pull request
 public class GESensorReportTimeConverter extends BaseConverter implements QueryConverter {
 
 	@Override

@@ -517,11 +517,6 @@ public class EPCISDocumentConverter {
 						newSensorMetadata.put("bizRules", sensorMetadata.getString("bizRules"));
 					}
 
-					// Document otherAttributes = retrieveExtension(sensorMetadata);
-					// Document convertedOtherAttributes = getExtension(context, otherAttributes);
-					// if (!convertedOtherAttributes.isEmpty())
-					// newSensorMetadata.put("otherAttributes", convertedOtherAttributes);
-
 					if (sensorMetadata.containsKey("otherAttributes")) {
 						JsonObject otherAttributes = getExtension(
 								sensorMetadata.get("otherAttributes", org.bson.Document.class), namespaces, extType);
@@ -579,11 +574,6 @@ public class EPCISDocumentConverter {
 						}
 
 						if (sensorReportElement.containsKey("hexBinaryValue")) {
-							// newSensorReport.put("hexBinaryValue",
-							// DatatypeConverter.parseHexBinary(sensorReportElement.getString("hexBinaryValue")));
-							// sensorReportElement.put("hexBinaryValue",
-							// new Document().append("$binary", DatatypeConverter
-							// .parseHexBinary(sensorReportElement.getString("hexBinaryValue"))));
 							newSensorReport.put("hexBinaryValue", DatatypeConverter
 									.printHexBinary(sensorReportElement.get("hexBinaryValue", Binary.class).getData()));
 
@@ -616,11 +606,6 @@ public class EPCISDocumentConverter {
 									extType);
 							otherAttributes.forEach(entry -> newSensorReport.put(entry.getKey(), entry.getValue()));
 						}
-
-						// Document otherAttributes = retrieveExtension(sensorReportElement);
-						// Document convertedOtherAttributes = getExtension(context, otherAttributes);
-						// if (!convertedOtherAttributes.isEmpty())
-						// newSensorReport.put("otherAttributes", convertedOtherAttributes);
 
 						if (sensorReportElement.containsKey("type")) {
 							newSensorReport.put("type",

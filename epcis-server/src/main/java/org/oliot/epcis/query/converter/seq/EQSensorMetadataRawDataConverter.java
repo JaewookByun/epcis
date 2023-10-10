@@ -10,7 +10,6 @@ import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.validation.IdentifierValidator;
 
-// TODO: need pull request
 public class EQSensorMetadataRawDataConverter extends BaseConverter implements QueryConverter {
 
 	@Override
