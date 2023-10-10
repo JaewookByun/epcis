@@ -182,6 +182,24 @@ public class IndividualTradeItemPiece {
 		return String.valueOf(correctCheckDigit);
 	}
 
+	public static String retrieveCheckDigit(String indicatorGtin) {
+		if (indicatorGtin.length() != 13) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorGtin);
+
+		for (int i = 0; i < indicatorGtin.length(); i++) {
+			e[i] = Integer.parseInt(indicatorGtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12]) + e[1] + e[3] + e[5] + e[7] + e[9] + e[11])
+						% 10))
+				% 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
+
 	public static boolean isValidCheckDigit(String indicatorGtin, String checkDigit) {
 		if (indicatorGtin.length() != 13) {
 			return false;
@@ -243,6 +261,43 @@ public class IndividualTradeItemPiece {
 		}
 	}
 
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getSerialElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getClassElectronicProductCodeMatcher(epc);
+			if (m == null) {
+				m = getSerialDigitalLinkMatcher(epc);
+				if (m == null) {
+					m = getClassDigitalLinkMatcher(epc);
+					if (m == null) {
+						throw new ValidationException("Illegal ITIP");
+					}
+					return epc;
+				}
+				return epc;
+			}
+		}
+
+		String companyPrefix = m.group(1);
+		String indicator = m.group(2);
+		String itemRef = m.group(3);
+		String checkDigit = retrieveCheckDigit(indicator + companyPrefix + itemRef);
+		String piece = m.group(4);
+		String total = m.group(5);
+		String serialNumber = null;
+		try {
+			serialNumber = m.group(6);
+		} catch (IndexOutOfBoundsException e) {
+
+		}
+		if (serialNumber == null) {
+			return "https://id.gs1.org/8006/" + indicator + companyPrefix + itemRef + checkDigit + piece + total;
+		} else {
+			return "https://id.gs1.org/8006/" + indicator + companyPrefix + itemRef + checkDigit + piece + total
+					+ "/21/" + serialNumber;
+		}
+	}
+
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 		obj.put("epc", epc);
@@ -256,7 +311,7 @@ public class IndividualTradeItemPiece {
 		if (serialNumber != null && !serialNumber.equals("*")) {
 			obj.put("serialNumber", serialNumber);
 			obj.put("granularity", "instance");
-		}else {
+		} else {
 			obj.put("granularity", "class");
 		}
 		obj.put("isLicensedCompanyPrefix", isLicensedCompanyPrefix);

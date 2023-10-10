@@ -162,6 +162,44 @@ public class ComponentPartIdentifier {
 		}
 	}
 
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getSerialElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getClassElectronicProductCodeMatcher(epc);
+			if (m == null) {
+				m = getSerialDigitalLinkMatcher(epc);
+				if (m == null) {
+					m = getClassDigitalLinkMatcher(epc);
+					if (m == null)
+						throw new ValidationException("Illegal CPI");
+					else
+						return epc;
+				}
+				return epc;
+			}
+		}
+
+		String companyPrefix = m.group(1);
+		String documentType = m.group(2);
+
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+
+		String cpidSerial = null;
+		try {
+			cpidSerial = m.group(3);
+		} catch (IndexOutOfBoundsException e) {
+
+		}
+
+		if (cpidSerial == null) {
+			return "https://id.gs1.org/8010/" + companyPrefix + documentType;
+		} else {
+			return "https://id.gs1.org/8010/" + companyPrefix + documentType + "/8011/" + cpidSerial;
+		}
+	}
+
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 		obj.put("epc", epc);
@@ -173,7 +211,7 @@ public class ComponentPartIdentifier {
 		if (cpidSerial != null && !cpidSerial.equals("*")) {
 			obj.put("cpidSerial", cpidSerial);
 			obj.put("granularity", "instance");
-		}else {
+		} else {
 			obj.put("granularity", "class");
 		}
 

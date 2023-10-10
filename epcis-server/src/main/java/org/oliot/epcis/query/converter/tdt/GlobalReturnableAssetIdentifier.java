@@ -103,6 +103,23 @@ public class GlobalReturnableAssetIdentifier {
 		return String.valueOf(correctCheckDigit);
 	}
 
+	public static String retrieveCheckDigit(String companyPrefixAssetType) {
+		if (companyPrefixAssetType.length() != 12) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(companyPrefixAssetType);
+
+		for (int i = 0; i < companyPrefixAssetType.length(); i++) {
+			e[i] = Integer.parseInt(companyPrefixAssetType.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
+
 	public static boolean isValidCheckDigit(String companyPrefixAssetType, String checkDigit) {
 		if (companyPrefixAssetType.length() != 12) {
 			return false;
@@ -139,6 +156,27 @@ public class GlobalReturnableAssetIdentifier {
 			throw new ValidationException("Invalid check digit");
 		String serialNumber = m.group(3);
 		return "urn:epc:id:grai:" + companyPrefix + "." + assetType + "." + serialNumber;
+	}
+
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getDigitalLinkMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal GRAI");
+			else
+				return epc;
+		}
+
+		String companyPrefix = m.group(1);
+		String assetType = m.group(2);
+		String checkDigit = retrieveCheckDigit(companyPrefix + assetType);
+		String serialNumber = m.group(3);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+
+		return "https://id.gs1.org/8003/0" + companyPrefix + assetType + checkDigit + serialNumber;
 	}
 
 	public JsonObject toJson() {

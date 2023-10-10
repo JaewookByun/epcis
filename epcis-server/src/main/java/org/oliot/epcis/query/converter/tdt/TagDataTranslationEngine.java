@@ -433,6 +433,54 @@ public class TagDataTranslationEngine {
 		return e;
 	}
 
+	private static IdentifierType getClassLevelEPCType(String epcString) {
+		if (epcString.startsWith("urn:epc:id:cpi")) {
+			return IdentifierType.CPI;
+		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
+			return IdentifierType.ITIP;
+		} else if (epcString.startsWith("urn:epc:idpat:sgtin")) {
+			return IdentifierType.GTIN;
+		} else if (epcString.startsWith("urn:epc:class:lgtin")) {
+			return IdentifierType.LGTIN;
+		}
+		return null;
+	}
+
+	private static IdentifierType getInstanceLevelEPCType(String epcString) {
+		if (epcString.startsWith("urn:epc:id:sgtin")) {
+			return IdentifierType.SGTIN;
+		} else if (epcString.startsWith("urn:epc:id:upui")) {
+			return IdentifierType.UPUI;
+		} else if (epcString.startsWith("urn:epc:id:sscc")) {
+			return IdentifierType.SSCC;
+		} else if (epcString.startsWith("urn:epc:id:sgln")) {
+			return IdentifierType.SGLN;
+		} else if (epcString.startsWith("urn:epc:id:grai")) {
+			return IdentifierType.GRAI;
+		} else if (epcString.startsWith("urn:epc:id:giai")) {
+			return IdentifierType.GIAI;
+		} else if (epcString.startsWith("urn:epc:id:gsrn")) {
+			return IdentifierType.GSRN;
+		} else if (epcString.startsWith("urn:epc:id:gsrnp")) {
+			return IdentifierType.GSRNP;
+		} else if (epcString.startsWith("urn:epc:id:gdti")) {
+			return IdentifierType.GDTI;
+		} else if (epcString.startsWith("urn:epc:id:cpi")) {
+			return IdentifierType.CPI;
+		} else if (epcString.startsWith("urn:epc:id:sgcn")) {
+			return IdentifierType.SGCN;
+		} else if (epcString.startsWith("urn:epc:id:ginc")) {
+			return IdentifierType.GINC;
+		} else if (epcString.startsWith("urn:epc:id:gsin")) {
+			return IdentifierType.GSIN;
+		} else if (epcString.startsWith("urn:epc:id:itip")) {
+			return IdentifierType.ITIP;
+		} else if (epcString.startsWith("urn:epc:id:pgln")) {
+			return IdentifierType.PGLN;
+		}
+		return null;
+	}
+
 	private static IdentifierType getEPCType(String epcString) {
 		if (epcString.startsWith("urn:epc:id:sgtin")) {
 			return IdentifierType.SGTIN;
@@ -817,4 +865,97 @@ public class TagDataTranslationEngine {
 		return null;
 	}
 
+	public static String toDL(String epc) throws ValidationException {
+		IdentifierType type = getEPCType(epc);
+		if (type == null)
+			type = getDLType(epc);
+
+		if (type == IdentifierType.GTIN) {
+			return GlobalTradeItemNumber.toDL(epc);
+		} else if (type == IdentifierType.LGTIN) {
+			return GlobalTradeItemNumberWithLot.toDL(epc);
+		} else if (type == IdentifierType.SGTIN) {
+			return SerializedGlobalTradeItemNumber.toDL(epc);
+		} else if (type == IdentifierType.UPUI) {
+			return UnitPackIdentifier.toDL(epc);
+		} else if (type == IdentifierType.SSCC) {
+			return SerialShippingContainerCode.toDL(epc);
+		} else if (type == IdentifierType.SGLN) {
+			return GlobalLocationNumber.toDL(epc);
+		} else if (type == IdentifierType.GRAI) {
+			return GlobalReturnableAssetIdentifier.toDL(epc);
+		} else if (type == IdentifierType.GIAI) {
+			return GlobalIndividualAssetIdentifier.toDL(epc);
+		} else if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toDL(epc);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toDL(epc);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toDL(epc);
+		} else if (type == IdentifierType.CPI) {
+			return ComponentPartIdentifier.toDL(epc);
+		} else if (type == IdentifierType.SGCN) {
+			return SerializedGlobalCouponNumber.toDL(epc);
+		} else if (type == IdentifierType.GINC) {
+			return GlobalIdentificationNumberConsignment.toDL(epc);
+		} else if (type == IdentifierType.GSIN) {
+			return GlobalShipmentIdentificationNumber.toDL(epc);
+		} else if (type == IdentifierType.ITIP) {
+			return IndividualTradeItemPiece.toDL(epc);
+		} else if (type == IdentifierType.PGLN) {
+			return GlobalLocationNumberOfParty.toDL(epc);
+		} else
+			throw new ValidationException("Unsupported code scheme");
+	}
+
+	public static String toClassLevelDL(String epc) throws ValidationException {
+		IdentifierType type = getClassLevelEPCType(epc);
+
+		if (type == IdentifierType.LGTIN) {
+			return GlobalTradeItemNumberWithLot.toDL(epc);
+		} else if (type == IdentifierType.GTIN) {
+			return GlobalTradeItemNumber.toDL(epc);
+		} else if (type == IdentifierType.CPI) {
+			return ComponentPartIdentifier.toDL(epc);
+		} else if (type == IdentifierType.ITIP) {
+			return IndividualTradeItemPiece.toDL(epc);
+		} else
+			throw new ValidationException("Unsupported class level code scheme");
+	}
+
+	public static String toInstanceLevelDL(String epc) throws ValidationException {
+		IdentifierType type = getInstanceLevelEPCType(epc);
+		if (type == IdentifierType.SGTIN) {
+			return SerializedGlobalTradeItemNumber.toDL(epc);
+		} else if (type == IdentifierType.SSCC) {
+			return SerialShippingContainerCode.toDL(epc);
+		} else if (type == IdentifierType.SGLN) {
+			return GlobalLocationNumber.toDL(epc);
+		} else if (type == IdentifierType.GRAI) {
+			return GlobalReturnableAssetIdentifier.toDL(epc);
+		} else if (type == IdentifierType.GIAI) {
+			return GlobalIndividualAssetIdentifier.toDL(epc);
+		} else if (type == IdentifierType.GSRN) {
+			return GlobalServiceRelationNumber.toDL(epc);
+		} else if (type == IdentifierType.GSRNP) {
+			return GlobalServiceRelationNumberProvider.toDL(epc);
+		} else if (type == IdentifierType.GDTI) {
+			return GlobalDocumentTypeIdentifier.toDL(epc);
+		} else if (type == IdentifierType.CPI) {
+			return ComponentPartIdentifier.toDL(epc);
+		} else if (type == IdentifierType.SGCN) {
+			return SerializedGlobalCouponNumber.toDL(epc);
+		} else if (type == IdentifierType.GINC) {
+			return GlobalIdentificationNumberConsignment.toDL(epc);
+		} else if (type == IdentifierType.GSIN) {
+			return GlobalShipmentIdentificationNumber.toDL(epc);
+		} else if (type == IdentifierType.ITIP) {
+			return IndividualTradeItemPiece.toDL(epc);
+		} else if (type == IdentifierType.UPUI) {
+			return UnitPackIdentifier.toDL(epc);
+		} else if (type == IdentifierType.PGLN) {
+			return GlobalLocationNumberOfParty.toDL(epc);
+		} else
+			throw new ValidationException("Unsupported instance level code scheme");
+	}
 }

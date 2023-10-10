@@ -99,6 +99,22 @@ public class GlobalServiceRelationNumberProvider {
 		return String.valueOf(correctCheckDigit);
 	}
 
+	public static String retrieveCheckDigit(String indicatorGtin) {
+		if (indicatorGtin.length() != 17) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorGtin);
+
+		for (int i = 0; i < indicatorGtin.length(); i++) {
+			e[i] = Integer.parseInt(indicatorGtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1]
+				+ e[3] + e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
+
 	public static boolean isValidCheckDigit(String indicatorGtin, String checkDigit) {
 		if (indicatorGtin.length() != 17) {
 			return false;
@@ -133,6 +149,25 @@ public class GlobalServiceRelationNumberProvider {
 		if (!isValidCheckDigit(companyPrefix + serviceReference, checkDigit))
 			throw new ValidationException("Invalid check digit");
 		return "urn:epc:id:gsrnp:" + companyPrefix + "." + serviceReference;
+	}
+
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getDigitalLinkMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal GSRNP");
+			else
+				return epc;
+		}
+
+		String companyPrefix = m.group(1);
+		String serviceReference = m.group(2);
+		String checkDigit = retrieveCheckDigit(companyPrefix + serviceReference);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+		return "https://id.gs1.org/8017/" + companyPrefix + serviceReference + checkDigit;
 	}
 
 	public JsonObject toJson() {

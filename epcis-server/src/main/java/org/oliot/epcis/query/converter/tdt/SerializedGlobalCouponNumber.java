@@ -102,6 +102,23 @@ public class SerializedGlobalCouponNumber {
 		return String.valueOf(correctCheckDigit);
 	}
 
+	public static String retrieveCheckDigit(String indicatorGtin) {
+		if (indicatorGtin.length() != 12) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorGtin);
+
+		for (int i = 0; i < indicatorGtin.length(); i++) {
+			e[i] = Integer.parseInt(indicatorGtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
+
 	public static boolean isValidCheckDigit(String indicatorGtin, String checkDigit) {
 		if (indicatorGtin.length() != 12) {
 			return false;
@@ -138,6 +155,26 @@ public class SerializedGlobalCouponNumber {
 			throw new ValidationException("Invalid check digit");
 		String serial = m.group(3);
 		return "urn:epc:id:sgcn:" + companyPrefix + "." + couponRef + "." + serial;
+	}
+
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getDigitalLinkMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal SGCN");
+			else
+				return epc;
+		}
+
+		String companyPrefix = m.group(1);
+		String couponRef = m.group(2);
+		String checkDigit = retrieveCheckDigit(companyPrefix + couponRef);
+		String serial = m.group(3);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+		return "https://id.gs1.org/255/" + companyPrefix + couponRef + checkDigit + serial;
 	}
 
 	public JsonObject toJson() {

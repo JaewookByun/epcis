@@ -93,6 +93,24 @@ public class GlobalIdentificationNumberConsignment {
 		return "urn:epc:id:ginc:" + companyPrefix + "." + consignmentRef;
 	}
 
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if (m == null) {
+			m = getDigitalLinkMatcher(epc);
+			if (m == null)
+				throw new ValidationException("Illegal GINC");
+			else
+				return epc;
+		}
+
+		String companyPrefix = m.group(1);
+		String consignmentRef = m.group(2);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+		return "https://id.gs1.org/401/" + companyPrefix + consignmentRef;
+	}
+
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
 		obj.put("epc", epc);

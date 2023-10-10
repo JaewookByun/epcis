@@ -99,6 +99,22 @@ public class SerialShippingContainerCode {
 
 		return String.valueOf(correctCheckDigit);
 	}
+	
+	public static String retrieveCheckDigit(String indicatorSSCC) {
+		if (indicatorSSCC.length() != 17) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorSSCC);
+
+		for (int i = 0; i < indicatorSSCC.length(); i++) {
+			e[i] = Integer.parseInt(indicatorSSCC.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10 - ((3 * (e[0] + e[2] + e[4] + e[6] + e[8] + e[10] + e[12] + e[14] + e[16]) + e[1]
+				+ e[3] + e[5] + e[7] + e[9] + e[11] + e[13] + e[15]) % 10)) % 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
 
 	public static boolean isValidCheckDigit(String indicatorSSCC, String checkDigit) {
 		if (indicatorSSCC.length() != 17) {
@@ -135,6 +151,28 @@ public class SerialShippingContainerCode {
 		if (!isValidCheckDigit(extension + companyPrefix + serialRef, checkDigit))
 			throw new ValidationException("Invalid check digit");
 		return "urn:epc:id:sscc:" + companyPrefix + "." + extension + serialRef;
+	}
+
+	public static String toDL(String dl) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(dl);
+		if (m == null) {
+			m = getDigitalLinkMatcher(dl);
+			if (m == null)
+				throw new ValidationException("Illegal SSCC");
+			else
+				return dl;
+		}
+
+		String companyPrefix = m.group(1);
+		String extension = m.group(2);
+		String serialRef = m.group(3);
+		String checkDigit = retrieveCheckDigit(extension + companyPrefix + serialRef);
+
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+
+		return "https://id.gs1.org/00/" + extension + companyPrefix + serialRef + checkDigit;
 	}
 
 	public JsonObject toJson() {

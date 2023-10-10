@@ -134,6 +134,23 @@ public class GlobalLocationNumber {
 
 		return String.valueOf(correctCheckDigit);
 	}
+	
+	public static String retrieveCheckDigit(String indicatorGtin) {
+		if (indicatorGtin.length() != 12) {
+			return null;
+		}
+		int[] e = TagDataTranslationEngine.toIntArray(indicatorGtin);
+
+		for (int i = 0; i < indicatorGtin.length(); i++) {
+			e[i] = Integer.parseInt(indicatorGtin.charAt(i) + "");
+		}
+
+		int correctCheckDigit = (10
+				- ((3 * (e[1] + e[3] + e[5] + e[7] + e[9] + e[11]) + e[0] + e[2] + e[4] + e[6] + e[8] + e[10]) % 10))
+				% 10;
+
+		return String.valueOf(correctCheckDigit);
+	}
 
 	public static boolean isValidCheckDigit(String indicatorGtin, String checkDigit) {
 		if (indicatorGtin.length() != 12) {
@@ -185,6 +202,34 @@ public class GlobalLocationNumber {
 			return "urn:epc:id:sgln:" + companyPrefix + "." + locationRef + "." + glnExtension;
 		}
 	}
+	
+	public static String toDL(String epc) throws ValidationException {
+		Matcher m = getElectronicProductCodeMatcher(epc);
+		if(m == null) {
+			m = getSerialDigitalLinkMatcher(epc);
+			if(m == null) {
+				m = getClassDigitalLinkMatcher(epc);
+				if( m == null)
+					throw new ValidationException("Illegal SGLN");
+				else 
+					return epc;
+			}
+			return epc;
+		}
+		
+		String companyPrefix = m.group(1);
+		String locationRef = m.group(2);
+		String checkDigit = retrieveCheckDigit(companyPrefix + locationRef);
+		String glnExtension = m.group(3);
+		if (!TagDataTranslationEngine.isGlobalCompanyPrefix(StaticResource.gcpLength, companyPrefix)) {
+			throw new ValidationException("unlicensed global company prefix");
+		}
+		if (glnExtension.equals("0")) {
+			return "https://id.gs1.org/414/" + companyPrefix + locationRef + checkDigit;
+		} else
+			return "https://id.gs1.org/414/" + companyPrefix + locationRef + checkDigit + "/254/" + glnExtension;
+	}
+	
 
 	public JsonObject toJson() {
 		JsonObject obj = new JsonObject();
