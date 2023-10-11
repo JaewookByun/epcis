@@ -960,7 +960,7 @@ public class TagDataTranslationEngine {
 	}
 
 	public static String toBusinessTransactionDL(String epc) throws ValidationException {
-		IdentifierType type = getInstanceLevelDLType(epc);
+		IdentifierType type = getInstanceLevelEPCType(epc);
 		if (type == IdentifierType.GSRN) {
 			return GlobalServiceRelationNumber.toDL(epc);
 		} else if (type == IdentifierType.GSRNP) {
