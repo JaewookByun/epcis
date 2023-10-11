@@ -2,7 +2,13 @@ package org.oliot.epcis.query;
 
 import static org.oliot.epcis.validation.HeaderValidator.*;
 
+import java.util.UUID;
+
+import org.oliot.epcis.capture.json.JSONMessageFactory;
+import org.oliot.epcis.model.EPCISException;
+import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.util.HTTPUtil;
 
 import io.vertx.ext.web.Router;
 
@@ -50,7 +56,26 @@ public class RESTQueryServiceHandler {
 			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format"))
 				return;
 			routingContext.response().setChunked(true);
-			restQueryService.query(routingContext);
+
+			// get UUID
+			String nextPageToken = routingContext.request().getParam("NextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.query(routingContext);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(routingContext.request().getParam("NextPageToken"));
+				} catch (Exception e) {
+					QueryParameterException e1 = new QueryParameterException("invalid nextPageToken - " + uuid);
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: "
+											+ e1.getMessage()),
+							406);
+					return;
+				}
+				restQueryService.getNextEventPage(routingContext, uuid);
+			}
 		});
 		EPCISServer.logger.info("[GET /epcis/evetns (application/json)] - router added");
 	}

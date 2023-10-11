@@ -108,4 +108,12 @@ public class Page {
 		this.timer = timer;
 	}
 
+	public void setLimit(Integer limit) {
+		this.limit = limit;
+	}
+
+	public void setSkip(Integer skip) {
+		this.skip = skip;
+	}
+
 }

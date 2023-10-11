@@ -143,6 +143,125 @@ public class RESTQueryService {
 		}
 	}
 
+	public void getNextEventPage(RoutingContext routingContext, UUID uuid) {
+		SOAPMessage message = new SOAPMessage();
+		HttpServerRequest serverRequest = routingContext.request();
+		HttpServerResponse serverResponse = routingContext.response();
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		Page page = null;
+		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getMessage()),
+					406);
+			return;
+		} else {
+			page = EPCISServer.eventPageMap.get(uuid);
+		}
+
+		org.bson.Document query = (org.bson.Document) page.getQuery();
+		org.bson.Document sort = (org.bson.Document) page.getSort();
+		int skip = page.getSkip();
+		Integer limit = page.getLimit();
+		int qLimit;
+		page.setSkip(skip + perPage);
+
+		boolean needPagination = true;
+
+		if (limit != null) {
+			if (perPage < limit - skip) {
+				qLimit = perPage + 1;
+			} else {
+				qLimit = limit - skip;
+				needPagination = false;
+			}
+		} else {
+			qLimit = perPage + 1;
+		}
+
+		List<org.bson.Document> results = new ArrayList<org.bson.Document>();
+
+		try {
+			EPCISServer.mEventCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
+		} catch (Throwable e) {
+			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+					e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
+			return;
+		}
+
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(results);
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
+		// conversion
+		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(page.getSort()), results,
+				namespaces, extType);
+		context.add(extType);
+		if (needPagination == true && perPage >= convertedResultList.size()) {
+			needPagination = false;
+		} else if (needPagination == true && perPage < convertedResultList.size()) {
+			if (!convertedResultList.isEmpty())
+				convertedResultList = convertedResultList.subList(0, perPage);
+		}
+
+		JsonObject queryResultDocument = StaticResource.simpleEventQueryResults.copy();
+		JsonArray eventList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("eventList");
+		for (JsonObject list : convertedResultList) {
+			eventList.add(list);
+		}
+		queryResultDocument.put("@context", context);
+
+		if (needPagination) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(
+					new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse
+					.putHeader("Link",
+							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
+									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+			EPCISServer.eventPageMap.remove(uuid);
+			EPCISServer.logger.debug("[GET /events] page - " + uuid + " expired. # remaining pages - "
+					+ EPCISServer.eventPageMap.size());
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+	}
+
 	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage) {
 
 		// CREATE MONGODB QUERY
@@ -443,117 +562,6 @@ public class RESTQueryService {
 		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
 		 * QueryResults.class, 200); }
 		 */
-	}
-
-	public void getNextEventPage(HttpServerRequest serverRequest, HttpServerResponse serverResponse) {
-		SOAPMessage message = new SOAPMessage();
-
-		// get UUID
-		UUID uuid = null;
-		try {
-			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
-		} catch (Exception e) {
-			QueryParameterException e1 = new QueryParameterException("invalid nextPageToken - " + uuid);
-			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
-			return;
-		}
-
-		// get perPage
-		int perPage;
-
-		try {
-			perPage = getPerPage(serverRequest);
-		} catch (QueryParameterException e) {
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
-			return;
-		}
-
-		Page page = null;
-		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
-			EPCISException e = new EPCISException(
-					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 406);
-			return;
-		} else {
-			page = EPCISServer.eventPageMap.get(uuid);
-		}
-
-		org.bson.Document query = (org.bson.Document) page.getQuery();
-		org.bson.Document sort = (org.bson.Document) page.getSort();
-		int skip = page.getSkip();
-		Integer limit = page.getLimit();
-		int qLimit;
-		page.setSkip(skip + perPage);
-
-		boolean needPagination = true;
-
-		if (limit != null) {
-			if (perPage < limit - skip) {
-				qLimit = perPage + 1;
-			} else {
-				qLimit = limit - skip;
-				needPagination = false;
-			}
-		} else {
-			qLimit = perPage + 1;
-		}
-
-		List<org.bson.Document> results = new ArrayList<org.bson.Document>();
-
-		try {
-			EPCISServer.mEventCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
-		} catch (Throwable e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
-					e.getMessage());
-			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
-			return;
-		}
-
-		List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(sort), results, null, null);
-
-		if (needPagination == true && perPage >= convertedResultList.size()) {
-			needPagination = false;
-		} else if (needPagination == true && perPage < convertedResultList.size()) {
-			convertedResultList = convertedResultList.subList(0, perPage);
-		}
-
-		QueryResults queryResults = new QueryResults();
-		queryResults.setQueryName("SimpleEventQuery");
-
-		QueryResultsBody resultsBody = new QueryResultsBody();
-
-		EventListType elt = new EventListType();
-		// elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
-		resultsBody.setEventList(elt);
-		queryResults.setResultsBody(resultsBody);
-
-		if (perPage < results.size()) {
-			long currentTime = System.currentTimeMillis();
-			Timer timer = page.getTimer();
-			if (timer != null)
-				timer.cancel();
-
-			Timer newTimer = new Timer();
-			page.setTimer(newTimer);
-			newTimer.schedule(
-					new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
-					Metadata.GS1_Next_Page_Token_Expires);
-			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
-					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
-
-			serverResponse
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
-					.putHeader("GS1-Next-Page-Token-Expires",
-							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
-			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
-		} else {
-			EPCISServer.eventPageMap.remove(uuid);
-			EPCISServer.logger.debug("[GET /events] page - " + uuid + " expired. # remaining pages - "
-					+ EPCISServer.eventPageMap.size());
-			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
-		}
 	}
 
 	public void getSubscriptionIDs(HttpServerResponse serverResponse) {
