@@ -73,7 +73,9 @@ public class QueryDescription {
 			throws QueryParameterException, ImplementationException, SubscribeNotPermittedException {
 		this.unmarshaller = unmarshaller;
 		if (subscribe.getQueryName().equals("SimpleEventQuery")) {
-			makeSimpleEventQuery(subscribe.getParams().getParam());
+			List<QueryParam> queryParam = subscribe.getParams().getParam();
+			convertQueryParams(queryParam);
+			makeSimpleEventQuery(queryParam);
 		} else if (subscribe.getQueryName().equals("SimpleMasterDataQuery")) {
 			SubscribeNotPermittedException e = new SubscribeNotPermittedException(
 					"The specified query name may not be used with subscribe, only with poll.");
@@ -85,7 +87,9 @@ public class QueryDescription {
 			throws QueryParameterException, ImplementationException {
 		this.unmarshaller = unmarshaller;
 		if (poll.getQueryName().equals("SimpleEventQuery")) {
-			makeSimpleEventQuery(poll.getParams().getParam());
+			List<QueryParam> queryParam = poll.getParams().getParam();
+			convertQueryParams(queryParam);
+			makeSimpleEventQuery(queryParam);
 		} else if (poll.getQueryName().equals("SimpleMasterDataQuery")) {
 			makeSimpleMasterDataQuery(poll.getParams().getParam());
 		}
@@ -410,7 +414,7 @@ public class QueryDescription {
 	void makeSimpleEventQuery(List<QueryParam> paramList) throws QueryParameterException, ImplementationException {
 		queryName = "SimpleEventQuery";
 		mongoSort = new Document();
-		convertQueryParams(paramList);
+		
 		List<Document> mongoQueryElements = new ArrayList<Document>();
 		for (QueryParam param : paramList) {
 			String name = param.getName();
