@@ -22,6 +22,7 @@ import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
+import org.oliot.epcis.tdt.GlobalDocumentTypeIdentifier;
 import org.oliot.epcis.tdt.GlobalLocationNumber;
 import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
@@ -325,7 +326,7 @@ public class QueryDescription {
 			queryParams.add(new QueryParam("EQ_source_" + subfield, arrayOfString));
 		}
 	}
-	
+
 	private void convertDestinationToQueryParam(List<QueryParam> queryParams, String subfield, JsonArray arr)
 			throws Exception, ValidationException {
 		List<String> arrayOfString = new ArrayList<String>();
@@ -342,6 +343,15 @@ public class QueryDescription {
 			}
 			queryParams.add(new QueryParam("EQ_destination_" + subfield, arrayOfString));
 		}
+	}
+
+	private void convertTransformationIDToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			arrayOfString.add(GlobalDocumentTypeIdentifier.toEPC(arrValue.toString()));
+		}
+		queryParams.add(new QueryParam(field, arrayOfString));
 	}
 
 	/**
@@ -387,9 +397,14 @@ public class QueryDescription {
 				convertSourceToQueryParam(queryParams, field.substring(10), (JsonArray) value);
 				continue;
 			}
-			
+
 			if (field.startsWith("EQ_destination_")) {
 				convertDestinationToQueryParam(queryParams, field.substring(15), (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("EQ_transformationID")) {
+				convertTransformationIDToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
