@@ -5,7 +5,6 @@ import static org.oliot.epcis.validation.HeaderValidator.*;
 import java.util.UUID;
 
 import org.oliot.epcis.capture.json.JSONMessageFactory;
-import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;

@@ -421,7 +421,7 @@ public class QueryDescription {
 				continue;
 			}
 
-			if (field.equals("MATCH_epc")) {
+			if (field.equals("MATCH_epc") || field.equals("MATCH_parentID")) {
 				convertInstanceLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
