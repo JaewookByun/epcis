@@ -422,7 +422,7 @@ public class QueryDescription {
 			}
 
 			if (field.equals("MATCH_epc") || field.equals("MATCH_parentID") || field.equals("MATCH_inputEPC")
-					|| field.equals("MATCH_outputEPC")) {
+					|| field.equals("MATCH_outputEPC") || field.equals("MATCH_anyEPC")) {
 				convertInstanceLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
