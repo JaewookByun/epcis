@@ -354,6 +354,19 @@ public class QueryDescription {
 		queryParams.add(new QueryParam(field, arrayOfString));
 	}
 
+	private void convertInstanceLevelDLToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			try {
+				arrayOfString.add(TagDataTranslationEngine.toInstanceLevelEPC(arrValue.toString()));
+			} catch (ValidationException e) {
+				arrayOfString.add(arrValue.toString());
+			}
+		}
+		queryParams.add(new QueryParam(field, arrayOfString));
+	}
+
 	/**
 	 * JSON Query to common ones
 	 * 
@@ -405,6 +418,11 @@ public class QueryDescription {
 
 			if (field.equals("EQ_transformationID")) {
 				convertTransformationIDToQueryParam(queryParams, field, (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("MATCH_epc")) {
+				convertInstanceLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
