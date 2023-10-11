@@ -16,6 +16,7 @@ import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.model.cbv.BusinessStep;
+import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.util.BSONReadUtil;
@@ -266,6 +267,14 @@ public class QueryDescription {
 		queryParams.add(new QueryParam("EQ_bizStep", arrayOfString));
 	}
 
+	private void convertEQDispositionToQueryParam(List<QueryParam> queryParams, JsonArray arr) throws Exception {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			arrayOfString.add(Disposition.getFullVocabularyName(arrValue.toString()));
+		}
+		queryParams.add(new QueryParam("EQ_disposition", arrayOfString));
+	}
+
 	/**
 	 * JSON Query to common ones
 	 * 
@@ -284,6 +293,11 @@ public class QueryDescription {
 
 			if (field.equals("EQ_bizStep")) {
 				convertEQBizStepToQueryParam(queryParams, (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("EQ_disposition")) {
+				convertEQDispositionToQueryParam(queryParams, (JsonArray) value);
 				continue;
 			}
 
