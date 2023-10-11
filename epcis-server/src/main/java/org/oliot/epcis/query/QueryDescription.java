@@ -379,6 +379,24 @@ public class QueryDescription {
 		}
 		queryParams.add(new QueryParam(field, arrayOfString));
 	}
+	
+	public JsonObject retrieveContext(JsonObject epcisDocument) {
+		JsonObject context = new JsonObject();
+		Object contextObj = epcisDocument.getValue("@context");
+		if (contextObj instanceof JsonObject) {
+			context = (JsonObject) contextObj;
+		} else if (contextObj instanceof JsonArray) {
+			JsonArray contextArr = (JsonArray) contextObj;
+			context = new JsonObject();
+			for (Object contextElemObj : contextArr) {
+				if (contextElemObj instanceof JsonObject) {
+					JsonObject contextElem = (JsonObject) contextElemObj;
+					context.mergeIn(contextElem, true);
+				}
+			}
+		}
+		return context;
+	}
 
 	/**
 	 * JSON Query to common ones
@@ -391,7 +409,7 @@ public class QueryDescription {
 	private List<QueryParam> convertToQueryParams(JsonObject query)
 			throws Exception, QueryParameterException, ValidationException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
-
+		
 		for (String field : query.fieldNames()) {
 			Object value = query.getValue(field);
 
