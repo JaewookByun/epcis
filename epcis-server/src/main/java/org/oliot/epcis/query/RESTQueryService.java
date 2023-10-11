@@ -316,7 +316,7 @@ public class RESTQueryService {
 			HTTPUtil.sendQueryResults(serverResponse,
 					JSONMessageFactory.get413QueryTooLargeException(
 							"[413QueryTooLargeException] The server cannot return the response as requested: "
-									+ e.getMessage()),
+									+ e.getReason()),
 					413);
 			return;
 		}
