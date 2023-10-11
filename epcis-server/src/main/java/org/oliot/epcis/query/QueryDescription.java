@@ -17,10 +17,12 @@ import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.model.cbv.BusinessStep;
+import org.oliot.epcis.model.cbv.BusinessTransactionType;
 import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.tdt.GlobalLocationNumber;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.BSONReadUtil;
 import org.oliot.epcis.util.TimeUtil;
 import org.w3c.dom.Element;
@@ -99,7 +101,8 @@ public class QueryDescription {
 		}
 	}
 
-	public QueryDescription(JsonObject query) throws QueryParameterException, ImplementationException, Exception, ValidationException {
+	public QueryDescription(JsonObject query)
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
 		String queryName = query.getString("queryName");
 
 		if (queryName == null || queryName.equals("SimpleEventQuery")) {
@@ -261,7 +264,8 @@ public class QueryDescription {
 		}
 	}
 
-	private void convertBizStepToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr) throws Exception {
+	private void convertBizStepToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+			throws Exception {
 		List<String> arrayOfString = new ArrayList<String>();
 		for (Object arrValue : arr) {
 			arrayOfString.add(BusinessStep.getFullVocabularyName(arrValue.toString()));
@@ -277,7 +281,7 @@ public class QueryDescription {
 		}
 		queryParams.add(new QueryParam(field, arrayOfString));
 	}
-	
+
 	private void convertLocationToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
 			throws Exception, ValidationException {
 		List<String> arrayOfString = new ArrayList<String>();
@@ -287,6 +291,20 @@ public class QueryDescription {
 		queryParams.add(new QueryParam(field, arrayOfString));
 	}
 
+	private void convertBizTransactionToQueryParam(List<QueryParam> queryParams, String subfield, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			arrayOfString.add(TagDataTranslationEngine.toBusinessTransactionEPC(arrValue.toString()));
+		}
+		if (subfield.isEmpty()) {
+			queryParams.add(new QueryParam("EQ_bizTransaction_", arrayOfString));
+		} else {
+			queryParams.add(new QueryParam(
+					"EQ_bizTransaction_" + BusinessTransactionType.getFullVocabularyName(subfield), arrayOfString));
+		}
+
+	}
 
 	/**
 	 * JSON Query to common ones
@@ -294,9 +312,10 @@ public class QueryDescription {
 	 * @param query
 	 * @return
 	 * @throws QueryParameterException
-	 * @throws ValidationException 
+	 * @throws ValidationException
 	 */
-	private List<QueryParam> convertToQueryParams(JsonObject query) throws Exception, QueryParameterException, ValidationException {
+	private List<QueryParam> convertToQueryParams(JsonObject query)
+			throws Exception, QueryParameterException, ValidationException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
 
 		for (String field : query.fieldNames()) {
@@ -315,9 +334,14 @@ public class QueryDescription {
 				convertDispositionToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
-			
-			if(field.equals("EQ_readPoint") || field.equals("EQ_bizLocation")) {
+
+			if (field.equals("EQ_readPoint") || field.equals("EQ_bizLocation")) {
 				convertLocationToQueryParam(queryParams, field, (JsonArray) value);
+				continue;
+			}
+
+			if (field.startsWith("EQ_bizTransaction_")) {
+				convertBizTransactionToQueryParam(queryParams, field.substring(18), (JsonArray) value);
 				continue;
 			}
 
@@ -1224,7 +1248,8 @@ public class QueryDescription {
 
 	}
 
-	void makeSimpleEventQuery(JsonObject query) throws Exception, QueryParameterException, ImplementationException, ValidationException {
+	void makeSimpleEventQuery(JsonObject query)
+			throws Exception, QueryParameterException, ImplementationException, ValidationException {
 		queryName = "SimpleEventQuery";
 		mongoSort = new Document();
 
