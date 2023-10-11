@@ -98,7 +98,7 @@ public class RESTQueryService {
 
 		try {
 			poll(routingContext, query);
-		} catch (QueryParameterException e) {
+		} catch (QueryParameterException | ValidationException e) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
 							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
@@ -119,7 +119,7 @@ public class RESTQueryService {
 	}
 
 	public void poll(RoutingContext routingContext, JsonObject query)
-			throws QueryParameterException, ImplementationException, Exception {
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
 
 		// get perPage
 		int perPage;
