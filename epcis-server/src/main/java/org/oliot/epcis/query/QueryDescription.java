@@ -397,7 +397,7 @@ public class QueryDescription {
 
 			if (field.equals("@context"))
 				continue;
-			
+
 			if (field.equals("EQ_bizStep")) {
 				convertBizStepToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
@@ -440,7 +440,8 @@ public class QueryDescription {
 				continue;
 			}
 
-			if (field.equals("MATCH_epcClass")) {
+			if (field.equals("MATCH_epcClass") || field.equals("MATCH_inputEPCClass")
+					|| field.equals("MATCH_outputEPCClass")) {
 				convertClassLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
