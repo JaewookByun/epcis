@@ -441,7 +441,7 @@ public class QueryDescription {
 			}
 
 			if (field.equals("MATCH_epcClass") || field.equals("MATCH_inputEPCClass")
-					|| field.equals("MATCH_outputEPCClass")) {
+					|| field.equals("MATCH_outputEPCClass") || field.equals("MATCH_anyEPCClass")) {
 				convertClassLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
