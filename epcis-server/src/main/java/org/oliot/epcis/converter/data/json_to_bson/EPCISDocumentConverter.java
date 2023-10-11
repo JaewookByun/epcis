@@ -30,7 +30,6 @@ import org.oliot.epcis.tdt.GlobalDocumentTypeIdentifier;
 import org.oliot.epcis.tdt.GlobalLocationNumber;
 import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
-import org.oliot.epcis.validation.IdentifierValidator;
 
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
@@ -590,19 +589,19 @@ public class EPCISDocumentConverter {
 						}
 
 						if (microorganism != null) {
-							IdentifierValidator.checkMicroorganismValue(microorganism);
+							TagDataTranslationEngine.checkMicroorganismValue(microorganism);
 							newSensorReport.put("microorganism", microorganism);
 						}
 
 						if (chemicalSubstance != null) {
-							IdentifierValidator
+							TagDataTranslationEngine
 									.checkChemicalSubstance(sensorReportElement.getString("chemicalSubstance"));
 							newSensorReport.put("chemicalSubstance", chemicalSubstance);
 						}
 
 						String component = sensorReportElement.getString("component");
 						if (component != null) {
-							IdentifierValidator.checkComponent(component);
+							TagDataTranslationEngine.checkComponent(component);
 							newSensorReport.put("component", component);
 						}
 

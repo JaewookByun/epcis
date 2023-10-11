@@ -14,7 +14,7 @@ import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
-import org.oliot.epcis.validation.IdentifierValidator;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 
 /**
  * If specified, the result will only include events that (a) have a non-null
@@ -34,7 +34,7 @@ public class WDReadPointConverter extends BaseConverter implements QueryConverte
 		Set<String> wdValues = new HashSet<String>();
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkLocationEPCPureIdentity(StaticResource.gcpLength, v);
+				TagDataTranslationEngine.checkLocationEPCPureIdentity(StaticResource.gcpLength, v);
 				wdValues.add(v);
 				List<org.bson.Document> rDocs = new ArrayList<org.bson.Document>();
 				EPCISServer.mVocCollection.find(new org.bson.Document("id", v)).into(rDocs);

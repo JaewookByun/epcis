@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.validation.IdentifierValidator;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
@@ -25,7 +25,7 @@ public class EQSensorReportChemicalSubstanceConverter extends BaseConverter impl
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkChemicalSubstance(v);
+				TagDataTranslationEngine.checkChemicalSubstance(v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

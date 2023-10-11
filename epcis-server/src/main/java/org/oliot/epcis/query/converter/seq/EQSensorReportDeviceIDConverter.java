@@ -8,7 +8,7 @@ import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
-import org.oliot.epcis.validation.IdentifierValidator;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
@@ -27,7 +27,7 @@ public class EQSensorReportDeviceIDConverter extends BaseConverter implements Qu
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkEPCPureIdentity(StaticResource.gcpLength, v);
+				TagDataTranslationEngine.checkEPCPureIdentity(StaticResource.gcpLength, v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

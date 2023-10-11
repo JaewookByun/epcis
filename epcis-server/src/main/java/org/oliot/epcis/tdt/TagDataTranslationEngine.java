@@ -132,7 +132,7 @@ public class TagDataTranslationEngine {
 		} catch (Exception e) {
 			throw new ValidationException(e.getMessage());
 		}
-
+		
 		// Class-level object identifier (8.3.1, CBV)
 		if (epcString.startsWith("urn:epc:idpat:sgtin")) {
 			for (int i = 0; i < GTINList.length; i++) {
@@ -144,24 +144,14 @@ public class TagDataTranslationEngine {
 				if (LGTINList[i].matcher(epcString).find())
 					return;
 			}
-		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
-			for (int i = 0; i < cGRAIList.length; i++) {
-				if (cGRAIList[i].matcher(epcString).find())
-					return;
-			}
-		} else if (epcString.startsWith("urn:epc:idpat:gdti")) {
-			for (int i = 0; i < cGDTIList.length; i++) {
-				if (cGDTIList[i].matcher(epcString).find())
-					return;
-			}
 		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {
 			for (int i = 0; i < cCPIList.length; i++) {
 				if (cCPIList[i].matcher(epcString).find())
 					return;
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:itip")) {
-			for (int i = 0; i < ITIPList.length; i++) {
-				if (ITIPList[i].matcher(epcString).find())
+			for (int i = 0; i < cITIPList.length; i++) {
+				if (cITIPList[i].matcher(epcString).find())
 					return;
 			}
 		}

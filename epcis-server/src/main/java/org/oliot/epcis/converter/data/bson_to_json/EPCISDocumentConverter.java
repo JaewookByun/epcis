@@ -30,7 +30,6 @@ import org.oliot.epcis.tdt.GlobalLocationNumber;
 import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.TimeUtil;
-import org.oliot.epcis.validation.IdentifierValidator;
 
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
@@ -543,12 +542,13 @@ public class EPCISDocumentConverter {
 						}
 
 						if (sensorReportElement.containsKey("rawData")) {
-							newSensorReport.put("rawData", GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("rawData")));
+							newSensorReport.put("rawData",
+									GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("rawData")));
 						}
 
 						if (sensorReportElement.containsKey("dataProcessingMethod")) {
-							newSensorReport.put("dataProcessingMethod",
-									GlobalDocumentTypeIdentifier.toDL(sensorReportElement.getString("dataProcessingMethod")));
+							newSensorReport.put("dataProcessingMethod", GlobalDocumentTypeIdentifier
+									.toDL(sensorReportElement.getString("dataProcessingMethod")));
 						}
 
 						if (sensorReportElement.containsKey("time")) {
@@ -739,7 +739,7 @@ public class EPCISDocumentConverter {
 		putDestinationList(original, converted);
 
 		putILMD(original, converted, namespaces, extType);
-//		putSensorElementList(original, context, converted);
+		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
 	}
 
@@ -760,7 +760,7 @@ public class EPCISDocumentConverter {
 		putBusinessLocation(original, converted, namespaces, extType);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
-//		putSensorElementList(original, context, converted);
+		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
 	}
 
@@ -783,7 +783,7 @@ public class EPCISDocumentConverter {
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
 		putILMD(original, converted, namespaces, extType);
-//		putSensorElementList(original, context, converted);
+		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
 	}
 
@@ -804,7 +804,7 @@ public class EPCISDocumentConverter {
 		putBusinessTransactionList(original, converted);
 		putSourceList(original, converted);
 		putDestinationList(original, converted);
-//		putSensorElementList(original, context, converted);
+		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
 	}
 

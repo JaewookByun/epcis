@@ -9,7 +9,7 @@ import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
-import org.oliot.epcis.validation.IdentifierValidator;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 
 /**
  * This is not a single parameter, but a family of parameters. If a parameter of
@@ -34,7 +34,7 @@ public class EQBizTransactionConverter extends BaseConverter implements QueryCon
 		List<Document> docList = new ArrayList<Document>();
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkBusinessTransactionEPCPureIdentity(StaticResource.gcpLength, v);
+				TagDataTranslationEngine.checkBusinessTransactionEPCPureIdentity(StaticResource.gcpLength, v);
 				if (type.isEmpty()) {
 					docList.add(new Document("bizTransactionList", new Document("value", v)));
 				} else {

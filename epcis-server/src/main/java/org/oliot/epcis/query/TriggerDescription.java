@@ -1,10 +1,7 @@
 package org.oliot.epcis.query;
 
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,13 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.xml.bind.DatatypeConverter;
 
 import org.bson.Document;
-import org.bson.types.Binary;
 import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
@@ -27,12 +22,10 @@ import org.oliot.epcis.model.QueryParam;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
-import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.TimeUtil;
-import org.oliot.epcis.validation.IdentifierValidator;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("unused")
@@ -241,6 +234,7 @@ public class TriggerDescription {
 	private HashMap<String, HashMap<String, List<String>>> EQ_ATTR;
 
 	private String subscriptionID;
+
 
 	private String triggerKey;
 

@@ -7,7 +7,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
-import org.oliot.epcis.validation.IdentifierValidator;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
@@ -26,7 +26,7 @@ public class EQSensorReportMicroorganismConverter extends BaseConverter implemen
 		List<String> valueList = getListOfString(value);
 		for (String v : valueList) {
 			try {
-				IdentifierValidator.checkMicroorganismValue(v);
+				TagDataTranslationEngine.checkMicroorganismValue(v);
 			} catch (ValidationException e) {
 				throw new QueryParameterException(e.getReason());
 			}

@@ -10,8 +10,8 @@ import org.oliot.epcis.model.AttributeType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VocabularyElementType;
 import org.oliot.epcis.model.VocabularyType;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.CBVAttributeUtil;
-import org.oliot.epcis.validation.IdentifierValidator;
 
 import com.mongodb.client.model.UpdateOneModel;
 import com.mongodb.client.model.UpdateOptions;
@@ -34,25 +34,25 @@ public class MasterDataConverter {
 
 	public static void checkVocabularyTypeID(String type, String id) throws ValidationException {
 		if (type.equals("urn:epcglobal:epcis:vtype:ReadPoint")) {
-			IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkLocationEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:BusinessLocation")) {
-			IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkLocationEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:BusinessTransaction")) {
-			IdentifierValidator.checkBusinessTransactionEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkBusinessTransactionEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:EPCClass")) {
-			IdentifierValidator.checkEPCClassPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkEPCClassPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:SourceDest")) {
-			IdentifierValidator.checkSourceDestinationEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkSourceDestinationEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:Location")) {
-			IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkLocationEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:Party")) {
-			IdentifierValidator.checkPartyEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkPartyEPCPureIdentity(gcpLength, id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:Microorganism")) {
-			IdentifierValidator.checkMicroorganismValue(id);
+			TagDataTranslationEngine.checkMicroorganismValue(id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:ChemicalSubstance")) {
-			IdentifierValidator.checkChemicalSubstance(id);
+			TagDataTranslationEngine.checkChemicalSubstance(id);
 		} else if (type.equals("urn:epcglobal:epcis:vtype:Resource")) {
-			IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, id);
+			TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, id);
 		} else {
 			throw new ValidationException(type + " should be one of " + vocabularyTypes.toString());
 		}

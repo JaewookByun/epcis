@@ -34,9 +34,9 @@ import org.oliot.epcis.model.SourceListType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.CBVAttributeUtil;
 import org.oliot.epcis.util.TimeUtil;
-import org.oliot.epcis.validation.IdentifierValidator;
 import org.w3c.dom.*;
 
 import io.vertx.core.json.JsonArray;
@@ -87,7 +87,7 @@ public class POJOtoBSONUtil {
 	public static void putEPC(Document o, String fieldName, String v) throws ValidationException {
 		if (v == null)
 			return;
-		IdentifierValidator.checkEPCPureIdentity(gcpLength, v);
+		TagDataTranslationEngine.checkEPCPureIdentity(gcpLength, v);
 		o.put(fieldName, v);
 	}
 
@@ -100,7 +100,7 @@ public class POJOtoBSONUtil {
 		ArrayList<String> epcDBList = new ArrayList<String>();
 		for (EPC epc : epcList) {
 			String epcStr = epc.getValue();
-			IdentifierValidator.checkEPCPureIdentity(gcpLength, epcStr);
+			TagDataTranslationEngine.checkEPCPureIdentity(gcpLength, epcStr);
 			epcDBList.add(epcStr);
 		}
 		o.put(fieldName, epcDBList);
@@ -115,7 +115,7 @@ public class POJOtoBSONUtil {
 			Document quantity = new Document();
 			String epcClass = qet.getEpcClass();
 			String uom = qet.getUom();
-			IdentifierValidator.checkEPCClassPureIdentity(gcpLength, epcClass);
+			TagDataTranslationEngine.checkEPCClassPureIdentity(gcpLength, epcClass);
 			quantity.put("epcClass", epcClass);
 
 			if (qet.getQuantity() != null) {
@@ -211,7 +211,7 @@ public class POJOtoBSONUtil {
 	public static void putReadPoint(Document o, ReadPointType v) throws ValidationException {
 		if (v == null)
 			return;
-		IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, v.getId());
+		TagDataTranslationEngine.checkLocationEPCPureIdentity(gcpLength, v.getId());
 		o.put("readPoint", v.getId());
 		Document extension = putAny(o, "readPointExt", v.getAny(), false);
 		if (extension != null)
@@ -221,7 +221,7 @@ public class POJOtoBSONUtil {
 	public static void putBizLocation(Document o, BusinessLocationType v) throws ValidationException {
 		if (v == null)
 			return;
-		IdentifierValidator.checkLocationEPCPureIdentity(gcpLength, v.getId());
+		TagDataTranslationEngine.checkLocationEPCPureIdentity(gcpLength, v.getId());
 		o.put("bizLocation", v.getId());
 		Document extension = putAny(o, "bizLocationExt", v.getAny(), false);
 		if (extension != null)
@@ -242,7 +242,7 @@ public class POJOtoBSONUtil {
 					e.setReason("non-CBV business transaction type: " + type);
 					throw e;
 				}
-				IdentifierValidator.checkBusinessTransactionEPCPureIdentity(gcpLength, value);
+				TagDataTranslationEngine.checkBusinessTransactionEPCPureIdentity(gcpLength, value);
 
 				Document bizTransaction = new Document();
 				if (type != null)
@@ -275,7 +275,7 @@ public class POJOtoBSONUtil {
 				Document sd = new Document();
 				sd.put("type", type);
 				String value = sdt.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", "");
-				IdentifierValidator.checkSourceDestinationEPCPureIdentity(gcpLength, value);
+				TagDataTranslationEngine.checkSourceDestinationEPCPureIdentity(gcpLength, value);
 				sd.put("value", value);
 				dbList.add(sd);
 			}
@@ -304,7 +304,7 @@ public class POJOtoBSONUtil {
 				Document sd = new Document();
 				sd.put("type", type);
 				String value = sdt.getValue().replaceAll("\n", "").replaceAll("\t", "").replaceAll("\\s", "");
-				IdentifierValidator.checkSourceDestinationEPCPureIdentity(gcpLength, value);
+				TagDataTranslationEngine.checkSourceDestinationEPCPureIdentity(gcpLength, value);
 				sd.put("value", value);
 				dbList.add(sd);
 			}
@@ -317,7 +317,7 @@ public class POJOtoBSONUtil {
 	public static void putTransformationID(Document o, String v) throws ValidationException {
 		if (v == null)
 			return;
-		IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, v);
+		TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, v);
 		o.put("transformationID", v);
 	}
 
@@ -630,27 +630,27 @@ public class POJOtoBSONUtil {
 					sensorMeta.put("endTime", smdt.getEndTime().toGregorianCalendar().getTimeInMillis());
 				if (smdt.getDeviceID() != null) {
 					// EPC
-					IdentifierValidator.checkEPCPureIdentity(gcpLength, smdt.getDeviceID());
+					TagDataTranslationEngine.checkEPCPureIdentity(gcpLength, smdt.getDeviceID());
 					sensorMeta.put("deviceID", smdt.getDeviceID());
 				}
 				if (smdt.getDeviceMetadata() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, smdt.getDeviceMetadata());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, smdt.getDeviceMetadata());
 					sensorMeta.put("deviceMetadata", smdt.getDeviceMetadata());
 				}
 				if (smdt.getRawData() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, smdt.getRawData());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, smdt.getRawData());
 					sensorMeta.put("rawData", smdt.getRawData());
 				}
 				if (smdt.getDataProcessingMethod() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, smdt.getDataProcessingMethod());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, smdt.getDataProcessingMethod());
 					sensorMeta.put("dataProcessingMethod", smdt.getDataProcessingMethod());
 				}
 				if (smdt.getBizRules() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, smdt.getBizRules());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, smdt.getBizRules());
 					sensorMeta.put("bizRules", smdt.getBizRules());
 				}
 				if (smdt.getOtherAttributes() != null && smdt.getOtherAttributes().size() != 0)
@@ -684,38 +684,38 @@ public class POJOtoBSONUtil {
 
 				if (e1.getDeviceID() != null) {
 					// EPC
-					IdentifierValidator.checkEPCPureIdentity(gcpLength, e1.getDeviceID());
+					TagDataTranslationEngine.checkEPCPureIdentity(gcpLength, e1.getDeviceID());
 					sensorReportObj.put("deviceID", e1.getDeviceID());
 				}
 				if (e1.getDeviceMetadata() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, e1.getDeviceMetadata());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, e1.getDeviceMetadata());
 					sensorReportObj.put("deviceMetadata", e1.getDeviceMetadata());
 				}
 				if (e1.getRawData() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, e1.getRawData());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, e1.getRawData());
 					sensorReportObj.put("rawData", e1.getRawData());
 				}
 				if (e1.getDataProcessingMethod() != null) {
 					// ResourceID
-					IdentifierValidator.checkDocumentEPCPureIdentity(gcpLength, e1.getDataProcessingMethod());
+					TagDataTranslationEngine.checkDocumentEPCPureIdentity(gcpLength, e1.getDataProcessingMethod());
 					sensorReportObj.put("dataProcessingMethod", e1.getDataProcessingMethod());
 				}
 				if (e1.getTime() != null) {
 					sensorReportObj.put("time", e1.getTime().toGregorianCalendar().getTimeInMillis());
 				}
 				if (e1.getMicroorganism() != null) {
-					IdentifierValidator.checkMicroorganismValue(e1.getMicroorganism());
+					TagDataTranslationEngine.checkMicroorganismValue(e1.getMicroorganism());
 					sensorReportObj.put("microorganism", e1.getMicroorganism());
 				}
 				if (e1.getChemicalSubstance() != null) {
-					IdentifierValidator.checkChemicalSubstance(e1.getChemicalSubstance());
+					TagDataTranslationEngine.checkChemicalSubstance(e1.getChemicalSubstance());
 					sensorReportObj.put("chemicalSubstance", e1.getChemicalSubstance());
 				}
 
 				if (e1.getComponent() != null) {
-					IdentifierValidator.checkComponent(e1.getComponent());
+					TagDataTranslationEngine.checkComponent(e1.getComponent());
 					sensorReportObj.put("component", e1.getComponent());
 				}
 
