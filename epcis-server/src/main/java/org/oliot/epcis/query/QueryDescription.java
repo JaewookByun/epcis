@@ -19,9 +19,11 @@ import org.oliot.epcis.model.VoidHolder;
 import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.BusinessTransactionType;
 import org.oliot.epcis.model.cbv.Disposition;
+import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.tdt.GlobalLocationNumber;
+import org.oliot.epcis.tdt.GlobalLocationNumberOfParty;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.BSONReadUtil;
 import org.oliot.epcis.util.TimeUtil;
@@ -306,6 +308,42 @@ public class QueryDescription {
 
 	}
 
+	private void convertSourceToQueryParam(List<QueryParam> queryParams, String subfield, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		subfield = SourceDestinationType.getFullVocabularyName(subfield);
+
+		if (subfield.equals(SourceDestinationType.location.toString())) {
+			for (Object arrValue : arr) {
+				arrayOfString.add(GlobalLocationNumber.toEPC(arrValue.toString()));
+			}
+			queryParams.add(new QueryParam("EQ_source_" + subfield, arrayOfString));
+		} else {
+			for (Object arrValue : arr) {
+				arrayOfString.add(GlobalLocationNumberOfParty.toEPC(arrValue.toString()));
+			}
+			queryParams.add(new QueryParam("EQ_source_" + subfield, arrayOfString));
+		}
+	}
+	
+	private void convertDestinationToQueryParam(List<QueryParam> queryParams, String subfield, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		subfield = SourceDestinationType.getFullVocabularyName(subfield);
+
+		if (subfield.equals("urn:epcglobal:cbv:sdt:location")) {
+			for (Object arrValue : arr) {
+				arrayOfString.add(GlobalLocationNumber.toEPC(arrValue.toString()));
+			}
+			queryParams.add(new QueryParam("EQ_destination_" + subfield, arrayOfString));
+		} else {
+			for (Object arrValue : arr) {
+				arrayOfString.add(GlobalLocationNumberOfParty.toEPC(arrValue.toString()));
+			}
+			queryParams.add(new QueryParam("EQ_destination_" + subfield, arrayOfString));
+		}
+	}
+
 	/**
 	 * JSON Query to common ones
 	 * 
@@ -342,6 +380,16 @@ public class QueryDescription {
 
 			if (field.startsWith("EQ_bizTransaction_")) {
 				convertBizTransactionToQueryParam(queryParams, field.substring(18), (JsonArray) value);
+				continue;
+			}
+
+			if (field.startsWith("EQ_source_")) {
+				convertSourceToQueryParam(queryParams, field.substring(10), (JsonArray) value);
+				continue;
+			}
+			
+			if (field.startsWith("EQ_destination_")) {
+				convertDestinationToQueryParam(queryParams, field.substring(15), (JsonArray) value);
 				continue;
 			}
 
