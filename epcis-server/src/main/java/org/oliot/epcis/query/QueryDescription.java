@@ -15,6 +15,7 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.VoidHolder;
+import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.query.converter.QueryConverter;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.util.BSONReadUtil;
@@ -95,7 +96,7 @@ public class QueryDescription {
 		}
 	}
 
-	public QueryDescription(JsonObject query) throws QueryParameterException, ImplementationException {
+	public QueryDescription(JsonObject query) throws QueryParameterException, ImplementationException, Exception {
 		String queryName = query.getString("queryName");
 
 		if (queryName == null || queryName.equals("SimpleEventQuery")) {
@@ -257,7 +258,22 @@ public class QueryDescription {
 		}
 	}
 
-	private List<QueryParam> convertToQueryParams(JsonObject query) throws QueryParameterException {
+	private void convertEQBizStepToQueryParam(List<QueryParam> queryParams, JsonArray arr) throws Exception {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			arrayOfString.add(BusinessStep.getFullVocabularyName(arrValue.toString()));
+		}
+		queryParams.add(new QueryParam("EQ_bizStep", arrayOfString));
+	}
+
+	/**
+	 * JSON Query to common ones
+	 * 
+	 * @param query
+	 * @return
+	 * @throws QueryParameterException
+	 */
+	private List<QueryParam> convertToQueryParams(JsonObject query) throws Exception, QueryParameterException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
 
 		for (String field : query.fieldNames()) {
@@ -265,6 +281,11 @@ public class QueryDescription {
 
 			if (field.equals("@context"))
 				continue;
+
+			if (field.equals("EQ_bizStep")) {
+				convertEQBizStepToQueryParam(queryParams, (JsonArray) value);
+				continue;
+			}
 
 			if (value == null) {
 				queryParams.add(new QueryParam(field, new VoidHolder()));
@@ -414,7 +435,7 @@ public class QueryDescription {
 	void makeSimpleEventQuery(List<QueryParam> paramList) throws QueryParameterException, ImplementationException {
 		queryName = "SimpleEventQuery";
 		mongoSort = new Document();
-		
+
 		List<Document> mongoQueryElements = new ArrayList<Document>();
 		for (QueryParam param : paramList) {
 			String name = param.getName();
@@ -1169,7 +1190,7 @@ public class QueryDescription {
 
 	}
 
-	void makeSimpleEventQuery(JsonObject query) throws QueryParameterException, ImplementationException {
+	void makeSimpleEventQuery(JsonObject query) throws Exception, QueryParameterException, ImplementationException {
 		queryName = "SimpleEventQuery";
 		mongoSort = new Document();
 

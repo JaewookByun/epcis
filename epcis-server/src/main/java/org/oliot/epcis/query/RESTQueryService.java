@@ -109,11 +109,17 @@ public class RESTQueryService {
 							"[500ImplementationException] The server cannot return the response as requested: "
 									+ e.getReason()),
 					500);
+		} catch (Exception e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e.getMessage()),
+					500);
 		}
 	}
 
 	public void poll(RoutingContext routingContext, JsonObject query)
-			throws QueryParameterException, ImplementationException {
+			throws QueryParameterException, ImplementationException, Exception {
 
 		// get perPage
 		int perPage;
@@ -132,6 +138,8 @@ public class RESTQueryService {
 			throw e1;
 		} catch (ImplementationException e2) {
 			throw e2;
+		} catch (Exception e3) {
+			throw e3;
 		}
 
 		if (qd.getQueryName().equals("SimpleEventQuery")) {
