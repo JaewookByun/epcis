@@ -198,6 +198,8 @@ public class EPCISServer extends AbstractVerticle {
 				.handler(CorsHandler.create().addOrigin("*").allowedHeader("Access-Control-Allow-Credentials")
 						.allowedHeader("GS1-EPCIS-Version").allowedHeader("GS1-CBV-Version")
 						.allowedHeader("GS1-EPCIS-Max").allowedHeader("GS1-EPCIS-Min")
+						.allowedHeader("GS1-CBV-Max").allowedHeader("GS1-CBV-Min")
+						.allowedHeader("GS1-EPC-Format").allowedHeader("GS1-CBV-XML-Format")
 						.allowedHeader("GS1-EPCIS-Capture-Error-Behaviour").allowedHeader("Access-Control-Allow-Origin")
 						.allowedHeader("Access-Control-Allow-Headers").allowedHeader("Content-Type")
 						.allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS)

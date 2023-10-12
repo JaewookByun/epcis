@@ -2,6 +2,8 @@ package org.oliot.epcis.query;
 
 import static org.oliot.epcis.validation.HeaderValidator.*;
 
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import org.oliot.epcis.capture.json.JSONMessageFactory;
@@ -9,6 +11,8 @@ import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 
+import io.vertx.core.MultiMap;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 
 /**
@@ -56,10 +60,28 @@ public class RESTQueryServiceHandler {
 				return;
 			routingContext.response().setChunked(true);
 
+			JsonObject query = null;
+
+			MultiMap m = routingContext.request().params();
+			Iterator<Entry<String, String>> iter = m.iterator();
+			while (iter.hasNext()) {
+				try {
+					String k = iter.next().getKey();
+					query = new JsonObject(k);
+					break;
+				} catch (Exception e) {
+					// DO NOTHING
+				}
+			}
+			
+			if(query == null) {
+				query = routingContext.body().asJsonObject();
+			}
+
 			// get UUID
 			String nextPageToken = routingContext.request().getParam("NextPageToken");
 			if (nextPageToken == null) {
-				restQueryService.query(routingContext);
+				restQueryService.query(routingContext, query);
 			} else {
 				UUID uuid = null;
 				try {

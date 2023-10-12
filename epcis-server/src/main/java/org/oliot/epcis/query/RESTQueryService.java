@@ -84,16 +84,13 @@ public class RESTQueryService {
 		return extContext;
 	}
 
-	public void query(RoutingContext routingContext) {
+	public void query(RoutingContext routingContext, JsonObject query) {
 
-		JsonObject query = null;
-		try {
-			query = new JsonObject(routingContext.body().asString());
-		} catch (NullPointerException | DecodeException e) {
+		if(query == null) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
-							"[406NotAcceptable] The server cannot return the response as requested: " + e.getMessage()),
-					406);
+							"[406NotAcceptable] The server cannot return the response as requested: No Query received"),
+					406);			
 		}
 
 		try {
