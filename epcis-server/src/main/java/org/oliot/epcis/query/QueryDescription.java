@@ -464,7 +464,7 @@ public class QueryDescription {
 					|| field.equals("EQ_SENSORREPORT_deviceMetadata") || field.equals("EQ_SENSORMETADATA_rawData")
 					|| field.equals("EQ_SENSORREPORT_rawData") || field.equals("EQ_dataProcessingMethod")
 					|| field.equals("EQ_SENSORMETADATA_dataProcessingMethod")
-					|| field.equals("EQ_SENSORREPORT_dataProcessingMethod")) {
+					|| field.equals("EQ_SENSORREPORT_dataProcessingMethod") || field.equals("EQ_bizRules")) {
 				convertDocumentIDToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
