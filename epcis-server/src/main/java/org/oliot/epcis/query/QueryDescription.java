@@ -345,7 +345,7 @@ public class QueryDescription {
 		}
 	}
 
-	private void convertTransformationIDToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+	private void convertDocumentIDToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
 			throws Exception, ValidationException {
 		List<String> arrayOfString = new ArrayList<String>();
 		for (Object arrValue : arr) {
@@ -379,7 +379,20 @@ public class QueryDescription {
 		}
 		queryParams.add(new QueryParam(field, arrayOfString));
 	}
-	
+
+	private void convertDLToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			try {
+				arrayOfString.add(TagDataTranslationEngine.toEPC(arrValue.toString()));
+			} catch (ValidationException e) {
+				arrayOfString.add(arrValue.toString());
+			}
+		}
+		queryParams.add(new QueryParam(field, arrayOfString));
+	}
+
 	public JsonObject retrieveContext(JsonObject epcisDocument) {
 		JsonObject context = new JsonObject();
 		Object contextObj = epcisDocument.getValue("@context");
@@ -409,7 +422,7 @@ public class QueryDescription {
 	private List<QueryParam> convertToQueryParams(JsonObject query)
 			throws Exception, QueryParameterException, ValidationException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
-		
+
 		for (String field : query.fieldNames()) {
 			Object value = query.getValue(field);
 
@@ -447,8 +460,12 @@ public class QueryDescription {
 				continue;
 			}
 
-			if (field.equals("EQ_transformationID")) {
-				convertTransformationIDToQueryParam(queryParams, field, (JsonArray) value);
+			if (field.equals("EQ_transformationID") || field.equals("EQ_SENSORMETADATA_deviceMetadata")
+					|| field.equals("EQ_SENSORREPORT_deviceMetadata") || field.equals("EQ_SENSORMETADATA_rawData")
+					|| field.equals("EQ_SENSORREPORT_rawData") || field.equals("EQ_dataProcessingMethod")
+					|| field.equals("EQ_SENSORMETADATA_dataProcessingMethod")
+					|| field.equals("EQ_SENSORREPORT_dataProcessingMethod")) {
+				convertDocumentIDToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
@@ -461,6 +478,12 @@ public class QueryDescription {
 			if (field.equals("MATCH_epcClass") || field.equals("MATCH_inputEPCClass")
 					|| field.equals("MATCH_outputEPCClass") || field.equals("MATCH_anyEPCClass")) {
 				convertClassLevelDLToQueryParam(queryParams, field, (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("EQ_deviceID") || field.equals("EQ_SENSORMETADATA_deviceID")
+					|| field.equals("EQ_SENSORREPORT_deviceID")) {
+				convertDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
