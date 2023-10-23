@@ -505,7 +505,7 @@ public class QueryDescription {
 					queryParams.add(new QueryParam(field, value.toString()));
 				}
 			} else if (value instanceof Boolean) {
-				queryParams.add(new QueryParam(field, value.toString()));
+				queryParams.add(new QueryParam(field, (Boolean) value));
 			} else if (value instanceof Double) {
 				queryParams.add(new QueryParam(field, (Double) value));
 			} else if (value instanceof Integer) {
