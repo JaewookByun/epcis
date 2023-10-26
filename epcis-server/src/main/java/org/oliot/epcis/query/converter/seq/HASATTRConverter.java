@@ -66,7 +66,7 @@ public class HASATTRConverter extends BaseConverter implements QueryConverter {
 				throw e1;
 			}
 
-			if (first == null) {
+			if (first != null) {
 				mdValueList.add(v);
 			}
 		}

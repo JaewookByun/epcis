@@ -298,10 +298,16 @@ public class QueryDescription {
 			throws Exception, ValidationException {
 		List<String> arrayOfString = new ArrayList<String>();
 		for (Object arrValue : arr) {
-			arrayOfString.add(TagDataTranslationEngine.toBusinessTransactionEPC(arrValue.toString()));
+			try {
+				arrayOfString.add(TagDataTranslationEngine.toBusinessTransactionEPC(arrValue.toString()));
+			} catch (ValidationException e) {
+				arrayOfString.add(arrValue.toString());
+			}
 		}
 		if (subfield.isEmpty()) {
 			queryParams.add(new QueryParam("EQ_bizTransaction_", arrayOfString));
+		} else if (subfield.equals("HASATTR_BusinessTransaction")) {
+			queryParams.add(new QueryParam(subfield, arrayOfString));
 		} else {
 			queryParams.add(new QueryParam(
 					"EQ_bizTransaction_" + BusinessTransactionType.getFullVocabularyName(subfield), arrayOfString));
@@ -343,6 +349,15 @@ public class QueryDescription {
 			}
 			queryParams.add(new QueryParam("EQ_destination_" + subfield, arrayOfString));
 		}
+	}
+
+	private void convertPartyToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
+			throws Exception, ValidationException {
+		List<String> arrayOfString = new ArrayList<String>();
+		for (Object arrValue : arr) {
+			arrayOfString.add(GlobalLocationNumberOfParty.toEPC(arrValue.toString()));
+		}
+		queryParams.add(new QueryParam(field, arrayOfString));
 	}
 
 	private void convertDocumentIDToQueryParam(List<QueryParam> queryParams, String field, JsonArray arr)
@@ -440,13 +455,20 @@ public class QueryDescription {
 				continue;
 			}
 
-			if (field.equals("EQ_readPoint") || field.equals("EQ_bizLocation")) {
+			if (field.equals("EQ_readPoint") || field.equals("EQ_bizLocation") || field.equals("WD_readPoint")
+					|| field.equals("WD_bizLocation") || field.equals("HASATTR_readPoint")
+					|| field.equals("HASATTR_bizLocation") || field.equals("HASATTR_LocationID")) {
 				convertLocationToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
 			if (field.startsWith("EQ_bizTransaction_")) {
 				convertBizTransactionToQueryParam(queryParams, field.substring(18), (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("HASATTR_BusinessTransaction")) {
+				convertBizTransactionToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
@@ -457,6 +479,11 @@ public class QueryDescription {
 
 			if (field.startsWith("EQ_destination_")) {
 				convertDestinationToQueryParam(queryParams, field.substring(15), (JsonArray) value);
+				continue;
+			}
+
+			if (field.equals("HASATTR_PartyID")) {
+				convertPartyToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
@@ -476,13 +503,14 @@ public class QueryDescription {
 			}
 
 			if (field.equals("MATCH_epcClass") || field.equals("MATCH_inputEPCClass")
-					|| field.equals("MATCH_outputEPCClass") || field.equals("MATCH_anyEPCClass")) {
+					|| field.equals("MATCH_outputEPCClass") || field.equals("MATCH_anyEPCClass")
+					|| field.equals("HASATTR_EPCClass")) {
 				convertClassLevelDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
 
 			if (field.equals("EQ_deviceID") || field.equals("EQ_SENSORMETADATA_deviceID")
-					|| field.equals("EQ_SENSORREPORT_deviceID")) {
+					|| field.equals("EQ_SENSORREPORT_deviceID") || field.equals("HASATTR_SourceDestID")) {
 				convertDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
@@ -1335,16 +1363,7 @@ public class QueryDescription {
 				continue;
 			}
 
-			if (name.startsWith("EQ_SENSORMETADATA_")) {
-				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORMETADATA_");
-				mongoQueryElements.add(converter.convert(name, value));
-				continue;
-			}
-			if (name.startsWith("EQ_SENSORREPORT_")) {
-				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EQ_SENSORREPORT_");
-				mongoQueryElements.add(converter.convert(name, value));
-				continue;
-			}
+
 			if (name.startsWith("EXISTS_SENSORMETADATA_")) {
 				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORMETADATA_");
 				mongoQueryElements.add(converter.convert(name, value));
