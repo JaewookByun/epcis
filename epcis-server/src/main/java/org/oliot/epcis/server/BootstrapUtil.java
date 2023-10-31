@@ -367,7 +367,7 @@ public class BootstrapUtil {
 		sub.init();
 	}
 
-	static void configureServer(Vertx vertx, String[] args, SubscriptionManager sm) {
+	public static void configureServer(Vertx vertx, String[] args, SubscriptionManager sm) {
 		// Set Configuration (JSON)
 		setConfigurationJson(args);
 		// Set Logger

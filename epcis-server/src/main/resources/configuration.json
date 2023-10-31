@@ -32,5 +32,8 @@
 	"max_capture_job_size" : 500,
 	
 	"_gcp_source" : "(local|web)",
-	"gcp_source" : "local"
+	"gcp_source" : "local",
+	
+	"user": "test",
+	"password" : "password"
 }

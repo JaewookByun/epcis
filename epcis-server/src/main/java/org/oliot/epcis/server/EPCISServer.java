@@ -78,14 +78,14 @@ public class EPCISServer extends AbstractVerticle {
 	public static ConcurrentHashMap<UUID, Page> vocabularyPageMap = new ConcurrentHashMap<UUID, Page>();
 	public static ConcurrentHashMap<UUID, Page> captureIDPageMap = new ConcurrentHashMap<UUID, Page>();
 
-	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
-	final SOAPQueryService soapQueryService = new SOAPQueryService();
-	final RESTQueryService restQueryService = new RESTQueryService();
+	protected final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
+	protected final SOAPQueryService soapQueryService = new SOAPQueryService();
+	protected final RESTQueryService restQueryService = new RESTQueryService();
 	public static org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter bsonToJsonConverter = new EPCISDocumentConverter();
 	public SubscriptionManager subscriptionManager;
 	public static TriggerEngine triggerEngine = new TriggerEngine();
 
-	final JSONCaptureService jsonCaptureCoreService = new JSONCaptureService();
+	protected final JSONCaptureService jsonCaptureCoreService = new JSONCaptureService();
 
 	public static UnitConverter unitConverter;
 
@@ -150,20 +150,20 @@ public class EPCISServer extends AbstractVerticle {
 		TagDataTranslationServiceHandler.registerPostEventsHandler(router);
 	}
 
-	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
+	protected void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 
-	private void registerCaptureServiceHandler(Router router, EventBus eventBus) {
+	protected void registerCaptureServiceHandler(Router router, EventBus eventBus) {
 		TransactionManager.registerTransactionStartHandler(eventBus);
 		TransactionManager.registerTransactionSuccessHandler(eventBus);
 		TransactionManager.registerTransactionProceedHandler(eventBus);
 		TransactionManager.registerTransactionRollBackHandler(eventBus);
 	}
 
-	private void registerXMLCaptureServiceHandler(Router router, EventBus eventBus) {
+	protected void registerXMLCaptureServiceHandler(Router router, EventBus eventBus) {
 		XMLCaptureServiceHandler.registerPostCaptureHandler(router, xmlCaptureCoreService, eventBus);
 		XMLCaptureServiceHandler.registerGetCaptureIDHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerPostEventsHandler(router, xmlCaptureCoreService, eventBus);
@@ -172,7 +172,7 @@ public class EPCISServer extends AbstractVerticle {
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);
 	}
 
-	private void registerJSONCaptureServiceHandler(Router router, EventBus eventBus) {
+	protected void registerJSONCaptureServiceHandler(Router router, EventBus eventBus) {
 		JSONCaptureServiceHandler.registerPostCaptureHandler(router, jsonCaptureCoreService, eventBus);
 		JSONCaptureServiceHandler.registerGetCaptureIDHandler(router, jsonCaptureCoreService);
 		JSONCaptureServiceHandler.registerPostEventsHandler(router, jsonCaptureCoreService, eventBus);
