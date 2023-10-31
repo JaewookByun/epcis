@@ -19,6 +19,7 @@ import io.vertx.ext.web.RoutingContext;
  * @author Wen Zhu wzhu@nira-inc.com
  */
 public class ServerWrapper extends EPCISServer{
+	
 	private class HandlerWrapper implements Handler<RoutingContext> {
 		List <RequestProcessor> processors = new ArrayList<>();
 		Handler<RoutingContext> impl = null;

@@ -112,7 +112,6 @@ public class EPCISServer extends AbstractVerticle {
 		// TODO: The registration needs to be moved to the constructor so that they can be overriden. 
 		SOAPQueryServiceHandler.registerQueryHandler(soapQueryService);
 		SOAPQueryServiceHandler.registerPaginationHandler(soapQueryService);
-		
 		RESTQueryServiceHandler.registerGetEventsHandler(restQueryService);
 	}
 

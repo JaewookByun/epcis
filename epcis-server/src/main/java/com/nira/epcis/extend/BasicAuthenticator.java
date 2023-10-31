@@ -20,8 +20,6 @@ public class BasicAuthenticator implements RequestProcessor {
 		super();
 		this.username = username;
 		this.password = password;
-		
-		System.out.println("Configurated for basic authentication:"+username+":"+password);
 	}
 
 	@Override
