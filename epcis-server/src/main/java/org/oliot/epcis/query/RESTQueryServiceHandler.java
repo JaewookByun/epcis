@@ -46,12 +46,12 @@ public class RESTQueryServiceHandler {
 	 * EQ_stringValue EQ_hexBinaryValue EQ_uriValue EQ_booleanValue
 	 */
 
-	public static void registerGetEventsHandler(Router router, RESTQueryService restQueryService) {
+	public static void registerGetEventsHandler(RESTQueryService restQueryService) {
 		/*
 		 * NextPageToken PerPage GS1-CBV-Min GS1-CBV-Max GS1-EPCIS-Min GS1-EPCIS-Max
 		 * GS1-EPC-Format GS1-CBV-XML-Format
 		 */
-		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
+		EPCISServer.registerHandler("get","/epcis/events","application/json", routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format"))

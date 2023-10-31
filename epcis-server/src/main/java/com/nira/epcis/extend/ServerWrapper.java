@@ -3,17 +3,12 @@ package com.nira.epcis.extend;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.oliot.epcis.query.SOAPQueryService;
-import org.oliot.epcis.query.SOAPQueryServiceHandler;
 import org.oliot.epcis.query.SubscriptionManager;
-import org.oliot.epcis.query.TriggerEngine;
 import org.oliot.epcis.server.BootstrapUtil;
 import org.oliot.epcis.server.EPCISServer;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -24,12 +19,13 @@ import io.vertx.ext.web.RoutingContext;
  * @author Wen Zhu wzhu@nira-inc.com
  */
 public class ServerWrapper extends EPCISServer{
-	private SOAPQueryService soapQueryService = new  SOAPQueryService();
-	
-	private class SOAPQueryHandler implements Handler<RoutingContext> {
+	private class HandlerWrapper implements Handler<RoutingContext> {
 		List <RequestProcessor> processors = new ArrayList<>();
+		Handler<RoutingContext> impl = null;
 
-		public SOAPQueryHandler() {
+		public HandlerWrapper(Handler<RoutingContext> impl) {
+			this.impl = impl;
+			
 			String user = configuration.getString("user");
 			String password = configuration.getString("password");
 			
@@ -37,7 +33,7 @@ public class ServerWrapper extends EPCISServer{
 				processors.add(new BasicAuthenticator(user, password));
 			}
 			
-			processors.add(new HeaderLogger());
+			// processors.add(new HeaderLogger());
 		}
 
 		@Override
@@ -49,24 +45,26 @@ public class ServerWrapper extends EPCISServer{
 				}
 			}
 			// make a call to the default handler
-			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
-					routingContext.body().asString());
+			impl.handle(routingContext);
 		}
 	}
 	
+	public static final EPCISServer.HandlerKey[] RequestToIntercept = new EPCISServer.HandlerKey[]
+		{
+			new EPCISServer.HandlerKey("post", "/epcis/query", "application/xml"),
+			new EPCISServer.HandlerKey("get","/epcis/events","application/json")
+		};
+	
 	public ServerWrapper() {
 		super();
+		
+		// overwrite the handlers
+		for(EPCISServer.HandlerKey key: RequestToIntercept) {
+			Handler<RoutingContext> defaultHandler = EPCISServer.getHandler(key);
+			EPCISServer.registerHandler(key, new HandlerWrapper(defaultHandler));
+		}
 	}
-
-	@Override
-	protected void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
-		//SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
-		router.post("/epcis/query").consumes("application/xml").handler(new SOAPQueryHandler());
-
-		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
-		TriggerEngine.registerTransactionStartHandler(eventBus);
-	}
-
+	
 	public static void main(String[] args) {
 		Vertx vertx = Vertx.vertx();
 		SubscriptionManager sm = null;

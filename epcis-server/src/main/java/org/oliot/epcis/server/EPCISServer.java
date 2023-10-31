@@ -10,7 +10,9 @@ import org.bson.Document;
 
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
@@ -38,6 +40,8 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -103,6 +107,14 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> monitoringEventCollection;
 	public static MongoCollection<Document> monitoringTxCollection;
 	public static MongoCollection<Document> monitoringSubscriptionCollection;
+	
+	public EPCISServer() {
+		// TODO: The registration needs to be moved to the constructor so that they can be overriden. 
+		SOAPQueryServiceHandler.registerQueryHandler(soapQueryService);
+		SOAPQueryServiceHandler.registerPaginationHandler(soapQueryService);
+		
+		RESTQueryServiceHandler.registerGetEventsHandler(restQueryService);
+	}
 
 	@Override
 	public void start(Promise<Void> startPromise) {
@@ -115,20 +127,16 @@ public class EPCISServer extends AbstractVerticle {
 
 		registerCommonHandler(router);
 		registerTDTServiceHandler(router);
+		registerSOAPQueryServiceHandler(router, eventBus);
 		registerCaptureServiceHandler(router, eventBus);
 		registerXMLCaptureServiceHandler(router, eventBus);
-		registerSOAPQueryServiceHandler(router, eventBus);
 		registerJSONCaptureServiceHandler(router, eventBus);
 		registerSubscriptionMonitorHandler(router, eventBus);
-		registerRESTQueryServiceHandler(router, eventBus);
 
+		startHandlers(router);
 		server.requestHandler(router).listen(port);
 
 		new DynamicResource(vertx).start();
-	}
-
-	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
-		RESTQueryServiceHandler.registerGetEventsHandler(router, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {
@@ -150,9 +158,9 @@ public class EPCISServer extends AbstractVerticle {
 		TagDataTranslationServiceHandler.registerPostEventsHandler(router);
 	}
 
-	protected void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
-		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
-		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
+	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
+		//SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
+		//SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 
@@ -205,6 +213,91 @@ public class EPCISServer extends AbstractVerticle {
 						.allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS)
 						.allowedMethod(HttpMethod.DELETE).allowedHeader("Access-Control-Request-Method"))
 				.handler(BodyHandler.create());
+	}
+	
+	// We keep a list of handlers registered at different points of the startup process. These handlers will be registered with the router
+	// in start() method. We do this because a later-registered handler may override a previously registered one. 
+	private static HashMap<HandlerKey, Handler<RoutingContext>> handlerMap = new HashMap<>();
+	
+	public static class HandlerKey {
+		public String httpMethod;
+		public String path;
+		public String contentType;
+		public HandlerKey(String httpMethod, String path, String contentType) {
+			super();
+			this.httpMethod = httpMethod;
+			this.path = path;
+			this.contentType = contentType;
+		}
+		@Override
+		public int hashCode() {
+			return Objects.hash(contentType, httpMethod, path);
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			HandlerKey other = (HandlerKey) obj;
+			return Objects.equals(contentType, other.contentType) && Objects.equals(httpMethod, other.httpMethod)
+					&& Objects.equals(path, other.path);
+		}
+		@Override
+		public String toString() {
+			return "HandlerKey [httpMethod=" + httpMethod + ", path=" + path + ", contentType=" + contentType + "]";
+		}
+	}
+	
+	public static void registerHandler(HandlerKey key, Handler<RoutingContext> handler) {
+		handlerMap.put(key, handler);
+	}
+	
+	public static Handler<RoutingContext> getHandler(HandlerKey key){
+		return handlerMap.get(key);
+	}
+
+	public static void registerHandler(String method, String path, String contentType, Handler<RoutingContext> handler) {
+		registerHandler(new HandlerKey(method, path, contentType), handler);
+	}
+	
+	public static Handler<RoutingContext> getHandler(String method, String path, String contentType){
+		return getHandler(new HandlerKey(method, path, contentType));
+	}
+
+	// we delay the start of handlers until all handlers has been registered
+	private void startHandlers(Router router) {
+		// register the handlers with the router
+		Route route = null;
+		for(HandlerKey key: handlerMap.keySet()) {
+			Handler<RoutingContext> handler = handlerMap.get(key);
+			System.out.println("Starting handler "+handler+ " for "+key);
+			switch(key.httpMethod) {
+				case "get":
+					route = router.get(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "options":
+					route = router.options(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "post":
+					route = router.post(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "put":
+					route = router.put(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "delete":
+					route = router.delete(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "patch":
+					route = router.patch(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+				case "trace":
+					route = router.trace(key.path).path(key.path).consumes(key.contentType).handler(handler);
+					break;
+			}
+		}
 	}
 
 	public static void main(String[] args) {

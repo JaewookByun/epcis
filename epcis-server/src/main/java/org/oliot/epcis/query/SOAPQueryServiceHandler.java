@@ -8,8 +8,6 @@ import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 
-import io.vertx.ext.web.Router;
-
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
  * <p>
@@ -25,20 +23,26 @@ import io.vertx.ext.web.Router;
  */
 public class SOAPQueryServiceHandler {
 
-	public static void registerQueryHandler(Router router, SOAPQueryService soapQueryService) {
-		router.post("/epcis/query").consumes("application/xml").handler(routingContext -> {
-			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
-					routingContext.body().asString());
-		});
+	public static void registerQueryHandler(SOAPQueryService soapQueryService) {
+		EPCISServer.registerHandler("post", "/epcis/query", "application/xml", 
+				routingContext -> {
+					soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
+					routingContext.body().asString());}	);
+			
+//		router.post("/epcis/query").consumes("application/xml").handler(routingContext -> {
+//			soapQueryService.query(routingContext.request(), routingContext.response().setChunked(true),
+//					routingContext.body().asString());
+//		});
 		EPCISServer.logger.info("[POST /epcis/query] - router added");
 	}
 
-	public static void registerPaginationHandler(Router router, SOAPQueryService soapQueryService) {
-		router.get("/epcis/events").consumes("application/xml").handler(routingContext -> {
+	public static void registerPaginationHandler(SOAPQueryService soapQueryService) {
+		EPCISServer.registerHandler("get", "/epcis/events", "application/xml",routingContext -> {
 			soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
-		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
+		
+		EPCISServer.registerHandler("get","/epcis/vocabularies","application/xml", routingContext -> {
 			try {
 				soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
 			} catch (ParserConfigurationException e) {
