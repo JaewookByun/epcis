@@ -58,6 +58,14 @@ public class HeaderValidator {
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			return false;
 		}
+		
+		if( min == null || max == null) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The server did not received GS1-EPCIS-Min and GS1-EPCIS where its value is one of "
+							+ Arrays.stream(Version.values()).toList() + ".");
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+			return false;
+		}
 		if (!Version.isCompatible(Metadata.GS1_EPCIS_Version, min, max)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The server receives an incompatible GS1-EPCIS-Min | GS1-EPCIS/Max");

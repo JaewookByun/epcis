@@ -13,7 +13,6 @@ import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.GS1CBVXMLFormat;
 import org.oliot.epcis.model.GS1EPCFormat;
 import org.oliot.epcis.resource.DynamicResource;
-import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
@@ -163,8 +162,8 @@ public class CommonHandler {
 				List<Document> jobs = new ArrayList<Document>();
 				EPCISServer.mTxCollection.find(new Document("_id", new ObjectId(captureID))).into(jobs);
 				if (jobs.isEmpty()) {
-					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException("There is no capture job with id: " + captureID),
-							404);
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no capture job with id: " + captureID), 404);
 					return;
 				}
 			} catch (Throwable throwable) {
@@ -248,22 +247,20 @@ public class CommonHandler {
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events/:eventID (application/xml)] - router added");
-		
+
 		router.options("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
 			try {
 				String eventID = routingContext.pathParam("eventID");
 				List<Document> jobs = new ArrayList<Document>();
 				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(jobs);
 				if (jobs.isEmpty()) {
-					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException("There is no event with the given id: " + eventID),
-							404);
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no event with the given id: " + eventID), 404);
 					return;
 				}
 			} catch (Throwable throwable) {
-				SOAPMessage message = new SOAPMessage();
-				EPCISServer.logger.info(throwable.getMessage());
-				EPCISException e = new EPCISException(throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
 				return;
 			}
 			routingContext.response().putHeader("Allow", "OPTIONS, GET")
