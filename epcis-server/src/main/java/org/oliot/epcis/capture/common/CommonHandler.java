@@ -54,7 +54,7 @@ public class CommonHandler {
 					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
-		EPCISServer.logger.info("[OPTIONS /epcis (XML)] - router added");
+		EPCISServer.logger.info("[OPTIONS /epcis (JSON)] - router added");
 	}
 
 	public static void registerCaptureHandler(Router router) {
@@ -70,7 +70,7 @@ public class CommonHandler {
 		// (`GS1-Capture-Error-Behaviour` header).\n
 		// The list of headers is not exhaustive. It only describes the functionality
 		// specific to EPCIS 2.0.\n",
-		router.options("/epcis/capture").handler(routingContext -> {
+		router.options("/epcis/capture").consumes("application/xml").handler(routingContext -> {
 			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
 					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
@@ -84,7 +84,23 @@ public class CommonHandler {
 					.putHeader("GS1-EPCIS-Capture-Error-Behaviour", Metadata.GS1_EPCIS_Capture_Error_Behaviour)
 					.setStatusCode(204).end();
 		});
-		EPCISServer.logger.info("[OPTIONS /epcis/capture] - router added");
+		EPCISServer.logger.info("[OPTIONS /epcis/capture (XML)] - router added");
+		
+		router.options("/epcis/capture").consumes("application/json").handler(routingContext -> {
+			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("GS1-EPCIS-Capture-Limit", String.valueOf(Metadata.GS1_CAPTURE_limit))
+					.putHeader("GS1-EPCIS-Capture-File-Size-Limit",
+							String.valueOf(Metadata.GS1_CAPTURE_file_size_limit))
+					.putHeader("GS1-EPCIS-Capture-Error-Behaviour", Metadata.GS1_EPCIS_Capture_Error_Behaviour)
+					.setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/capture (JSON)] - router added");
 	}
 
 	public static void registerCaptureIDHandler(Router router) {
@@ -95,7 +111,7 @@ public class CommonHandler {
 		// vocabularies and EPCIS and CBV\n
 		// versions are used for a given capture job.\n",
 
-		router.options("/epcis/capture/:captureID").handler(routingContext -> {
+		router.options("/epcis/capture/:captureID").consumes("application/xml").handler(routingContext -> {
 			try {
 				SOAPMessage message = new SOAPMessage();
 				String captureID = routingContext.pathParam("captureID");
@@ -121,7 +137,35 @@ public class CommonHandler {
 					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
-		EPCISServer.logger.info("[OPTIONS /epcis/capture/:captureID] - router added");
+		EPCISServer.logger.info("[OPTIONS /epcis/capture/:captureID (application/xml)] - router added");
+		
+		router.options("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
+			try {
+				SOAPMessage message = new SOAPMessage();
+				String captureID = routingContext.pathParam("captureID");
+				List<Document> jobs = new ArrayList<Document>();
+				EPCISServer.mTxCollection.find(new Document("_id", new ObjectId(captureID))).into(jobs);
+				if (jobs.isEmpty()) {
+					EPCISException e = new EPCISException("There is no capture job with id: " + captureID);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
+					return;
+				}
+			} catch (Throwable throwable) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISServer.logger.info(throwable.getMessage());
+				EPCISException e = new EPCISException(throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+				return;
+			}
+			routingContext.response().putHeader("Allow", "OPTIONS, GET")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/capture/:captureID (application/json)] - router added");
 	}
 
 	public static void registerEventsHandler(Router router) {
