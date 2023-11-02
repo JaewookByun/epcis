@@ -175,8 +175,8 @@ public class CommonHandler {
 		// of EPCIS and CBV. The `OPTIONS` method allows the client to discover which
 		// vocabularies and EPCIS and CBV\n
 		// versions are used.\n"
-		router.options("/epcis/events").handler(routingContext -> {
-			routingContext.response().putHeader("Allow", "OPTIONS, POST")
+		router.options("/epcis/events").consumes("application/xml").handler(routingContext -> {
+			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
 					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
 					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
@@ -184,7 +184,18 @@ public class CommonHandler {
 					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
-		EPCISServer.logger.info("[OPTIONS /epcis/events] - router added");
+		EPCISServer.logger.info("[OPTIONS /epcis/events (application/xml)] - router added");
+		
+		router.options("/epcis/events").consumes("application/json").handler(routingContext -> {
+			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/events (application/json)] - router added");
 	}	
 
 	/**
