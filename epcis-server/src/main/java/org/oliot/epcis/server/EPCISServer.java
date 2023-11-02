@@ -142,6 +142,7 @@ public class EPCISServer extends AbstractVerticle {
 		CommonHandler.registerCaptureHandler(router);
 		CommonHandler.registerCaptureIDHandler(router);
 		CommonHandler.registerEventsHandler(router);
+		CommonHandler.registerGetEventHandler(router);
 		CommonHandler.registerPingHandler(router);
 		CommonHandler.registerDeleteHandler(router);
 		CommonHandler.registerStatisticsHandler(router);
