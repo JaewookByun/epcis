@@ -59,8 +59,8 @@ public class HeaderValidator {
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			return false;
 		}
-		
-		if( min == null || max == null) {
+
+		if (min == null || max == null) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The server did not received GS1-EPCIS-Min and GS1-EPCIS where its value is one of "
 							+ Arrays.stream(Version.values()).toList() + ".");
@@ -76,19 +76,24 @@ public class HeaderValidator {
 		return true;
 	}
 
-	public static boolean isEqualHeaderSOAP(RoutingContext routingContext, String givenHeaderKey) {
+	public static boolean isEqualHeaderSOAP(RoutingContext routingContext, String givenHeaderKey, boolean isMandatory) {
 		// check header
 		String given = routingContext.request().getHeader(givenHeaderKey);
 		if (given == null) {
-			EPCISException e = new EPCISException(
-					"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
-							+ " does not provided.");
-			EPCISServer.logger.error(e.getReason());
-			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
-			return false;
+			if (isMandatory) {
+				EPCISException e = new EPCISException(
+						"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
+								+ " does not provided.");
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				return false;
+			} else {
+				return true;
+			}
 		}
 
-		if (givenHeaderKey.equals("GS1-EPCIS-Version") && !given.equals(Metadata.GS1_EPCIS_Version)) {
+		if ((givenHeaderKey.equals("GS1-EPCIS-Version") || givenHeaderKey.equals("GS1-EPCIS-Min")
+				|| givenHeaderKey.equals("GS1-EPCIS-Max")) && !given.equals(Metadata.GS1_EPCIS_Version)) {
 			if (!routingContext.response().closed()) {
 				EPCISException e = new EPCISException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
@@ -97,7 +102,8 @@ public class HeaderValidator {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			}
 			return false;
-		} else if (givenHeaderKey.equals("GS1-CBV-Version") && !given.equals(Metadata.GS1_CBV_Version)) {
+		} else if ((givenHeaderKey.equals("GS1-CBV-Version") || givenHeaderKey.equals("GS1-CBV-Min")
+				|| givenHeaderKey.equals("GS1-CBV-Max")) && !given.equals(Metadata.GS1_CBV_Version)) {
 			if (!routingContext.response().closed()) {
 				EPCISException e = new EPCISException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
@@ -120,19 +126,24 @@ public class HeaderValidator {
 		return true;
 	}
 
-	public static boolean isEqualHeaderREST(RoutingContext routingContext, String givenHeaderKey) {
+	public static boolean isEqualHeaderREST(RoutingContext routingContext, String givenHeaderKey, boolean isMandatory) {
 		// check header
 		String given = routingContext.request().getHeader(givenHeaderKey);
 		if (given == null) {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get406NotAcceptableException(
-							"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
-									+ " does not provided."),
-					406);
-			return false;
+			if (isMandatory) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(
+								"[406NotAcceptable] The server cannot return the response as requested. "
+										+ givenHeaderKey + " does not provided."),
+						406);
+				return false;
+			} else {
+				return true;
+			}
 		}
 
-		if (givenHeaderKey.equals("GS1-EPCIS-Version") && !given.equals(Metadata.GS1_EPCIS_Version)) {
+		if ((givenHeaderKey.equals("GS1-EPCIS-Version") || givenHeaderKey.equals("GS1-EPCIS-Min")
+				|| givenHeaderKey.equals("GS1-EPCIS-Max")) && !given.equals(Metadata.GS1_EPCIS_Version)) {
 			if (!routingContext.response().closed()) {
 				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
@@ -140,7 +151,8 @@ public class HeaderValidator {
 						406);
 			}
 			return false;
-		} else if (givenHeaderKey.equals("GS1-CBV-Version") && !given.equals(Metadata.GS1_CBV_Version)) {
+		} else if ((givenHeaderKey.equals("GS1-CBV-Version") || givenHeaderKey.equals("GS1-CBV-Min")
+				|| givenHeaderKey.equals("GS1-CBV-Max")) && !given.equals(Metadata.GS1_CBV_Version)) {
 			if (!routingContext.response().closed()) {
 				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
@@ -157,8 +169,7 @@ public class HeaderValidator {
 						406);
 			}
 			return false;
-		} else if (givenHeaderKey.equals("GS1-EPC-Format")
-				&& !given.equals(Metadata.GS1_EPC_Format_REST)) {
+		} else if (givenHeaderKey.equals("GS1-EPC-Format") && !given.equals(Metadata.GS1_EPC_Format_REST)) {
 			if (!routingContext.response().closed()) {
 				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
@@ -166,8 +177,7 @@ public class HeaderValidator {
 						406);
 			}
 			return false;
-		} else if (givenHeaderKey.equals("GS1-CBV-XML-Format")
-				&& !given.equals(Metadata.GS1_CBV_XML_Format_REST)) {
+		} else if (givenHeaderKey.equals("GS1-CBV-XML-Format") && !given.equals(Metadata.GS1_CBV_XML_Format_REST)) {
 			if (!routingContext.response().closed()) {
 				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."

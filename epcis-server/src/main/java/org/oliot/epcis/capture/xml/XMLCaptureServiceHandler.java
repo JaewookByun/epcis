@@ -52,11 +52,11 @@ public class XMLCaptureServiceHandler {
 			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/xml").handler(routingContext -> {
-			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version", false))
 				return;
-			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version", false))
 				return;
-			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Capture-Error-Behaviour", false))
 				return;
 
 			xmlCaptureService.post(routingContext, eventBus);
@@ -65,14 +65,21 @@ public class XMLCaptureServiceHandler {
 	}
 
 	/**
-	 * Returns information about the capture job.
+	 * Returns information about the capture job. When EPCIS events are added
+	 * through the capture interface, the capture process can run asynchronously. If
+	 * the payload is syntactically correct and the client is allowed to call
+	 * `/capture`, the server returns a `202` HTTP response code. This endpoint
+	 * exposes the state of the capture job to the client.
 	 *
+	 * 
 	 * @param router            router
 	 * @param xmlCaptureService xmlCaptureService
 	 */
 	public static void registerGetCaptureIDHandler(Router router, XMLCaptureService xmlCaptureService) {
 		router.get("/epcis/capture/:captureID").consumes("application/xml").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Min", false))
+				return;
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Max", false))
 				return;
 			xmlCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
 		});
@@ -116,9 +123,9 @@ public class XMLCaptureServiceHandler {
 	public static void registerPostEventsHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
 		router.post("/epcis/events").consumes("application/xml").blockingHandler(routingContext -> {
-			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version", false))
 				return;
-			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-CBV-Version", false))
 				return;
 			xmlCaptureService.postEvent(routingContext, eventBus);
 		});

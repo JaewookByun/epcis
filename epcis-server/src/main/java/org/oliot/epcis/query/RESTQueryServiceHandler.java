@@ -11,12 +11,9 @@ import java.util.UUID;
 import org.bson.Document;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
-import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
-import org.oliot.epcis.util.SOAPMessage;
-import org.oliot.epcis.util.TimeUtil;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
@@ -63,9 +60,9 @@ public class RESTQueryServiceHandler {
 		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
 				return;
 			routingContext.response().setChunked(true);
 
@@ -115,9 +112,9 @@ public class RESTQueryServiceHandler {
 		router.get("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
 			if (!checkEPCISMinMaxVersion(routingContext))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
 				return;
 			routingContext.response().setChunked(true);
 			String eventID = null;

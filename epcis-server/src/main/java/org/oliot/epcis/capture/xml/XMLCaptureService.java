@@ -160,19 +160,18 @@ public class XMLCaptureService {
 	public void postEvent(RoutingContext routingContext, EventBus eventBus) {
 		SOAPMessage message = new SOAPMessage();
 		RequestBody body = routingContext.body();
-		if(body.isEmpty()) {
-			EPCISException e = new EPCISException(
-					"[400ValidationException] Empty Request Body");
+		if (body.isEmpty()) {
+			EPCISException e = new EPCISException("[400ValidationException] Empty Request Body");
 			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
 			return;
 		}
-		String inputString = routingContext.body().asString();
-		
+		String inputString = body.asString();
+
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
 			EPCISException e = new EPCISException(
-					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.\n");
+					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.");
 			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 			return;
@@ -579,35 +578,39 @@ public class XMLCaptureService {
 
 		List<Document> jobs = new ArrayList<Document>();
 		try {
-
 			EPCISServer.mTxCollection.find(new Document("_id", new ObjectId(captureID))).into(jobs);
-
-		} catch (MongoException e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			if (jobs.isEmpty()) {
+				EPCISException e = new EPCISException("There is no capture job with id: " + captureID);
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
+				return;
+			}
+		} catch (IllegalArgumentException e) {
+			EPCISException e1 = new EPCISException("Illegal capture job identifier: " + e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+			return;
+		} catch (Throwable throwable) {
+			EPCISServer.logger.info(throwable.getMessage());
+			EPCISException e = new EPCISException(throwable.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
 			return;
 		}
 
-		if (jobs == null || jobs.isEmpty()) {
-			EPCISException e = new EPCISException("There is no capture job with id: " + captureID);
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
-		} else {
-			try {
-				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(0));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200)
-						.end(XMLUtil.toString(retDoc));
-			} catch (Exception throwable) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-			}
+		try {
+			EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(0));
+			org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
+			Marshaller marshaller = jc.createMarshaller();
+			marshaller.marshal(captureJob, retDoc);
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+					.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200)
+					.end(XMLUtil.toString(retDoc));
+		} catch (Exception throwable) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					throwable.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
 		}
+
 	}
 }

@@ -22,7 +22,6 @@ import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.pagination.PageExpiryTimerTask;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
-import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.util.TimeUtil;
 
 import com.mongodb.MongoException;
@@ -36,6 +35,7 @@ import com.mongodb.client.result.UpdateResult;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.json.schema.OutputUnit;
 
@@ -260,10 +260,21 @@ public class JSONCaptureService {
 	}
 
 	public void postEvent(RoutingContext routingContext, EventBus eventBus) {
-		String inputString = routingContext.body().asString();
+
+		RequestBody body = routingContext.body();
+		if (body.isEmpty()) {
+			EPCISServer.logger.error("[400ValidationException] Empty Request Body");
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException("Empty Request Body"), 400);
+			return;
+		}
+
+		String inputString = body.asString();
 		// SOAPMessage message = new SOAPMessage();
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
+			EPCISServer.logger.error(
+					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.");
 			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.exception413CapturePayloadTooLarge,
 					413);
 			return;
@@ -275,6 +286,7 @@ public class JSONCaptureService {
 			epcisEvent = new JsonObject(inputString);
 			context = retrieveContext(epcisEvent);
 		} catch (Exception e) {
+			EPCISServer.logger.error("[400ValidationException] " + e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get400ValidationException(e.getMessage()), 400);
 			return;
@@ -283,13 +295,13 @@ public class JSONCaptureService {
 		// Validation
 		String validationError = validateJSON(epcisEvent);
 		if (validationError == null) {
-			EPCISServer.logger.debug("An incoming EPCIS document is valid against the json schema 2.0.0");
+			EPCISServer.logger.debug(
+					"[400ValidationException] An incoming EPCIS document is valid against the json schema 2.0.0");
 		} else {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get400ValidationException(validationError), 400);
 			return;
 		}
-
 		captureEvent(routingContext, context, epcisEvent, eventBus);
 	}
 
@@ -299,7 +311,7 @@ public class JSONCaptureService {
 		try {
 			obj = jsonCaptureConverter.convertEvent(jsonContext, jsonEvent, null);
 		} catch (ValidationException e) {
-			EPCISServer.logger.error(e.getMessage());
+			EPCISServer.logger.error("[400ValidationException] " + e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get400ValidationException(e.getReason()), 400);
 			return;
@@ -311,10 +323,10 @@ public class JSONCaptureService {
 			try {
 				InsertOneResult result = EPCISServer.mEventCollection.insertOne(obj);
 				EPCISServer.logger.debug("event captured: " + result);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location")
 						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
@@ -329,13 +341,11 @@ public class JSONCaptureService {
 			try {
 				UpdateResult result = EPCISServer.mEventCollection.replaceOne(filter, obj);
 				EPCISServer.logger.debug("event captured: " + result);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location")
-						.putHeader("Location",
-								"http://" + EPCISServer.host + ":8084/epcis/events/"
-										+ URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
+						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());
@@ -496,41 +506,45 @@ public class JSONCaptureService {
 	}
 
 	/**
-	 * 
+	 * Returns information about the capture job. When EPCIS events are added
+	 * through the capture interface, the capture process can run asynchronously. If
+	 * the payload is syntactically correct and the client is allowed to call
+	 * `/capture`, the server returns a `202` HTTP response code. This endpoint
+	 * exposes the state of the capture job to the client.
 	 * 
 	 * @param routingContext
 	 * @param captureID
 	 */
 	public void postCaptureJob(RoutingContext routingContext, String captureID) {
-		SOAPMessage message = new SOAPMessage();
-
 		List<Document> jobs = new ArrayList<Document>();
 		try {
-
 			EPCISServer.mTxCollection.find(new Document("_id", new ObjectId(captureID))).into(jobs);
-
-		} catch (MongoException e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			if (jobs.isEmpty()) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+						.get404NoSuchResourceException("There is no capture job with id: " + captureID), 404);
+				return;
+			}
+		} catch (IllegalArgumentException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+					.get404NoSuchResourceException("Illegal capture job identifier: " + e.getMessage()), 404);
+			return;
+		} catch (Throwable throwable) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
 			return;
 		}
 
-		if (jobs == null || jobs.isEmpty()) {
-			EPCISException e = new EPCISException("There is no capture job with id: " + captureID);
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
-		} else {
-			try {
-				JsonObject captureJob = Transaction.toJson(jobs.get(0));
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
-						.end(captureJob.toString());
-			} catch (Exception throwable) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-			}
+		try {
+			JsonObject captureJob = Transaction.toJson(jobs.get(0));
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+					.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
+					.end(captureJob.toString());
+		} catch (Exception throwable) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
 		}
+
 	}
 }

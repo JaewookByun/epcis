@@ -52,11 +52,11 @@ public class JSONCaptureServiceHandler {
 			EventBus eventBus) {
 
 		router.post("/epcis/capture").consumes("application/json").handler(routingContext -> {
-			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Capture-Error-Behaviour"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Capture-Error-Behaviour", false))
 				return;
 
 			jsonCaptureService.post(routingContext, eventBus);
@@ -72,7 +72,9 @@ public class JSONCaptureServiceHandler {
 	 */
 	public static void registerGetCaptureIDHandler(Router router, JSONCaptureService jsonCaptureService) {
 		router.get("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
+				return;
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
 				return;
 			jsonCaptureService.postCaptureJob(routingContext, routingContext.pathParam("captureID"));
 		});
@@ -91,9 +93,9 @@ public class JSONCaptureServiceHandler {
 	public static void registerPostEventsHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
 		router.post("/epcis/events").consumes("*/json").blockingHandler(routingContext -> {
-			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version"))
+			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version", false))
 				return;
 			jsonCaptureService.postEvent(routingContext, eventBus);
 		});

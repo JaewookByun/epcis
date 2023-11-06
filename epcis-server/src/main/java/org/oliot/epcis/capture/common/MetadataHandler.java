@@ -191,9 +191,8 @@ public class MetadataHandler {
 						.get404NoSuchResourceException("Illegal capture job identifier: " + e.getMessage()), 404);
 				return;
 			} catch (Throwable throwable) {
-				EPCISException e = new EPCISException(throwable.getMessage());
 				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get500ImplementationException(e.getReason()), 500);
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
 				return;
 			}
 			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, GET")
