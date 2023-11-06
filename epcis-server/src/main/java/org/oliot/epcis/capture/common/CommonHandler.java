@@ -31,32 +31,7 @@ import org.oliot.epcis.util.SOAPMessage;
  *         bjw0829@gmail.com
  */
 public class CommonHandler {
-	public static void registerBaseHandler(Router router) {
-		// Query server settings, EPCIS version(s) and related vocabularies/standards.
-		// `OPTIONS` on the root path gives the client an overview of the server's
-		// EPCIS-related configurations.
-		router.options("/epcis").consumes("application/xml").handler(routingContext -> {
-			routingContext.response().putHeader("Allow", "OPTIONS")
-					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
-					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis (application/xml)] - router added");
 
-		router.options("/epcis").consumes("application/json").handler(routingContext -> {
-			routingContext.response().putHeader("Allow", "OPTIONS")
-					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
-					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis (application/json)] - router added");
-	}
 
 	public static void registerQueryHandler(Router router) {
 		// Query server settings, EPCIS version(s) and related vocabularies/standards.

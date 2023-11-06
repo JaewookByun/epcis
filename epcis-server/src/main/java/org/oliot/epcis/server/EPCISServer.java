@@ -15,6 +15,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
 import org.oliot.epcis.capture.common.CommonHandler;
+import org.oliot.epcis.capture.common.MetadataHandler;
 import org.oliot.epcis.capture.common.TransactionManager;
 import org.oliot.epcis.capture.json.JSONCaptureService;
 import org.oliot.epcis.capture.json.JSONCaptureServiceHandler;
@@ -113,6 +114,7 @@ public class EPCISServer extends AbstractVerticle {
 		setRouter(router);
 		loadStaticResponses();
 
+		registerMetadataHandler(router);
 		registerCommonHandler(router);
 		registerTDTServiceHandler(router);
 		registerCaptureServiceHandler(router, eventBus);
@@ -126,6 +128,10 @@ public class EPCISServer extends AbstractVerticle {
 
 		new DynamicResource(vertx).start();
 	}
+	
+	public void registerMetadataHandler(Router router) {
+		MetadataHandler.registerBaseHandler(router);
+	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
 		RESTQueryServiceHandler.registerGetEventsHandler(router, restQueryService);
@@ -138,7 +144,7 @@ public class EPCISServer extends AbstractVerticle {
 	}
 
 	private void registerCommonHandler(Router router) {
-		CommonHandler.registerBaseHandler(router);
+		
 		CommonHandler.registerQueryHandler(router);
 		CommonHandler.registerCaptureHandler(router);
 		CommonHandler.registerCaptureIDHandler(router);
@@ -198,15 +204,16 @@ public class EPCISServer extends AbstractVerticle {
 
 	private void setRouter(Router router) {
 		router.route()
-				.handler(CorsHandler.create().addOrigin("*").allowedHeader("Access-Control-Allow-Credentials")
+				.handler(CorsHandler.create().addOrigin("*").allowedHeader("Content-Type").allowedHeader("Access-Control-Allow-Credentials")
 						.allowedHeader("GS1-EPCIS-Version").allowedHeader("GS1-CBV-Version")
 						.allowedHeader("GS1-EPCIS-Max").allowedHeader("GS1-EPCIS-Min")
 						.allowedHeader("GS1-CBV-Max").allowedHeader("GS1-CBV-Min")
 						.allowedHeader("GS1-EPC-Format").allowedHeader("GS1-CBV-XML-Format")
 						.allowedHeader("GS1-EPCIS-Capture-Error-Behaviour").allowedHeader("Access-Control-Allow-Origin")
-						.allowedHeader("Access-Control-Allow-Headers").allowedHeader("Content-Type")
+						.allowedHeader("Access-Control-Allow-Headers").allowedHeader("Access-Control-Expose-Headers")
+						.allowedHeader("Access-Control-Request-Method")
 						.allowedMethod(HttpMethod.GET).allowedMethod(HttpMethod.POST).allowedMethod(HttpMethod.OPTIONS)
-						.allowedMethod(HttpMethod.DELETE).allowedHeader("Access-Control-Request-Method"))
+						.allowedMethod(HttpMethod.DELETE))
 				.handler(BodyHandler.create());
 	}
 
