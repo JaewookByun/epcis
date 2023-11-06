@@ -341,4 +341,22 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events/:eventID (application/json)] - router added");
 	}
+
+	public static void registerQueryHandler(Router router) {
+		// Additional interface for SOAP QUERY interface
+		router.options("/epcis/query").consumes("application/xml").handler(routingContext -> {
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, POST")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/query (application/xml)] - router added");
+	}
 }
