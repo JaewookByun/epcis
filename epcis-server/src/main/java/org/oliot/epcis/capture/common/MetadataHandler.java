@@ -219,17 +219,17 @@ public class MetadataHandler {
 		 * vocabularies and EPCIS and CBV versions are used. (application/xml)
 		 */
 		router.options("/epcis/events").consumes("application/xml").handler(routingContext -> {
-			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, GET, POST")
-			.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-			.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
-			.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
-			.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("Allow", "OPTIONS, GET, POST").putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events (application/xml)] - router added");
 
@@ -240,18 +240,105 @@ public class MetadataHandler {
 		 * vocabularies and EPCIS and CBV versions are used. (application/json)
 		 */
 		router.options("/epcis/events").consumes("application/json").handler(routingContext -> {
-			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, GET, POST")
-			.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
-			.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
-			.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-			.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
-			.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
-			.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("Allow", "OPTIONS, GET, POST").putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventHandler(Router router) {
+		/**
+		 * Query metadata for the endpoint to access an individual EPCIS event. EPCIS
+		 * 2.0 supports a number of custom headers to describe custom vocabularies and
+		 * support multiple versions of EPCIS and CBV. The `OPTIONS` method allows the
+		 * client to discover which vocabularies and EPCIS and CBV versions are used.
+		 * (application/xml)
+		 */
+		router.options("/epcis/events/:eventID").consumes("application/xml").handler(routingContext -> {
+			try {
+				SOAPMessage message = new SOAPMessage();
+				String eventID = routingContext.pathParam("eventID");
+				List<Document> jobs = new ArrayList<Document>();
+				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(jobs);
+				if (jobs.isEmpty()) {
+					EPCISException e = new EPCISException("There is no event with the given id: " + eventID);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
+					return;
+				}
+			} catch (IllegalArgumentException e) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISException e1 = new EPCISException("Illegal event identifier: " + e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+				return;
+			} catch (Throwable throwable) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISServer.logger.info(throwable.getMessage());
+				EPCISException e = new EPCISException(throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+				return;
+			}
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, GET")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/events/:eventID (application/xml)] - router added");
+
+		/**
+		 * Query metadata for the endpoint to access an individual EPCIS event. EPCIS
+		 * 2.0 supports a number of custom headers to describe custom vocabularies and
+		 * support multiple versions of EPCIS and CBV. The `OPTIONS` method allows the
+		 * client to discover which vocabularies and EPCIS and CBV versions are used.
+		 * (application/json)
+		 */
+		router.options("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
+			try {
+				String eventID = routingContext.pathParam("eventID");
+				List<Document> jobs = new ArrayList<Document>();
+				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(jobs);
+				if (jobs.isEmpty()) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no event with the given id: " + eventID), 404);
+					return;
+				}
+			} catch (IllegalArgumentException e) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException("Illegal event identifier: " + e.getMessage()),
+						404);
+				return;
+			} catch (Throwable throwable) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				return;
+			}
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*").putHeader("Allow", "OPTIONS, GET")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/events/:eventID (application/json)] - router added");
 	}
 }
