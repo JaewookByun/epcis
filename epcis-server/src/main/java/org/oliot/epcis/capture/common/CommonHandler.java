@@ -49,51 +49,7 @@ public class CommonHandler {
 		EPCISServer.logger.info("[OPTIONS /epcis (application/xml)] - router added");
 	}
 
-	public static void registerCaptureHandler(Router router) {
-		// Discover the settings of the capture interface.
-		// The `OPTIONS` method is used as a discovery service for `/capture`.
-		// It describes\n- which EPCIS and CBV versions are supported,\n-
-		// the EPCIS and CBV extensions,\n-
-		// the maximum payload size as count of EPCIS events (`GS1-EPCIS-Capture-Limit`
-		// header)
-		// or as a maximum payload size in bytes (`GS1-EPCIS-Capture-File-Size-Limit`
-		// header)\n-
-		// what the server will do if an error occurred during capture
-		// (`GS1-Capture-Error-Behaviour` header).\n
-		// The list of headers is not exhaustive. It only describes the functionality
-		// specific to EPCIS 2.0.\n",
-		router.options("/epcis/capture").consumes("application/xml").handler(routingContext -> {
-			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
-					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
-					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-					.putHeader("GS1-EPCIS-Capture-Limit", String.valueOf(Metadata.GS1_CAPTURE_limit))
-					.putHeader("GS1-EPCIS-Capture-File-Size-Limit",
-							String.valueOf(Metadata.GS1_CAPTURE_file_size_limit))
-					.putHeader("GS1-EPCIS-Capture-Error-Behaviour", Metadata.GS1_EPCIS_Capture_Error_Behaviour)
-					.setStatusCode(204).end();
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis/capture (XML)] - router added");
-
-		router.options("/epcis/capture").consumes("application/json").handler(routingContext -> {
-			routingContext.response().putHeader("Allow", "OPTIONS, GET, POST")
-					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
-					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
-					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-					.putHeader("GS1-EPCIS-Capture-Limit", String.valueOf(Metadata.GS1_CAPTURE_limit))
-					.putHeader("GS1-EPCIS-Capture-File-Size-Limit",
-							String.valueOf(Metadata.GS1_CAPTURE_file_size_limit))
-					.putHeader("GS1-EPCIS-Capture-Error-Behaviour", Metadata.GS1_EPCIS_Capture_Error_Behaviour)
-					.setStatusCode(204).end();
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis/capture (JSON)] - router added");
-	}
+	
 
 	public static void registerCaptureIDHandler(Router router) {
 		// Query the metadata of the capture job endpoint.
