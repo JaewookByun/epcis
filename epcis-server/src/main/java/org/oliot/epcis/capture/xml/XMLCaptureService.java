@@ -14,6 +14,7 @@ import javax.xml.transform.stream.StreamSource;
 import com.mongodb.client.result.InsertOneResult;
 import com.mongodb.client.result.UpdateResult;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.RoutingContext;
 
 import org.bson.Document;
@@ -115,7 +116,8 @@ public class XMLCaptureService {
 				Transaction tx = new Transaction(Metadata.GS1_EPCIS_Capture_Error_Behaviour);
 				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "Location").putHeader("Location", "http://"
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+						.putHeader("Access-Control-Expose-Headers", "Location").putHeader("Location", "http://"
 								+ EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture/" + tx.getTxId())
 						.setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
@@ -156,12 +158,22 @@ public class XMLCaptureService {
 	}
 
 	public void postEvent(RoutingContext routingContext, EventBus eventBus) {
-		String inputString = routingContext.body().asString();
 		SOAPMessage message = new SOAPMessage();
+		RequestBody body = routingContext.body();
+		if(body.isEmpty()) {
+			EPCISException e = new EPCISException(
+					"[400ValidationException] Empty Request Body");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+			return;
+		}
+		String inputString = routingContext.body().asString();
+		
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
 			EPCISException e = new EPCISException(
 					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.\n");
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 			return;
 		}
@@ -226,13 +238,12 @@ public class XMLCaptureService {
 		eventBus.send("trigger", obj);
 		if (!obj.containsKey("errorDeclaration")) {
 			try {
-
 				InsertOneResult result = EPCISServer.mEventCollection.insertOne(obj);
 				EPCISServer.logger.debug("event captured: " + result);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location")
 						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
@@ -248,13 +259,11 @@ public class XMLCaptureService {
 			try {
 				UpdateResult result = EPCISServer.mEventCollection.replaceOne(filter, obj);
 				EPCISServer.logger.debug("event captured: " + result);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location")
-						.putHeader("Location",
-								"http://" + EPCISServer.host + ":8084/epcis/events/"
-										+ URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
+						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());
@@ -462,11 +471,12 @@ public class XMLCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result);
 		} else {
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/xml")
-					.setStatusCode(200).end(result);
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
 		}
 	}
 
@@ -552,14 +562,15 @@ public class XMLCaptureService {
 									+ "&NextPageToken=" + uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
+					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result);
 		} else {
 			EPCISServer.captureIDPageMap.remove(uuid);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
-					.setStatusCode(200).end(result);
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		}
 	}
 

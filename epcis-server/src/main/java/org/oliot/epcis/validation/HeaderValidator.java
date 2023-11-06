@@ -6,6 +6,7 @@ import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.common.Version;
 import org.oliot.epcis.model.EPCISException;
+import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 
@@ -82,6 +83,7 @@ public class HeaderValidator {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
 							+ " does not provided.");
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			return false;
 		}
@@ -91,6 +93,7 @@ public class HeaderValidator {
 				EPCISException e = new EPCISException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_EPCIS_Version);
+				EPCISServer.logger.error(e.getReason());
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			}
 			return false;
@@ -99,6 +102,7 @@ public class HeaderValidator {
 				EPCISException e = new EPCISException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_CBV_Version);
+				EPCISServer.logger.error(e.getReason());
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			}
 			return false;
@@ -108,6 +112,7 @@ public class HeaderValidator {
 				EPCISException e = new EPCISException(
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_EPCIS_Capture_Error_Behaviour);
+				EPCISServer.logger.error(e.getReason());
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
 			}
 			return false;
