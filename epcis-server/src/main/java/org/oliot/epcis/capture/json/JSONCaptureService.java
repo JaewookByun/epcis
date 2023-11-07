@@ -92,10 +92,21 @@ public class JSONCaptureService {
 	}
 
 	public void post(RoutingContext routingContext, EventBus eventBus) {
-		String inputString = routingContext.body().asString();
-		// SOAPMessage message = new SOAPMessage();
+
+		RequestBody body = routingContext.body();
+		if (body.isEmpty()) {
+			EPCISServer.logger.error("[400ValidationException] Empty Request Body");
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get400ValidationException("Empty Request Body"), 400);
+			return;
+		}
+
+		String inputString = body.asString();
+
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
+			EPCISServer.logger.error("[413CapturePayloadTooLarge] Payload is too large: " + (inputString.length() * 4)
+					+ " > " + Metadata.GS1_CAPTURE_file_size_limit);
 			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.exception413CapturePayloadTooLarge,
 					413);
 			return;
@@ -121,6 +132,8 @@ public class JSONCaptureService {
 			JsonArray eventList = epcisDocument.getJsonObject("epcisBody").getJsonArray("eventList");
 
 			if (eventList.size() > Metadata.GS1_CAPTURE_limit) {
+				EPCISServer.logger.error("[413CapturePayloadTooLarge] the number of events is too large: "
+						+ eventList.size() + " > " + Metadata.GS1_CAPTURE_limit);
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.exception413CapturePayloadTooLarge, 413);
 				return;
@@ -129,12 +142,11 @@ public class JSONCaptureService {
 			if (eventList != null && eventList.size() != 0) {
 				// ready to 202
 				Transaction tx = new Transaction(Metadata.GS1_EPCIS_Capture_Error_Behaviour);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location").putHeader("Location", "http://"
-								+ EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture/" + tx.getTxId())
-						.setStatusCode(202).end();
+						.putHeader("Location", "/capture/" + tx.getTxId()).setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
 
 				captureEvents(routingContext, context, eventList, eventBus, tx);
@@ -152,6 +164,8 @@ public class JSONCaptureService {
 					.getJsonArray("vocabularyList");
 
 			if (vocabularyList.size() > Metadata.GS1_CAPTURE_limit) {
+				EPCISServer.logger.error("[413CapturePayloadTooLarge] the number of events is too large: "
+						+ vocabularyList.size() + " > " + Metadata.GS1_CAPTURE_limit);
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.exception413CapturePayloadTooLarge, 413);
 				return;
@@ -167,6 +181,7 @@ public class JSONCaptureService {
 		}
 		// No event and master-data
 		if (vocExist == false) {
+			EPCISServer.logger.error("[400ValidationException] Capture fails: nothing to capture ");
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get400ValidationException("Capture fails: nothing to capture"), 400);
 		}
@@ -235,6 +250,7 @@ public class JSONCaptureService {
 			try {
 				bulk.addAll(jsonCaptureConverter.convertVocabulary(context, type, vocabularyElementList));
 			} catch (ValidationException e) {
+				EPCISServer.logger.error(e.getReason());
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.get400ValidationException(e.getReason()), 400);
 				return;
@@ -246,14 +262,14 @@ public class JSONCaptureService {
 		try {
 			BulkWriteResult result = EPCISServer.mVocCollection.bulkWrite(bulk);
 			EPCISServer.logger.debug("vocabulary captured: " + result);
-			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(201).end();
 		} catch (MongoException e) {
-			ImplementationException ie = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(ie.getReason()), 500);
+					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
 			return;
 		}
 
@@ -270,7 +286,7 @@ public class JSONCaptureService {
 		}
 
 		String inputString = body.asString();
-		// SOAPMessage message = new SOAPMessage();
+
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
 			EPCISServer.logger.error(

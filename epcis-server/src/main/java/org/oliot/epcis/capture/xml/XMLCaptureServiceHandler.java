@@ -29,20 +29,20 @@ public class XMLCaptureServiceHandler {
 
 	/**
 	 * EPCIS events are added in bulk using the capture interface. Four design
-	 * considerations were made to remain compatible with EPCIS 1.2:\n EPCIS 2.0
-	 * keeps event IDs optional. If event IDs are missing, the server should
-	 * populate the event ID with a unique value.\n Otherwise, it won't be possible
-	 * to retrieve these events by eventID.\n - By default, EPCIS events are only
-	 * stored if the entire capture job was successful. This behaviour can be
-	 * changed with the `GS1-Capture-Error-Behaviour` header.\n- EPCIS master data
-	 * can be captured in the header (`epcisHeader`) of an `EPCISDocument`.\n - This
-	 * endpoint should support both `EPCISDocument` and `EPCISQueryDocument` as
-	 * input.\n To prevent timeouts for large payloads, the client potentially may
-	 * need to split the payload into several capture calls. To that end, the server
-	 * can specify a capture\nlimit (number of EPCIS events) and file size limit
-	 * (payload size).\n A successful capturing of events does not guarantee that
-	 * events will be stored. Instead, the server returns a\ncapture id, which the
-	 * client can use to obtain information about the capture job.\n"
+	 * considerations were made to remain compatible with EPCIS 1.2: EPCIS 2.0 keeps
+	 * event IDs optional. If event IDs are missing, the server should populate the
+	 * event ID with a unique value. Otherwise, it won't be possible to retrieve
+	 * these events by eventID. - By default, EPCIS events are only stored if the
+	 * entire capture job was successful. This behaviour can be changed with the
+	 * `GS1-Capture-Error-Behaviour` header. - EPCIS master data can be captured in
+	 * the header (`epcisHeader`) of an `EPCISDocument`. - This endpoint should
+	 * support both `EPCISDocument` and `EPCISQueryDocument` as input. To prevent
+	 * timeouts for large payloads, the client potentially may need to split the
+	 * payload into several capture calls. To that end, the server can specify a
+	 * capture limit (number of EPCIS events) and file size limit (payload size). A
+	 * successful capturing of events does not guarantee that events will be stored.
+	 * Instead, the server returns a capture id, which the client can use to obtain
+	 * information about the capture job.
 	 *
 	 * @param router            router
 	 * @param xmlCaptureService xmlCaptureService
@@ -50,7 +50,6 @@ public class XMLCaptureServiceHandler {
 	 */
 	public static void registerPostCaptureHandler(Router router, XMLCaptureService xmlCaptureService,
 			EventBus eventBus) {
-
 		router.post("/epcis/capture").consumes("application/xml").handler(routingContext -> {
 			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version", false))
 				return;

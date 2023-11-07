@@ -68,12 +68,20 @@ public class XMLCaptureService {
 	}
 
 	public void post(RoutingContext routingContext, EventBus eventBus) {
-		String inputString = routingContext.body().asString();
 		SOAPMessage message = new SOAPMessage();
+		RequestBody body = routingContext.body();
+		if (body.isEmpty()) {
+			EPCISException e = new EPCISException("[400ValidationException] Empty Request Body");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+			return;
+		}
+		String inputString = body.asString();
+
 		// payload check
 		if (inputString.length() * 4 > Metadata.GS1_CAPTURE_file_size_limit) {
 			EPCISException e = new EPCISException(
-					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`.\n");
+					"[413CapturePayloadTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-File-Size-Limit`. ");
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 			return;
 		}
@@ -106,7 +114,7 @@ public class XMLCaptureService {
 
 			if (eventList.size() > Metadata.GS1_CAPTURE_limit) {
 				EPCISException e = new EPCISException(
-						"[413CapturePayLodTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-Limit`.\n");
+						"[413CapturePayLodTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-Limit`. ");
 				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 				return;
 			}
@@ -114,12 +122,11 @@ public class XMLCaptureService {
 			if (eventList != null && eventList.size() != 0) {
 				// ready to 202
 				Transaction tx = new Transaction(Metadata.GS1_EPCIS_Capture_Error_Behaviour);
-				routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Access-Control-Expose-Headers", "Location").putHeader("Location", "http://"
-								+ EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture/" + tx.getTxId())
-						.setStatusCode(202).end();
+						.putHeader("Location", "/capture/" + tx.getTxId()).setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
 				captureEvents(routingContext, eventList, eventBus, tx);
 			} else
@@ -137,7 +144,7 @@ public class XMLCaptureService {
 
 			if (vList.size() > Metadata.GS1_CAPTURE_limit) {
 				EPCISException e = new EPCISException(
-						"[413CapturePayLodTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-Limit`.\n");
+						"[413CapturePayLodTooLarge] The `POST` request is too large. It exceeds the limits set in `GS1-EPCIS-Capture-Limit`. ");
 				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 413);
 				return;
 			}
@@ -370,7 +377,8 @@ public class XMLCaptureService {
 		try {
 			BulkWriteResult result = EPCISServer.mVocCollection.bulkWrite(bulk);
 			EPCISServer.logger.debug("vocabulary captured: " + result);
-			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(201).end();
 		} catch (MongoException e) {
