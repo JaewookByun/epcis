@@ -14,9 +14,6 @@ import org.bson.types.ObjectId;
 import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.json_to_bson.EPCISDocumentConverter;
-import org.oliot.epcis.model.EPCISException;
-import org.oliot.epcis.model.ImplementationException;
-import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.pagination.Page;
 import org.oliot.epcis.pagination.PageExpiryTimerTask;
@@ -373,7 +370,7 @@ public class JSONCaptureService {
 	}
 
 	public void postCaptureJobList(RoutingContext routingContext) {
-		String perPageParam = routingContext.request().getParam("PerPage");
+		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
 			try {
@@ -381,7 +378,10 @@ public class JSONCaptureService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+				EPCISServer.logger.error(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(msg), 406);
 			}
 		}
 
@@ -390,10 +390,9 @@ public class JSONCaptureService {
 		try {
 			EPCISServer.mTxCollection.find().sort(sort).limit(perPage + 1).into(jobs);
 		} catch (MongoException e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(e1.getMessage()), 500);
+					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
 			return;
 		}
 
@@ -427,10 +426,7 @@ public class JSONCaptureService {
 					+ EPCISServer.captureIDPageMap.size());
 
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
@@ -443,7 +439,7 @@ public class JSONCaptureService {
 	}
 
 	public void postRemainingCaptureJobList(RoutingContext routingContext, String nextPagetoken) {
-		String perPageParam = routingContext.request().getParam("PerPage");
+		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
 			try {
@@ -451,17 +447,21 @@ public class JSONCaptureService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+				EPCISServer.logger.error(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(msg), 406);
 			}
 		}
 		Page page = null;
 		UUID uuid = UUID.fromString(nextPagetoken);
 
 		if (!EPCISServer.captureIDPageMap.containsKey(uuid)) {
-			EPCISException e = new EPCISException(
-					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get406NotAcceptableException(e.getReason()), 500);
+			EPCISServer.logger.error(
+					"[500ImplementationExceptione] The given next page token does not exist or be no longer available.");
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get500ImplementationException(
+					"[500ImplementationExceptione] The given next page token does not exist or be no longer available."),
+					500);
 			return;
 		} else {
 			page = EPCISServer.captureIDPageMap.get(uuid);
@@ -473,10 +473,9 @@ public class JSONCaptureService {
 		try {
 			EPCISServer.mTxCollection.find().sort(sort).skip(skip).limit(perPage + 1).into(jobs);
 		} catch (MongoException e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(e1.getReason()), 500);
+					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
 			return;
 		}
 
@@ -503,10 +502,7 @@ public class JSONCaptureService {
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")

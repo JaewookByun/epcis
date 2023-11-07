@@ -402,7 +402,7 @@ public class XMLCaptureService {
 
 	public void postCaptureJobList(RoutingContext routingContext) {
 		SOAPMessage message = new SOAPMessage();
-		String perPageParam = routingContext.request().getParam("PerPage");
+		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
 			try {
@@ -410,7 +410,11 @@ public class XMLCaptureService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				EPCISException e1 = new EPCISException(
+						"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+				EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+				return;
 			}
 		}
 
@@ -421,6 +425,7 @@ public class XMLCaptureService {
 		} catch (MongoException e) {
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
 			return;
 		}
@@ -445,6 +450,7 @@ public class XMLCaptureService {
 			} catch (Exception throwable) {
 				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
 						null, throwable.getMessage());
+				EPCISServer.logger.error(e.getMessage());
 				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
 				return;
 			}
@@ -472,10 +478,7 @@ public class XMLCaptureService {
 					+ EPCISServer.captureIDPageMap.size());
 
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
@@ -497,7 +500,11 @@ public class XMLCaptureService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				e.printStackTrace();
+				EPCISException e1 = new EPCISException(
+						"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+				EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+				return;
 			}
 		}
 		Page page = null;
@@ -518,6 +525,7 @@ public class XMLCaptureService {
 		try {
 			EPCISServer.mTxCollection.find().sort(sort).skip(skip).limit(perPage + 1).into(jobs);
 		} catch (MongoException e) {
+			EPCISServer.logger.error(e.getMessage());
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
 			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
@@ -542,6 +550,7 @@ public class XMLCaptureService {
 					result += lines[i] + "\n";
 				}
 			} catch (Exception throwable) {
+				EPCISServer.logger.error(throwable.getMessage());
 				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
 						null, throwable.getMessage());
 				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
@@ -564,9 +573,7 @@ public class XMLCaptureService {
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/capture?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")

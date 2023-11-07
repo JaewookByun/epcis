@@ -97,10 +97,12 @@ public class XMLCaptureServiceHandler {
 	 */
 	public static void registerGetCaptureHandler(Router router, XMLCaptureService xmlCaptureService) {
 		router.get("/epcis/capture").consumes("application/xml").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Min", false))
+				return;
+			if (!isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Max", false))
 				return;
 
-			String nextPageToken = routingContext.request().getParam("NextPageToken");
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
 				xmlCaptureService.postCaptureJobList(routingContext);
 			} else {

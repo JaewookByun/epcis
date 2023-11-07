@@ -125,8 +125,11 @@ public class JSONCaptureServiceHandler {
 	 */
 	public static void registerGetCaptureHandler(Router router, JSONCaptureService jsonCaptureService) {
 		router.get("/epcis/capture").consumes("application/json").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+				return;			
+			
 			String nextPageToken = routingContext.request().getParam("NextPageToken");
 			if (nextPageToken == null) {
 				jsonCaptureService.postCaptureJobList(routingContext);
