@@ -508,8 +508,16 @@ public class XMLCaptureService {
 			}
 		}
 		Page page = null;
-		UUID uuid = UUID.fromString(nextPagetoken);
-
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(nextPagetoken);
+		} catch (IllegalArgumentException e) {
+			EPCISException e1 = new EPCISException(
+					"[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage());
+			EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+			return;
+		}
 		if (!EPCISServer.captureIDPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
@@ -572,8 +580,7 @@ public class XMLCaptureService {
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")

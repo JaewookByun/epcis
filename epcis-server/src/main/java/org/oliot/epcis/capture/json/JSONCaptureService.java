@@ -454,7 +454,16 @@ public class JSONCaptureService {
 			}
 		}
 		Page page = null;
-		UUID uuid = UUID.fromString(nextPagetoken);
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(nextPagetoken);
+		} catch (IllegalArgumentException e) {
+			String msg = "[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage();
+			EPCISServer.logger.error(msg);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(msg), 406);
+			return;
+		}
 
 		if (!EPCISServer.captureIDPageMap.containsKey(uuid)) {
 			EPCISServer.logger.error(

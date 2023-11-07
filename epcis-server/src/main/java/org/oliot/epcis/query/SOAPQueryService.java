@@ -76,6 +76,7 @@ public class SOAPQueryService {
 		try {
 			doc = createDocument(soapMessage);
 		} catch (ValidationException e) {
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(response, message, e, e.getClass(), 400);
 			return;
 		}
@@ -85,6 +86,7 @@ public class SOAPQueryService {
 			try {
 				poll(request, response, soapQueryUnmarshaller.getPoll(poll));
 			} catch (JAXBException e) {
+				EPCISServer.logger.error(e.getMessage());
 				ValidationException e1 = new ValidationException(e.getMessage());
 				HTTPUtil.sendQueryResults(response, message, e1, e1.getClass(), 400);
 			}
@@ -96,6 +98,7 @@ public class SOAPQueryService {
 			try {
 				subscribe(response, soapQueryUnmarshaller.getSubscription(getSubscribe));
 			} catch (JAXBException e) {
+				EPCISServer.logger.error(e.getMessage());
 				ValidationException e1 = new ValidationException(e.getMessage());
 				HTTPUtil.sendQueryResults(response, message, e1, e1.getClass(), 400);
 			}
@@ -131,7 +134,7 @@ public class SOAPQueryService {
 			sendQueryResults(response, EPCISServer.getQueryNamesResponse);
 			return;
 		}
-
+		EPCISServer.logger.error("Unsupported SOAP operation");
 		ValidationException e = new ValidationException("Unsupported SOAP operation");
 		HTTPUtil.sendQueryResults(response, message, e, e.getClass(), 400);
 	}
@@ -185,6 +188,7 @@ public class SOAPQueryService {
 		} catch (Throwable e1) {
 			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
 					e1.getMessage());
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
 			return;
 		}
@@ -193,6 +197,7 @@ public class SOAPQueryService {
 			QueryTooLargeException e = new QueryTooLargeException(
 					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
 							+ resultList.size() + " )");
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 413);
 			return;
 		}
@@ -237,10 +242,7 @@ public class SOAPQueryService {
 					"[GET /events] page - " + uuid + " added. # remaining pages - " + EPCISServer.eventPageMap.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
@@ -351,9 +353,11 @@ public class SOAPQueryService {
 		try {
 			qd = new QueryDescription(poll, soapQueryUnmarshaller);
 		} catch (QueryParameterException e1) {
+			EPCISServer.logger.error(e1.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
 			return;
 		} catch (ImplementationException e2) {
+			EPCISServer.logger.error(e2.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e2, e2.getClass(), 500);
 			return;
 		}
@@ -367,6 +371,7 @@ public class SOAPQueryService {
 		} else {
 			QueryParameterException e = new QueryParameterException(
 					"queryName should be one of SimpleEventQuery and SimpleMasterDataQuery");
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
 			return;
 		}
@@ -482,6 +487,7 @@ public class SOAPQueryService {
 			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
 		} catch (Exception e) {
 			QueryParameterException e1 = new QueryParameterException("invalid nextPageToken - " + uuid);
+			EPCISServer.logger.error(e1.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
 			return;
 		}
@@ -492,6 +498,7 @@ public class SOAPQueryService {
 		try {
 			perPage = getPerPage(serverRequest);
 		} catch (QueryParameterException e) {
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
 			return;
 		}
@@ -500,6 +507,7 @@ public class SOAPQueryService {
 		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 406);
 			return;
 		} else {
@@ -533,6 +541,7 @@ public class SOAPQueryService {
 		} catch (Throwable e) {
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
 					e.getMessage());
+			EPCISServer.logger.error(e1.getReason());
 			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
 			return;
 		}
@@ -569,12 +578,8 @@ public class SOAPQueryService {
 			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 
-			serverResponse
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
-					.putHeader("GS1-Next-Page-Token-Expires",
-							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
 		} else {
 			EPCISServer.eventPageMap.remove(uuid);
@@ -872,7 +877,8 @@ public class SOAPQueryService {
 	}
 
 	public void sendQueryResults(HttpServerResponse serverResponse, String result) {
-		serverResponse.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200).end(result);
+		serverResponse.putHeader("Access-Control-Expose-Headers", "*")
+				.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(200).end(result);
 	}
 
 	public void sendSubscriptionResult(JobExecutionContext context) {

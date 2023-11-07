@@ -130,7 +130,7 @@ public class JSONCaptureServiceHandler {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
 				return;			
 			
-			String nextPageToken = routingContext.request().getParam("NextPageToken");
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
 				jsonCaptureService.postCaptureJobList(routingContext);
 			} else {
