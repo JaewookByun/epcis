@@ -15,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.log4j.Logger;
+import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.server.EPCISServer;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,12 +35,18 @@ public class HTTPUtil {
 			Class<?> resultType, int statusCode) {
 		message.putResult(result, resultType);
 		serverResponse.putHeader("content-type", "application/xml; charset=utf-8")
-				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode).end(message.toString());
+				.putHeader("Access-Control-Expose-Headers", "*")
+				.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(statusCode).end(message.toString());
 	}
 
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject message, int statusCode) {
 		serverResponse.putHeader("content-type", "application/json; charset=utf-8")
-				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode).end(message.toString());
+				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
+				.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).end(message.toString());
 	}
 
 	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, SOAPMessage message,
@@ -58,7 +65,7 @@ public class HTTPUtil {
 		} catch (Exception e) {
 			EPCISServer.logger.debug("subscription result delivery fails: " + e.getMessage());
 		}
-		
+
 	}
 
 //	@SuppressWarnings("rawtypes")

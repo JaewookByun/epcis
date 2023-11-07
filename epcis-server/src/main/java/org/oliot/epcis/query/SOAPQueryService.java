@@ -67,7 +67,36 @@ import static org.quartz.TriggerBuilder.newTrigger;
  */
 public class SOAPQueryService {
 
-	final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
+	public final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
+
+	public void pollEvent(HttpServerRequest request, HttpServerResponse response, String soapMessage)
+			throws ValidationException {
+		SOAPMessage message = new SOAPMessage();
+		Document doc;
+		try {
+			doc = createDocument(soapMessage);
+		} catch (ValidationException e) {
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(response, message, e, e.getClass(), 400);
+			return;
+		}
+
+		Node pollNode = doc.getElementsByTagNameNS("urn:epcglobal:epcis-query:xsd:2", "Poll").item(0);
+		if (pollNode != null) {
+			try {
+				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
+				if (poll.getQueryName().equals("SimpleEventQuery"))
+					poll(request, response, poll);
+				else {
+					throw new ValidationException("Invalid SOAP message: no SimpleEventQuery");
+				}
+			} catch (JAXBException e) {
+				throw new ValidationException(e.getMessage());
+			}
+			return;
+		} else
+			throw new ValidationException("Invalid SOAP message: no Poll");
+	}
 
 	public void query(HttpServerRequest request, HttpServerResponse response, String soapMessage) {
 
