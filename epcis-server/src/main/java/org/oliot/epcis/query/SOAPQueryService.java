@@ -84,12 +84,7 @@ public class SOAPQueryService {
 		Node pollNode = doc.getElementsByTagNameNS("urn:epcglobal:epcis-query:xsd:2", "Poll").item(0);
 		if (pollNode != null) {
 			try {
-				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
-				if (poll.getQueryName().equals("SimpleEventQuery"))
-					poll(request, response, poll);
-				else {
-					throw new ValidationException("Invalid SOAP message: no SimpleEventQuery");
-				}
+				poll(request, response, soapQueryUnmarshaller.getPoll(pollNode));
 			} catch (JAXBException e) {
 				throw new ValidationException(e.getMessage());
 			}
@@ -350,10 +345,7 @@ public class SOAPQueryService {
 					+ EPCISServer.vocabularyPageMap.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/vocabularies?PerPage="
-									+ perPage + "&NextPageToken=" + uuid.toString())
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
@@ -411,7 +403,7 @@ public class SOAPQueryService {
 		SOAPMessage message = new SOAPMessage();
 		UUID uuid = null;
 		try {
-			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
+			uuid = UUID.fromString(serverRequest.getParam("nextPageToken"));
 		} catch (Exception e) {
 			QueryParameterException e1 = new QueryParameterException("nextPageToken should exist - " + uuid);
 			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
@@ -492,12 +484,8 @@ public class SOAPQueryService {
 			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 
-			serverResponse
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/vocabularies?PerPage="
-									+ perPage + "&NextPageToken=" + uuid.toString())
-					.putHeader("GS1-Next-Page-Token-Expires",
-							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
 		} else {
 			EPCISServer.vocabularyPageMap.remove(uuid);

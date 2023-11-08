@@ -95,7 +95,8 @@ public class SOAPQueryServiceHandler {
 					inputString = body.asString();
 				}
 				try {
-					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(), inputString);
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(),
+							inputString);
 				} catch (ValidationException e) {
 					EPCISServer.logger.error(e.getReason());
 					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
@@ -105,10 +106,9 @@ public class SOAPQueryServiceHandler {
 			}
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
-		
-		
+
 		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
-			
+
 			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Min", false))
 				return;
 
@@ -153,26 +153,21 @@ public class SOAPQueryServiceHandler {
 					inputString = body.asString();
 				}
 				try {
-					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(), inputString);
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(),
+							inputString);
 				} catch (ValidationException e) {
 					EPCISServer.logger.error(e.getReason());
 					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
 				}
 			} else {
-				soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
-			}
-			
-			
-			
-			
-			// -----------------------------------------------------------------------------------------------
-			try {
-				soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
-			} catch (ParserConfigurationException e) {
-				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
-						e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
-			}
+				try {
+					soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
+				} catch (ParserConfigurationException e) {
+					ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+							e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				}
+			}			
 		});
 		EPCISServer.logger.info("[GET /epcis/vocabularies (application/xml)] - router added");
 	}
