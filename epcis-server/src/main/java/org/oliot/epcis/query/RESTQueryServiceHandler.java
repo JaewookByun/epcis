@@ -11,14 +11,15 @@ import java.util.UUID;
 import org.bson.Document;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
-import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
+import org.oliot.epcis.validation.HeaderValidator;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 
 /**
@@ -58,51 +59,72 @@ public class RESTQueryServiceHandler {
 		 * GS1-EPC-Format GS1-CBV-XML-Format
 		 */
 		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Max", false))
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+				return;
+
 			routingContext.response().setChunked(true);
 
-			JsonObject query = null;
-
-			MultiMap m = routingContext.request().params();
-			Iterator<Entry<String, String>> iter = m.iterator();
-			while (iter.hasNext()) {
-				try {
-					String k = iter.next().getKey();
-					query = new JsonObject(k);
-					break;
-				} catch (Exception e) {
-					// DO NOTHING
-				}
-			}
-
-			if (query == null) {
-				query = routingContext.body().asJsonObject();
-			}
-
-			// get UUID
-			String nextPageToken = routingContext.request().getParam("NextPageToken");
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
+				JsonObject query = null;
+				RequestBody body = routingContext.body();
+				if (body.isEmpty()) {
+
+					MultiMap m = routingContext.request().params();
+					Iterator<Entry<String, String>> iter = m.iterator();
+					while (iter.hasNext()) {
+						try {
+							String k = iter.next().getKey();
+							query = new JsonObject(k);
+							break;
+						} catch (Exception e) {
+							// DO NOTHING
+						}
+					}
+					if (query == null) {
+						HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+								.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+								406);
+						return;
+					}
+				} else {
+					try {
+						query = body.asJsonObject();
+					} catch (Exception e) {
+
+					}
+				}
 				restQueryService.query(routingContext, query);
 			} else {
 				UUID uuid = null;
 				try {
-					uuid = UUID.fromString(routingContext.request().getParam("NextPageToken"));
+					uuid = UUID.fromString(routingContext.request().getParam("nextPageToken"));
 				} catch (Exception e) {
-					QueryParameterException e1 = new QueryParameterException("invalid nextPageToken - " + uuid);
 					HTTPUtil.sendQueryResults(routingContext.response(),
 							JSONMessageFactory.get406NotAcceptableException(
-									"[406NotAcceptable] The server cannot return the response as requested: "
-											+ e1.getMessage()),
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
 							406);
 					return;
 				}
 				restQueryService.getNextEventPage(routingContext, uuid);
 			}
+
 		});
 		EPCISServer.logger.info("[GET /epcis/evetns (application/json)] - router added");
 	}

@@ -69,7 +69,7 @@ public class SOAPQueryService {
 
 	public final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
-	public void pollEvent(HttpServerRequest request, HttpServerResponse response, String soapMessage)
+	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage)
 			throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
 		Document doc;

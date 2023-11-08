@@ -49,7 +49,7 @@ public class SOAPQueryServiceHandler {
 		EPCISServer.logger.info("[POST /epcis/query] - router added");
 	}
 
-	public static void registerPaginationHandler(Router router, SOAPQueryService soapQueryService) {
+	public static void registerPollHandler(Router router, SOAPQueryService soapQueryService) {
 		router.get("/epcis/events").consumes("application/xml").handler(routingContext -> {
 			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Min", false))
 				return;
@@ -71,7 +71,7 @@ public class SOAPQueryServiceHandler {
 
 			routingContext.response().setChunked(true);
 
-			String nextPageToken = routingContext.request().getParam("NextPageToken");
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
 				SOAPMessage message = new SOAPMessage();
 				RequestBody body = routingContext.body();
@@ -82,7 +82,7 @@ public class SOAPQueryServiceHandler {
 					while (iter.hasNext()) {
 						Entry<String, String> entry = iter.next();
 						String k = entry.getKey();
-						if (k.contains("Envelope"))
+						if (k.contains("Envelope") && k.contains("Poll") && k.contains("SimpleEventQuery"))
 							inputString = k;
 					}
 					if (inputString == null) {
@@ -95,7 +95,7 @@ public class SOAPQueryServiceHandler {
 					inputString = body.asString();
 				}
 				try {
-					soapQueryService.pollEvent(routingContext.request(), routingContext.response(), inputString);
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(), inputString);
 				} catch (ValidationException e) {
 					EPCISServer.logger.error(e.getReason());
 					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
@@ -105,7 +105,67 @@ public class SOAPQueryServiceHandler {
 			}
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
+		
+		
 		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
+			
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Min", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Max", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Min", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Max", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPC-Format", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-XML-Format", false))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				SOAPMessage message = new SOAPMessage();
+				RequestBody body = routingContext.body();
+				String inputString = null;
+				if (body.isEmpty()) {
+					MultiMap mm = routingContext.queryParams();
+					Iterator<Entry<String, String>> iter = mm.iterator();
+					while (iter.hasNext()) {
+						Entry<String, String> entry = iter.next();
+						String k = entry.getKey();
+						if (k.contains("Envelope") && k.contains("Poll") && k.contains("SimpleMasterDataQuery"))
+							inputString = k;
+					}
+					if (inputString == null) {
+						EPCISException e = new EPCISException("[400ValidationException] Empty Request Body");
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+						return;
+					}
+				} else {
+					inputString = body.asString();
+				}
+				try {
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(), inputString);
+				} catch (ValidationException e) {
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 400);
+				}
+			} else {
+				soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+			}
+			
+			
+			
+			
+			// -----------------------------------------------------------------------------------------------
 			try {
 				soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
 			} catch (ParserConfigurationException e) {

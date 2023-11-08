@@ -1,4 +1,4 @@
-package org.oliot.epcis.capture.common;
+package org.oliot.epcis.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
-import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.GS1CBVXMLFormat;
 import org.oliot.epcis.model.GS1EPCFormat;
@@ -252,6 +251,50 @@ public class MetadataHandler {
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events (application/json)] - router added");
+	}
+	
+	public static void registerVocabualariesHandler(Router router) {
+		/**
+		 * Query metadata for the EPCIS events endpoint. EPCIS 2.0 supports a number of
+		 * custom headers to describe custom vocabularies and support multiple versions
+		 * of EPCIS and CBV. The `OPTIONS` method allows the client to discover which
+		 * vocabularies and EPCIS and CBV versions are used. (application/xml)
+		 */
+		router.options("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("Allow", "OPTIONS, GET").putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_EPC_URN.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_URN.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/vocabularies (application/xml)] - router added");
+
+		/**
+		 * Query metadata for the EPCIS events endpoint. EPCIS 2.0 supports a number of
+		 * custom headers to describe custom vocabularies and support multiple versions
+		 * of EPCIS and CBV. The `OPTIONS` method allows the client to discover which
+		 * vocabularies and EPCIS and CBV versions are used. (application/json)
+		 */
+		router.options("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
+			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("Allow", "OPTIONS, GET").putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Min", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-EPCIS-Max", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Max", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-CBV-Min", Metadata.GS1_CBV_Version)
+					.putHeader("GS1-Vendor-Version", Metadata.GS1_Vendor_Version)
+					.putHeader("GS1-EPC-Format", GS1EPCFormat.Always_GS1_Digital_Link.toString())
+					.putHeader("GS1-CBV-XML-Format", GS1CBVXMLFormat.Always_Web_URI.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(204).end();
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/vocabularies (application/json)] - router added");
 	}
 
 	public static void registerGetEventHandler(Router router) {

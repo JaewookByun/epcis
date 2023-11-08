@@ -14,13 +14,13 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 
-import org.oliot.epcis.capture.common.CommonHandler;
-import org.oliot.epcis.capture.common.MetadataHandler;
 import org.oliot.epcis.capture.common.TransactionManager;
 import org.oliot.epcis.capture.json.JSONCaptureService;
 import org.oliot.epcis.capture.json.JSONCaptureServiceHandler;
 import org.oliot.epcis.capture.xml.XMLCaptureService;
 import org.oliot.epcis.capture.xml.XMLCaptureServiceHandler;
+import org.oliot.epcis.common.CommonHandler;
+import org.oliot.epcis.common.MetadataHandler;
 import org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter;
 import org.oliot.epcis.converter.unit.UnitConverter;
 import org.oliot.epcis.pagination.Page;
@@ -134,6 +134,7 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerCaptureHandler(router);
 		MetadataHandler.registerCaptureIDHandler(router);
 		MetadataHandler.registerEventsHandler(router);
+		MetadataHandler.registerVocabualariesHandler(router);
 		MetadataHandler.registerGetEventHandler(router);
 		MetadataHandler.registerQueryHandler(router);
 	}
@@ -161,7 +162,7 @@ public class EPCISServer extends AbstractVerticle {
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
-		SOAPQueryServiceHandler.registerPaginationHandler(router, soapQueryService);
+		SOAPQueryServiceHandler.registerPollHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 

@@ -86,11 +86,11 @@ public class RESTQueryService {
 
 	public void query(RoutingContext routingContext, JsonObject query) {
 
-		if(query == null) {
+		if (query == null) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
-							"[406NotAcceptable] The server cannot return the response as requested: No Query received"),
-					406);			
+							"[406NotAcceptable] The server cannot return the response as requested: No query received"),
+					406);
 		}
 
 		try {
@@ -252,12 +252,8 @@ public class RESTQueryService {
 			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 
-			serverResponse
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
-					.putHeader("GS1-Next-Page-Token-Expires",
-							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
 		} else {
 			EPCISServer.eventPageMap.remove(uuid);
@@ -310,10 +306,8 @@ public class RESTQueryService {
 			QueryTooLargeException e = new QueryTooLargeException(
 					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
 							+ resultList.size() + " )");
-			HTTPUtil.sendQueryResults(serverResponse,
-					JSONMessageFactory.get413QueryTooLargeException(
-							"[413QueryTooLargeException] The server cannot return the response as requested: "
-									+ e.getReason()),
+			HTTPUtil.sendQueryResults(serverResponse, JSONMessageFactory.get413QueryTooLargeException(
+					"[413QueryTooLargeException] The server cannot return the response as requested: " + e.getReason()),
 					413);
 			return;
 		}
@@ -366,13 +360,8 @@ public class RESTQueryService {
 			EPCISServer.logger.debug(
 					"[GET /events] page - " + uuid + " added. # remaining pages - " + EPCISServer.eventPageMap.size());
 
-			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-					.putHeader("Link",
-							"http://" + EPCISServer.host + ":" + EPCISServer.port + "/epcis/events?PerPage=" + perPage
-									+ "&NextPageToken=" + uuid.toString())
-					.putHeader("GS1-Next-Page-Token-Expires",
-							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 
 			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
 		} else {

@@ -1,4 +1,4 @@
-package org.oliot.epcis.capture.common;
+package org.oliot.epcis.common;
 
 import io.vertx.ext.web.Router;
 import org.oliot.epcis.resource.DynamicResource;
