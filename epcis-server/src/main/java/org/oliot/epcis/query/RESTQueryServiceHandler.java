@@ -109,7 +109,7 @@ public class RESTQueryServiceHandler {
 
 					}
 				}
-				restQueryService.query(routingContext, query);
+				restQueryService.query(routingContext, query, "SimpleEventQuery");
 			} else {
 				UUID uuid = null;
 				try {
@@ -126,7 +126,84 @@ public class RESTQueryServiceHandler {
 			}
 
 		});
-		EPCISServer.logger.info("[GET /epcis/evetns (application/json)] - router added");
+		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
+	}
+
+	public static void registerGetVocabulariesHandler(Router router, RESTQueryService restQueryService) {
+		/*
+		 * NextPageToken PerPage GS1-CBV-Min GS1-CBV-Max GS1-EPCIS-Min GS1-EPCIS-Max
+		 * GS1-EPC-Format GS1-CBV-XML-Format
+		 */
+		router.get("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Max", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
+				return;
+
+			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				JsonObject query = null;
+				RequestBody body = routingContext.body();
+				if (body.isEmpty()) {
+
+					MultiMap m = routingContext.request().params();
+					Iterator<Entry<String, String>> iter = m.iterator();
+					while (iter.hasNext()) {
+						try {
+							String k = iter.next().getKey();
+							query = new JsonObject(k);
+							break;
+						} catch (Exception e) {
+							// DO NOTHING
+						}
+					}
+					if (query == null) {
+						HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+								.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+								406);
+						return;
+					}
+				} else {
+					try {
+						query = body.asJsonObject();
+					} catch (Exception e) {
+
+					}
+				}
+				restQueryService.query(routingContext, query, "SimpleMasterDataQuery");
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(routingContext.request().getParam("nextPageToken"));
+					restQueryService.getNextVocabularyPage(routingContext, uuid);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+
+			}
+
+		});
+		EPCISServer.logger.info("[GET /epcis/vocabularies (application/json)] - router added");
 	}
 
 	// Returns an individual EPCIS event.

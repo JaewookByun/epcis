@@ -84,7 +84,7 @@ public class RESTQueryService {
 		return extContext;
 	}
 
-	public void query(RoutingContext routingContext, JsonObject query) {
+	public void query(RoutingContext routingContext, JsonObject query, String queryName) {
 
 		if (query == null) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
@@ -94,7 +94,10 @@ public class RESTQueryService {
 		}
 
 		try {
-			poll(routingContext, query);
+			if (queryName.equals("SimpleEventQuery"))
+				pollEvents(routingContext, query);
+			else
+				pollVocabularies(routingContext, query);
 		} catch (QueryParameterException | ValidationException e) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
@@ -115,7 +118,7 @@ public class RESTQueryService {
 		}
 	}
 
-	public void poll(RoutingContext routingContext, JsonObject query)
+	public void pollEvents(RoutingContext routingContext, JsonObject query)
 			throws QueryParameterException, ImplementationException, Exception, ValidationException {
 
 		// get perPage
@@ -130,7 +133,7 @@ public class RESTQueryService {
 		// create query description
 		QueryDescription qd = null;
 		try {
-			qd = new QueryDescription(query);
+			qd = new QueryDescription(query, "SimpleEventQuery");
 		} catch (QueryParameterException e1) {
 			throw e1;
 		} catch (ImplementationException e2) {
@@ -138,18 +141,37 @@ public class RESTQueryService {
 		} catch (Exception e3) {
 			throw e3;
 		}
+		invokeSimpleEventQuery(routingContext.response(), qd, perPage);
+	}
 
-		if (qd.getQueryName().equals("SimpleEventQuery")) {
-			// SimpleEventQuery
-			invokeSimpleEventQuery(routingContext.response(), qd, perPage);
-		} else {
-			// SimpleMasterDataQuery
-			// invokeSimpleMasterDataQuery(serverResponse, message, qd, perPage);
+	public void pollVocabularies(RoutingContext routingContext, JsonObject query)
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(routingContext.request());
+		} catch (QueryParameterException e) {
+			throw e;
 		}
+
+		// create query description
+		QueryDescription qd = null;
+		try {
+			qd = new QueryDescription(query, "SimpleMasterDataQuery");
+		} catch (QueryParameterException e1) {
+			throw e1;
+		} catch (ImplementationException e2) {
+			throw e2;
+		} catch (Exception e3) {
+			throw e3;
+		}
+		invokeSimpleMasterDataQuery(routingContext.response(), qd, perPage);
 	}
 
 	public void getNextEventPage(RoutingContext routingContext, UUID uuid) {
-		SOAPMessage message = new SOAPMessage();
+
 		HttpServerRequest serverRequest = routingContext.request();
 		HttpServerResponse serverResponse = routingContext.response();
 		// get perPage
@@ -158,21 +180,22 @@ public class RESTQueryService {
 		try {
 			perPage = getPerPage(serverRequest);
 		} catch (QueryParameterException e) {
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
 			return;
 		}
 
 		Page page = null;
-		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
-			EPCISException e = new EPCISException(
-					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
-							"[406NotAcceptable] The server cannot return the response as requested: " + e.getMessage()),
+							"[406NotAcceptable] The given next page token does not exist or be no longer available."),
 					406);
 			return;
 		} else {
-			page = EPCISServer.eventPageMap.get(uuid);
+			page = EPCISServer.vocabularyPageMap.get(uuid);
 		}
 
 		org.bson.Document query = (org.bson.Document) page.getQuery();
@@ -198,14 +221,12 @@ public class RESTQueryService {
 		List<org.bson.Document> results = new ArrayList<org.bson.Document>();
 
 		try {
-			EPCISServer.mEventCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
+			EPCISServer.mVocCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
 		} catch (Throwable e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
-					e.getMessage());
 			HTTPUtil.sendQueryResults(serverResponse,
 					JSONMessageFactory.get500ImplementationException(
 							"[500ImplementationException] The server cannot return the response as requested: "
-									+ e1.getMessage()),
+									+ e.getMessage()),
 					500);
 			return;
 		}
@@ -303,11 +324,10 @@ public class RESTQueryService {
 		}
 
 		if (qd.getMaxCount() != null && (resultList.size() > qd.getMaxCount())) {
-			QueryTooLargeException e = new QueryTooLargeException(
-					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
-							+ resultList.size() + " )");
 			HTTPUtil.sendQueryResults(serverResponse, JSONMessageFactory.get413QueryTooLargeException(
-					"[413QueryTooLargeException] The server cannot return the response as requested: " + e.getReason()),
+					"[413QueryTooLargeException] The server cannot return the response as requested: "
+							+ "An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )"),
 					413);
 			return;
 		}
@@ -369,25 +389,7 @@ public class RESTQueryService {
 		}
 	}
 
-	// ------------TODO-------------------------------------------------------------------------------------------
-
-	private int getPerPage(HttpServerRequest serverRequest) throws QueryParameterException {
-		String perPageParam = serverRequest.getParam("PerPage");
-		int perPage = 30;
-		if (perPageParam != null) {
-			try {
-				int t = Integer.parseInt(perPageParam);
-				if (t > 0)
-					perPage = t;
-			} catch (NumberFormatException e) {
-				throw new QueryParameterException("invalid PerPage - " + perPageParam);
-			}
-		}
-		return perPage;
-	}
-
-	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, SOAPMessage message,
-			QueryDescription qd, int perPage) {
+	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage) {
 
 		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(qd.getMongoQuery());
 		if (!qd.getMongoProjection().isEmpty())
@@ -397,80 +399,94 @@ public class RESTQueryService {
 		try {
 			query.into(resultList);
 		} catch (Throwable e1) {
-			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
-					e1.getMessage());
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
 			return;
 		}
 
 		if (qd.getMaxCount() != null && (resultList.size() > qd.getMaxCount())) {
-			QueryTooLargeException e = new QueryTooLargeException(
-					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
-							+ resultList.size() + " )");
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 413);
+			HTTPUtil.sendQueryResults(serverResponse, JSONMessageFactory.get413QueryTooLargeException(
+					"[413QueryTooLargeException] The server cannot return the response as requested: "
+							+ "An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )"),
+					413);
 			return;
 		}
 
-		/*
-		 * TODO List<VocabularyType> vList =
-		 * resultList.parallelStream().map(TypeDocument::new)
-		 * .collect(Collectors.groupingBy(TypeDocument::getType,
-		 * Collectors.mapping(TypeDocument::getDocument, Collectors.toSet())))
-		 * .entrySet().parallelStream() .map(e -> new
-		 * MasterdataConverter().convert(e.getKey(), e.getValue(), message))
-		 * .collect(Collectors.toList());
-		 * 
-		 * boolean needPagination = false; if (perPage < vList.size()) { needPagination
-		 * = true; vList = vList.subList(0, perPage); }
-		 * 
-		 * QueryResults queryResults = new QueryResults();
-		 * queryResults.setQueryName("SimpleMasterDataQuery");
-		 * 
-		 * QueryResultsBody resultsBody = new QueryResultsBody(); VocabularyListType vlt
-		 * = new VocabularyListType(); vlt.setVocabulary(vList);
-		 * resultsBody.setVocabularyList(vlt);
-		 * 
-		 * queryResults.setResultsBody(resultsBody);
-		 * 
-		 * if (needPagination) { UUID uuid; long currentTime =
-		 * System.currentTimeMillis();
-		 * 
-		 * while (true) { uuid = UUID.randomUUID(); if
-		 * (!EPCISServer.vocabularyPageMap.containsKey(uuid)) break; }
-		 * 
-		 * Page page = new Page(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(),
-		 * qd.getMongoProjection(), null, null, perPage);
-		 * 
-		 * Timer timer = new Timer(); page.setTimer(timer); timer.schedule(new
-		 * PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
-		 * EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
-		 * EPCISServer.vocabularyPageMap.put(uuid, page);
-		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
-		 * " added. # remaining pages - " + EPCISServer.vocabularyPageMap.size());
-		 * 
-		 * serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-		 * .putHeader("GS1-Extension", Metadata.GS1_Extensions) .putHeader("Link",
-		 * "http://" + EPCISServer.host + ":" + EPCISServer.port +
-		 * "/epcis/vocabularies?PerPage=" + perPage + "&NextPageToken=" +
-		 * uuid.toString()) .putHeader("GS1-Next-Page-Token-Expires",
-		 * TimeUtil.getDateTimeStamp(currentTime +
-		 * Metadata.GS1_Next_Page_Token_Expires));
-		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
-		 * QueryResults.class, 200); } else { HTTPUtil.sendQueryResults(serverResponse,
-		 * message, queryResults, QueryResults.class, 200); }
-		 */
+		boolean needPagination = false;
+		if (perPage < resultList.size()) {
+			needPagination = true;
+			resultList = resultList.subList(0, perPage);
+		}
+
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(resultList);
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
+		// conversion: TODO
+		// List<JsonObject> convertedResultList =
+		// getConvertedResultList(isResultSorted(qd), resultList, namespaces,
+		// extType);
+		// temporary
+		List<JsonObject> convertedResultList = new ArrayList<JsonObject>();
+		for (org.bson.Document result : resultList) {
+			convertedResultList.add(new JsonObject(result.toJson()));
+		}
+		context.add(extType);
+
+		JsonObject queryResultDocument = StaticResource.simpleMasterDataQueryResults.copy();
+		JsonArray vocabularyList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("vocabularyList");
+		for (JsonObject list : convertedResultList) {
+			vocabularyList.add(list);
+		}
+		queryResultDocument.put("@context", context);
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.vocabularyPageMap.containsKey(uuid))
+					break;
+			}
+
+			Page page = new Page(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(), null, null,
+					perPage);
+
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.vocabularyPageMap.put(uuid, page);
+			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " added. # remaining pages - "
+					+ EPCISServer.vocabularyPageMap.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+
 	}
 
-	public void getNextVocabularyPage(HttpServerRequest serverRequest, HttpServerResponse serverResponse)
-			throws ParserConfigurationException {
-		SOAPMessage message = new SOAPMessage();
-		UUID uuid = null;
-		try {
-			uuid = UUID.fromString(serverRequest.getParam("NextPageToken"));
-		} catch (Exception e) {
-			QueryParameterException e1 = new QueryParameterException("nextPageToken should exist - " + uuid);
-			HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 400);
-		}
+	public void getNextVocabularyPage(RoutingContext routingContext, UUID uuid) throws ParserConfigurationException {
+		HttpServerRequest serverRequest = routingContext.request();
+		HttpServerResponse serverResponse = routingContext.response();
 
 		// get perPage
 		int perPage;
@@ -478,16 +494,20 @@ public class RESTQueryService {
 		try {
 			perPage = getPerPage(serverRequest);
 		} catch (QueryParameterException e) {
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
 			return;
 		}
 
 		// get Page
 		Page page = null;
 		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
-			EPCISException e = new EPCISException(
-					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 406);
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The given next page token does not exist or be no longer available."),
+					406);
 			return;
 		} else {
 			page = EPCISServer.vocabularyPageMap.get(uuid);
@@ -504,59 +524,92 @@ public class RESTQueryService {
 		try {
 			query.into(resultList);
 		} catch (Throwable e1) {
-			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e1.getMessage());
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
 			return;
 		}
 
-		/*
-		 * TODO List<VocabularyType> vList =
-		 * resultList.parallelStream().map(TypeDocument::new)
-		 * .collect(Collectors.groupingBy(TypeDocument::getType,
-		 * Collectors.mapping(TypeDocument::getDocument, Collectors.toSet())))
-		 * .entrySet().parallelStream() .map(e -> new
-		 * MasterdataConverter().convert(e.getKey(), e.getValue(), message))
-		 * .collect(Collectors.toList());
-		 * 
-		 * boolean needPagination = false; if (perPage < vList.size()) { needPagination
-		 * = true; vList = vList.subList(0, perPage); }
-		 * 
-		 * QueryResults queryResults = new QueryResults();
-		 * queryResults.setQueryName("SimpleMasterDataQuery");
-		 * 
-		 * QueryResultsBody resultsBody = new QueryResultsBody(); VocabularyListType vlt
-		 * = new VocabularyListType(); vlt.setVocabulary(vList);
-		 * resultsBody.setVocabularyList(vlt);
-		 * 
-		 * queryResults.setResultsBody(resultsBody);
-		 * 
-		 * if (needPagination) { page.incrSkip(perPage); long currentTime =
-		 * System.currentTimeMillis(); Timer timer = page.getTimer(); if (timer != null)
-		 * timer.cancel();
-		 * 
-		 * Timer newTimer = new Timer(); page.setTimer(newTimer); newTimer.schedule(new
-		 * PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
-		 * EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
-		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
-		 * " token expiry time extended to " + TimeUtil.getDateTimeStamp(currentTime +
-		 * Metadata.GS1_Next_Page_Token_Expires));
-		 * 
-		 * serverResponse .putHeader("Link", "http://" + EPCISServer.host + ":" +
-		 * EPCISServer.port + "/epcis/vocabularies?PerPage=" + perPage +
-		 * "&NextPageToken=" + uuid.toString())
-		 * .putHeader("GS1-Next-Page-Token-Expires",
-		 * TimeUtil.getDateTimeStamp(currentTime +
-		 * Metadata.GS1_Next_Page_Token_Expires));
-		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
-		 * QueryResults.class, 200); } else {
-		 * EPCISServer.vocabularyPageMap.remove(uuid);
-		 * EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid +
-		 * " expired. # remaining pages - " + EPCISServer.vocabularyPageMap.size());
-		 * HTTPUtil.sendQueryResults(serverResponse, message, queryResults,
-		 * QueryResults.class, 200); }
-		 */
+		boolean needPagination = false;
+		if (perPage < resultList.size()) {
+			needPagination = true;
+			resultList = resultList.subList(0, perPage);
+		}
+
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(resultList);
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
+		// conversion: TODO
+		// List<JsonObject> convertedResultList =
+		// getConvertedResultList(isResultSorted(qd), resultList, namespaces,
+		// extType);
+		// temporary
+		List<JsonObject> convertedResultList = new ArrayList<JsonObject>();
+		for (org.bson.Document result : resultList) {
+			convertedResultList.add(new JsonObject(result.toJson()));
+		}
+		context.add(extType);
+
+		JsonObject queryResultDocument = StaticResource.simpleMasterDataQueryResults.copy();
+		JsonArray vocabularyList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("vocabularyList");
+		for (JsonObject list : convertedResultList) {
+			vocabularyList.add(list);
+		}
+		queryResultDocument.put("@context", context);
+
+		if (needPagination) {
+			page.incrSkip(perPage);
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+			EPCISServer.vocabularyPageMap.remove(uuid);
+			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " expired. # remaining pages - "
+					+ EPCISServer.vocabularyPageMap.size());
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+
 	}
+
+	private int getPerPage(HttpServerRequest serverRequest) throws QueryParameterException {
+		String perPageParam = serverRequest.getParam("PerPage");
+		int perPage = 30;
+		if (perPageParam != null) {
+			try {
+				int t = Integer.parseInt(perPageParam);
+				if (t > 0)
+					perPage = t;
+			} catch (NumberFormatException e) {
+				throw new QueryParameterException("invalid PerPage - " + perPageParam);
+			}
+		}
+		return perPage;
+	}
+
+	// ------------TODO-------------------------------------------------------------------------------------------
 
 	public void getSubscriptionIDs(HttpServerResponse serverResponse) {
 		try {

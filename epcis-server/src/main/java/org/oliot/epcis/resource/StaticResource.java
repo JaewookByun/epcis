@@ -34,4 +34,9 @@ public class StaticResource {
 			.put("schemaVersion", "2.0").put("creationDate", TimeUtil.getDateTimeStamp(System.currentTimeMillis()))
 			.put("epcisBody", new JsonObject().put("queryResults", new JsonObject().put("queryName", "SimpleEventQuery")
 					.put("resultsBody", new JsonObject().put("eventList", new JsonArray()))));
+	
+	public static JsonObject simpleMasterDataQueryResults = new JsonObject().put("type", "EPCISQueryDocument")
+			.put("schemaVersion", "2.0").put("creationDate", TimeUtil.getDateTimeStamp(System.currentTimeMillis()))
+			.put("epcisBody", new JsonObject().put("queryResults", new JsonObject().put("queryName", "SimpleMasterDataQuery")
+					.put("resultsBody", new JsonObject().put("vocabularyList", new JsonArray()))));
 }

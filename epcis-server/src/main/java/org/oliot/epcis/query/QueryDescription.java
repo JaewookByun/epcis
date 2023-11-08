@@ -100,18 +100,19 @@ public class QueryDescription {
 			convertQueryParams(queryParam);
 			makeSimpleEventQuery(queryParam);
 		} else if (poll.getQueryName().equals("SimpleMasterDataQuery")) {
-			makeSimpleMasterDataQuery(poll.getParams().getParam());
+			List<QueryParam> queryParam = poll.getParams().getParam();
+			convertQueryParams(queryParam);
+			makeSimpleMasterDataQuery(queryParam);
 		}
 	}
 
-	public QueryDescription(JsonObject query)
+	public QueryDescription(JsonObject query, String queryName)
 			throws QueryParameterException, ImplementationException, Exception, ValidationException {
-		String queryName = query.getString("queryName");
 
-		if (queryName == null || queryName.equals("SimpleEventQuery")) {
+		if (queryName.equals("SimpleEventQuery")) {
 			makeSimpleEventQuery(query);
 		} else {
-			// makeSimpleMasterDataQuery(poll.getParams().getParam());
+			makeSimpleMasterDataQuery(query);
 		}
 	}
 
@@ -593,9 +594,6 @@ public class QueryDescription {
 		mongoSort = new Document();
 		attributeProjection = new HashSet<String>();
 		mongoProjection = new Document();
-
-		// convert values
-		convertQueryParams(paramList);
 
 		for (QueryParam param : paramList) {
 			String name = param.getName();
@@ -1417,5 +1415,15 @@ public class QueryDescription {
 		// convert values
 		List<QueryParam> paramList = convertToQueryParams(query);
 		makeSimpleEventQuery(paramList);
+	}
+	
+	void makeSimpleMasterDataQuery(JsonObject query)
+			throws Exception, QueryParameterException, ImplementationException, ValidationException {
+		queryName = "SimpleMasterDataQuery";
+		mongoSort = new Document();
+
+		// convert values
+		List<QueryParam> paramList = convertToQueryParams(query);
+		makeSimpleMasterDataQuery(paramList);
 	}
 }
