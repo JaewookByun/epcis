@@ -86,13 +86,6 @@ public class RESTQueryService {
 
 	public void query(RoutingContext routingContext, JsonObject query, String queryName) {
 
-		if (query == null) {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get406NotAcceptableException(
-							"[406NotAcceptable] The server cannot return the response as requested: No query received"),
-					406);
-		}
-
 		try {
 			if (queryName.equals("SimpleEventQuery"))
 				pollEvents(routingContext, query);
@@ -120,7 +113,6 @@ public class RESTQueryService {
 
 	public void pollEvents(RoutingContext routingContext, JsonObject query)
 			throws QueryParameterException, ImplementationException, Exception, ValidationException {
-
 		// get perPage
 		int perPage;
 
@@ -188,14 +180,14 @@ public class RESTQueryService {
 		}
 
 		Page page = null;
-		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
+		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
 							"[406NotAcceptable] The given next page token does not exist or be no longer available."),
 					406);
 			return;
 		} else {
-			page = EPCISServer.vocabularyPageMap.get(uuid);
+			page = EPCISServer.eventPageMap.get(uuid);
 		}
 
 		org.bson.Document query = (org.bson.Document) page.getQuery();
@@ -221,7 +213,7 @@ public class RESTQueryService {
 		List<org.bson.Document> results = new ArrayList<org.bson.Document>();
 
 		try {
-			EPCISServer.mVocCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
+			EPCISServer.mEventCollection.find(query).sort(sort).skip(skip).limit(qLimit).into(results);
 		} catch (Throwable e) {
 			HTTPUtil.sendQueryResults(serverResponse,
 					JSONMessageFactory.get500ImplementationException(
@@ -416,29 +408,31 @@ public class RESTQueryService {
 			return;
 		}
 
-		boolean needPagination = false;
-		if (perPage < resultList.size()) {
-			needPagination = true;
-			resultList = resultList.subList(0, perPage);
-		}
-
 		JsonArray context = new JsonArray();
 		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
-		ArrayList<String> namespaces = getNamespaces(resultList);
+		ArrayList<String> namespaces = getVocabularyNamespaces(resultList);
+
 		JsonObject extType = new JsonObject();
 		JsonObject extContext = new JsonObject();
 		for (int i = 0; i < namespaces.size(); i++) {
 			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
 		}
 		context.add(extContext);
-		// conversion: TODO
-		// List<JsonObject> convertedResultList =
-		// getConvertedResultList(isResultSorted(qd), resultList, namespaces,
-		// extType);
-		// temporary
+
+		boolean needPagination = false;
+		if (perPage < resultList.size()) {
+			needPagination = true;
+			resultList = resultList.subList(0, perPage);
+		}
+
 		List<JsonObject> convertedResultList = new ArrayList<JsonObject>();
 		for (org.bson.Document result : resultList) {
-			convertedResultList.add(new JsonObject(result.toJson()));
+			try {
+				convertedResultList.add(EPCISServer.bsonToJsonConverter.convertVocabulary(result, namespaces, extType));
+			} catch (ValidationException e) {
+				// should not happen
+				e.printStackTrace();
+			}
 		}
 		context.add(extType);
 
@@ -532,29 +526,31 @@ public class RESTQueryService {
 			return;
 		}
 
-		boolean needPagination = false;
-		if (perPage < resultList.size()) {
-			needPagination = true;
-			resultList = resultList.subList(0, perPage);
-		}
-
 		JsonArray context = new JsonArray();
 		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
-		ArrayList<String> namespaces = getNamespaces(resultList);
+		ArrayList<String> namespaces = getVocabularyNamespaces(resultList);
+
 		JsonObject extType = new JsonObject();
 		JsonObject extContext = new JsonObject();
 		for (int i = 0; i < namespaces.size(); i++) {
 			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
 		}
 		context.add(extContext);
-		// conversion: TODO
-		// List<JsonObject> convertedResultList =
-		// getConvertedResultList(isResultSorted(qd), resultList, namespaces,
-		// extType);
-		// temporary
+
+		boolean needPagination = false;
+		if (perPage < resultList.size()) {
+			needPagination = true;
+			resultList = resultList.subList(0, perPage);
+		}
+
 		List<JsonObject> convertedResultList = new ArrayList<JsonObject>();
 		for (org.bson.Document result : resultList) {
-			convertedResultList.add(new JsonObject(result.toJson()));
+			try {
+				convertedResultList.add(EPCISServer.bsonToJsonConverter.convertVocabulary(result, namespaces, extType));
+			} catch (ValidationException e) {
+				// should not happen
+				e.printStackTrace();
+			}
 		}
 		context.add(extType);
 
@@ -1027,6 +1023,27 @@ public class RESTQueryService {
 				org.bson.Document errExt = errorDeclaration.get("extension", org.bson.Document.class);
 				if (errExt != null) {
 					getNamespaces(namespaces, errExt);
+				}
+			}
+		}
+		return namespaces;
+	}
+
+	public static ArrayList<String> getVocabularyNamespaces(List<org.bson.Document> vocabularies) {
+		ArrayList<String> namespaces = new ArrayList<String>();
+
+		for (org.bson.Document vocabulary : vocabularies) {
+
+			for (String key : vocabulary.get("attributes", org.bson.Document.class).keySet()) {
+				String[] arr = key.split("#");
+				if (arr.length == 2) {
+					if (!namespaces.contains(arr[0])) {
+						namespaces.add(arr[0]);
+					}
+					Object value = vocabulary.get(key);
+					if (value instanceof org.bson.Document) {
+						getNamespaces(namespaces, (org.bson.Document) value);
+					}
 				}
 			}
 		}

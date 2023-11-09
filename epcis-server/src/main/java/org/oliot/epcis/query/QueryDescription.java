@@ -435,7 +435,7 @@ public class QueryDescription {
 	 * @throws QueryParameterException
 	 * @throws ValidationException
 	 */
-	private List<QueryParam> convertToQueryParams(JsonObject query)
+	private List<QueryParam> convertToEventQueryParams(JsonObject query)
 			throws Exception, QueryParameterException, ValidationException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
 
@@ -512,6 +512,52 @@ public class QueryDescription {
 
 			if (field.equals("EQ_deviceID") || field.equals("EQ_SENSORMETADATA_deviceID")
 					|| field.equals("EQ_SENSORREPORT_deviceID") || field.equals("HASATTR_SourceDestID")) {
+				convertDLToQueryParam(queryParams, field, (JsonArray) value);
+				continue;
+			}
+
+			if (value == null) {
+				queryParams.add(new QueryParam(field, new VoidHolder()));
+			} else if (value instanceof JsonArray) {
+				List<String> arrayOfString = new ArrayList<String>();
+				JsonArray arr = (JsonArray) value;
+				for (Object arrValue : arr) {
+					arrayOfString.add(arrValue.toString());
+				}
+				queryParams.add(new QueryParam(field, arrayOfString));
+			} else if (value instanceof String) {
+				try {
+					long t = TimeUtil.toUnixEpoch(value.toString());
+					queryParams.add(new QueryParam(field, t));
+
+				} catch (ParseException | NullPointerException e) {
+					queryParams.add(new QueryParam(field, value.toString()));
+				}
+			} else if (value instanceof Boolean) {
+				queryParams.add(new QueryParam(field, (Boolean) value));
+			} else if (value instanceof Double) {
+				queryParams.add(new QueryParam(field, (Double) value));
+			} else if (value instanceof Integer) {
+				queryParams.add(new QueryParam(field, (Integer) value));
+			} else {
+				throw new QueryParameterException(
+						"value of REST Query Parameter should be one of JsonArray, String, Time, Boolean, Double, Integer");
+			}
+		}
+		return queryParams;
+	}
+	
+	private List<QueryParam> convertToVocabularyQueryParams(JsonObject query)
+			throws Exception, QueryParameterException, ValidationException {
+		List<QueryParam> queryParams = new ArrayList<QueryParam>();
+
+		for (String field : query.fieldNames()) {
+			Object value = query.getValue(field);
+
+			if (field.equals("@context"))
+				continue;
+
+			if (field.equals("EQ_name") || field.equals("WD_name")) {
 				convertDLToQueryParam(queryParams, field, (JsonArray) value);
 				continue;
 			}
@@ -1413,7 +1459,7 @@ public class QueryDescription {
 		mongoSort = new Document();
 
 		// convert values
-		List<QueryParam> paramList = convertToQueryParams(query);
+		List<QueryParam> paramList = convertToEventQueryParams(query);
 		makeSimpleEventQuery(paramList);
 	}
 	
@@ -1423,7 +1469,7 @@ public class QueryDescription {
 		mongoSort = new Document();
 
 		// convert values
-		List<QueryParam> paramList = convertToQueryParams(query);
+		List<QueryParam> paramList = convertToVocabularyQueryParams(query);
 		makeSimpleMasterDataQuery(paramList);
 	}
 }

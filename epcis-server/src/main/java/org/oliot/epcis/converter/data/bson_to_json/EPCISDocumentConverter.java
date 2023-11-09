@@ -686,7 +686,7 @@ public class EPCISDocumentConverter {
 		}
 	}
 
-	void convertBase(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
+	void convertEventBase(Document original, JsonObject converted, ArrayList<String> namespaces, JsonObject extType)
 			throws ValidationException {
 		putEventTime(original, converted);
 		putEventTimeZoneOffset(original, converted);
@@ -702,7 +702,7 @@ public class EPCISDocumentConverter {
 			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "AggregationEvent");
-		convertBase(original, converted, namespaces, extType);
+		convertEventBase(original, converted, namespaces, extType);
 
 		putParentID(original, converted);
 		putChildEPCs(original, converted);
@@ -724,7 +724,7 @@ public class EPCISDocumentConverter {
 			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "ObjectEvent");
-		convertBase(original, converted, namespaces, extType);
+		convertEventBase(original, converted, namespaces, extType);
 
 		putEPCList(original, converted);
 		putQuantityList(original, converted);
@@ -747,7 +747,7 @@ public class EPCISDocumentConverter {
 			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "TransactionEvent");
-		convertBase(original, converted, namespaces, extType);
+		convertEventBase(original, converted, namespaces, extType);
 
 		putBusinessTransactionList(original, converted);
 		putParentID(original, converted);
@@ -768,7 +768,7 @@ public class EPCISDocumentConverter {
 			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "TransformationEvent");
-		convertBase(original, converted, namespaces, extType);
+		convertEventBase(original, converted, namespaces, extType);
 		putInputEPCList(original, converted);
 		putOutputEPCList(original, converted);
 		putInputQuantityList(original, converted);
@@ -791,7 +791,7 @@ public class EPCISDocumentConverter {
 			throws ValidationException {
 		JsonObject converted = new JsonObject();
 		converted.put("type", "AssociationEvent");
-		convertBase(original, converted, namespaces, extType);
+		convertEventBase(original, converted, namespaces, extType);
 
 		putParentID(original, converted);
 		putChildEPCs(original, converted);
@@ -806,6 +806,75 @@ public class EPCISDocumentConverter {
 		putDestinationList(original, converted);
 		putSensorElementList(original, converted, namespaces, extType);
 		return converted;
+	}
+
+	public JsonObject convertVocabulary(Document original, ArrayList<String> namespaces, JsonObject extType)
+			throws ValidationException {
+
+		JsonObject converted = new JsonObject();
+		try {
+			converted.put("type", original.getString("type"));
+			JsonArray convertedVocabularyElementList = new JsonArray();
+			JsonObject vocabulary = new JsonObject();
+			vocabulary.put("id", TagDataTranslationEngine.toDL(original.getString("id")));
+			Document attributes = original.get("attributes", Document.class);
+			JsonArray convertedAttributes = new JsonArray();
+			for (String key : attributes.keySet()) {
+				Object value = attributes.get(key);
+				JsonObject convertedAttribute = new JsonObject();
+				String[] arr = key.split("#");
+				if (arr.length > 1) {
+					int idx = namespaces.indexOf(arr[0]);
+					if (idx != -1) {
+						key = "ext" + idx + ":" + decodeMongoObjectKey(arr[1]);
+					}
+				} else if (key.contains("urn:epcglobal:cbv:mda")) {
+					key = key.replace("urn:epcglobal:cbv:mda", "ext" + namespaces.indexOf("urn:epcglobal:cbv:mda")); 
+				} else {
+					key = decodeMongoObjectKey(key);
+				}
+				convertedAttribute.put("id", key);
+
+				if (value instanceof org.bson.Document) {
+					convertedAttribute.put(key, getExtension((Document) value, namespaces, extType));
+				} else if (value instanceof List) {
+					convertedAttribute.put(key, getExtension((List<?>) value, namespaces, extType));
+				} else {
+					if (value instanceof Double) {
+						extType.put(key, new JsonObject().put("@type", "xsd:double"));
+						convertedAttribute.put("attribute", value.toString());
+					} else if (value instanceof Integer) {
+						extType.put(key, new JsonObject().put("@type", "xsd:int"));
+						convertedAttribute.put("attribute", value.toString());
+					} else if (value instanceof Long) {
+						extType.put(key, new JsonObject().put("@type", "xsd:dateTime"));
+						convertedAttribute.put("attribute", TimeUtil.getDateTimeStamp((Long) value));
+					} else if (value instanceof Boolean) {
+						extType.put(key, new JsonObject().put("@type", "xsd:boolean"));
+						convertedAttribute.put("attribute", value.toString());
+					} else {
+						extType.put(key, new JsonObject().put("@type", "xsd:string"));
+						convertedAttribute.put("attribute", value.toString());
+					}
+				}
+
+				convertedAttributes.add(convertedAttribute);
+			}
+			vocabulary.put("attributes", convertedAttributes);
+
+			List<String> children = original.getList("children", String.class);
+			JsonArray convertedChildren = new JsonArray();
+			for (String child : children) {
+				convertedChildren.add(TagDataTranslationEngine.toDL(child));
+			}
+			vocabulary.put("children", convertedChildren);
+			convertedVocabularyElementList.add(vocabulary);
+
+			converted.put("vocabularyElementList", convertedVocabularyElementList);
+			return converted;
+		} catch (NullPointerException e) {
+			throw new ValidationException(e.getMessage());
+		}
 	}
 
 	public Document getMasterStorableExtension(JsonObject jsonContext, JsonObject jsonExt) throws ValidationException {
@@ -877,95 +946,6 @@ public class EPCISDocumentConverter {
 			return namespace + "#" + fieldArr[1];
 		}
 
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<WriteModel<Document>> convertVocabulary(JsonObject context, String type,
-			JsonArray vocabularyElementList) throws ValidationException {
-
-		List<WriteModel<Document>> list = new ArrayList<WriteModel<Document>>();
-
-		for (int i = 0; i < vocabularyElementList.size(); i++) {
-			JsonObject vocabularyElement = vocabularyElementList.getJsonObject(i);
-			Document find = new Document();
-			String id = vocabularyElement.getString("id");
-			try {
-				id = TagDataTranslationEngine.toEPC(id);
-			} catch (ValidationException e) {
-				try {
-					TagDataTranslationEngine.checkMicroorganismValue(id);
-				} catch (ValidationException e1) {
-					TagDataTranslationEngine.checkChemicalSubstance(id);
-				}
-			}
-
-			// check id is compatible with type
-			MasterDataConverter.checkVocabularyTypeID(type, id);
-			find.put("id", id);
-			find.put("type", type);
-			Document update = new Document();
-			JsonArray attributes = vocabularyElement.getJsonArray("attributes");
-			Document newAttribute = new Document();
-			for (int j = 0; j < attributes.size(); j++) {
-				JsonObject attribute = attributes.getJsonObject(j);
-				String attrKey = encodeMongoObjectKey(resolveKey(attribute.getString("id"), context));
-				Object value = attribute.getValue("attribute");
-				Object attrValue = null;
-				if (value instanceof JsonObject) {
-					try {
-						attrValue = getMasterStorableExtension(context, attribute.getJsonObject("attribute"));
-					} catch (ValidationException e) {
-						e.printStackTrace();
-					}
-				} else {
-					attrValue = attribute.getValue("attribute").toString();
-				}
-				if (!newAttribute.containsKey(attrKey)) {
-					newAttribute.put(attrKey, attrValue);
-				} else if (newAttribute.containsKey(attrKey) && !(newAttribute.get(attrKey) instanceof JsonArray)) {
-					Object existing = newAttribute.remove(attrKey);
-					JsonArray arr = new JsonArray();
-					arr.add(existing);
-					arr.add(attrValue);
-					newAttribute.put(attrKey, arr);
-				} else {
-					JsonArray arr = (JsonArray) newAttribute.remove(attrKey);
-					arr.add(attrValue);
-					newAttribute.put(attrKey, arr);
-				}
-			}
-			newAttribute.put("lastUpdate", System.currentTimeMillis());
-			Document updateElement = new Document();
-			updateElement.put("attributes", newAttribute);
-			try {
-				ArrayList childArray = new ArrayList();
-				if (vocabularyElement.containsKey("children")) {
-					JsonArray children = vocabularyElement.getJsonArray("children");
-					for (Object c : children) {
-						String cstr = c.toString();
-						try {
-							childArray.add(TagDataTranslationEngine.toEPC(cstr));
-						} catch (ValidationException e) {
-							try {
-								TagDataTranslationEngine.checkMicroorganismValue(cstr);
-								childArray.add(cstr);
-							} catch (ValidationException e1) {
-								TagDataTranslationEngine.checkChemicalSubstance(cstr);
-								childArray.add(cstr);
-							}
-						}
-
-					}
-				}
-				updateElement.put("children", childArray);
-
-			} catch (NullPointerException e) {
-				e.printStackTrace();
-			}
-			update.append("$set", updateElement);
-			list.add(new UpdateOneModel<Document>(find, update, new UpdateOptions().upsert(true)));
-		}
-		return list;
 	}
 
 	public static String encodeMongoObjectKey(String key) {

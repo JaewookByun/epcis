@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -37,83 +38,76 @@ import io.vertx.ext.web.Router;
  */
 public class RESTQueryServiceHandler {
 
-	/*
-	 * 
-	 * eventType GE_eventTime LT_eventTime GE_recordTime LT_recordTime EQ_action
-	 * EQ_bizStep EQ_disposition EQ_persistentDisposition_set
-	 * EQ_persistentDisposition_unset EQ_readPoint WD_readPoint EQ_bizLocation
-	 * WD_bizLocation EQ_transformationID MATCH_epc MATCH_parentID MATCH_inputEPC
-	 * MATCH_outputEPC MATCH_anyEPC MATCH_epcClass MATCH_inputEPCClass
-	 * MATCH_outputEPCClass MATCH_anyEPCClass EQ_quantity GT_quantity GE_quantity
-	 * LT_quantity LE_quantity EQ_eventID EXISTS_errorDeclaration
-	 * GE_errorDeclarationTime LT_errorDeclarationTime EQ_errorReason
-	 * EQ_correctiveEventID orderBy orderDirection eventCountLimit maxEventCount
-	 * GE_startTime LT_startTime GE_endTime LT_endTime EQ_type EQ_deviceID
-	 * EQ_dataProcessingMethod EQ_microorganism EQ_chemicalSubstance EQ_bizRules
-	 * EQ_stringValue EQ_hexBinaryValue EQ_uriValue EQ_booleanValue
-	 */
+	public static void checkPollHeaders(RoutingContext routingContext) {
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Max", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+			return;
+	}
+
+	public static JsonObject getJsonBody(RoutingContext routingContext) {
+		JsonObject query = null;
+		RequestBody body = routingContext.body();
+		if (body.isEmpty()) {
+
+			MultiMap m = routingContext.request().params();
+			Iterator<Entry<String, String>> iter = m.iterator();
+			while (iter.hasNext()) {
+				try {
+					String k = iter.next().getKey();
+					query = new JsonObject(k);
+					break;
+				} catch (Exception e) {
+
+				}
+			}
+		} else {
+			try {
+				query = body.asJsonObject();
+			} catch (Exception e) {
+
+			}
+		}
+		return query;
+	}
 
 	public static void registerGetEventsHandler(Router router, RESTQueryService restQueryService) {
-		/*
-		 * NextPageToken PerPage GS1-CBV-Min GS1-CBV-Max GS1-EPCIS-Min GS1-EPCIS-Max
-		 * GS1-EPC-Format GS1-CBV-XML-Format
-		 */
+
 		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
-				return;
 
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Max", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+			checkPollHeaders(routingContext);
+			if (routingContext.response().closed())
 				return;
 
 			routingContext.response().setChunked(true);
 
 			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
-				JsonObject query = null;
-				RequestBody body = routingContext.body();
-				if (body.isEmpty()) {
-
-					MultiMap m = routingContext.request().params();
-					Iterator<Entry<String, String>> iter = m.iterator();
-					while (iter.hasNext()) {
-						try {
-							String k = iter.next().getKey();
-							query = new JsonObject(k);
-							break;
-						} catch (Exception e) {
-							// DO NOTHING
-						}
-					}
-					if (query == null) {
-						HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-								.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
-								406);
-						return;
-					}
-				} else {
-					try {
-						query = body.asJsonObject();
-					} catch (Exception e) {
-
-					}
+				JsonObject query = getJsonBody(routingContext);
+				if (query == null) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+							406);
+					return;
 				}
 				restQueryService.query(routingContext, query, "SimpleEventQuery");
 			} else {
 				UUID uuid = null;
 				try {
-					uuid = UUID.fromString(routingContext.request().getParam("nextPageToken"));
+					uuid = UUID.fromString(nextPageToken);
 				} catch (Exception e) {
 					HTTPUtil.sendQueryResults(routingContext.response(),
 							JSONMessageFactory.get406NotAcceptableException(
@@ -130,60 +124,23 @@ public class RESTQueryServiceHandler {
 	}
 
 	public static void registerGetVocabulariesHandler(Router router, RESTQueryService restQueryService) {
-		/*
-		 * NextPageToken PerPage GS1-CBV-Min GS1-CBV-Max GS1-EPCIS-Min GS1-EPCIS-Max
-		 * GS1-EPC-Format GS1-CBV-XML-Format
-		 */
+
 		router.get("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
-				return;
 
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Max", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
-				return;
-
-			if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+			checkPollHeaders(routingContext);
+			if (routingContext.response().closed())
 				return;
 
 			routingContext.response().setChunked(true);
 
 			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
-				JsonObject query = null;
-				RequestBody body = routingContext.body();
-				if (body.isEmpty()) {
-
-					MultiMap m = routingContext.request().params();
-					Iterator<Entry<String, String>> iter = m.iterator();
-					while (iter.hasNext()) {
-						try {
-							String k = iter.next().getKey();
-							query = new JsonObject(k);
-							break;
-						} catch (Exception e) {
-							// DO NOTHING
-						}
-					}
-					if (query == null) {
-						HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-								.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
-								406);
-						return;
-					}
-				} else {
-					try {
-						query = body.asJsonObject();
-					} catch (Exception e) {
-
-					}
+				JsonObject query = getJsonBody(routingContext);
+				if (query == null) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+							406);
+					return;
 				}
 				restQueryService.query(routingContext, query, "SimpleMasterDataQuery");
 			} else {
