@@ -12,6 +12,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
@@ -66,6 +67,7 @@ import org.w3c.dom.Element;
 		"outputQuantityList", "transformationID", "bizStep", "disposition", "readPoint", "bizLocation",
 		"bizTransactionList", "sourceList", "destinationList", "sensorElementList", "persistentDisposition", "ilmd",
 		"extension", "any" })
+@XmlRootElement
 public class TransformationEventType extends EPCISEventType {
 
 	protected EPCListType inputEPCList;

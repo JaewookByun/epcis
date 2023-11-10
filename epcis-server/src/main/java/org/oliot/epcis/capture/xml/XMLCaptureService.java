@@ -250,7 +250,7 @@ public class XMLCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
 				EPCISServer.logger.error(e.getMessage());
@@ -269,7 +269,7 @@ public class XMLCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
-						.putHeader("Location", "/events/" + URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());

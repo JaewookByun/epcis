@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
@@ -65,6 +66,7 @@ import org.w3c.dom.Element;
 @XmlType(name = "AssociationEventType", propOrder = { "parentID", "childEPCs", "childQuantityList", "action", "bizStep",
 		"disposition", "readPoint", "bizLocation", "bizTransactionList", "sourceList", "destinationList",
 		"sensorElementList", "persistentDisposition", "extension", "any" })
+@XmlRootElement
 public class AssociationEventType extends EPCISEventType {
 
 	@XmlElement(required = true)

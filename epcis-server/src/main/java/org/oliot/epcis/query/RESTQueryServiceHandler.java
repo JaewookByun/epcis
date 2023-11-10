@@ -1,7 +1,5 @@
 package org.oliot.epcis.query;
 
-import static org.oliot.epcis.validation.HeaderValidator.*;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,8 +9,19 @@ import java.util.UUID;
 import org.bson.Document;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
+import org.oliot.epcis.converter.data.bson_to_pojo.AggregationEventConverter;
+import org.oliot.epcis.converter.data.bson_to_pojo.AssociationEventConverter;
+import org.oliot.epcis.converter.data.bson_to_pojo.ObjectEventConverter;
+import org.oliot.epcis.converter.data.bson_to_pojo.TransactionEventConverter;
+import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
+import org.oliot.epcis.model.AggregationEventType;
+import org.oliot.epcis.model.AssociationEventType;
+import org.oliot.epcis.model.ObjectEventType;
+import org.oliot.epcis.model.TransactionEventType;
+import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
+import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.validation.HeaderValidator;
 
 import io.vertx.core.MultiMap;
@@ -38,7 +47,7 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class RESTQueryServiceHandler {
 
-	public static void checkPollHeaders(RoutingContext routingContext) {
+	public static void checkJSONPollHeaders(RoutingContext routingContext) {
 		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Min", false))
 			return;
 
@@ -55,6 +64,26 @@ public class RESTQueryServiceHandler {
 			return;
 
 		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
+			return;
+	}
+
+	public static void checkXMLPollHeaders(RoutingContext routingContext) {
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Min", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Max", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Min", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Max", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPC-Format", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-XML-Format", false))
 			return;
 	}
 
@@ -88,7 +117,7 @@ public class RESTQueryServiceHandler {
 
 		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
 
-			checkPollHeaders(routingContext);
+			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
 
@@ -127,7 +156,7 @@ public class RESTQueryServiceHandler {
 
 		router.get("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
 
-			checkPollHeaders(routingContext);
+			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
 
@@ -163,15 +192,63 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/vocabularies (application/json)] - router added");
 	}
 
-	// Returns an individual EPCIS event.
+	/**
+	 * Returns an individual EPCIS event.
+	 * 
+	 * @param router
+	 * @param restQueryService
+	 */
 	public static void registerGetEventHandler(Router router, RESTQueryService restQueryService) {
+		router.get("/epcis/events/:eventID").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+			String eventID = null;
+			try {
+				eventID = routingContext.pathParam("eventID");
+				List<Document> events = new ArrayList<Document>();
+				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(events);
+				if (events.isEmpty()) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no event with the given id: " + eventID), 404);
+					return;
+				}
+
+				Document result = events.get(0);
+				SOAPMessage message = new SOAPMessage();
+				ArrayList<String> nsList = new ArrayList<>();
+
+				String type = result.getString("type");
+				if (type.equals("AggregationEvent")) {
+					AggregationEventType event = new AggregationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AggregationEventType.class, 200);
+				} else if (type.equals("ObjectEvent")) {
+					ObjectEventType event = new ObjectEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, ObjectEventType.class, 200);
+				} else if (type.equals("TransactionEvent")) {
+					TransactionEventType event = new TransactionEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransactionEventType.class, 200);
+				} else if (type.equals("TransformationEvent")) {
+					TransformationEventType event = new TransformationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransformationEventType.class, 200);
+				} else {
+					AssociationEventType event = new AssociationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AssociationEventType.class, 200);
+				}
+			} catch (Throwable throwable) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				return;
+			}
+		});
+
 		router.get("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
-			if (!checkEPCISMinMaxVersion(routingContext))
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
 				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-EPC-Format", false))
-				return;
-			if (!isEqualHeaderREST(routingContext, "GS1-CBV-XML-Format", false))
-				return;
+
 			routingContext.response().setChunked(true);
 			String eventID = null;
 			try {
@@ -195,6 +272,7 @@ public class RESTQueryServiceHandler {
 					extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
 				}
 				context.add(extContext);
+
 				JsonObject convertedResult = null;
 				switch (result.getString("type")) {
 				case "AggregationEvent":
