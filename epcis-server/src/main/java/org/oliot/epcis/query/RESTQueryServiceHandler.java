@@ -16,6 +16,9 @@ import org.oliot.epcis.converter.data.bson_to_pojo.TransactionEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
 import org.oliot.epcis.model.AggregationEventType;
 import org.oliot.epcis.model.AssociationEventType;
+import org.oliot.epcis.model.EPCISException;
+import org.oliot.epcis.model.ImplementationException;
+import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
@@ -211,8 +214,10 @@ public class RESTQueryServiceHandler {
 				List<Document> events = new ArrayList<Document>();
 				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(events);
 				if (events.isEmpty()) {
-					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-							.get404NoSuchResourceException("There is no event with the given id: " + eventID), 404);
+					EPCISException e = new EPCISException(
+							"[404NoSuchResourceException] There is no event with the given id: " + eventID);
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
 					return;
 				}
 
@@ -223,23 +228,28 @@ public class RESTQueryServiceHandler {
 				String type = result.getString("type");
 				if (type.equals("AggregationEvent")) {
 					AggregationEventType event = new AggregationEventConverter().convert(result, message, nsList);
-					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AggregationEventType.class, 200);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AggregationEventType.class,
+							200);
 				} else if (type.equals("ObjectEvent")) {
 					ObjectEventType event = new ObjectEventConverter().convert(result, message, nsList);
 					HTTPUtil.sendQueryResults(routingContext.response(), message, event, ObjectEventType.class, 200);
 				} else if (type.equals("TransactionEvent")) {
 					TransactionEventType event = new TransactionEventConverter().convert(result, message, nsList);
-					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransactionEventType.class, 200);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransactionEventType.class,
+							200);
 				} else if (type.equals("TransformationEvent")) {
 					TransformationEventType event = new TransformationEventConverter().convert(result, message, nsList);
-					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransformationEventType.class, 200);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransformationEventType.class,
+							200);
 				} else {
 					AssociationEventType event = new AssociationEventConverter().convert(result, message, nsList);
-					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AssociationEventType.class, 200);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AssociationEventType.class,
+							200);
 				}
 			} catch (Throwable throwable) {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+						throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
 				return;
 			}
 		});

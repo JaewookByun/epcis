@@ -136,6 +136,7 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerEventsHandler(router);
 		MetadataHandler.registerVocabualariesHandler(router);
 		MetadataHandler.registerGetEventHandler(router);
+		MetadataHandler.registerGetVocabularyHandler(router);
 		MetadataHandler.registerQueryHandler(router);
 	}
 
