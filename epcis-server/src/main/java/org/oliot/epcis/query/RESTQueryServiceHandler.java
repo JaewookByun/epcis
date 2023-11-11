@@ -11,6 +11,7 @@ import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.bson_to_pojo.AggregationEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.AssociationEventConverter;
+import org.oliot.epcis.converter.data.bson_to_pojo.MasterdataConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.ObjectEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransactionEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
@@ -22,7 +23,10 @@ import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
+import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.model.VocabularyType;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.validation.HeaderValidator;
@@ -310,6 +314,102 @@ public class RESTQueryServiceHandler {
 
 				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
 
+			} catch (Throwable throwable) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				return;
+			}
+		});
+	}
+
+	public static void registerGetVocabularyHandler(Router router, RESTQueryService restQueryService) {
+		router.get("/epcis/vocabularies/:vocabularyID").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+			String vocabularyID = null;
+			try {
+				vocabularyID = routingContext.pathParam("vocabularyID");
+				List<Document> vocabularies = new ArrayList<Document>();
+				EPCISServer.mVocCollection.find(new Document("id", TagDataTranslationEngine.toEPC(vocabularyID)))
+						.into(vocabularies);
+				if (vocabularies.isEmpty()) {
+					EPCISException e = new EPCISException(
+							"[404NoSuchResourceException] There is no vocabulary with the given id: " + vocabularyID);
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
+					return;
+				}
+
+				Document result = vocabularies.get(0);
+				SOAPMessage message = new SOAPMessage();
+				VocabularyType vocabulary = new MasterdataConverter().convert(result.getString("type"), result,
+						message);
+				HTTPUtil.sendQueryResults(routingContext.response(), message, vocabulary, VocabularyType.class, 200);
+			} catch (ValidationException e) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISException e1 = new EPCISException("Illegal vocabulary identifier: " + e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+				return;
+			} catch (Throwable throwable) {
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+						throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			}
+		});
+
+		router.get("/epcis/vocabularies/:vocabularyID").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+			String vocabularyID = null;
+			try {
+				vocabularyID = routingContext.pathParam("vocabularyID");
+				List<Document> vocabularies = new ArrayList<Document>();
+				EPCISServer.mVocCollection.find(new Document("id", TagDataTranslationEngine.toEPC(vocabularyID)))
+						.into(vocabularies);
+				if (vocabularies.isEmpty()) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no vocabulary with the given id: " + vocabularyID),
+							404);
+					return;
+				}
+
+				Document result = vocabularies.get(0);
+
+				JsonArray context = new JsonArray();
+				context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+				ArrayList<String> namespaces = RESTQueryService.getVocabularyNamespaces(vocabularies);
+
+				JsonObject extType = new JsonObject();
+				JsonObject extContext = new JsonObject();
+				for (int i = 0; i < namespaces.size(); i++) {
+					extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+				}
+				context.add(extContext);
+
+				JsonObject convertedResult = EPCISServer.bsonToJsonConverter.convertVocabulary(result, namespaces,
+						extType);
+				context.add(extType);
+
+				convertedResult.put("@context", context);
+
+				HttpServerResponse serverResponse = routingContext.response();
+				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extension",
+						Metadata.GS1_Extensions);
+
+				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
+
+			} catch (ValidationException e) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISException e1 = new EPCISException("Illegal vocabulary identifier: " + e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+				return;
 			} catch (Throwable throwable) {
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
