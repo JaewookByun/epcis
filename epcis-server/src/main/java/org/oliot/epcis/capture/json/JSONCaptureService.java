@@ -143,7 +143,7 @@ public class JSONCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", "/capture/" + tx.getTxId()).setStatusCode(202).end();
+						.putHeader("Location", tx.getTxId()).setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
 
 				captureEvents(routingContext, context, eventList, eventBus, tx);

@@ -221,7 +221,7 @@ public class RESTQueryServiceHandler {
 					EPCISException e = new EPCISException(
 							"[404NoSuchResourceException] There is no event with the given id: " + eventID);
 					EPCISServer.logger.error(e.getReason());
-					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 					return;
 				}
 
@@ -406,9 +406,9 @@ public class RESTQueryServiceHandler {
 				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
 
 			} catch (ValidationException e) {
-				SOAPMessage message = new SOAPMessage();
-				EPCISException e1 = new EPCISException("Illegal vocabulary identifier: " + e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+						.get404NoSuchResourceException("Illegal vocabulary identifier: " + e.getReason()),
+						404);
 				return;
 			} catch (Throwable throwable) {
 				HTTPUtil.sendQueryResults(routingContext.response(),
