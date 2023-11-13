@@ -146,6 +146,8 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetVocabulariesHandler(router, restQueryService);
 		RESTQueryServiceHandler.registerGetEventHandler(router, restQueryService);
 		RESTQueryServiceHandler.registerGetVocabularyHandler(router, restQueryService);
+		
+		RESTQueryServiceHandler.registerGetEventTypes(router);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {

@@ -31,6 +31,14 @@ public class HTTPUtil {
 				.uri(uri).POST(BodyPublishers.ofString(body)).build(), BodyHandlers.ofString());
 	}
 
+	public static void sendQueryResults(HttpServerResponse serverResponse, Object message, int statusCode) {
+		serverResponse.putHeader("content-type", "application/xml; charset=utf-8")
+				.putHeader("Access-Control-Expose-Headers", "*")
+				.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(statusCode).end(message.toString());
+	}
+
 	public static void sendQueryResults(HttpServerResponse serverResponse, SOAPMessage message, Object result,
 			Class<?> resultType, int statusCode) {
 		message.putResult(result, resultType);

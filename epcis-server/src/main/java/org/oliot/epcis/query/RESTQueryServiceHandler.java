@@ -25,8 +25,10 @@ import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.VocabularyType;
+import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
+import org.oliot.epcis.util.EventTypesMessage;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.validation.HeaderValidator;
@@ -407,14 +409,42 @@ public class RESTQueryServiceHandler {
 
 			} catch (ValidationException e) {
 				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-						.get404NoSuchResourceException("Illegal vocabulary identifier: " + e.getReason()),
-						404);
+						.get404NoSuchResourceException("Illegal vocabulary identifier: " + e.getReason()), 404);
 				return;
 			} catch (Throwable throwable) {
 				HTTPUtil.sendQueryResults(routingContext.response(),
 						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
 				return;
 			}
+		});
+	}
+
+	/**
+	 * Returns all EPCIS event types currently available in the EPCIS repository.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEventTypes(Router router) {
+		router.get("/epcis/eventTypes").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200);
+		});
+
+		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			JsonArray eventTypes = new JsonArray();
+			for (String eventType : DynamicResource.availableEventTypes) {
+				eventTypes.add(eventType);
+			}
+
+			JsonObject result = new JsonObject().put("@set", eventTypes);
+
+			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
 		});
 	}
 
