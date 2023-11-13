@@ -31,6 +31,7 @@ import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.EventTypesMessage;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
+import org.oliot.epcis.util.SubResourceList;
 import org.oliot.epcis.validation.HeaderValidator;
 
 import io.vertx.core.MultiMap;
@@ -447,8 +448,55 @@ public class RESTQueryServiceHandler {
 			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
 		});
 	}
-	
 
+	/**
+	 * "Returns all sub-resources of an EPCIS event type. This endpoint returns all
+	 * sub-resources of an EPCIS event type (for HATEOAS discovery), which includes
+	 * at least `events`. A server may add additional endpoints, for example
+	 * `schema` to access the EPCIS event type schema.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEventTypeQueries(Router router) {
+		router.get("/epcis/eventTypes/:eventType").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (!DynamicResource.availableEventTypes.contains(eventType)) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), new SubResourceList().putSubResourceList("events"),
+						200);
+			}
+
+		});
+
+		router.get("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (!DynamicResource.availableEventTypes.contains(eventType)) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						new JsonObject().put("@set", new JsonArray().add("events")), 200);
+			}
+		});
+	}
 
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();
