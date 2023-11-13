@@ -69,7 +69,7 @@ public class SOAPQueryService {
 
 	public final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
-	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage)
+	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage, String key, String value)
 			throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
 		Document doc;
@@ -84,6 +84,11 @@ public class SOAPQueryService {
 		Node pollNode = doc.getElementsByTagNameNS("urn:epcglobal:epcis-query:xsd:2", "Poll").item(0);
 		if (pollNode != null) {
 			try {
+				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
+				ArrayOfString aos = new ArrayOfString();
+				List<String> list = aos.getString();
+				list.add(value);
+				poll.setParams(new QueryParams(key, aos));
 				poll(request, response, soapQueryUnmarshaller.getPoll(pollNode));
 			} catch (JAXBException e) {
 				throw new ValidationException(e.getMessage());

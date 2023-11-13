@@ -172,6 +172,7 @@ public class EPCISServer extends AbstractVerticle {
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		SOAPQueryServiceHandler.registerPollHandler(router, soapQueryService);
+		SOAPQueryServiceHandler.registerPollWithEventTypeHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 
