@@ -403,10 +403,54 @@ public class MetadataHandler {
 			if (DynamicResource.availableEventTypes.contains(eventType)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 			} else {
-				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
-						"[404NoSuchResourceException] There is no available query for eventType: " + eventType), 404);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
 			}
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType (application/json)] - router added");
+	}
+
+	/**
+	 * "Query the metadata of the endpoint to access EPCIS events by event type.
+	 * EPCIS 2.0 supports a number of custom headers to describe custom vocabularies
+	 * and support multiple versions of EPCIS and CBV. The `OPTIONS` method allows
+	 * the client to discover which vocabularies and EPCIS and CBV versions are
+	 * used.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEventsWithEventType(Router router) {
+		router.options("/epcis/eventTypes/:eventType/events").consumes("application/xml").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/xml)] - router added");
+
+		router.options("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/json)] - router added");
 	}
 }
