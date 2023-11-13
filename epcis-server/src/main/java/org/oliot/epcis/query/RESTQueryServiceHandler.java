@@ -447,6 +447,8 @@ public class RESTQueryServiceHandler {
 			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
 		});
 	}
+	
+
 
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();

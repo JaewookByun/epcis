@@ -10,6 +10,7 @@ import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.GS1CBVXMLFormat;
 import org.oliot.epcis.model.GS1EPCFormat;
 import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.HTTPUtil;
@@ -358,7 +359,7 @@ public class MetadataHandler {
 	 * versions of EPCIS and CBV. The `OPTIONS` method allows the client to discover
 	 * which vocabularies and EPCIS and CBV versions are used.
 	 */
-	public static void registerEventTypesHandler(Router router) {
+	public static void registerGetEventTypesHandler(Router router) {
 		router.options("/epcis/eventTypes").consumes("application/xml").handler(routingContext -> {
 			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
 		});
@@ -368,5 +369,44 @@ public class MetadataHandler {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes (application/json)] - router added");
+	}
+
+	/**
+	 * "Query metadata of the EPCIS event type endpoint. EPCIS 2.0 supports a number
+	 * of custom headers to describe custom vocabularies and support multiple
+	 * versions of EPCIS and CBV. The `OPTIONS` method allows the client to discover
+	 * which vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEventTypeQueriesHandler(Router router) {
+		router.options("/epcis/eventTypes/:eventType").consumes("application/xml").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType (application/xml)] - router added");
+
+		router.options("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType), 404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType (application/json)] - router added");
 	}
 }
