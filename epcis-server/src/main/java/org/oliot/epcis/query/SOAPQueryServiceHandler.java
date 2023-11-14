@@ -189,36 +189,5 @@ public class SOAPQueryServiceHandler {
 			}
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
-
-		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
-
-			if (!isHeaderPassed(routingContext))
-				return;
-
-			routingContext.response().setChunked(true);
-
-			String nextPageToken = routingContext.request().getParam("nextPageToken");
-			if (nextPageToken == null) {
-				String inputString = getHttpBody(routingContext);
-				if (inputString == null)
-					return;
-				try {
-					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(),
-							inputString, null, null);
-				} catch (ValidationException e) {
-					EPCISServer.logger.error(e.getReason());
-					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
-				}
-			} else {
-				try {
-					soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
-				} catch (ParserConfigurationException e) {
-					ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
-							"Poll", e.getMessage());
-					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
-				}
-			}
-		});
-		EPCISServer.logger.info("[GET /epcis/vocabularies (application/xml)] - router added");
 	}
 }

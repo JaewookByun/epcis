@@ -498,6 +498,55 @@ public class RESTQueryServiceHandler {
 		});
 	}
 
+	public static void registerGetEventsWithEventTypeHandler(Router router, RESTQueryService restQueryService) {
+
+		router.get("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (!DynamicResource.availableEventTypes.contains(eventType)) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
+				return;
+			}
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				JsonObject query = getJsonBody(routingContext);
+				if (query == null) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+							406);
+					return;
+				}
+				query.put("eventType", new JsonArray().add(eventType));
+				restQueryService.query(routingContext, query, "SimpleEventQuery");
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextEventPage(routingContext, uuid);
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
+	}
+
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();
 
