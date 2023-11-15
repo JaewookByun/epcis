@@ -19,13 +19,13 @@ import org.apache.log4j.Logger;
  *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
  *         bjw0829@gmail.com
  */
-public class PageExpiryTimerTask extends TimerTask {
+public class DataPageExpiryTimerTask extends TimerTask {
 	private String targetAPI;
-	private ConcurrentHashMap<UUID, Page> pageMap;
+	private ConcurrentHashMap<UUID, DataPage> pageMap;
 	private UUID uuidToRemove;
 	private Logger logger;
 
-	public PageExpiryTimerTask(String targetAPI, ConcurrentHashMap<UUID, Page> pageMap, UUID uuidToRemove,
+	public DataPageExpiryTimerTask(String targetAPI, ConcurrentHashMap<UUID, DataPage> pageMap, UUID uuidToRemove,
 			Logger logger) {
 		this.targetAPI = targetAPI;
 		this.pageMap = pageMap;

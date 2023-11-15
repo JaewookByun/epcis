@@ -17,8 +17,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.model.*;
-import org.oliot.epcis.pagination.Page;
-import org.oliot.epcis.pagination.PageExpiryTimerTask;
+import org.oliot.epcis.pagination.DataPage;
+import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.FileUtil;
@@ -179,7 +179,7 @@ public class RESTQueryService {
 			return;
 		}
 
-		Page page = null;
+		DataPage page = null;
 		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
@@ -260,7 +260,7 @@ public class RESTQueryService {
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
 			newTimer.schedule(
-					new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
@@ -362,11 +362,11 @@ public class RESTQueryService {
 					break;
 			}
 
-			Page page = new Page(uuid, "SimpleEventQuery", qd.getMongoQuery(), null, qd.getMongoSort(),
+			DataPage page = new DataPage(uuid, "SimpleEventQuery", qd.getMongoQuery(), null, qd.getMongoSort(),
 					qd.getEventCountLimit(), perPage);
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+			timer.schedule(new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.eventPageMap.put(uuid, page);
 			EPCISServer.logger.debug(
@@ -454,12 +454,12 @@ public class RESTQueryService {
 					break;
 			}
 
-			Page page = new Page(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(), null, null,
+			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(), null, null,
 					perPage);
 
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+			timer.schedule(new DataPageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
 					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.vocabularyPageMap.put(uuid, page);
 			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " added. # remaining pages - "
@@ -496,7 +496,7 @@ public class RESTQueryService {
 		}
 
 		// get Page
-		Page page = null;
+		DataPage page = null;
 		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
 			HTTPUtil.sendQueryResults(serverResponse,
 					JSONMessageFactory.get406NotAcceptableException(
@@ -571,7 +571,7 @@ public class RESTQueryService {
 
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
-			newTimer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+			newTimer.schedule(new DataPageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
 					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));

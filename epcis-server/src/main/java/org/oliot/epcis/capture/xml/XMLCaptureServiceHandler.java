@@ -3,7 +3,7 @@ package org.oliot.epcis.capture.xml;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
 import org.oliot.epcis.model.EPCISException;
-import org.oliot.epcis.pagination.Page;
+import org.oliot.epcis.pagination.DataPage;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
@@ -142,7 +142,7 @@ public class XMLCaptureServiceHandler {
 	public static void registerDeletePageToken(Router router) {
 		router.delete("/epcis/nextPageToken/:token").consumes("application/xml").handler(routingContext -> {
 			UUID uuid = UUID.fromString(routingContext.pathParam("token"));
-			Page page = EPCISServer.captureIDPageMap.remove(uuid);
+			DataPage page = EPCISServer.captureIDPageMap.remove(uuid);
 			try {
 				page.getTimer().cancel();
 			} catch (Exception e) {

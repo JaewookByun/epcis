@@ -419,8 +419,9 @@ public class RESTQueryServiceHandler {
 			}
 		});
 	}
-	
-	// EVENT TYPES --------------------------------------------------------------------------------
+
+	// EVENT TYPES
+	// --------------------------------------------------------------------------------
 
 	/**
 	 * Returns all EPCIS event types currently available in the EPCIS repository.
@@ -548,11 +549,61 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
 	}
-	
-	// EPCs --------------------------------------------------------------------------------
 
-	
+	// EPCs
+	// --------------------------------------------------------------------------------
 
+	/**
+	 * Returns known electronic product codes. An endpoint to list all electronic
+	 * product codes known to this repository.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService) {
+		router.get("/epcis/epcs").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "epc",
+						EPCISServer.epcsPageMap, DynamicResource.availableEPCsInEvents,
+						DynamicResource.availableEPCsInVocabularies);
+			} else {	
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc", EPCISServer.epcsPageMap, uuid);
+			}
+
+		});
+
+		router.get("/epcis/epcs").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			JsonArray eventTypes = new JsonArray();
+			for (String eventType : DynamicResource.availableEventTypes) {
+				eventTypes.add(eventType);
+			}
+
+			JsonObject result = new JsonObject().put("@set", eventTypes);
+
+			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
+		});
+	}
+
+	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();
 

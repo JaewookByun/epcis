@@ -23,7 +23,8 @@ import org.oliot.epcis.common.CommonHandler;
 import org.oliot.epcis.common.MetadataHandler;
 import org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter;
 import org.oliot.epcis.converter.unit.UnitConverter;
-import org.oliot.epcis.pagination.Page;
+import org.oliot.epcis.pagination.DataPage;
+import org.oliot.epcis.pagination.ResourcePage;
 import org.oliot.epcis.query.RESTQueryService;
 import org.oliot.epcis.query.RESTQueryServiceHandler;
 import org.oliot.epcis.query.SOAPQueryService;
@@ -76,9 +77,10 @@ public class EPCISServer extends AbstractVerticle {
 	public static Logger logger = Logger.getLogger(EPCISServer.class);
 
 	// pagination
-	public static ConcurrentHashMap<UUID, Page> eventPageMap = new ConcurrentHashMap<UUID, Page>();
-	public static ConcurrentHashMap<UUID, Page> vocabularyPageMap = new ConcurrentHashMap<UUID, Page>();
-	public static ConcurrentHashMap<UUID, Page> captureIDPageMap = new ConcurrentHashMap<UUID, Page>();
+	public static ConcurrentHashMap<UUID, DataPage> eventPageMap = new ConcurrentHashMap<UUID, DataPage>();
+	public static ConcurrentHashMap<UUID, DataPage> vocabularyPageMap = new ConcurrentHashMap<UUID, DataPage>();
+	public static ConcurrentHashMap<UUID, DataPage> captureIDPageMap = new ConcurrentHashMap<UUID, DataPage>();
+	public static ConcurrentHashMap<UUID, ResourcePage> epcsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
 
 	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
 	final SOAPQueryService soapQueryService = new SOAPQueryService();

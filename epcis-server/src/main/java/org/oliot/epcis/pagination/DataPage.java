@@ -18,7 +18,7 @@ import org.bson.Document;
  *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
  *         bjw0829@gmail.com
  */
-public class Page {
+public class DataPage {
 
 	private UUID uuid;
 	private String queryName;
@@ -29,7 +29,7 @@ public class Page {
 	private Integer skip;
 	private Timer timer;
 
-	public Page(UUID uuid, String queryName, Document query, Document projection, Document sort, Integer limit,
+	public DataPage(UUID uuid, String queryName, Document query, Document projection, Document sort, Integer limit,
 			Integer skip) {
 		this.uuid = uuid;
 		this.queryName = queryName;

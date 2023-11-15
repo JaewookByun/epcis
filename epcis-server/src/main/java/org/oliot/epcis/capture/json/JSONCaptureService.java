@@ -15,8 +15,8 @@ import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.json_to_bson.EPCISDocumentConverter;
 import org.oliot.epcis.model.ValidationException;
-import org.oliot.epcis.pagination.Page;
-import org.oliot.epcis.pagination.PageExpiryTimerTask;
+import org.oliot.epcis.pagination.DataPage;
+import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.TimeUtil;
@@ -415,11 +415,11 @@ public class JSONCaptureService {
 				if (!EPCISServer.captureIDPageMap.containsKey(uuid))
 					break;
 			}
-			Page page = new Page(uuid, "captureJob", null, null, sort, Integer.MAX_VALUE, perPage);
+			DataPage page = new DataPage(uuid, "captureJob", null, null, sort, Integer.MAX_VALUE, perPage);
 			Timer timer = new Timer();
 			page.setTimer(timer);
 			timer.schedule(
-					new PageExpiryTimerTask("GET /capture", EPCISServer.captureIDPageMap, uuid, EPCISServer.logger),
+					new DataPageExpiryTimerTask("GET /capture", EPCISServer.captureIDPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.captureIDPageMap.put(uuid, page);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " added. # remaining pages - "
@@ -453,7 +453,7 @@ public class JSONCaptureService {
 						JSONMessageFactory.get406NotAcceptableException(msg), 406);
 			}
 		}
-		Page page = null;
+		DataPage page = null;
 		UUID uuid = null;
 		try {
 			uuid = UUID.fromString(nextPagetoken);
@@ -506,7 +506,7 @@ public class JSONCaptureService {
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
 			newTimer.schedule(
-					new PageExpiryTimerTask("GET /capture", EPCISServer.captureIDPageMap, uuid, EPCISServer.logger),
+					new DataPageExpiryTimerTask("GET /capture", EPCISServer.captureIDPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));

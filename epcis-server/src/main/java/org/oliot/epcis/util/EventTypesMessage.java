@@ -27,10 +27,12 @@ public class EventTypesMessage {
 			e.printStackTrace();
 		}
 
-		eventTypes = message.createElement("EventTypes");
+		eventTypes = message.createElement("Resource");
 		message.appendChild(eventTypes);
 		for (String type : DynamicResource.availableEventTypes) {
-			eventTypes.appendChild(message.createElement(type));
+			Element eventType = message.createElement("eventType");
+			eventType.setTextContent(type);
+			eventTypes.appendChild(eventType);
 		}
 		message.normalize();
 	}

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,8 +24,10 @@ import org.oliot.epcis.converter.data.bson_to_pojo.ObjectEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransactionEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
 import org.oliot.epcis.model.*;
-import org.oliot.epcis.pagination.Page;
-import org.oliot.epcis.pagination.PageExpiryTimerTask;
+import org.oliot.epcis.pagination.DataPage;
+import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
+import org.oliot.epcis.pagination.ResourcePage;
+import org.oliot.epcis.pagination.ResourcePageExpiryTimerTask;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.FileUtil;
 import org.oliot.epcis.util.HTTPUtil;
@@ -47,6 +50,7 @@ import com.mongodb.client.result.InsertOneResult;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.impl.ConcurrentHashSet;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -69,8 +73,8 @@ public class SOAPQueryService {
 
 	public final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
-	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage, String key, String value)
-			throws ValidationException {
+	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage,
+			String key, String value) throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
 		Document doc;
 		try {
@@ -260,11 +264,12 @@ public class SOAPQueryService {
 					break;
 			}
 
-			Page page = new Page(uuid, "SimpleEventQuery", qd.getMongoQuery(), null, qd.getMongoSort(),
+			DataPage page = new DataPage(uuid, "SimpleEventQuery", qd.getMongoQuery(), null, qd.getMongoSort(),
 					qd.getEventCountLimit(), perPage);
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+			timer.schedule(
+					new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.eventPageMap.put(uuid, page);
 			EPCISServer.logger.debug(
@@ -277,6 +282,104 @@ public class SOAPQueryService {
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
 		} else {
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		}
+	}
+
+	public void getResources(HttpServerRequest serverRequest, HttpServerResponse serverResponse, String tag,
+			ConcurrentHashMap<UUID, ResourcePage> pages, ConcurrentHashSet<String> eventResources,
+			ConcurrentHashSet<String> vocResources) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 400);
+			return;
+		}
+
+		ResourcePage message = new ResourcePage(tag, eventResources, vocResources);
+		String result = message.getXMLNextPage(perPage);
+		if (!message.isClosed()) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!pages.containsKey(uuid))
+					break;
+			}
+
+			ResourcePage page = new ResourcePage(tag, eventResources, vocResources);
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(new ResourcePageExpiryTimerTask(tag, pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			pages.put(uuid, page);
+			EPCISServer.logger
+					.debug("[GET /" + tag + "] page - " + uuid + " added. # remaining pages - " + pages.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+		}
+	}
+
+	public void getNextResourcePage(HttpServerRequest serverRequest, HttpServerResponse serverResponse, String tag,
+			ConcurrentHashMap<UUID, ResourcePage> pages, UUID uuid) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 400);
+			return;
+		}
+
+		pages.get(uuid);
+
+		ResourcePage page = null;
+		if (!pages.containsKey(uuid)) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 406);
+			return;
+		} else {
+			page = pages.get(uuid);
+		}
+
+		String result = page.getXMLNextPage(perPage);
+
+		if (!page.isClosed()) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(new ResourcePageExpiryTimerTask("GET /" + tag, pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /" + tag + "] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+
+		} else {
+			pages.remove(uuid);
+			EPCISServer.logger
+					.debug("[GET /" + tag + "] page - " + uuid + " expired. # remaining pages - " + pages.size());
+			HTTPUtil.sendQueryResults(serverResponse, result, 200);
 		}
 	}
 
@@ -338,12 +441,12 @@ public class SOAPQueryService {
 					break;
 			}
 
-			Page page = new Page(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(), null, null,
-					perPage);
+			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(),
+					null, null, perPage);
 
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+			timer.schedule(new DataPageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
 					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.vocabularyPageMap.put(uuid, page);
 			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " added. # remaining pages - "
@@ -425,7 +528,7 @@ public class SOAPQueryService {
 		}
 
 		// get Page
-		Page page = null;
+		DataPage page = null;
 		if (!EPCISServer.vocabularyPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
@@ -484,7 +587,7 @@ public class SOAPQueryService {
 
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
-			newTimer.schedule(new PageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+			newTimer.schedule(new DataPageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
 					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
@@ -525,7 +628,7 @@ public class SOAPQueryService {
 			return;
 		}
 
-		Page page = null;
+		DataPage page = null;
 		if (!EPCISServer.eventPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
@@ -595,7 +698,7 @@ public class SOAPQueryService {
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
 			newTimer.schedule(
-					new PageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.logger.debug("[GET /events] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
