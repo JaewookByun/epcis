@@ -351,7 +351,8 @@ public class MetadataHandler {
 	}
 
 	// Resource discovery
-	// ----------------------------------------------------------------------------------------
+	// EVENT TYPES
+	// -----------------------------------------------------------------------------------------------------
 
 	/**
 	 * Query metadata for the EPCIS event types endpoint. EPCIS 2.0 supports a
@@ -452,5 +453,80 @@ public class MetadataHandler {
 			}
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/json)] - router added");
+	}
+
+	// EPCS
+	// --------------------------------------------------------------------------------------
+
+	public static void registerGetEPCsHandler(Router router) {
+		router.options("/epcis/epcs").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/epcs (application/xml)] - router added");
+
+		router.options("/epcis/epcs").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/epcs (application/json)] - router added");
+	}
+
+	// BIZSTEPS
+	// -----------------------------------------------------------------------------
+
+	public static void registerGetBizStepsHandler(Router router) {
+		router.options("/epcis/bizSteps").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps (application/xml)] - router added");
+
+		router.options("/epcis/bizSteps").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps (application/json)] - router added");
+	}
+
+	// BIZLOCATIONS
+	// -----------------------------------------------------------------------------
+
+	public static void registerGetBizLocationsHandler(Router router) {
+		router.options("/epcis/bizLocations").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations (application/xml)] - router added");
+
+		router.options("/epcis/bizLocations").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations (application/json)] - router added");
+	}
+
+	// READPOINTS
+	// -----------------------------------------------------------------------------
+
+	public static void registerGetReadPointsHandler(Router router) {
+		router.options("/epcis/readPoints").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/readPoints (application/xml)] - router added");
+
+		router.options("/epcis/readPoints").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/readPoints (application/json)] - router added");
+	}
+
+	// DISPOSITIONS
+	// -----------------------------------------------------------------------------
+
+	public static void registerGetDispositionsHandler(Router router) {
+		router.options("/epcis/dispositions").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/dispositions (application/xml)] - router added");
+
+		router.options("/epcis/dispositions").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/dispositions (application/json)] - router added");
 	}
 }

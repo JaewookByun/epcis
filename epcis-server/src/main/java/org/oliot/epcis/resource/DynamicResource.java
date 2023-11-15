@@ -19,16 +19,17 @@ public class DynamicResource extends Thread {
 	public static AtomicLong numOfEvents = new AtomicLong(0);
 	public static AtomicLong numOfVocabularies = new AtomicLong(0);
 
-	public static ConcurrentHashSet<String> availableEPCs = new ConcurrentHashSet<String>();
+	public static ConcurrentHashSet<String> availableEPCsInEvents = new ConcurrentHashSet<String>();
+	public static ConcurrentHashSet<String> availableEPCsInVocabularies = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableBusinessSteps = new ConcurrentHashSet<String>();
-	public static ConcurrentHashSet<String> availableBusinessLocations = new ConcurrentHashSet<String>();
-	public static ConcurrentHashSet<String> availableReadPoints = new ConcurrentHashSet<String>();
+	public static ConcurrentHashSet<String> availableBusinessLocationsInEvents = new ConcurrentHashSet<String>();
+	public static ConcurrentHashSet<String> availableReadPointsInEvents = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableDispositions = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableEventTypes = new ConcurrentHashSet<String>();
 
 	private Vertx vertx;
-	public static AtomicLong delay = new AtomicLong(5000l);
 	public static JsonObject counts = new JsonObject();
+	public static AtomicLong delay;
 
 	public DynamicResource(Vertx vertx) {
 		this.vertx = vertx;
@@ -36,16 +37,22 @@ public class DynamicResource extends Thread {
 	}
 
 	public static JsonObject getCounts() {
+		JsonObject newCounts = new JsonObject();
+
+		newCounts.put("events", numOfEvents.get());
+		newCounts.put("vocabularies", numOfVocabularies.get());
+		newCounts.put("eventTypes", availableEventTypes.size());
+		newCounts.put("epcs_in_events", availableEPCsInEvents.size());
+		newCounts.put("epcs_in_vocabularies", availableEPCsInVocabularies.size());
+		newCounts.put("dispositions", availableDispositions.size());
+		newCounts.put("bizSteps", availableBusinessSteps.size());
+		newCounts.put("bizLocations", availableBusinessLocationsInEvents.size());
+		newCounts.put("readPoints", availableReadPointsInEvents.size());
+
 		synchronized (counts) {
-			counts.put("numOfEvents", numOfEvents.get());
-			counts.put("numOfVocabularies", numOfVocabularies.get());
-			counts.put("epcs", availableEPCs.size());
-			counts.put("bizSteps", availableBusinessSteps.size());
-			counts.put("bizLocations", availableBusinessLocations.size());
-			counts.put("readPoints", availableReadPoints.size());
-			counts.put("dispositions", availableDispositions.size());
-			counts.put("eventTypes", availableEventTypes.size());
+			counts = newCounts;
 		}
+
 		return counts;
 	}
 
@@ -124,8 +131,8 @@ public class DynamicResource extends Thread {
 					while (readPointCursor.hasNext()) {
 						newReadPoint.add(readPointCursor.next().getString("readPoints"));
 					}
-					availableReadPoints.clear();
-					availableReadPoints.addAll(newReadPoint);
+					availableReadPointsInEvents.clear();
+					availableReadPointsInEvents.addAll(newReadPoint);
 
 					MongoCursor<Document> bizLocationCursor = EPCISServer.monitoringEventCollection.aggregate(List.of(
 							new Document().append("$group",
@@ -141,8 +148,8 @@ public class DynamicResource extends Thread {
 						newBizLocation.add(bizLocationCursor.next().getString("bizLocations"));
 					}
 
-					availableBusinessLocations.clear();
-					availableBusinessLocations.addAll(newBizLocation);
+					availableBusinessLocationsInEvents.clear();
+					availableBusinessLocationsInEvents.addAll(newBizLocation);
 
 					Document epcGroup = new Document().append("$group", new Document().append("_id", null)
 							.append("parentIDs", new Document().append("$addToSet", "$parentID"))
@@ -205,16 +212,26 @@ public class DynamicResource extends Thread {
 					while (epcCursor.hasNext()) {
 						newEPCs.add(epcCursor.next().getString("epcs"));
 					}
-					availableEPCs.clear();
-					availableEPCs.addAll(newEPCs);
+					availableEPCsInEvents.clear();
+					availableEPCsInEvents.addAll(newEPCs);
+
+					MongoCursor<Document> vEPCCursor = EPCISServer.monitoringVocCollection
+							.find(new Document("type", "urn:epcglobal:epcis:vtype:EPCClass"))
+							.projection(new Document("id", true).append("_id", false)).iterator();
+					HashSet<String> newVocEPCs = new HashSet<String>();
+					while(vEPCCursor.hasNext()) {
+						newVocEPCs.add(vEPCCursor.next().getString("id"));
+					}
+					availableEPCsInVocabularies.clear();
+					availableEPCsInVocabularies.addAll(newVocEPCs);
 
 					EPCISServer.logger.debug("# currently found resources: " + getCounts());
 
 					long elapsed = System.currentTimeMillis() - pre;
-					if (elapsed < 500) {
-						DynamicResource.delay.set(5000l);
+					if (elapsed < delay.get() / 10) {
+						delay.set(EPCISServer.resourceDiscoveryInterval.get());
 					} else {
-						DynamicResource.delay.set(elapsed * 10);
+						delay.set(elapsed * 10);
 					}
 				}
 			});

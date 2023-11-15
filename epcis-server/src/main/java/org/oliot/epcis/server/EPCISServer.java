@@ -41,6 +41,7 @@ import com.mongodb.client.MongoDatabase;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -104,6 +105,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> monitoringEventCollection;
 	public static MongoCollection<Document> monitoringTxCollection;
 	public static MongoCollection<Document> monitoringSubscriptionCollection;
+	public static AtomicLong resourceDiscoveryInterval;
 
 	@Override
 	public void start(Promise<Void> startPromise) {
@@ -138,9 +140,26 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerGetEventHandler(router);
 		MetadataHandler.registerGetVocabularyHandler(router);
 		MetadataHandler.registerQueryHandler(router);
+		
 		MetadataHandler.registerGetEventTypesHandler(router);
 		MetadataHandler.registerGetEventTypeQueriesHandler(router);
 		MetadataHandler.registerGetEventsWithEventType(router);
+		
+		MetadataHandler.registerGetEPCsHandler(router);
+		
+		
+		MetadataHandler.registerGetBizStepsHandler(router);
+		
+		
+		MetadataHandler.registerGetBizLocationsHandler(router);
+		
+		
+		MetadataHandler.registerGetReadPointsHandler(router);
+		
+		
+		MetadataHandler.registerGetDispositionsHandler(router);
+		
+		
 	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {

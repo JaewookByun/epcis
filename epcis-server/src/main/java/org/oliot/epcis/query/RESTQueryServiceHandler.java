@@ -419,6 +419,8 @@ public class RESTQueryServiceHandler {
 			}
 		});
 	}
+	
+	// EVENT TYPES --------------------------------------------------------------------------------
 
 	/**
 	 * Returns all EPCIS event types currently available in the EPCIS repository.
@@ -546,6 +548,10 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
 	}
+	
+	// EPCs --------------------------------------------------------------------------------
+
+	
 
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();

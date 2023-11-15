@@ -32,5 +32,8 @@
 	"max_capture_job_size" : 500,
 	
 	"_gcp_source" : "(local|web)",
-	"gcp_source" : "local"
+	"gcp_source" : "local",
+	
+	"_resource_discovery_interval" : "5000 in integer value means 5000 milliseconds (5 seconds)",
+	"resource_discovery_interval" : 2000
 }

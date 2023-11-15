@@ -27,6 +27,7 @@ import org.oliot.epcis.model.cbv.SourceDestinationType;
 import org.oliot.epcis.model.cbv.UnitOfMeasure;
 import org.oliot.epcis.model.cbv.UnloadingPort;
 import org.oliot.epcis.query.SubscriptionManager;
+import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.util.FileUtil;
 
@@ -43,6 +44,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.oliot.epcis.server.EPCISServer.*;
 
@@ -362,6 +364,11 @@ public class BootstrapUtil {
 
 	}
 
+	static void setResourceDiscoveryInterval() {
+		EPCISServer.resourceDiscoveryInterval = new AtomicLong(configuration.getInteger("resource_discovery_interval"));
+		DynamicResource.delay = new AtomicLong(configuration.getInteger("resource_discovery_interval"));
+	}
+
 	static void loadSubscriptions() {
 		SubscriptionManager sub = new SubscriptionManager();
 		sub.init();
@@ -389,6 +396,8 @@ public class BootstrapUtil {
 		setCaptureServiceMetadata();
 		// load subscriptions
 		loadSubscriptions();
+		// set resource discovery interval
+		setResourceDiscoveryInterval();
 
 		// Misc
 		numOfVerticles = configuration.getInteger("number_of_verticles",

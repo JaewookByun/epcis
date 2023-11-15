@@ -36,10 +36,14 @@
 		</layout>
 	</appender>
 
+
 	<logger name="org.oliot.epcis.server.EPCISServer"
 		additivity="true">
 		<level value="debug" />
 		<appender-ref ref="console" />
-		<appender-ref ref="file" />
 	</logger>
+
+	<root>
+		<level value="off" />
+	</root>
 </log4j:configuration>
