@@ -31,8 +31,8 @@ public class HTTPUtil {
 				.uri(uri).POST(BodyPublishers.ofString(body)).build(), BodyHandlers.ofString());
 	}
 
-	public static void sendQueryResults(HttpServerResponse serverResponse, Object message, int statusCode) {
-		serverResponse.putHeader("content-type", "application/xml; charset=utf-8")
+	public static void sendQueryResults(HttpServerResponse serverResponse, Object message, int statusCode, String contentType) {
+		serverResponse.putHeader("content-type", contentType)
 				.putHeader("Access-Control-Expose-Headers", "*")
 				.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 				.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)

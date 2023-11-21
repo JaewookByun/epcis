@@ -14,10 +14,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import io.vertx.core.impl.ConcurrentHashSet;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class ResourcePage {
 
@@ -72,18 +76,51 @@ public class ResourcePage {
 		boolean needPagination = false;
 		for (; cursor < resources.size(); cursor++) {
 			cnt++;
-			if (cnt == perPage) {
-				needPagination = true;
-				break;
-			}
 			Element r = message.createElement(tag);
 			r.setTextContent(resources.get(cursor));
 			epcs.appendChild(r);
+			if (cnt == perPage) {
+				needPagination = true;
+				cursor++;
+				break;
+			}
 		}
 		if (needPagination == false)
 			isClosed = true;
 
 		return toXMLString(message);
+	}
+
+	public synchronized String getJSONNextPage(int perPage) {
+		// null means end of page
+		if (isClosed) {
+			return null;
+		}
+
+		JsonArray jsonResource = new JsonArray();
+
+		int cnt = 0;
+		boolean needPagination = false;
+		for (; cursor < resources.size(); cursor++) {
+			cnt++;
+			try {
+				jsonResource.add(TagDataTranslationEngine.toDL(resources.get(cursor)));
+			} catch (ValidationException e) {
+				jsonResource.add(resources.get(cursor));
+			}
+			if (cnt == perPage) {
+				needPagination = true;
+				cursor++;
+				break;
+			}
+		}
+		if (needPagination == false)
+			isClosed = true;
+
+		JsonObject result = new JsonObject();
+		result.put("@set", jsonResource);
+
+		return result.toString();
 	}
 
 	public boolean isClosed() {
@@ -103,7 +140,7 @@ public class ResourcePage {
 			return null;
 		}
 	}
-	
+
 	public Timer getTimer() {
 		return timer;
 	}

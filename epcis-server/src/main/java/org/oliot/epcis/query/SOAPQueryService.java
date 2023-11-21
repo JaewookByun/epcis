@@ -173,7 +173,7 @@ public class SOAPQueryService {
 	}
 
 	private int getPerPage(HttpServerRequest serverRequest) throws QueryParameterException {
-		String perPageParam = serverRequest.getParam("PerPage");
+		String perPageParam = serverRequest.getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
 			try {
@@ -311,12 +311,11 @@ public class SOAPQueryService {
 					break;
 			}
 
-			ResourcePage page = new ResourcePage(tag, eventResources, vocResources);
 			Timer timer = new Timer();
-			page.setTimer(timer);
+			message.setTimer(timer);
 			timer.schedule(new ResourcePageExpiryTimerTask(tag, pages, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
-			pages.put(uuid, page);
+			pages.put(uuid, message);
 			EPCISServer.logger
 					.debug("[GET /" + tag + "] page - " + uuid + " added. # remaining pages - " + pages.size());
 
@@ -324,9 +323,9 @@ public class SOAPQueryService {
 					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
-			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
 		} else {
-			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
 		}
 	}
 
@@ -373,13 +372,13 @@ public class SOAPQueryService {
 
 			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
 					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
-			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
 
 		} else {
 			pages.remove(uuid);
 			EPCISServer.logger
 					.debug("[GET /" + tag + "] page - " + uuid + " expired. # remaining pages - " + pages.size());
-			HTTPUtil.sendQueryResults(serverResponse, result, 200);
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
 		}
 	}
 

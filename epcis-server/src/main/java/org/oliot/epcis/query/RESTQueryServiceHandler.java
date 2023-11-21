@@ -433,7 +433,7 @@ public class RESTQueryServiceHandler {
 			checkXMLPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
-			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200);
+			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200, "application/xml");
 		});
 
 		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
@@ -476,7 +476,7 @@ public class RESTQueryServiceHandler {
 				return;
 			} else {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SubResourceList().putSubResourceList("events"),
-						200);
+						200, "application/xml");
 			}
 
 		});
@@ -559,7 +559,7 @@ public class RESTQueryServiceHandler {
 	 * 
 	 * @param router
 	 */
-	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService) {
+	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService, RESTQueryService restQueryService) {
 		router.get("/epcis/epcs").consumes("application/xml").handler(routingContext -> {
 			checkXMLPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -592,14 +592,25 @@ public class RESTQueryServiceHandler {
 			if (routingContext.response().closed())
 				return;
 
-			JsonArray eventTypes = new JsonArray();
-			for (String eventType : DynamicResource.availableEventTypes) {
-				eventTypes.add(eventType);
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.getResources(routingContext.request(), routingContext.response(), "epc",
+						EPCISServer.epcsPageMap, DynamicResource.availableEPCsInEvents,
+						DynamicResource.availableEPCsInVocabularies);
+			} else {	
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc", EPCISServer.epcsPageMap, uuid);
 			}
-
-			JsonObject result = new JsonObject().put("@set", eventTypes);
-
-			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
 		});
 	}
 

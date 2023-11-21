@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.UUID;
@@ -19,6 +20,8 @@ import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.model.*;
 import org.oliot.epcis.pagination.DataPage;
 import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
+import org.oliot.epcis.pagination.ResourcePage;
+import org.oliot.epcis.pagination.ResourcePageExpiryTimerTask;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.FileUtil;
@@ -41,6 +44,7 @@ import com.mongodb.client.result.InsertOneResult;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.impl.ConcurrentHashSet;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -366,7 +370,8 @@ public class RESTQueryService {
 					qd.getEventCountLimit(), perPage);
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+			timer.schedule(
+					new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
 					Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.eventPageMap.put(uuid, page);
 			EPCISServer.logger.debug(
@@ -454,8 +459,8 @@ public class RESTQueryService {
 					break;
 			}
 
-			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(), null, null,
-					perPage);
+			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(),
+					null, null, perPage);
 
 			Timer timer = new Timer();
 			page.setTimer(timer);
@@ -1065,4 +1070,110 @@ public class RESTQueryService {
 
 		}
 	}
+
+	public void getResources(HttpServerRequest serverRequest, HttpServerResponse serverResponse, String tag,
+			ConcurrentHashMap<UUID, ResourcePage> pages, ConcurrentHashSet<String> eventResources,
+			ConcurrentHashSet<String> vocResources) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+			return;
+		}
+
+		ResourcePage message = new ResourcePage(tag, eventResources, vocResources);
+		String result = message.getJSONNextPage(perPage);
+		if (!message.isClosed()) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!pages.containsKey(uuid))
+					break;
+			}
+
+			Timer timer = new Timer();
+			message.setTimer(timer);
+			timer.schedule(new ResourcePageExpiryTimerTask(tag, pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			pages.put(uuid, message);
+			EPCISServer.logger
+					.debug("[GET /" + tag + "] page - " + uuid + " added. # remaining pages - " + pages.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		}
+	}
+
+	public void getNextResourcePage(HttpServerRequest serverRequest, HttpServerResponse serverResponse, String tag,
+			ConcurrentHashMap<UUID, ResourcePage> pages, UUID uuid) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+			return;
+		}
+
+		pages.get(uuid);
+
+		ResourcePage page = null;
+		if (!pages.containsKey(uuid)) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The given next page token does not exist or be no longer available."),
+					406);
+			EPCISServer.logger
+					.error("[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			return;
+		} else {
+			page = pages.get(uuid);
+		}
+
+		String result = page.getJSONNextPage(perPage);
+
+		if (!page.isClosed()) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(new ResourcePageExpiryTimerTask("GET /" + tag, pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /" + tag + "] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+
+		} else {
+			pages.remove(uuid);
+			EPCISServer.logger
+					.debug("[GET /" + tag + "] page - " + uuid + " expired. # remaining pages - " + pages.size());
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		}
+	}
+
 }
