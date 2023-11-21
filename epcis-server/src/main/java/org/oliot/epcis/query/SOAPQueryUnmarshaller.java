@@ -1,8 +1,5 @@
 package org.oliot.epcis.query;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.dom.DOMSource;
 
 import org.oliot.epcis.model.ArrayOfString;
@@ -10,6 +7,10 @@ import org.oliot.epcis.model.Poll;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.VoidHolder;
 import org.w3c.dom.Node;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.

@@ -5,5 +5,5 @@
 // Generated on: 2023.01.05 at 11:33:26 AM KST 
 //
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "urn:epcglobal:epcis:xsd:2")
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "urn:epcglobal:epcis:xsd:2")
 package org.oliot.epcis.model;

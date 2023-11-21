@@ -3,7 +3,6 @@ package org.oliot.epcis.converter.data.bson_to_pojo;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -13,6 +12,8 @@ import org.oliot.epcis.model.CorrectiveEventIDsType;
 import org.oliot.epcis.model.EPCISEventType;
 import org.oliot.epcis.model.ErrorDeclarationType;
 import org.oliot.epcis.util.SOAPMessage;
+
+import jakarta.xml.bind.JAXBElement;
 
 import static org.oliot.epcis.util.BSONReadUtil.*;
 

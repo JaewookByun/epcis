@@ -11,8 +11,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.bson.Document;
 import org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil;
 import org.oliot.epcis.model.ArrayOfString;
@@ -27,6 +25,8 @@ import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.TimeUtil;
 import org.w3c.dom.Element;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 @SuppressWarnings("unused")
 public class TriggerDescription {
@@ -234,7 +234,6 @@ public class TriggerDescription {
 	private HashMap<String, HashMap<String, List<String>>> EQ_ATTR;
 
 	private String subscriptionID;
-
 
 	private String triggerKey;
 
@@ -3765,7 +3764,7 @@ public class TriggerDescription {
 		}
 		return query;
 	}
-	
+
 	public SensorUomValue getSensorUomValue(Document obj, SensorUomValue query) {
 		String uom = obj.getString("uom");
 		Double value = obj.getDouble("value");
@@ -3788,7 +3787,7 @@ public class TriggerDescription {
 		}
 		return query;
 	}
-	
+
 	public HashMap<String, HashMap<String, List<String>>> getQueryStringStringListOfStringMap(Document obj,
 			HashMap<String, HashMap<String, List<String>>> query) {
 		if (query == null)
@@ -3798,15 +3797,15 @@ public class TriggerDescription {
 			HashMap<String, List<String>> v = query.get(tKey);
 			if (v == null)
 				v = new HashMap<String, List<String>>();
-			
-			for(String ttKey : tValue.keySet()) {
+
+			for (String ttKey : tValue.keySet()) {
 				List<String> ttValue = tValue.getList(ttKey, String.class);
 				List<String> vv = v.get(ttKey);
-				if(vv == null)
+				if (vv == null)
 					vv = new ArrayList<String>();
 				vv.addAll(ttValue);
 				v.put(ttKey, vv);
-			}			
+			}
 			query.put(tKey, v);
 		}
 		return query;
@@ -4571,7 +4570,7 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (queryKey.equals("EQ_type")) {			
+			if (queryKey.equals("EQ_type")) {
 				EQ_type = query.getList("EQ_type", String.class);
 				continue;
 			}
@@ -4736,15 +4735,13 @@ public class TriggerDescription {
 				continue;
 			}
 
-			if (queryKey.equals("HASATTR")) {		
-				HASATTR = getQueryStringListOfStringMap(query.get("HASATTR", Document.class),
-						HASATTR);
+			if (queryKey.equals("HASATTR")) {
+				HASATTR = getQueryStringListOfStringMap(query.get("HASATTR", Document.class), HASATTR);
 				continue;
 			}
 
 			if (queryKey.equals("EQ_ATTR")) {
-				EQ_ATTR = getQueryStringStringListOfStringMap(query.get("EQ_ATTR", Document.class),
-						EQ_ATTR);
+				EQ_ATTR = getQueryStringStringListOfStringMap(query.get("EQ_ATTR", Document.class), EQ_ATTR);
 				continue;
 			}
 		}

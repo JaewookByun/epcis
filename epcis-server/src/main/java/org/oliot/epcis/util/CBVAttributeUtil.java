@@ -1,6 +1,5 @@
 package org.oliot.epcis.util;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 
 import org.bson.Document;
@@ -18,6 +17,8 @@ import org.oliot.epcis.model.cbv.UnloadingPort;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 import java.util.*;
 

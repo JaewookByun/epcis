@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.bson.Document;
 import org.bson.types.Binary;
 import org.oliot.epcis.converter.data.pojo_to_bson.MasterDataConverter;
@@ -37,6 +35,7 @@ import com.mongodb.client.model.WriteModel;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.xml.bind.DatatypeConverter;
 
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.*;
 

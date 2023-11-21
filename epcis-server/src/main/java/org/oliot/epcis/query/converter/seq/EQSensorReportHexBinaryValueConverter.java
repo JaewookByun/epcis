@@ -3,12 +3,12 @@ package org.oliot.epcis.query.converter.seq;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.bson.Document;
 import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.query.converter.BaseConverter;
 import org.oliot.epcis.query.converter.QueryConverter;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * If this parameter is specified, the result will only include events that (a)
