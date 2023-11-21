@@ -36,6 +36,7 @@ import org.oliot.epcis.validation.HeaderValidator;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.impl.ConcurrentHashSet;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RequestBody;
@@ -559,7 +560,8 @@ public class RESTQueryServiceHandler {
 	 * 
 	 * @param router
 	 */
-	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService, RESTQueryService restQueryService) {
+	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
 		router.get("/epcis/epcs").consumes("application/xml").handler(routingContext -> {
 			checkXMLPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -570,7 +572,7 @@ public class RESTQueryServiceHandler {
 				soapQueryService.getResources(routingContext.request(), routingContext.response(), "epc",
 						EPCISServer.epcsPageMap, DynamicResource.availableEPCsInEvents,
 						DynamicResource.availableEPCsInVocabularies);
-			} else {	
+			} else {
 				UUID uuid = null;
 				try {
 					uuid = UUID.fromString(nextPageToken);
@@ -582,7 +584,8 @@ public class RESTQueryServiceHandler {
 							406);
 					return;
 				}
-				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc", EPCISServer.epcsPageMap, uuid);
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc",
+						EPCISServer.epcsPageMap, uuid);
 			}
 
 		});
@@ -597,7 +600,7 @@ public class RESTQueryServiceHandler {
 				restQueryService.getResources(routingContext.request(), routingContext.response(), "epc",
 						EPCISServer.epcsPageMap, DynamicResource.availableEPCsInEvents,
 						DynamicResource.availableEPCsInVocabularies);
-			} else {	
+			} else {
 				UUID uuid = null;
 				try {
 					uuid = UUID.fromString(nextPageToken);
@@ -609,7 +612,70 @@ public class RESTQueryServiceHandler {
 							406);
 					return;
 				}
-				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc", EPCISServer.epcsPageMap, uuid);
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "epc",
+						EPCISServer.epcsPageMap, uuid);
+			}
+		});
+	}
+
+	/**
+	 * Returns known business steps. This endpoint returns the CBV standard business
+	 * steps as well as any custom business steps supported by this repository.
+	 */
+	public static void registerGetBizSteps(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+		router.get("/epcis/bizSteps").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "bizStep",
+						EPCISServer.bizStepsPageMap, DynamicResource.availableBusinessSteps,
+						new ConcurrentHashSet<String>());
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizStep",
+						EPCISServer.bizStepsPageMap, uuid);
+			}
+
+		});
+
+		router.get("/epcis/bizSteps").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.getResources(routingContext.request(), routingContext.response(), "bizStep",
+						EPCISServer.bizStepsPageMap, DynamicResource.availableBusinessSteps,
+						new ConcurrentHashSet<String>());
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizStep",
+						EPCISServer.bizStepsPageMap, uuid);
 			}
 		});
 	}

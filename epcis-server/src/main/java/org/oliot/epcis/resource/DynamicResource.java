@@ -97,7 +97,7 @@ public class DynamicResource extends Thread {
 						}
 					}
 					availableBusinessSteps.clear();
-					availableBusinessSteps.addAll(newEventTypes);
+					availableBusinessSteps.addAll(newBizStep);
 
 					Document dispositionResult = EPCISServer.monitoringEventCollection
 							.aggregate(
