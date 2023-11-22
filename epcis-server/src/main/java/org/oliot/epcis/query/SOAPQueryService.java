@@ -276,7 +276,7 @@ public class SOAPQueryService {
 					"[GET /events] page - " + uuid + " added. # remaining pages - " + EPCISServer.eventPageMap.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
@@ -320,7 +320,7 @@ public class SOAPQueryService {
 					.debug("[GET /" + tag + "] page - " + uuid + " added. # remaining pages - " + pages.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
@@ -452,7 +452,7 @@ public class SOAPQueryService {
 					+ EPCISServer.vocabularyPageMap.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);

@@ -339,7 +339,7 @@ public class JSONCaptureService {
 				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
 						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (MongoException | UnsupportedEncodingException e) {
@@ -357,7 +357,7 @@ public class JSONCaptureService {
 				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
 						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
 						.setStatusCode(201).end();
 			} catch (Throwable e) {
@@ -426,14 +426,14 @@ public class JSONCaptureService {
 					+ EPCISServer.captureIDPageMap.size());
 
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
 					.setStatusCode(200).end(result.toString());
 		} else {
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("content-type", "application/json")
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("content-type", "application/json")
 					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result.toString());
 		}
 	}
@@ -511,7 +511,7 @@ public class JSONCaptureService {
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " token expiry time extended to "
 					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
@@ -521,7 +521,7 @@ public class JSONCaptureService {
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
 					.putHeader("content-type", "application/json").setStatusCode(200).end(result.toString());
 		}
 	}
@@ -559,7 +559,7 @@ public class JSONCaptureService {
 			JsonObject captureJob = Transaction.toJson(jobs.get(0));
 			routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
 					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
 					.putHeader("content-type", "application/json; charset=utf-8").setStatusCode(200)
 					.end(captureJob.toString());
 		} catch (Exception throwable) {

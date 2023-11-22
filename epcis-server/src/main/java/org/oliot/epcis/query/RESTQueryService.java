@@ -471,7 +471,7 @@ public class RESTQueryService {
 					+ EPCISServer.vocabularyPageMap.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 
@@ -1109,7 +1109,7 @@ public class RESTQueryService {
 					.debug("[GET /" + tag + "] page - " + uuid + " added. # remaining pages - " + pages.size());
 
 			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extension", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
 			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");

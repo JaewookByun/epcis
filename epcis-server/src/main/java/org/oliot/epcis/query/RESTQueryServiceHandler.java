@@ -313,7 +313,7 @@ public class RESTQueryServiceHandler {
 							extType);
 				}
 				HttpServerResponse serverResponse = routingContext.response();
-				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extension",
+				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extensions",
 						Metadata.GS1_Extensions);
 
 				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
@@ -404,7 +404,7 @@ public class RESTQueryServiceHandler {
 				convertedResult.put("@context", context);
 
 				HttpServerResponse serverResponse = routingContext.response();
-				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extension",
+				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extensions",
 						Metadata.GS1_Extensions);
 
 				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
@@ -676,6 +676,68 @@ public class RESTQueryServiceHandler {
 				}
 				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizStep",
 						EPCISServer.bizStepsPageMap, uuid);
+			}
+		});
+	}
+
+	/**
+	 * Returns known business locations. An endpoint to list all the business
+	 * locations known to this repository.
+	 */
+	public static void registerGetBizLocations(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+		router.get("/epcis/bizLocations").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "bizLocations",
+						EPCISServer.bizLocationPageMap, DynamicResource.availableBusinessLocationsInEvents,
+						DynamicResource.availableBusinessLocationsInVocabularies);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizLocation",
+						EPCISServer.bizLocationPageMap, uuid);
+			}
+
+		});
+
+		router.get("/epcis/bizLocations").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.getResources(routingContext.request(), routingContext.response(), "bizLocation",
+						EPCISServer.bizLocationPageMap, DynamicResource.availableBusinessLocationsInEvents,
+						DynamicResource.availableBusinessLocationsInVocabularies);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizLocation",
+						EPCISServer.bizLocationPageMap, uuid);
 			}
 		});
 	}
