@@ -807,7 +807,7 @@ public class RESTQueryServiceHandler {
 	/**
 	 * Returns known dispositions. This endpoint returns the CBV standard
 	 * dispositions as well as any custom dispositions supported by this repository.
-	 * 
+	 * TODO
 	 */
 	public static void registerGetDispositions(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
@@ -866,6 +866,126 @@ public class RESTQueryServiceHandler {
 			}
 		});
 	}
+	
+	
+	public static void registerGetEPCQueriesHandler(Router router, RESTQueryService restQueryService) {
+		router.get("/epcis/events/:eventID").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+			String eventID = null;
+			try {
+				eventID = routingContext.pathParam("eventID");
+				List<Document> events = new ArrayList<Document>();
+				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(events);
+				if (events.isEmpty()) {
+					EPCISException e = new EPCISException(
+							"[404NoSuchResourceException] There is no event with the given id: " + eventID);
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+					return;
+				}
+
+				Document result = events.get(0);
+				SOAPMessage message = new SOAPMessage();
+				ArrayList<String> nsList = new ArrayList<>();
+
+				String type = result.getString("type");
+				if (type.equals("AggregationEvent")) {
+					AggregationEventType event = new AggregationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AggregationEventType.class,
+							200);
+				} else if (type.equals("ObjectEvent")) {
+					ObjectEventType event = new ObjectEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, ObjectEventType.class, 200);
+				} else if (type.equals("TransactionEvent")) {
+					TransactionEventType event = new TransactionEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransactionEventType.class,
+							200);
+				} else if (type.equals("TransformationEvent")) {
+					TransformationEventType event = new TransformationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, TransformationEventType.class,
+							200);
+				} else {
+					AssociationEventType event = new AssociationEventConverter().convert(result, message, nsList);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, event, AssociationEventType.class,
+							200);
+				}
+			} catch (Throwable throwable) {
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+						throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			}
+		});
+
+		router.get("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+			String eventID = null;
+			try {
+				eventID = routingContext.pathParam("eventID");
+				List<Document> events = new ArrayList<Document>();
+				EPCISServer.mEventCollection.find(new Document("eventID", eventID)).into(events);
+				if (events.isEmpty()) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no event with the given id: " + eventID), 404);
+					return;
+				}
+
+				Document result = events.get(0);
+
+				JsonArray context = new JsonArray();
+				context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+				ArrayList<String> namespaces = getNamespaces(result);
+				JsonObject extType = new JsonObject();
+				JsonObject extContext = new JsonObject();
+				for (int i = 0; i < namespaces.size(); i++) {
+					extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+				}
+				context.add(extContext);
+
+				JsonObject convertedResult = null;
+				switch (result.getString("type")) {
+				case "AggregationEvent":
+					convertedResult = EPCISServer.bsonToJsonConverter.convertAggregationEvent(result, namespaces,
+							extType);
+
+				case "ObjectEvent":
+					convertedResult = EPCISServer.bsonToJsonConverter.convertObjectEvent(result, namespaces, extType);
+
+				case "TransactionEvent":
+					convertedResult = EPCISServer.bsonToJsonConverter.convertTransactionEvent(result, namespaces,
+							extType);
+
+				case "TransformationEvent":
+					convertedResult = EPCISServer.bsonToJsonConverter.convertTransformationEvent(result, namespaces,
+							extType);
+
+				case "AssociationEvent":
+					convertedResult = EPCISServer.bsonToJsonConverter.convertAssociationEvent(result, namespaces,
+							extType);
+				}
+				HttpServerResponse serverResponse = routingContext.response();
+				serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version).putHeader("GS1-Extensions",
+						Metadata.GS1_Extensions);
+
+				HTTPUtil.sendQueryResults(serverResponse, convertedResult, 200);
+
+			} catch (Throwable throwable) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				return;
+			}
+		});
+	}
+	
+	
 
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
