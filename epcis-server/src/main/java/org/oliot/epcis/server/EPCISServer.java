@@ -82,7 +82,9 @@ public class EPCISServer extends AbstractVerticle {
 	public static ConcurrentHashMap<UUID, DataPage> captureIDPageMap = new ConcurrentHashMap<UUID, DataPage>();
 	public static ConcurrentHashMap<UUID, ResourcePage> epcsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
 	public static ConcurrentHashMap<UUID, ResourcePage> bizStepsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
-	public static ConcurrentHashMap<UUID, ResourcePage> bizLocationPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
+	public static ConcurrentHashMap<UUID, ResourcePage> bizLocationsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
+	public static ConcurrentHashMap<UUID, ResourcePage> readPointsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
+	public static ConcurrentHashMap<UUID, ResourcePage> dispositionsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
 
 	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
 	final SOAPQueryService soapQueryService = new SOAPQueryService();
@@ -179,6 +181,8 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetEPCs(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetBizSteps(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetBizLocations(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetReadPoints(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetDispositions(router, soapQueryService, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {

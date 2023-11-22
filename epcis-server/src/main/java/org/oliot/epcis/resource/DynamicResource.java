@@ -25,6 +25,7 @@ public class DynamicResource extends Thread {
 	public static ConcurrentHashSet<String> availableBusinessLocationsInEvents = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableBusinessLocationsInVocabularies = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableReadPointsInEvents = new ConcurrentHashSet<String>();
+	public static ConcurrentHashSet<String> availableReadPointsInVocabularies = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableDispositions = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableEventTypes = new ConcurrentHashSet<String>();
 
@@ -49,7 +50,8 @@ public class DynamicResource extends Thread {
 		newCounts.put("bizSteps", availableBusinessSteps.size());
 		newCounts.put("bizLocations_in_events", availableBusinessLocationsInEvents.size());
 		newCounts.put("bizLocations_in_vocabularies", availableBusinessLocationsInVocabularies.size());
-		newCounts.put("readPoints", availableReadPointsInEvents.size());
+		newCounts.put("readPoints_in_events", availableReadPointsInEvents.size());
+		newCounts.put("readPoints_in_vocabularies", availableReadPointsInVocabularies.size());
 
 		synchronized (counts) {
 			counts = newCounts;
@@ -136,6 +138,16 @@ public class DynamicResource extends Thread {
 					availableReadPointsInEvents.clear();
 					availableReadPointsInEvents.addAll(newReadPoint);
 
+					MongoCursor<Document> vReadPointCursor = EPCISServer.monitoringVocCollection
+							.find(new Document("type", "urn:epcglobal:epcis:vtype:ReadPoint"))
+							.projection(new Document("id", true).append("_id", false)).iterator();
+					HashSet<String> newVReadPoints = new HashSet<String>();
+					while (vReadPointCursor.hasNext()) {
+						newVReadPoints.add(vReadPointCursor.next().getString("id"));
+					}
+					availableReadPointsInVocabularies.clear();
+					availableReadPointsInVocabularies.addAll(newVReadPoints);
+					
 					MongoCursor<Document> bizLocationCursor = EPCISServer.monitoringEventCollection.aggregate(List.of(
 							new Document().append("$group",
 									new Document().append("_id", null).append("bizLocations",
@@ -152,16 +164,16 @@ public class DynamicResource extends Thread {
 
 					availableBusinessLocationsInEvents.clear();
 					availableBusinessLocationsInEvents.addAll(newBizLocation);
-					
+
 					MongoCursor<Document> vBizLocationCursor = EPCISServer.monitoringVocCollection
 							.find(new Document("type", "urn:epcglobal:epcis:vtype:BusinessLocation"))
 							.projection(new Document("id", true).append("_id", false)).iterator();
 					HashSet<String> newVBizLocations = new HashSet<String>();
-					while(vBizLocationCursor.hasNext()) {
+					while (vBizLocationCursor.hasNext()) {
 						newVBizLocations.add(vBizLocationCursor.next().getString("id"));
 					}
 					availableBusinessLocationsInVocabularies.clear();
-					availableBusinessLocationsInVocabularies.addAll(newVBizLocations);					
+					availableBusinessLocationsInVocabularies.addAll(newVBizLocations);
 
 					Document epcGroup = new Document().append("$group", new Document().append("_id", null)
 							.append("parentIDs", new Document().append("$addToSet", "$parentID"))
@@ -231,7 +243,7 @@ public class DynamicResource extends Thread {
 							.find(new Document("type", "urn:epcglobal:epcis:vtype:EPCClass"))
 							.projection(new Document("id", true).append("_id", false)).iterator();
 					HashSet<String> newVocEPCs = new HashSet<String>();
-					while(vEPCCursor.hasNext()) {
+					while (vEPCCursor.hasNext()) {
 						newVocEPCs.add(vEPCCursor.next().getString("id"));
 					}
 					availableEPCsInVocabularies.clear();

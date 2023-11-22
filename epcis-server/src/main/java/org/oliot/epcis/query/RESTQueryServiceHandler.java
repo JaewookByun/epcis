@@ -693,8 +693,8 @@ public class RESTQueryServiceHandler {
 
 			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
-				soapQueryService.getResources(routingContext.request(), routingContext.response(), "bizLocations",
-						EPCISServer.bizLocationPageMap, DynamicResource.availableBusinessLocationsInEvents,
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "bizLocation",
+						EPCISServer.bizLocationsPageMap, DynamicResource.availableBusinessLocationsInEvents,
 						DynamicResource.availableBusinessLocationsInVocabularies);
 			} else {
 				UUID uuid = null;
@@ -709,7 +709,7 @@ public class RESTQueryServiceHandler {
 					return;
 				}
 				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizLocation",
-						EPCISServer.bizLocationPageMap, uuid);
+						EPCISServer.bizLocationsPageMap, uuid);
 			}
 
 		});
@@ -722,7 +722,7 @@ public class RESTQueryServiceHandler {
 			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			if (nextPageToken == null) {
 				restQueryService.getResources(routingContext.request(), routingContext.response(), "bizLocation",
-						EPCISServer.bizLocationPageMap, DynamicResource.availableBusinessLocationsInEvents,
+						EPCISServer.bizLocationsPageMap, DynamicResource.availableBusinessLocationsInEvents,
 						DynamicResource.availableBusinessLocationsInVocabularies);
 			} else {
 				UUID uuid = null;
@@ -737,7 +737,132 @@ public class RESTQueryServiceHandler {
 					return;
 				}
 				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "bizLocation",
-						EPCISServer.bizLocationPageMap, uuid);
+						EPCISServer.bizLocationsPageMap, uuid);
+			}
+		});
+	}
+
+	/**
+	 * Returns known read points. An endpoint to list all read points known to this
+	 * repository.
+	 */
+	public static void registerGetReadPoints(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+		router.get("/epcis/readPoints").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "readPoint",
+						EPCISServer.readPointsPageMap, DynamicResource.availableReadPointsInEvents,
+						DynamicResource.availableReadPointsInVocabularies);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "readPoint",
+						EPCISServer.readPointsPageMap, uuid);
+			}
+
+		});
+
+		router.get("/epcis/readPoints").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.getResources(routingContext.request(), routingContext.response(), "readPoint",
+						EPCISServer.readPointsPageMap, DynamicResource.availableReadPointsInEvents,
+						DynamicResource.availableReadPointsInVocabularies);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "readPoint",
+						EPCISServer.readPointsPageMap, uuid);
+			}
+		});
+	}
+
+	/**
+	 * Returns known dispositions. This endpoint returns the CBV standard
+	 * dispositions as well as any custom dispositions supported by this repository.
+	 * 
+	 */
+	public static void registerGetDispositions(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+		router.get("/epcis/dispositions").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				soapQueryService.getResources(routingContext.request(), routingContext.response(), "disposition",
+						EPCISServer.dispositionsPageMap, DynamicResource.availableDispositions,
+						new ConcurrentHashSet<String>());
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				soapQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "disposition",
+						EPCISServer.dispositionsPageMap, uuid);
+			}
+
+		});
+
+		router.get("/epcis/dispositions").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				restQueryService.getResources(routingContext.request(), routingContext.response(), "disposition",
+						EPCISServer.dispositionsPageMap, DynamicResource.availableDispositions,
+						new ConcurrentHashSet<String>());
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextResourcePage(routingContext.request(), routingContext.response(), "disposition",
+						EPCISServer.dispositionsPageMap, uuid);
 			}
 		});
 	}
