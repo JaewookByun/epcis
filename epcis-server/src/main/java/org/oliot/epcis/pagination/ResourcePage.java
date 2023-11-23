@@ -3,6 +3,7 @@ package org.oliot.epcis.pagination;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Timer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -92,6 +93,27 @@ public class ResourcePage {
 
 		return toXMLString(message);
 	}
+	
+	public static String getQueryNamesResults(List<String> queries) {
+		Document message = null;
+		try {
+			message = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		Element resources;
+		resources = message.createElement("Resource");
+		message.appendChild(resources);
+		
+		for(String query: queries) {
+			Element r = message.createElement("queryName");
+			r.setTextContent(query);
+			resources.appendChild(r);
+		}
+
+		return getXMLString(message);
+	}
 
 	public synchronized String getJSONNextPage(int perPage, String type) {
 		// null means end of page
@@ -149,6 +171,20 @@ public class ResourcePage {
 	}
 
 	public String toXMLString(Document message) {
+		try {
+			Transformer tf = TransformerFactory.newInstance().newTransformer();
+			StringWriter sw = new StringWriter();
+			tf.setOutputProperty(OutputKeys.INDENT, "no");
+			tf.transform(new DOMSource(message), new StreamResult(sw));
+			return sw.toString();
+		} catch (TransformerException e) {
+			// Never happen or should not happen
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public static String getXMLString(Document message) {
 		try {
 			Transformer tf = TransformerFactory.newInstance().newTransformer();
 			StringWriter sw = new StringWriter();

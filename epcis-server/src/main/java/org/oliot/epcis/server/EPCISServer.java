@@ -146,26 +146,26 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerGetEventHandler(router);
 		MetadataHandler.registerGetVocabularyHandler(router);
 		MetadataHandler.registerQueryHandler(router);
-		
+
 		MetadataHandler.registerGetEventTypesHandler(router);
 		MetadataHandler.registerGetEventTypeQueriesHandler(router);
 		MetadataHandler.registerGetEventsWithEventType(router);
-		
+
 		MetadataHandler.registerGetEPCsHandler(router);
 		MetadataHandler.registerGetEPCQueriesHandler(router);
-		
+
 		MetadataHandler.registerGetBizStepsHandler(router);
 		MetadataHandler.registerGetBizStepQueriesHandler(router);
-		
+
 		MetadataHandler.registerGetBizLocationsHandler(router);
 		MetadataHandler.registerGetBizLocationQueriesHandler(router);
-		
+
 		MetadataHandler.registerGetReadPointsHandler(router);
 		MetadataHandler.registerGetReadPointQueriesHandler(router);
-		
+
 		MetadataHandler.registerGetDispositionsHandler(router);
 		MetadataHandler.registerGetDispositionQueriesHandler(router);
-		
+
 	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
@@ -174,15 +174,23 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetEventHandler(router, restQueryService);
 		RESTQueryServiceHandler.registerGetVocabularyHandler(router, restQueryService);
 
-		RESTQueryServiceHandler.registerGetEventTypes(router);
-		RESTQueryServiceHandler.registerGetEventTypeQueries(router);
-		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, restQueryService);
 		
+		
+		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, restQueryService);
+
+		RESTQueryServiceHandler.registerGetEventTypes(router);
 		RESTQueryServiceHandler.registerGetEPCs(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetBizSteps(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetBizLocations(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetReadPoints(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetDispositions(router, soapQueryService, restQueryService);
+
+		RESTQueryServiceHandler.registerGetEventTypeQueries(router);
+		RESTQueryServiceHandler.registerGetEPCQueries(router);
+		RESTQueryServiceHandler.registerGetBizStepQueries(router);
+		RESTQueryServiceHandler.registerGetBizLocationQueries(router);
+		RESTQueryServiceHandler.registerGetReadPointQueries(router);
+		RESTQueryServiceHandler.registerGetDispositionQueries(router);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {
