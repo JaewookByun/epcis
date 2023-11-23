@@ -357,48 +357,6 @@ public class MetadataHandler {
 	// -----------------------------------------------------------------------------------------------------
 
 	/**
-	 * "Query the metadata of the endpoint to access EPCIS events by event type.
-	 * EPCIS 2.0 supports a number of custom headers to describe custom vocabularies
-	 * and support multiple versions of EPCIS and CBV. The `OPTIONS` method allows
-	 * the client to discover which vocabularies and EPCIS and CBV versions are
-	 * used.
-	 * 
-	 * @param router
-	 */
-	public static void registerGetEventsWithEventType(Router router) {
-		router.options("/epcis/eventTypes/:eventType/events").consumes("application/xml").handler(routingContext -> {
-
-			String eventType = routingContext.pathParam("eventType");
-
-			if (DynamicResource.availableEventTypes.contains(eventType)) {
-				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
-			} else {
-				EPCISException e = new EPCISException(
-						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
-				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
-			}
-
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/xml)] - router added");
-
-		router.options("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
-
-			String eventType = routingContext.pathParam("eventType");
-
-			if (DynamicResource.availableEventTypes.contains(eventType)) {
-				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
-			} else {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get404NoSuchResourceException(
-								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
-						404);
-			}
-		});
-		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/json)] - router added");
-	}
-
-	/**
 	 * Query metadata for the EPCIS event types endpoint. EPCIS 2.0 supports a
 	 * number of custom headers to describe custom vocabularies and support multiple
 	 * versions of EPCIS and CBV. The `OPTIONS` method allows the client to discover
@@ -757,5 +715,272 @@ public class MetadataHandler {
 			}
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/dispositions/:disposition (application/json)] - router added");
+	}
+
+	/**
+	 * Query the metadata of the endpoint to access EPCIS events by event type.
+	 * EPCIS 2.0 supports a number of custom headers to describe custom vocabularies
+	 * and support multiple versions of EPCIS and CBV. The `OPTIONS` method allows
+	 * the client to discover which vocabularies and EPCIS and CBV versions are
+	 * used.
+	 * 
+	 */
+	public static void registerGetEventsWithEventType(Router router) {
+		router.options("/epcis/eventTypes/:eventType/events").consumes("application/xml").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/xml)] - router added");
+
+		router.options("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (DynamicResource.availableEventTypes.contains(eventType)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/json)] - router added");
+	}
+
+	/**
+	 * Query metadata of the electronic product code. EPCIS 2.0 supports a number of
+	 * custom headers to describe custom vocabularies and support multiple versions
+	 * of EPCIS and CBV. The `OPTIONS` method allows the client to discover which
+	 * vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 */
+	public static void registerGetEventsWithEPC(Router router) {
+		router.options("/epcis/epcs/:epc/events").consumes("application/xml").handler(routingContext -> {
+
+			String epc = routingContext.pathParam("epc");
+
+			if (DynamicResource.availableEPCsInEvents.contains(epc)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for: " + epc);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/epcs/:epc/events (application/xml)] - router added");
+
+		router.options("/epcis/epcs/:epc/events").consumes("application/json").handler(routingContext -> {
+
+			String epc = routingContext.pathParam("epc");
+
+			try {
+				epc = TagDataTranslationEngine.toEPC(epc);
+			} catch (ValidationException e) {
+
+			}
+
+			if (DynamicResource.availableEPCsInEvents.contains(epc)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for : " + epc), 404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/epcs/:epc/events (application/json)] - router added");
+	}
+
+	/**
+	 * Query metadata of the endpoint to access an individual business step. EPCIS
+	 * 2.0 supports a number of custom headers to describe custom vocabularies and
+	 * support multiple versions of EPCIS and CBV. The `OPTIONS` method allows the
+	 * client to discover which vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 */
+	public static void registerGetEventsWithBizStep(Router router) {
+		router.options("/epcis/bizSteps/:bizStep/events").consumes("application/xml").handler(routingContext -> {
+
+			String bizStep = routingContext.pathParam("bizStep");
+
+			if (DynamicResource.availableBusinessSteps.contains(bizStep)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for: " + bizStep);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps/:bizStep/events (application/xml)] - router added");
+
+		router.options("/epcis/bizSteps/:bizStep/events").consumes("application/json").handler(routingContext -> {
+
+			String bizStep = routingContext.pathParam("bizStep");
+
+			try {
+				bizStep = BusinessStep.getFullVocabularyName(bizStep);
+			} catch (Exception e) {
+
+			}
+
+			if (DynamicResource.availableBusinessSteps.contains(bizStep)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for : " + bizStep), 404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps/:bizStep/events (application/json)] - router added");
+	}
+
+	/**
+	 * Query the metadata of the endpoint to access an individual business location.
+	 * EPCIS 2.0 supports a number of custom headers to describe custom vocabularies
+	 * and support multiple versions of EPCIS and CBV. The `OPTIONS` method allows
+	 * the client to discover which vocabularies and EPCIS and CBV versions are
+	 * used.
+	 * 
+	 */
+	public static void registerGetEventsWithBizLocation(Router router) {
+		router.options("/epcis/bizLocations/:bizLocation/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					String bizLocation = routingContext.pathParam("bizLocation");
+
+					if (DynamicResource.availableBusinessLocationsInEvents.contains(bizLocation)) {
+						send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+					} else {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + bizLocation);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+					}
+
+				});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations/:bizLocation/events (application/xml)] - router added");
+
+		router.options("/epcis/bizLocations/:bizLocation/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					String bizLocation = routingContext.pathParam("bizLocation");
+
+					try {
+						bizLocation = TagDataTranslationEngine.toEPC(bizLocation);
+					} catch (ValidationException e) {
+
+					}
+
+					if (DynamicResource.availableBusinessLocationsInEvents.contains(bizLocation)) {
+						send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+					} else {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for : "
+												+ bizLocation),
+								404);
+					}
+				});
+		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations/:bizLocation/events (application/json)] - router added");
+	}
+
+	/**
+	 * Query the metadata of the endpoint to access an individual read point. EPCIS
+	 * 2.0 supports a number of custom headers to describe custom vocabularies and
+	 * support multiple versions of EPCIS and CBV. The `OPTIONS` method allows the
+	 * client to discover which vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 */
+	public static void registerGetEventsWithReadPoint(Router router) {
+		router.options("/epcis/readPoints/:readPoint/events").consumes("application/xml").handler(routingContext -> {
+
+			String readPoint = routingContext.pathParam("readPoint");
+
+			if (DynamicResource.availableReadPointsInEvents.contains(readPoint)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for: " + readPoint);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/readPoints/:readPoint/events (application/xml)] - router added");
+
+		router.options("/epcis/readPoints/:readPoint/events").consumes("application/json").handler(routingContext -> {
+
+			String readPoint = routingContext.pathParam("readPoint");
+
+			try {
+				readPoint = TagDataTranslationEngine.toEPC(readPoint);
+			} catch (ValidationException e) {
+
+			}
+
+			if (DynamicResource.availableReadPointsInEvents.contains(readPoint)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for : " + readPoint), 404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/readPoints/:readPoint/events (application/json)] - router added");
+	}
+
+	/**
+	 * Query the metadata of the endpoint to access an individual disposition. EPCIS
+	 * 2.0 supports a number of custom headers to describe custom vocabularies and
+	 * support multiple versions of EPCIS and CBV. The `OPTIONS` method allows the
+	 * client to discover which vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 */
+	public static void registerGetEventsWithDisposition(Router router) {
+		router.options("/epcis/dispositions/:disposition/events").consumes("application/xml").handler(routingContext -> {
+
+			String disposition = routingContext.pathParam("disposition");
+
+			if (DynamicResource.availableDispositions.contains(disposition)) {
+				send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for: " + disposition);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			}
+
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/dispositions/:disposition/events (application/xml)] - router added");
+
+		router.options("/epcis/dispositions/:disposition/events").consumes("application/json").handler(routingContext -> {
+
+			String disposition = routingContext.pathParam("disposition");
+
+			try {
+				disposition = Disposition.getFullVocabularyName(disposition);
+			} catch (Exception e) {
+
+			}
+
+			if (DynamicResource.availableDispositions.contains(disposition)) {
+				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for : " + disposition), 404);
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/dispositions/:disposition/events (application/json)] - router added");
 	}
 }

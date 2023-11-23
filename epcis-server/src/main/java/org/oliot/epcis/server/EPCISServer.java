@@ -153,18 +153,23 @@ public class EPCISServer extends AbstractVerticle {
 
 		MetadataHandler.registerGetEPCsHandler(router);
 		MetadataHandler.registerGetEPCQueriesHandler(router);
+		MetadataHandler.registerGetEventsWithEPC(router);
 
 		MetadataHandler.registerGetBizStepsHandler(router);
 		MetadataHandler.registerGetBizStepQueriesHandler(router);
+		MetadataHandler.registerGetEventsWithBizStep(router);
 
 		MetadataHandler.registerGetBizLocationsHandler(router);
 		MetadataHandler.registerGetBizLocationQueriesHandler(router);
+		MetadataHandler.registerGetEventsWithBizLocation(router);
 
 		MetadataHandler.registerGetReadPointsHandler(router);
 		MetadataHandler.registerGetReadPointQueriesHandler(router);
+		MetadataHandler.registerGetEventsWithReadPoint(router);
 
 		MetadataHandler.registerGetDispositionsHandler(router);
 		MetadataHandler.registerGetDispositionQueriesHandler(router);
+		MetadataHandler.registerGetEventsWithDisposition(router);
 
 	}
 
@@ -174,8 +179,6 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetEventHandler(router, restQueryService);
 		RESTQueryServiceHandler.registerGetVocabularyHandler(router, restQueryService);
 
-		
-		
 		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, restQueryService);
 
 		RESTQueryServiceHandler.registerGetEventTypes(router);
