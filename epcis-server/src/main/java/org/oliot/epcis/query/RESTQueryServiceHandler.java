@@ -421,87 +421,6 @@ public class RESTQueryServiceHandler {
 		});
 	}
 
-	// EVENT TYPES
-	// --------------------------------------------------------------------------------
-
-	/**
-	 * Returns all EPCIS event types currently available in the EPCIS repository.
-	 * 
-	 * @param router
-	 */
-	public static void registerGetEventTypes(Router router) {
-		router.get("/epcis/eventTypes").consumes("application/xml").handler(routingContext -> {
-			checkXMLPollHeaders(routingContext);
-			if (routingContext.response().closed())
-				return;
-			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200, "application/xml");
-		});
-
-		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
-			checkJSONPollHeaders(routingContext);
-			if (routingContext.response().closed())
-				return;
-
-			JsonArray eventTypes = new JsonArray();
-			for (String eventType : DynamicResource.availableEventTypes) {
-				eventTypes.add(eventType);
-			}
-
-			JsonObject result = new JsonObject().put("@set", eventTypes);
-
-			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
-		});
-	}
-
-	/**
-	 * "Returns all sub-resources of an EPCIS event type. This endpoint returns all
-	 * sub-resources of an EPCIS event type (for HATEOAS discovery), which includes
-	 * at least `events`. A server may add additional endpoints, for example
-	 * `schema` to access the EPCIS event type schema.
-	 * 
-	 * @param router
-	 */
-	public static void registerGetEventTypeQueries(Router router) {
-		router.get("/epcis/eventTypes/:eventType").consumes("application/xml").handler(routingContext -> {
-			checkXMLPollHeaders(routingContext);
-			if (routingContext.response().closed())
-				return;
-
-			String eventType = routingContext.pathParam("eventType");
-
-			if (!DynamicResource.availableEventTypes.contains(eventType)) {
-				EPCISException e = new EPCISException(
-						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
-				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
-				return;
-			} else {
-				HTTPUtil.sendQueryResults(routingContext.response(), new SubResourceList().putSubResourceList("events"),
-						200, "application/xml");
-			}
-
-		});
-
-		router.get("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
-			checkJSONPollHeaders(routingContext);
-			if (routingContext.response().closed())
-				return;
-
-			String eventType = routingContext.pathParam("eventType");
-
-			if (!DynamicResource.availableEventTypes.contains(eventType)) {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get404NoSuchResourceException(
-								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
-						404);
-				return;
-			} else {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						new JsonObject().put("@set", new JsonArray().add("events")), 200);
-			}
-		});
-	}
-
 	public static void registerGetEventsWithEventTypeHandler(Router router, RESTQueryService restQueryService) {
 
 		router.get("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
@@ -551,14 +470,38 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
 	}
 
-	// EPCs
-	// --------------------------------------------------------------------------------
+	/**
+	 * Returns all EPCIS event types currently available in the EPCIS repository.
+	 * 
+	 */
+	public static void registerGetEventTypes(Router router) {
+		router.get("/epcis/eventTypes").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200, "application/xml");
+		});
+
+		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			JsonArray eventTypes = new JsonArray();
+			for (String eventType : DynamicResource.availableEventTypes) {
+				eventTypes.add(eventType);
+			}
+
+			JsonObject result = new JsonObject().put("@set", eventTypes);
+
+			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
+		});
+	}
 
 	/**
 	 * Returns known electronic product codes. An endpoint to list all electronic
 	 * product codes known to this repository.
 	 * 
-	 * @param router
 	 */
 	public static void registerGetEPCs(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
@@ -807,7 +750,7 @@ public class RESTQueryServiceHandler {
 	/**
 	 * Returns known dispositions. This endpoint returns the CBV standard
 	 * dispositions as well as any custom dispositions supported by this repository.
-	 * TODO
+	 * 
 	 */
 	public static void registerGetDispositions(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
@@ -866,8 +809,55 @@ public class RESTQueryServiceHandler {
 			}
 		});
 	}
-	
-	
+
+	/**
+	 * "Returns all sub-resources of an EPCIS event type. This endpoint returns all
+	 * sub-resources of an EPCIS event type (for HATEOAS discovery), which includes
+	 * at least `events`. A server may add additional endpoints, for example
+	 * `schema` to access the EPCIS event type schema.
+	 * 
+	 */
+	public static void registerGetEventTypeQueries(Router router) {
+		router.get("/epcis/eventTypes/:eventType").consumes("application/xml").handler(routingContext -> {
+			checkXMLPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (!DynamicResource.availableEventTypes.contains(eventType)) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available query for eventType: " + eventType);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(), new SubResourceList().putSubResourceList("events"),
+						200, "application/xml");
+			}
+
+		});
+
+		router.get("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String eventType = routingContext.pathParam("eventType");
+
+			if (!DynamicResource.availableEventTypes.contains(eventType)) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
+						404);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						new JsonObject().put("@set", new JsonArray().add("events")), 200);
+			}
+		});
+	}
+
 	public static void registerGetEPCQueriesHandler(Router router, RESTQueryService restQueryService) {
 		router.get("/epcis/events/:eventID").consumes("application/xml").handler(routingContext -> {
 			checkXMLPollHeaders(routingContext);
@@ -984,8 +974,6 @@ public class RESTQueryServiceHandler {
 			}
 		});
 	}
-	
-	
 
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {

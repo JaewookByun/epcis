@@ -1089,7 +1089,7 @@ public class RESTQueryService {
 		}
 
 		ResourcePage message = new ResourcePage(tag, eventResources, vocResources);
-		String result = message.getJSONNextPage(perPage);
+		String result = message.getJSONNextPage(perPage, tag);
 		if (!message.isClosed()) {
 			UUID uuid;
 			long currentTime = System.currentTimeMillis();
@@ -1149,7 +1149,7 @@ public class RESTQueryService {
 			page = pages.get(uuid);
 		}
 
-		String result = page.getJSONNextPage(perPage);
+		String result = page.getJSONNextPage(perPage, tag);
 
 		if (!page.isClosed()) {
 			long currentTime = System.currentTimeMillis();

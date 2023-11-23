@@ -1,5 +1,7 @@
 package org.oliot.epcis.tdt;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -190,6 +192,11 @@ public class UnitPackIdentifier {
 		JsonObject obj = new JsonObject();
 		obj.put("epc", epc);
 		obj.put("dl", dl);
+		try {
+			obj.put("dl_encoded", URLEncoder.encode(dl, StandardCharsets.UTF_8.toString()));
+		} catch (Exception e) {
+
+		}
 		obj.put("companyPrefix", companyPrefix);
 		obj.put("indicator", indicator);
 		obj.put("itemRef", itemRef);

@@ -10,6 +10,8 @@ import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.GS1CBVXMLFormat;
 import org.oliot.epcis.model.GS1EPCFormat;
 import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.model.cbv.BusinessStep;
+import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
@@ -559,6 +561,12 @@ public class MetadataHandler {
 
 			String epc = routingContext.pathParam("epc");
 
+			try {
+				epc = TagDataTranslationEngine.toEPC(epc);
+			} catch (ValidationException e) {
+
+			}
+
 			if (DynamicResource.availableEPCsInEvents.contains(epc)
 					|| DynamicResource.availableEPCsInVocabularies.contains(epc)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
@@ -597,6 +605,12 @@ public class MetadataHandler {
 		router.options("/epcis/bizSteps/:bizStep").consumes("application/json").handler(routingContext -> {
 
 			String bizStep = routingContext.pathParam("bizStep");
+
+			try {
+				bizStep = BusinessStep.getFullVocabularyName(bizStep);
+			} catch (Exception e) {
+
+			}
 
 			if (DynamicResource.availableBusinessSteps.contains(bizStep)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
@@ -638,6 +652,12 @@ public class MetadataHandler {
 
 			String bizLocation = routingContext.pathParam("bizLocation");
 
+			try {
+				bizLocation = TagDataTranslationEngine.toEPC(bizLocation);
+			} catch (ValidationException e) {
+
+			}
+
 			if (DynamicResource.availableBusinessLocationsInEvents.contains(bizLocation)
 					|| DynamicResource.availableBusinessLocationsInVocabularies.contains(bizLocation)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
@@ -678,6 +698,12 @@ public class MetadataHandler {
 
 			String readPoint = routingContext.pathParam("readPoint");
 
+			try {
+				readPoint = TagDataTranslationEngine.toEPC(readPoint);
+			} catch (ValidationException e) {
+
+			}
+
 			if (DynamicResource.availableReadPointsInEvents.contains(readPoint)
 					|| DynamicResource.availableReadPointsInVocabularies.contains(readPoint)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
@@ -716,6 +742,12 @@ public class MetadataHandler {
 		router.options("/epcis/dispositions/:disposition").consumes("application/json").handler(routingContext -> {
 
 			String disposition = routingContext.pathParam("disposition");
+
+			try {
+				disposition = Disposition.getFullVocabularyName(disposition);
+			} catch (Exception e) {
+
+			}
 
 			if (DynamicResource.availableDispositions.contains(disposition)) {
 				send204JSONLResponse(routingContext.response(), "OPTIONS, GET");

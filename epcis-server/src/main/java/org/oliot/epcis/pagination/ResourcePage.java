@@ -15,6 +15,8 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.model.cbv.BusinessStep;
+import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -91,7 +93,7 @@ public class ResourcePage {
 		return toXMLString(message);
 	}
 
-	public synchronized String getJSONNextPage(int perPage) {
+	public synchronized String getJSONNextPage(int perPage, String type) {
 		// null means end of page
 		if (isClosed) {
 			return null;
@@ -103,11 +105,30 @@ public class ResourcePage {
 		boolean needPagination = false;
 		for (; cursor < resources.size(); cursor++) {
 			cnt++;
-			try {
-				jsonResource.add(TagDataTranslationEngine.toDL(resources.get(cursor)));
-			} catch (ValidationException e) {
-				jsonResource.add(resources.get(cursor));
+
+			String resource = resources.get(cursor);
+			if (type.equals("epc") || type.equals("readPoint") || type.equals("bizLocation")) {
+				try {
+					jsonResource.add(TagDataTranslationEngine.toDL(resource));
+				} catch (ValidationException e) {
+					jsonResource.add(resource);
+				}
+			} else if (type.equals("bizStep")) {
+				try {
+					jsonResource.add(BusinessStep.getShortVocabularyName(resource));
+				} catch (Exception e) {
+					jsonResource.add(resource);
+				}
+			} else if (type.equals("disposition")) {
+				try {
+					jsonResource.add(Disposition.getShortVocabularyName(resource));
+				} catch (Exception e) {
+					jsonResource.add(resource);
+				}
+			} else {
+				jsonResource.add(resource);
 			}
+
 			if (cnt == perPage) {
 				needPagination = true;
 				cursor++;
