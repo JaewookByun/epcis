@@ -178,12 +178,10 @@ public class EPCISServer extends AbstractVerticle {
 	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
-		RESTQueryServiceHandler.registerGetEventsHandler(router, restQueryService);
-		RESTQueryServiceHandler.registerGetVocabulariesHandler(router, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetVocabulariesHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventHandler(router, restQueryService);
 		RESTQueryServiceHandler.registerGetVocabularyHandler(router, restQueryService);
-
-		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, restQueryService);
 
 		RESTQueryServiceHandler.registerGetEventTypes(router);
 		RESTQueryServiceHandler.registerGetEPCs(router, soapQueryService, restQueryService);
@@ -198,6 +196,13 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetBizLocationQueries(router);
 		RESTQueryServiceHandler.registerGetReadPointQueries(router);
 		RESTQueryServiceHandler.registerGetDispositionQueries(router);
+		
+		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsWithEPCHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsWithBizStepHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsWithBizLocationHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsWithReadPointHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetEventsWithDispositionHandler(router, soapQueryService, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {
@@ -218,8 +223,8 @@ public class EPCISServer extends AbstractVerticle {
 
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
-		SOAPQueryServiceHandler.registerPollHandler(router, soapQueryService);
-		SOAPQueryServiceHandler.registerPollWithEventTypeHandler(router, soapQueryService);
+		// SOAPQueryServiceHandler.registerPollHandler(router, soapQueryService);
+		// SOAPQueryServiceHandler.registerPollWithEventTypeHandler(router, soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 

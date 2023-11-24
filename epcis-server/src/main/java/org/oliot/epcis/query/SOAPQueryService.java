@@ -73,6 +73,15 @@ public class SOAPQueryService {
 
 	public final static SOAPQueryUnmarshaller soapQueryUnmarshaller = new SOAPQueryUnmarshaller();
 
+	public Element getElementArrayOfString(Document message, String value) {
+		Element elem = message.createElement("value");
+		elem.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "type", "query:ArrayOfString");
+		Element str = message.createElement("string");
+		str.setTextContent(value);
+		elem.appendChild(str);
+		return elem;
+	}
+
 	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage,
 			String key, String value) throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
@@ -89,11 +98,9 @@ public class SOAPQueryService {
 		if (pollNode != null) {
 			try {
 				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
-				ArrayOfString aos = new ArrayOfString();
-				List<String> list = aos.getString();
-				list.add(value);
-				poll.setParams(new QueryParams(key, aos));
-				poll(request, response, soapQueryUnmarshaller.getPoll(pollNode));
+				List<QueryParam> queryParamList = poll.getParams().getParam();
+				queryParamList.add(new QueryParam(key, getElementArrayOfString(message.getMessage(), value)));
+				poll(request, response, poll);
 			} catch (JAXBException e) {
 				throw new ValidationException(e.getMessage());
 			}

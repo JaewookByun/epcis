@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+
+import javax.xml.parsers.ParserConfigurationException;
+
 import java.util.UUID;
 
 import org.bson.Document;
@@ -29,6 +32,7 @@ import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.pagination.ResourcePage;
 import org.oliot.epcis.resource.DynamicResource;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.EventTypesMessage;
@@ -100,6 +104,51 @@ public class RESTQueryServiceHandler {
 			return;
 	}
 
+	public static boolean isHeaderPassed(RoutingContext routingContext) {
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Min", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Max", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Min", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Max", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPC-Format", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-XML-Format", false))
+			return false;
+		return true;
+	}
+
+	public static String getHttpBody(RoutingContext routingContext, String queryName) {
+		RequestBody body = routingContext.body();
+		String inputString = null;
+		if (body.isEmpty()) {
+			MultiMap mm = routingContext.queryParams();
+			Iterator<Entry<String, String>> iter = mm.iterator();
+			while (iter.hasNext()) {
+				Entry<String, String> entry = iter.next();
+				String k = entry.getKey();
+				if (k.contains("Envelope") && k.contains("Poll") && k.contains(queryName))
+					inputString = k;
+			}
+			if (inputString == null) {
+				EPCISException e = new EPCISException("[400ValidationException] Empty Request Body");
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
+				return null;
+			}
+		} else {
+			inputString = body.asString();
+		}
+		return inputString;
+	}
+
 	public static JsonObject getJsonBody(RoutingContext routingContext) {
 		JsonObject query = null;
 		RequestBody body = routingContext.body();
@@ -126,7 +175,33 @@ public class RESTQueryServiceHandler {
 		return query;
 	}
 
-	public static void registerGetEventsHandler(Router router, RESTQueryService restQueryService) {
+	public static void registerGetEventsHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/events").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+				if (inputString == null)
+					return;
+				try {
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(),
+							inputString, null, null);
+				} catch (ValidationException e) {
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
+				}
+			} else {
+				soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
 
 		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
 
@@ -165,7 +240,39 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
 	}
 
-	public static void registerGetVocabulariesHandler(Router router, RESTQueryService restQueryService) {
+	public static void registerGetVocabulariesHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/vocabularies").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				String inputString = getHttpBody(routingContext, "SimpleMasterDataQuery");
+				if (inputString == null)
+					return;
+				try {
+					soapQueryService.pollEventsOrVocabularies(routingContext.request(), routingContext.response(),
+							inputString, null, null);
+				} catch (ValidationException e) {
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 400);
+				}
+			} else {
+				try {
+					soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
+				} catch (ParserConfigurationException e) {
+					ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+							"Poll", e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				}
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/vocabularies (application/xml)] - router added");
 
 		router.get("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
 
@@ -538,55 +645,6 @@ public class RESTQueryServiceHandler {
 				return;
 			}
 		});
-	}
-
-	public static void registerGetEventsWithEventTypeHandler(Router router, RESTQueryService restQueryService) {
-
-		router.get("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
-
-			checkJSONPollHeaders(routingContext);
-			if (routingContext.response().closed())
-				return;
-
-			routingContext.response().setChunked(true);
-
-			String eventType = routingContext.pathParam("eventType");
-
-			if (!DynamicResource.availableEventTypes.contains(eventType)) {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get404NoSuchResourceException(
-								"[404NoSuchResourceException] There is no available query for eventType: " + eventType),
-						404);
-				return;
-			}
-
-			String nextPageToken = routingContext.request().getParam("nextPageToken");
-			if (nextPageToken == null) {
-				JsonObject query = getJsonBody(routingContext);
-				if (query == null) {
-					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
-							406);
-					return;
-				}
-				query.put("eventType", new JsonArray().add(eventType));
-				restQueryService.query(routingContext, query, "SimpleEventQuery");
-			} else {
-				UUID uuid = null;
-				try {
-					uuid = UUID.fromString(nextPageToken);
-				} catch (Exception e) {
-					HTTPUtil.sendQueryResults(routingContext.response(),
-							JSONMessageFactory.get406NotAcceptableException(
-									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
-											+ uuid),
-							406);
-					return;
-				}
-				restQueryService.getNextEventPage(routingContext, uuid);
-			}
-		});
-		EPCISServer.logger.info("[GET /epcis/events (application/json)] - router added");
 	}
 
 	/**
@@ -1208,6 +1266,628 @@ public class RESTQueryServiceHandler {
 					HTTPUtil.sendQueryResults(routingContext.response(), new JsonObject().put("@set", queryNames), 200);
 
 				});
+	}
+
+	/**
+	 * Returns EPCIS events of a given an EPCIS event type.
+	 * 
+	 */
+	public static void registerGetEventsWithEventTypeHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "eventType";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableEventTypes.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for eventType: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+									routingContext.response(), inputString, resourceType, resource);
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableEventTypes.contains(resource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for eventType: "
+												+ resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						query.put(resourceType, new JsonArray().add(resource));
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventsWithEPCHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "epc";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableEPCsInEvents.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							boolean isInstanceLevel = true;
+							try {
+								TagDataTranslationEngine.checkEPCClassPureIdentity(StaticResource.gcpLength, resource);
+								isInstanceLevel = false;
+							} catch (ValidationException e1) {
+
+							}
+
+							if (isInstanceLevel) {
+								soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+										routingContext.response(), inputString, "MATCH_anyEPC", resource);
+							} else {
+								soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+										routingContext.response(), inputString, "MATCH_anyEPCClass", resource);
+							}
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					try {
+						resource = TagDataTranslationEngine.toEPC(resource);
+					} catch (ValidationException e) {
+
+					}
+
+					if (!DynamicResource.availableEPCsInEvents.contains(resource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for: " + resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						boolean isInstanceLevel = true;
+						try {
+							TagDataTranslationEngine.checkEPCClassPureIdentity(StaticResource.gcpLength, resource);
+							isInstanceLevel = false;
+						} catch (ValidationException e1) {
+
+						}
+
+						if (isInstanceLevel) {
+							query.put("MATCH_anyEPC", new JsonArray().add(resource));
+						} else {
+							query.put("MATCH_anyEPCClass", new JsonArray().add(resource));
+						}
+
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventsWithBizStepHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "bizStep";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableBusinessSteps.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+									routingContext.response(), inputString, "EQ_bizStep", resource);
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					String fullResource = resource;
+					try {
+						fullResource = BusinessStep.getFullVocabularyName(resource);
+					} catch (Exception e) {
+
+					}
+
+					if (!DynamicResource.availableBusinessSteps.contains(fullResource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for: " + resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						query.put("EQ_bizStep", new JsonArray().add(resource));
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventsWithBizLocationHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "bizLocation";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableBusinessLocationsInEvents.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+									routingContext.response(), inputString, "EQ_bizLocation", resource);
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					try {
+						resource = TagDataTranslationEngine.toEPC(resource);
+					} catch (ValidationException e) {
+
+					}
+
+					if (!DynamicResource.availableBusinessLocationsInEvents.contains(resource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for: " + resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						query.put("EQ_bizLocation", new JsonArray().add(resource));
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventsWithReadPointHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "readPoint";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					if (!DynamicResource.availableReadPointsInEvents.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+									routingContext.response(), inputString, "EQ_readPoint", resource);
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					try {
+						resource = TagDataTranslationEngine.toEPC(resource);
+					} catch (ValidationException e) {
+
+					}
+
+					if (!DynamicResource.availableReadPointsInEvents.contains(resource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for: " + resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						query.put("EQ_readPoint", new JsonArray().add(resource));
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
+	}
+
+	public static void registerGetEventsWithDispositionHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		String resourceType = "disposition";
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/xml")
+				.handler(routingContext -> {
+
+					if (!isHeaderPassed(routingContext))
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+
+					if (!DynamicResource.availableDispositions.contains(resource)) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available query for: " + resource);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						String inputString = getHttpBody(routingContext, "SimpleEventQuery");
+						if (inputString == null)
+							return;
+						try {
+							soapQueryService.pollEventsOrVocabularies(routingContext.request(),
+									routingContext.response(), inputString, "EQ_disposition", resource);
+						} catch (ValidationException e) {
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									400);
+						}
+					} else {
+						soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
+
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+				.handler(routingContext -> {
+
+					checkJSONPollHeaders(routingContext);
+					if (routingContext.response().closed())
+						return;
+
+					routingContext.response().setChunked(true);
+
+					String resource = routingContext.pathParam(resourceType);
+
+					String fullResource = resource;
+					try {
+						fullResource = Disposition.getFullVocabularyName(resource);
+					} catch (Exception e) {
+
+					}
+					
+					if (!DynamicResource.availableDispositions.contains(fullResource)) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available query for: " + resource),
+								404);
+						return;
+					}
+
+					String nextPageToken = routingContext.request().getParam("nextPageToken");
+					if (nextPageToken == null) {
+						JsonObject query = getJsonBody(routingContext);
+						if (query == null) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] no valid simple event query (json)"),
+									406);
+							return;
+						}
+						query.put("EQ_disposition", new JsonArray().add(resource));
+						restQueryService.query(routingContext, query, "SimpleEventQuery");
+					} else {
+						UUID uuid = null;
+						try {
+							uuid = UUID.fromString(nextPageToken);
+						} catch (Exception e) {
+							HTTPUtil.sendQueryResults(routingContext.response(),
+									JSONMessageFactory.get406NotAcceptableException(
+											"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+													+ uuid),
+									406);
+							return;
+						}
+						restQueryService.getNextEventPage(routingContext, uuid);
+					}
+				});
+		EPCISServer.logger.info(
+				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
 	}
 
 	// ---------------------------------------------------------------------------------------
