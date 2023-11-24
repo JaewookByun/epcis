@@ -203,6 +203,10 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetEventsWithBizLocationHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithReadPointHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithDispositionHandler(router, soapQueryService, restQueryService);
+		
+		RESTQueryServiceHandler.registerGetVocabulariesWithEPCHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetVocabulariesWithBizLocationHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetVocabulariesWithReadPointHandler(router, soapQueryService, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {

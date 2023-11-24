@@ -83,7 +83,7 @@ public class SOAPQueryService {
 	}
 
 	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage,
-			String key, String value) throws ValidationException {
+			String... keyValues) throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
 		Document doc;
 		try {
@@ -99,7 +99,10 @@ public class SOAPQueryService {
 			try {
 				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
 				List<QueryParam> queryParamList = poll.getParams().getParam();
-				queryParamList.add(new QueryParam(key, getElementArrayOfString(message.getMessage(), value)));
+				for(int i = 0 ; i < keyValues.length - 1 ; i=i+2) {
+					queryParamList.add(new QueryParam(keyValues[i], getElementArrayOfString(message.getMessage(), keyValues[i+1])));	
+				}
+
 				poll(request, response, poll);
 			} catch (JAXBException e) {
 				throw new ValidationException(e.getMessage());
