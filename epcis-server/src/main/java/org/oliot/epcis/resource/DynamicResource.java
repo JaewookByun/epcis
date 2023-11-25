@@ -28,7 +28,10 @@ public class DynamicResource extends Thread {
 	public static ConcurrentHashSet<String> availableReadPointsInVocabularies = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableDispositions = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableEventTypes = new ConcurrentHashSet<String>();
-
+	
+	public static AtomicLong numOfCaptureJobs = new AtomicLong(0);
+	public static AtomicLong numOfSubscriptions = new AtomicLong(0);
+			
 	private Vertx vertx;
 	public static JsonObject counts = new JsonObject();
 	public static AtomicLong delay;
@@ -52,6 +55,8 @@ public class DynamicResource extends Thread {
 		newCounts.put("bizLocations_in_vocabularies", availableBusinessLocationsInVocabularies.size());
 		newCounts.put("readPoints_in_events", availableReadPointsInEvents.size());
 		newCounts.put("readPoints_in_vocabularies", availableReadPointsInVocabularies.size());
+		newCounts.put("captureJobs", numOfCaptureJobs.get());
+		newCounts.put("subscriptions", numOfSubscriptions.get());
 
 		synchronized (counts) {
 			counts = newCounts;
@@ -59,6 +64,7 @@ public class DynamicResource extends Thread {
 
 		return counts;
 	}
+	
 
 	@Override
 	public void run() {
@@ -249,6 +255,9 @@ public class DynamicResource extends Thread {
 					availableEPCsInVocabularies.clear();
 					availableEPCsInVocabularies.addAll(newVocEPCs);
 
+					numOfCaptureJobs.set(EPCISServer.monitoringTxCollection.countDocuments());
+					numOfSubscriptions.set(EPCISServer.monitoringSubscriptionCollection.countDocuments());
+					
 					EPCISServer.logger.debug("# currently found resources: " + getCounts());
 
 					long elapsed = System.currentTimeMillis() - pre;
