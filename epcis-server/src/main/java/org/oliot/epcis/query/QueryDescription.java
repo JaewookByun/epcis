@@ -643,6 +643,8 @@ public class QueryDescription {
 
 		for (QueryParam param : paramList) {
 			String name = param.getName();
+			if(name == null)
+				continue;
 			Object value = param.getValue();
 
 			// single param
@@ -711,6 +713,8 @@ public class QueryDescription {
 		List<Document> mongoQueryElements = new ArrayList<Document>();
 		for (QueryParam param : paramList) {
 			String name = param.getName();
+			if(name == null)
+				continue;
 			Object value = param.getValue();
 
 			// single param
