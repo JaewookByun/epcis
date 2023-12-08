@@ -125,6 +125,7 @@ public class BootstrapUtil {
 			mVocCollection = mDatabase.getCollection("MasterData", Document.class);
 			mEventCollection = mDatabase.getCollection("EventData", Document.class);
 			mSubscriptionCollection = mDatabase.getCollection("Subscription", Document.class);
+			mNamedQueryCollection = mDatabase.getCollection("NamedQuery", Document.class);
 
 			// set cappend collection for Capture Job (Tx)
 			int maxCaptureJobSize = configuration.getInteger("max_capture_job_size");

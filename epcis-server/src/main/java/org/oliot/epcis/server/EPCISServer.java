@@ -68,6 +68,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> mEventCollection;
 	public static MongoCollection<Document> mTxCollection;
 	public static MongoCollection<Document> mSubscriptionCollection;
+	public static MongoCollection<Document> mNamedQueryCollection;
 
 	public static Validator xmlValidator;
 	public static io.vertx.rxjava.json.schema.Validator jsonValidator;
@@ -155,7 +156,6 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerGetEPCQueriesHandler(router);
 		MetadataHandler.registerGetEventsWithEPC(router);
 		MetadataHandler.registerGetVocabulariesWithEPC(router);
-		
 
 		MetadataHandler.registerGetBizStepsHandler(router);
 		MetadataHandler.registerGetBizStepQueriesHandler(router);
@@ -174,6 +174,8 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerGetDispositionsHandler(router);
 		MetadataHandler.registerGetDispositionQueriesHandler(router);
 		MetadataHandler.registerGetEventsWithDisposition(router);
+
+		MetadataHandler.registerGetQueriesHandler(router);
 
 	}
 
@@ -196,16 +198,17 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetBizLocationQueries(router);
 		RESTQueryServiceHandler.registerGetReadPointQueries(router);
 		RESTQueryServiceHandler.registerGetDispositionQueries(router);
-		
+
 		RESTQueryServiceHandler.registerGetEventsWithEventTypeHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithEPCHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithBizStepHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithBizLocationHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithReadPointHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetEventsWithDispositionHandler(router, soapQueryService, restQueryService);
-		
+
 		RESTQueryServiceHandler.registerGetVocabulariesWithEPCHandler(router, soapQueryService, restQueryService);
-		RESTQueryServiceHandler.registerGetVocabulariesWithBizLocationHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerGetVocabulariesWithBizLocationHandler(router, soapQueryService,
+				restQueryService);
 		RESTQueryServiceHandler.registerGetVocabulariesWithReadPointHandler(router, soapQueryService, restQueryService);
 	}
 
@@ -228,7 +231,8 @@ public class EPCISServer extends AbstractVerticle {
 	private void registerSOAPQueryServiceHandler(Router router, EventBus eventBus) {
 		SOAPQueryServiceHandler.registerQueryHandler(router, soapQueryService);
 		// SOAPQueryServiceHandler.registerPollHandler(router, soapQueryService);
-		// SOAPQueryServiceHandler.registerPollWithEventTypeHandler(router, soapQueryService);
+		// SOAPQueryServiceHandler.registerPollWithEventTypeHandler(router,
+		// soapQueryService);
 		TriggerEngine.registerTransactionStartHandler(eventBus);
 	}
 

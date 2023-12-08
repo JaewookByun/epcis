@@ -1134,4 +1134,24 @@ public class MetadataHandler {
 				.info("[OPTIONS /epcis/readPoints/:readPoint/vocabularies (application/json)] - router added");
 	}
 
+	/**
+	 * Query the metadata of the EPCIS queries endpoint. EPCIS 2.0 supports a number
+	 * of custom headers to describe custom vocabularies and support multiple
+	 * versions of EPCIS and CBV. The `OPTIONS` method allows the client to discover
+	 * which vocabularies and EPCIS and CBV versions are used.
+	 */
+	public static void registerGetQueriesHandler(Router router) {
+
+		router.options("/epcis/queries").consumes("application/xml").handler(routingContext -> {
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/xml)] - router added");
+
+		router.options("/epcis/queries").consumes("application/json").handler(routingContext -> {
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/json)] - router added");
+
+	}
+
 }
