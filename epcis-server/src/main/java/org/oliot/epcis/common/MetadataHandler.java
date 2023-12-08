@@ -1154,4 +1154,58 @@ public class MetadataHandler {
 
 	}
 
+	/**
+	 * Query the metadata of the named queries endpoint. EPCIS 2.0 supports a number
+	 * of custom headers to describe custom vocabularies and support multiple
+	 * versions of EPCIS and CBV. The `OPTIONS` method allows the client to discover
+	 * which vocabularies and EPCIS and CBV versions are used.
+	 * 
+	 * @param router
+	 */
+	public static void registerNamedQueryHandler(Router router) {
+
+		router.options("/epcis/queries/:queryName").consumes("application/xml").handler(routingContext -> {
+			try {
+				SOAPMessage message = new SOAPMessage();
+				String queryName = routingContext.pathParam("queryName");
+				List<Document> jobs = new ArrayList<Document>();
+				EPCISServer.mNamedQueryCollection.find(new Document("_id", queryName)).into(jobs);
+				if (jobs.isEmpty()) {
+					EPCISException e = new EPCISException("There is no named query with id: " + queryName);
+					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
+					return;
+				}
+			} catch (Throwable throwable) {
+				SOAPMessage message = new SOAPMessage();
+				EPCISServer.logger.info(throwable.getMessage());
+				EPCISException e = new EPCISException(throwable.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+				return;
+			}
+
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET, POST, DELETE");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/xml)] - router added");
+
+		router.options("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+			try {
+				String queryName = routingContext.pathParam("queryName");
+				List<Document> queries = new ArrayList<Document>();
+				EPCISServer.mTxCollection.find(new Document("_id", queryName)).into(queries);
+				if (queries.isEmpty()) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get404NoSuchResourceException("There is no capture job with id: " + queryName), 404);
+					return;
+				}
+			} catch (Throwable throwable) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(throwable.getMessage()), 500);
+				return;
+			}
+
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, POST, DELETE");
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/json)] - router added");
+	}
+
 }
