@@ -65,6 +65,8 @@ public class QueryDescription {
 	private AtomicInteger perPage = new AtomicInteger(30);
 	private AtomicInteger skip = new AtomicInteger(0);
 
+	private Document rawQuery;
+
 	// for sort
 	private String orderBy = null;
 	private int orderDirection = -1;
@@ -76,6 +78,7 @@ public class QueryDescription {
 		mongoSort = doc.get("sort", Document.class);
 		eventCountLimit = doc.getInteger("eventCountLimit");
 		maxCount = doc.getInteger("maxCount");
+		rawQuery = doc.get("rawQuery", Document.class);
 	}
 
 	public QueryDescription(Subscribe subscribe, SOAPQueryUnmarshaller unmarshaller)
@@ -84,6 +87,7 @@ public class QueryDescription {
 		if (subscribe.getQueryName().equals("SimpleEventQuery")) {
 			List<QueryParam> queryParam = subscribe.getParams().getParam();
 			convertQueryParams(queryParam);
+			putRawQuery(queryParam);
 			makeSimpleEventQuery(queryParam);
 		} else if (subscribe.getQueryName().equals("SimpleMasterDataQuery")) {
 			SubscribeNotPermittedException e = new SubscribeNotPermittedException(
@@ -98,12 +102,40 @@ public class QueryDescription {
 		if (poll.getQueryName().equals("SimpleEventQuery")) {
 			List<QueryParam> queryParam = poll.getParams().getParam();
 			convertQueryParams(queryParam);
+			putRawQuery(queryParam);
 			makeSimpleEventQuery(queryParam);
 		} else if (poll.getQueryName().equals("SimpleMasterDataQuery")) {
 			List<QueryParam> queryParam = poll.getParams().getParam();
 			convertQueryParams(queryParam);
+			putRawQuery(queryParam);
 			makeSimpleMasterDataQuery(queryParam);
 		}
+	}
+
+	public void putRawQuery(List<QueryParam> params) throws QueryParameterException {
+		Document doc = new Document();
+		for (QueryParam qp : params) {
+			String key = qp.getName();
+			Object value = convertQueryParam(qp.getValue());
+			if (value instanceof List) {
+				doc.put(key, value);
+			} else if (value instanceof Long) {
+				doc.put(key, value);
+			} else if (value instanceof VoidHolder) {
+				doc.put(key, null);
+			} else if (value instanceof Double) {
+				doc.put(key, value);
+			} else if (value instanceof String) {
+				doc.put(key, value);
+			} else if (value instanceof Boolean) {
+				doc.put(key, value);
+			} else if (value instanceof Integer) {
+				doc.put(key, value);
+			} else {
+				// not happened
+			}
+		}
+		rawQuery = doc;
 	}
 
 	public QueryDescription(JsonObject query, String queryName)
@@ -114,6 +146,20 @@ public class QueryDescription {
 		} else {
 			makeSimpleMasterDataQuery(query);
 		}
+	}
+
+	public Document toMongoDocument() {
+		org.bson.Document doc = new org.bson.Document();
+
+		doc.put("queryName", queryName);
+		doc.put("query", mongoQuery);
+		doc.put("projection", mongoProjection);
+		doc.put("eventCountLimit", eventCountLimit);
+		doc.put("maxCount", maxCount);
+		doc.put("sort", mongoSort);
+		doc.put("rawQuery", rawQuery);
+
+		return doc;
 	}
 
 	public AtomicInteger getPerPage() {
@@ -210,6 +256,18 @@ public class QueryDescription {
 		}
 	}
 
+	private static List<String> fromArrayOfString(Object value, SOAPQueryUnmarshaller unmarshaller)
+			throws QueryParameterException {
+		try {
+			return unmarshaller.getArrayOfString((Element) value).getString();
+		} catch (Exception e1) {
+			QueryParameterException e = new QueryParameterException(
+					"the value of a parameter is of the wrong type or out of range: value should be"
+							+ ArrayOfString.class + "if given");
+			throw e;
+		}
+	}
+
 	private VoidHolder fromVoidHolder(Object value) throws QueryParameterException {
 		try {
 			return unmarshaller.getVoidHolder((Element) value);
@@ -221,11 +279,65 @@ public class QueryDescription {
 		}
 	}
 
-	private long fromDateTimeStamp(Object value) throws QueryParameterException {
+	private static VoidHolder fromVoidHolder(Object value, SOAPQueryUnmarshaller unmarshaller)
+			throws QueryParameterException {
+		try {
+			return unmarshaller.getVoidHolder((Element) value);
+		} catch (Exception e1) {
+			QueryParameterException e = new QueryParameterException(
+					"the value of a parameter is of the wrong type or out of range: value should be" + VoidHolder.class
+							+ "if given");
+			throw e;
+		}
+	}
+
+	private Long fromDateTimeStamp(Object value) throws QueryParameterException {
 		try {
 			return TimeUtil.toUnixEpoch(((Element) value).getTextContent());
 		} catch (ParseException | NullPointerException e) {
 			throw new QueryParameterException(e.getMessage());
+		}
+	}
+
+	private static Long fromDateTimeStamp(Object value, SOAPQueryUnmarshaller unmarshaller)
+			throws QueryParameterException {
+		try {
+			return TimeUtil.toUnixEpoch(((Element) value).getTextContent());
+		} catch (ParseException | NullPointerException e) {
+			throw new QueryParameterException(e.getMessage());
+		}
+	}
+
+	public static Object convertQueryParam(Object value) throws QueryParameterException {
+		if (value instanceof Element) {
+			// ArrayOfString
+			// DateTimeStamp
+			// VoidHolder
+			Element element = (Element) value;
+			String attribute = element.getAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "type");
+			if (attribute.contains(":ArrayOfString")) {
+				return fromArrayOfString(value, RESTQueryService.soapQueryUnmarshaller);
+			} else if (attribute.contains(":DateTimeStamp")) {
+				return fromDateTimeStamp(value, RESTQueryService.soapQueryUnmarshaller);
+			} else if (attribute.contains(":VoidHolder")) {
+				return fromVoidHolder(value, RESTQueryService.soapQueryUnmarshaller);
+			} else {
+				throw new QueryParameterException(
+						"value of SOAP Query Parameter should be one of ArrayOfString, DateTimeStamp, VoidHolder, Double, String, Boolean, Integer");
+			}
+		} else if (value instanceof Double) {
+			return value;
+		} else if (value instanceof String) {
+			return value;
+		} else if (value instanceof Boolean) {
+			return value;
+		} else if (value instanceof Integer) {
+			return value;
+		} else if (value instanceof List) {
+			return value;
+		}else {
+			throw new QueryParameterException(
+					"value of SOAP Query Parameter should be one of ArrayOfString, DateTimeStamp, VoidHolder, Double, String, Boolean, Integer");
 		}
 	}
 
@@ -546,7 +658,7 @@ public class QueryDescription {
 		}
 		return queryParams;
 	}
-	
+
 	private List<QueryParam> convertToVocabularyQueryParams(JsonObject query)
 			throws Exception, QueryParameterException, ValidationException {
 		List<QueryParam> queryParams = new ArrayList<QueryParam>();
@@ -643,7 +755,7 @@ public class QueryDescription {
 
 		for (QueryParam param : paramList) {
 			String name = param.getName();
-			if(name == null)
+			if (name == null)
 				continue;
 			Object value = param.getValue();
 
@@ -713,7 +825,7 @@ public class QueryDescription {
 		List<Document> mongoQueryElements = new ArrayList<Document>();
 		for (QueryParam param : paramList) {
 			String name = param.getName();
-			if(name == null)
+			if (name == null)
 				continue;
 			Object value = param.getValue();
 
@@ -1411,7 +1523,6 @@ public class QueryDescription {
 				continue;
 			}
 
-
 			if (name.startsWith("EXISTS_SENSORMETADATA_")) {
 				converter = StaticResource.simpleEventQueryFactory.getConverterMap().get("EXISTS_SENSORMETADATA_");
 				mongoQueryElements.add(converter.convert(name, value));
@@ -1464,9 +1575,10 @@ public class QueryDescription {
 
 		// convert values
 		List<QueryParam> paramList = convertToEventQueryParams(query);
+		putRawQuery(paramList);
 		makeSimpleEventQuery(paramList);
 	}
-	
+
 	void makeSimpleMasterDataQuery(JsonObject query)
 			throws Exception, QueryParameterException, ImplementationException, ValidationException {
 		queryName = "SimpleMasterDataQuery";
@@ -1474,6 +1586,7 @@ public class QueryDescription {
 
 		// convert values
 		List<QueryParam> paramList = convertToVocabularyQueryParams(query);
+		putRawQuery(paramList);
 		makeSimpleMasterDataQuery(paramList);
 	}
 }

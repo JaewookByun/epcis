@@ -1143,12 +1143,12 @@ public class MetadataHandler {
 	public static void registerGetQueriesHandler(Router router) {
 
 		router.options("/epcis/queries").consumes("application/xml").handler(routingContext -> {
-			send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET, POST");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/xml)] - router added");
 
 		router.options("/epcis/queries").consumes("application/json").handler(routingContext -> {
-			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, POST");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/json)] - router added");
 
@@ -1183,7 +1183,7 @@ public class MetadataHandler {
 				return;
 			}
 
-			send204XMLResponse(routingContext.response(), "OPTIONS, GET, POST, DELETE");
+			send204XMLResponse(routingContext.response(), "OPTIONS, GET, DELETE");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/xml)] - router added");
 
@@ -1203,7 +1203,7 @@ public class MetadataHandler {
 				return;
 			}
 
-			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, POST, DELETE");
+			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, DELETE");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/json)] - router added");
 	}

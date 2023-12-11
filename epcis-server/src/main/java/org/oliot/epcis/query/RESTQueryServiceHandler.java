@@ -24,6 +24,7 @@ import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
+import org.oliot.epcis.model.Poll;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.model.ValidationException;
@@ -38,6 +39,7 @@ import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.EventTypesMessage;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
+import org.oliot.epcis.util.XMLUtil;
 import org.oliot.epcis.validation.HeaderValidator;
 
 import io.vertx.core.MultiMap;
@@ -48,6 +50,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RequestBody;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.xml.bind.DataBindingException;
+import jakarta.xml.bind.JAXB;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -125,6 +129,15 @@ public class RESTQueryServiceHandler {
 		return true;
 	}
 
+	public static boolean isHeaderPassed2(RoutingContext routingContext) {
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-EPCIS-Version", false))
+			return false;
+
+		if (!HeaderValidator.isEqualHeaderSOAP(routingContext, "GS1-CBV-Version", false))
+			return false;
+		return true;
+	}
+
 	public static String getHttpBody(RoutingContext routingContext, String queryName) {
 		RequestBody body = routingContext.body();
 		String inputString = null;
@@ -173,6 +186,38 @@ public class RESTQueryServiceHandler {
 			}
 		}
 		return query;
+	}
+
+	public static Poll getPoll(RoutingContext routingContext)
+			throws ValidationException, ImplementationException {
+		RequestBody body = routingContext.body();
+		String inputString = null;
+		if (body.isEmpty()) {
+			MultiMap mm = routingContext.queryParams();
+			Iterator<Entry<String, String>> iter = mm.iterator();
+			while (iter.hasNext()) {
+				Entry<String, String> entry = iter.next();
+				String k = entry.getKey();
+				if (k.contains("Poll"))
+					inputString = k;
+			}
+			if (inputString == null) {
+				ValidationException e = new ValidationException("[406ValidationException] Empty Request Body");
+				throw e;
+			}
+		} else {
+			inputString = body.asString();
+		}
+
+		Poll poll;
+		try {
+			poll = JAXB.unmarshal(XMLUtil.getXMLDocumentInputStream(inputString.getBytes()), Poll.class);
+		} catch (DataBindingException e) {
+			ValidationException e1 = new ValidationException("[406ValidationException] " + e.getMessage());
+			throw e1;
+		}
+
+		return poll;
 	}
 
 	public static void registerGetEventsHandler(Router router, SOAPQueryService soapQueryService,
@@ -1491,8 +1536,6 @@ public class RESTQueryServiceHandler {
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
 	}
 
-	
-
 	public static void registerGetEventsWithBizStepHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -1890,7 +1933,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/json)] - router added");
 	}
-	
+
 	public static void registerGetVocabulariesWithEPCHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -2003,7 +2046,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/json)] - router added");
 	}
-	
+
 	public static void registerGetVocabulariesWithBizLocationHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -2116,7 +2159,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/json)] - router added");
 	}
-	
+
 	public static void registerGetVocabulariesWithReadPointHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -2229,7 +2272,86 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/json)] - router added");
 	}
-	
+
+	/**
+	 * Creates a named EPCIS events query. Creating a named query creates a view on
+	 * the events in the repository, accessible through its events resource. To
+	 * obtain the named query results, the client can use the URL in the `Location`
+	 * header. The client can also use this URL to start a query subscription
+	 * immediately after creating the query.
+	 * 
+	 * XML: Poll
+	 * 
+	 * JSON: CreateQuery
+	 * 
+	 * { "name": "UniqueQueryName", "query": { "eventType": [ "ObjectEvent" ],
+	 * "EQ_bizStep": [ "shipping", "receiving" ] } }
+	 * 
+	 * 
+	 */
+	public static void registerPostQueryHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.post("/epcis/queries").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed2(routingContext))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			Poll poll = null;
+			try {
+				poll = getPoll(routingContext);
+			} catch (ValidationException e) {
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				return;
+			} catch (ImplementationException e) {
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
+				return;
+			}
+
+			restQueryService.postQuery(routingContext, poll);
+		});
+		EPCISServer.logger.info("[POST /queries (application/xml)] - router added");
+
+		router.post("/epcis/queries").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				JsonObject query = getJsonBody(routingContext);
+				if (query == null) {
+					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
+							406);
+					return;
+				}
+				restQueryService.query(routingContext, query, "SimpleEventQuery");
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextEventPage(routingContext, uuid);
+			}
+
+		});
+		EPCISServer.logger.info("[POST /epcis/queries (application/json)] - router added");
+	}
 
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {

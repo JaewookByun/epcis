@@ -42,9 +42,9 @@ public class QueryParams {
 	protected List<QueryParam> param;
 
 	public QueryParams() {
-		
+
 	}
-	
+
 	public QueryParams(String key, ArrayOfString value) {
 		param = new ArrayList<QueryParam>();
 		param.add(new QueryParam(key, value));

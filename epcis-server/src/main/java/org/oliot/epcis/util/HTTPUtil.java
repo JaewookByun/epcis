@@ -57,6 +57,13 @@ public class HTTPUtil {
 				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).end(message.toString());
 	}
 
+	public static void sendQueryEmptyResults(HttpServerResponse serverResponse, int statusCode) {
+		serverResponse.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)
+				.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+				.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
+				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).end();
+	}
+
 	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, SOAPMessage message,
 			Object result, Class<?> resultType) {
 		message.putResult(result, resultType);

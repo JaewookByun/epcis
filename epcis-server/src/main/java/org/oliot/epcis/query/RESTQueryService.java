@@ -115,6 +115,70 @@ public class RESTQueryService {
 		}
 	}
 
+	public void postQuery(RoutingContext routingContext, Poll poll) {
+
+		QueryDescription qd;
+		try {
+			qd = new QueryDescription(poll, RESTQueryService.soapQueryUnmarshaller);
+
+			List<String> givenQueryNames = routingContext.queryParam("queryName");
+
+			String id = null;
+			if (givenQueryNames == null || givenQueryNames.isEmpty()) {
+				UUID uuid;
+
+				while (true) {
+					uuid = UUID.randomUUID();
+					try {
+						org.bson.Document first = EPCISServer.mNamedQueryCollection
+								.find(new org.bson.Document("id", uuid.toString())).first();
+						if (first == null) {
+							id = uuid.toString();
+							break;
+						}
+					} catch (Exception e) {
+						EPCISServer.logger.error(e.getMessage());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
+						return;
+					}
+				}
+			} else {
+				try {
+					String givenQueryName = givenQueryNames.get(0);
+					org.bson.Document first = EPCISServer.mNamedQueryCollection
+							.find(new org.bson.Document("id", givenQueryName)).first();
+					if (first != null) {
+						EPCISException e = new EPCISException("[409] Existing named query with id: " + givenQueryName);
+						EPCISServer.logger.error("[409] Existing query name");
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 409);
+						return;
+					} else {
+						id = givenQueryName;
+					}
+				} catch (Exception e) {
+					EPCISServer.logger.error(e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
+					return;
+				}
+			}
+
+			EPCISServer.mNamedQueryCollection.insertOne(qd.toMongoDocument().append("id", id));
+			EPCISServer.logger.error("Named query is inserted with id: " + id);
+
+			HTTPUtil.sendQueryEmptyResults(routingContext.response().putHeader("location", id), 201);
+
+		} catch (QueryParameterException e) {
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+			return;
+		} catch (ImplementationException e) {
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
+			return;
+		}
+
+	}
+
 	public void pollEvents(RoutingContext routingContext, JsonObject query)
 			throws QueryParameterException, ImplementationException, Exception, ValidationException {
 		// get perPage
