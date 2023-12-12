@@ -15,6 +15,9 @@ public class JSONMessageFactory {
 	private static JsonObject exception406NotAcceptableException = new JsonObject()
 			.put("type", "epcisException:NotAcceptableException").put("status", 406);
 	
+	private static JsonObject exception409ResourceAlreadyExistsException = new JsonObject()
+			.put("type", "epcisException:ResourceAlreadyExistsException").put("status", 409);
+	
 	private static JsonObject exception413QueryTooLargeException = new JsonObject()
 			.put("type", "epcisException:QueryTooLargeException").put("status", 413);
 
@@ -35,6 +38,12 @@ public class JSONMessageFactory {
 
 	public static JsonObject get404NoSuchResourceException(String title) {
 		JsonObject cloned = exception404NoSuchResourceException.copy();
+		cloned.put("title", title);
+		return cloned;
+	}
+	
+	public static JsonObject get409ResourceAlreadyExistsException(String title) {
+		JsonObject cloned = exception409ResourceAlreadyExistsException.copy();
 		cloned.put("title", title);
 		return cloned;
 	}

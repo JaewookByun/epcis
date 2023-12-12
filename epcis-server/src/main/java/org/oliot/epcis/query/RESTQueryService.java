@@ -121,27 +121,14 @@ public class RESTQueryService {
 		try {
 			qd = new QueryDescription(poll, RESTQueryService.soapQueryUnmarshaller);
 
-			List<String> givenQueryNames = routingContext.queryParam("queryName");
+			List<String> givenQueryNames = routingContext.queryParam("name");
 
 			String id = null;
 			if (givenQueryNames == null || givenQueryNames.isEmpty()) {
-				UUID uuid;
-
-				while (true) {
-					uuid = UUID.randomUUID();
-					try {
-						org.bson.Document first = EPCISServer.mNamedQueryCollection
-								.find(new org.bson.Document("id", uuid.toString())).first();
-						if (first == null) {
-							id = uuid.toString();
-							break;
-						}
-					} catch (Exception e) {
-						EPCISServer.logger.error(e.getMessage());
-						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
-						return;
-					}
-				}
+				EPCISException e = new EPCISException("[406NotAcceptable] the name of given named query is empty");
+				EPCISServer.logger.error("[406NotAcceptable] the name of given named query is empty");
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				return;
 			} else {
 				try {
 					String givenQueryName = givenQueryNames.get(0);
@@ -174,6 +161,65 @@ public class RESTQueryService {
 		} catch (ImplementationException e) {
 			EPCISServer.logger.error(e.getReason());
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
+			return;
+		}
+
+	}
+
+	public void postQuery(RoutingContext routingContext, JsonObject createQuery) {
+
+		QueryDescription qd;
+		try {
+			JsonObject q = createQuery.getJsonObject("query");
+			qd = new QueryDescription(q);
+
+			String id = createQuery.getString("name", null);
+			if (id == null) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(
+						"[406NotAcceptable] the name of given named query is empty"), 406);
+				return;
+			} else {
+				try {
+
+					org.bson.Document first = EPCISServer.mNamedQueryCollection.find(new org.bson.Document("id", id))
+							.first();
+					if (first != null) {
+						HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+								.get409ResourceAlreadyExistsException("[409] Existing named query with id: " + id),
+								406);
+						return;
+					}
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+					return;
+				}
+			}
+
+			EPCISServer.mNamedQueryCollection.insertOne(qd.toMongoDocument().append("id", id));
+			EPCISServer.logger.error("Named query is inserted with id: " + id);
+
+			HTTPUtil.sendQueryEmptyResults(routingContext.response().putHeader("location", id), 201);
+
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException("[406NotAcceptable] " + e), 406);
+			return;
+		} catch (ImplementationException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException("[500ImplementationException] " + e), 500);
+			return;
+		} catch (ValidationException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException("[406NotAcceptable] " + e), 406);
+			return;
+		} catch (NullPointerException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException("[406NotAcceptable] " + e), 406);
+			return;
+		} catch (Exception e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException("[500ImplementationException] " + e), 500);
 			return;
 		}
 

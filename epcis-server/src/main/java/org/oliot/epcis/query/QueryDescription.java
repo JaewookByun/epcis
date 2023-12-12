@@ -148,6 +148,24 @@ public class QueryDescription {
 		}
 	}
 
+	public QueryDescription(JsonObject query)
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
+
+		mongoSort = new Document();
+
+		// convert values
+		List<QueryParam> paramList = convertToEventQueryParams(query);
+		putRawQuery(paramList);
+
+		checkQueryType();
+
+		if (queryName.equals("SimpleEventQuery")) {
+			makeSimpleEventQuery(paramList);
+		} else {
+			makeSimpleMasterDataQuery(query);
+		}
+	}
+
 	public Document toMongoDocument() {
 		org.bson.Document doc = new org.bson.Document();
 
@@ -211,6 +229,19 @@ public class QueryDescription {
 			return (String) value;
 		} catch (ClassCastException e) {
 			throw new QueryParameterException(e.getMessage());
+		}
+	}
+
+	private void checkQueryType() {
+		queryName = "SimpleEventQuery";
+		for (String key : rawQuery.keySet()) {
+			if (key.equals("attributeNames") || key.startsWith("EQATTR_") || key.equals("EQ_name")
+					|| key.equals("HASATTR") || key.equals("includeAttributes") || key.equals("includeChildren")
+					|| key.equals("maxElementCount") || key.equals("vocabularyName") || key.equals("WD_name")) {
+				queryName = "SimpleMasterDataQuery";
+				return;
+			}
+
 		}
 	}
 
@@ -335,7 +366,7 @@ public class QueryDescription {
 			return value;
 		} else if (value instanceof List) {
 			return value;
-		}else {
+		} else {
 			throw new QueryParameterException(
 					"value of SOAP Query Parameter should be one of ArrayOfString, DateTimeStamp, VoidHolder, Double, String, Boolean, Integer");
 		}

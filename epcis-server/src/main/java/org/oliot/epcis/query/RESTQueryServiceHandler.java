@@ -138,6 +138,14 @@ public class RESTQueryServiceHandler {
 		return true;
 	}
 
+	public static void checkJSONPollHeaders2(RoutingContext routingContext) {
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-EPCIS-Version", false))
+			return;
+
+		if (!HeaderValidator.isEqualHeaderREST(routingContext, "GS1-CBV-Version", false))
+			return;
+	}
+
 	public static String getHttpBody(RoutingContext routingContext, String queryName) {
 		RequestBody body = routingContext.body();
 		String inputString = null;
@@ -188,8 +196,7 @@ public class RESTQueryServiceHandler {
 		return query;
 	}
 
-	public static Poll getPoll(RoutingContext routingContext)
-			throws ValidationException, ImplementationException {
+	public static Poll getPoll(RoutingContext routingContext) throws ValidationException, ImplementationException {
 		RequestBody body = routingContext.body();
 		String inputString = null;
 		if (body.isEmpty()) {
@@ -218,6 +225,37 @@ public class RESTQueryServiceHandler {
 		}
 
 		return poll;
+	}
+
+	public static JsonObject getCreateQuery(RoutingContext routingContext) throws ValidationException {
+		RequestBody body = routingContext.body();
+		String inputString = null;
+		if (body.isEmpty()) {
+			MultiMap mm = routingContext.queryParams();
+			Iterator<Entry<String, String>> iter = mm.iterator();
+			while (iter.hasNext()) {
+				Entry<String, String> entry = iter.next();
+				String k = entry.getKey();
+				if (k.contains("name") && k.contains("query"))
+					inputString = k;
+			}
+			if (inputString == null) {
+				ValidationException e = new ValidationException("[406ValidationException] Empty Request Body");
+				throw e;
+			}
+		} else {
+			inputString = body.asString();
+		}
+
+		JsonObject createQuery = null;
+		try {
+			createQuery = new JsonObject(inputString);
+		} catch (Exception e) {
+			ValidationException e1 = new ValidationException("[406ValidationException] " + e.getMessage());
+			throw e1;
+		}
+
+		return createQuery;
 	}
 
 	public static void registerGetEventsHandler(Router router, SOAPQueryService soapQueryService,
@@ -2297,8 +2335,6 @@ public class RESTQueryServiceHandler {
 			if (!isHeaderPassed2(routingContext))
 				return;
 
-			routingContext.response().setChunked(true);
-
 			Poll poll = null;
 			try {
 				poll = getPoll(routingContext);
@@ -2318,36 +2354,20 @@ public class RESTQueryServiceHandler {
 
 		router.post("/epcis/queries").consumes("application/json").handler(routingContext -> {
 
-			checkJSONPollHeaders(routingContext);
+			checkJSONPollHeaders2(routingContext);
 			if (routingContext.response().closed())
 				return;
 
-			routingContext.response().setChunked(true);
-
-			String nextPageToken = routingContext.request().getParam("nextPageToken");
-			if (nextPageToken == null) {
-				JsonObject query = getJsonBody(routingContext);
-				if (query == null) {
-					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-							.get406NotAcceptableException("[406NotAcceptable] no valid simple event query (json)"),
-							406);
-					return;
-				}
-				restQueryService.query(routingContext, query, "SimpleEventQuery");
-			} else {
-				UUID uuid = null;
-				try {
-					uuid = UUID.fromString(nextPageToken);
-				} catch (Exception e) {
-					HTTPUtil.sendQueryResults(routingContext.response(),
-							JSONMessageFactory.get406NotAcceptableException(
-									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
-											+ uuid),
-							406);
-					return;
-				}
-				restQueryService.getNextEventPage(routingContext, uuid);
+			JsonObject createQuery = null;
+			try {
+				createQuery = getCreateQuery(routingContext);
+			} catch (ValidationException e) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
+				return;
 			}
+
+			restQueryService.postQuery(routingContext, createQuery);
 
 		});
 		EPCISServer.logger.info("[POST /epcis/queries (application/json)] - router added");
