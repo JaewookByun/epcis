@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.bson.Document;
 import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
@@ -164,6 +167,76 @@ public class QueryDescription {
 		} else {
 			makeSimpleMasterDataQuery(query);
 		}
+	}
+
+	private static org.w3c.dom.Element getParamElement(org.w3c.dom.Document doc, String k, Object v) {
+		Element param = doc.createElement("param");
+		Element name = doc.createElement("name");
+		Element value = doc.createElement("value");
+		param.appendChild(name);
+		param.appendChild(value);
+
+		if (v == null) {
+			value.setAttribute("xsi:type", "query:VoidHolder");
+		} else if (v instanceof String) {
+			value.setAttribute("xsi:type", "xsd:string");
+			value.setTextContent(v.toString());
+		} else if (v instanceof Integer) {
+			value.setAttribute("xsi:type", "xsd:int");
+			value.setTextContent(v.toString());
+		} else if (v instanceof Boolean) {
+			value.setAttribute("xsi:type", "xsd:boolean");
+			value.setTextContent(v.toString());
+		} else if (v instanceof Double) {
+			value.setAttribute("xsi:type", "xsd:double");
+			value.setTextContent(v.toString());
+		} else if (v instanceof List) {
+			value.setAttribute("xsi:type", "query:ArrayOfString");
+			for (Object vv : (List<?>) v) {
+				Element string = doc.createElement("string");
+				string.setTextContent(vv.toString());
+				value.appendChild(string);
+			}
+		} else if (v instanceof Long) {
+			value.setAttribute("xsi:type", "query:DateTimeStamp");
+			value.setTextContent(TimeUtil.getDateTimeStamp((Long) v));
+		} else {
+			// not happen
+		}
+		return param;
+	}
+
+	public static org.w3c.dom.Document toXMLCreateQuery(Document createQueryDocument) {
+
+		try {
+			org.w3c.dom.Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			Element createQuery = doc.createElement("CreateQuery");
+			createQuery.setAttribute("xmlns:query", "urn:epcglobal:epcis-query:xsd:2");
+			createQuery.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+			createQuery.setAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
+			doc.appendChild(createQuery);
+
+			Element name = doc.createElement("name");
+			name.setTextContent(createQueryDocument.getString("id"));
+			createQuery.appendChild(name);
+			Element queryName = doc.createElement("queryName");
+			queryName.setTextContent(createQueryDocument.getString("queryName"));
+			createQuery.appendChild(queryName);
+			Element params = doc.createElement("params");
+			createQuery.appendChild(params);
+
+			Document rawQuery = createQueryDocument.get("rawQuery", Document.class);
+			for (String key : rawQuery.keySet()) {
+				Object value = rawQuery.get(key);
+				params.appendChild(getParamElement(doc, key, value));
+			}
+
+			return doc;
+		} catch (ParserConfigurationException e) {
+			// Not happen
+			return null;
+		}
+
 	}
 
 	public Document toMongoDocument() {

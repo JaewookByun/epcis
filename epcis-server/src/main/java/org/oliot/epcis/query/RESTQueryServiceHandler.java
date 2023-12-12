@@ -2373,6 +2373,54 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[POST /epcis/queries (application/json)] - router added");
 	}
 
+	/**
+	 * Returns the query definition. Queries are like views that are created using
+	 * the <a
+	 * href=\"https://ref.gs1.org/standards/epcis/2.0.0/query-schema.json\">EPCIS
+	 * Query Language</a>. Each query object\nconsists of a query name and the query
+	 * definition.An EPCIS 2.0 query body using the REST interface SHALL be
+	 * serialised as a JSON object. The value of the query key within that JSON
+	 * object SHALL validate against the schema defined at:
+	 * https://ref.gs1.org/standards/epcis/2.0.0/query-schema.json.
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
+	public static void registerGetQueryHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/queries/:queryName").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			String queryName = routingContext.pathParam("queryName");
+			restQueryService.getQuery(routingContext, queryName);
+		});
+		EPCISServer.logger.info("[POST /queries (application/xml)] - router added");
+
+		router.post("/epcis/queries").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders2(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			JsonObject createQuery = null;
+			try {
+				createQuery = getCreateQuery(routingContext);
+			} catch (ValidationException e) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
+				return;
+			}
+
+			restQueryService.postQuery(routingContext, createQuery);
+
+		});
+		EPCISServer.logger.info("[POST /epcis/queries (application/json)] - router added");
+	}
+
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();

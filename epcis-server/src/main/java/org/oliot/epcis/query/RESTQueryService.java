@@ -3,6 +3,7 @@ package org.oliot.epcis.query;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -113,6 +114,27 @@ public class RESTQueryService {
 									+ e.getMessage()),
 					500);
 		}
+	}
+
+	public void getQuery(RoutingContext routingContext, String queryName) {
+
+		org.bson.Document namedQueryDocument = EPCISServer.mNamedQueryCollection
+				.find(new org.bson.Document().append("id", queryName)).first();
+
+		if (namedQueryDocument == null || namedQueryDocument.isEmpty()) {
+			EPCISException e = new EPCISException("[404ResourceNotFoundException] " + queryName);
+			EPCISServer.logger.error("[404ResourceNotFoundException] " + queryName);
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			return;
+		}
+
+		// Document{{_id=65787668da07ee62aa2007fa, queryName=SimpleEventQuery,
+		// query=Document{{}}, projection=null, eventCountLimit=2, maxCount=null,
+		// sort=Document{{eventTime=-1}}, rawQuery=Document{{orderBy=eventTime,
+		// orderDirection=DESC, eventCountLimit=2}}, id=latestEvent}}
+		
+		Document result = QueryDescription.toXMLCreateQuery(namedQueryDocument);
+
 	}
 
 	public void postQuery(RoutingContext routingContext, Poll poll) {
