@@ -2453,27 +2453,71 @@ public class RESTQueryServiceHandler {
 	 */
 	public static void registerGetQueriesHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
-
 		router.get("/epcis/queries").consumes("application/xml").handler(routingContext -> {
 
-			if (!isHeaderPassed(routingContext))
-				return;
-
+			checkXMLPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
 
-			restQueryService.getXMLQueries(routingContext);
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+				List<org.bson.Document> namedQueryDocuments = new ArrayList<org.bson.Document>();
+				EPCISServer.mNamedQueryCollection.find().sort(new org.bson.Document().append("_id", -1))
+						.into(namedQueryDocuments);
+
+				restQueryService.getXMLQueries(routingContext.request(), routingContext.response(),
+						EPCISServer.namedQueriesPageMap, namedQueryDocuments);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextXMLQueries(routingContext.request(), routingContext.response(),
+						EPCISServer.namedQueriesPageMap, uuid);
+			}
+
 		});
+
 		EPCISServer.logger.info("[GET /queries (application/xml)] - router added");
 
 		router.get("/epcis/queries").consumes("application/json").handler(routingContext -> {
-
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
-			restQueryService.getJSONQueries(routingContext);
 
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			if (nextPageToken == null) {
+
+				List<org.bson.Document> namedQueryDocuments = new ArrayList<org.bson.Document>();
+				EPCISServer.mNamedQueryCollection.find().sort(new org.bson.Document().append("_id", -1))
+						.into(namedQueryDocuments);
+
+				restQueryService.getJSONQueries(routingContext.request(), routingContext.response(),
+						EPCISServer.namedQueriesPageMap, namedQueryDocuments);
+			} else {
+				UUID uuid = null;
+				try {
+					uuid = UUID.fromString(nextPageToken);
+				} catch (Exception e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+											+ uuid),
+							406);
+					return;
+				}
+				restQueryService.getNextJSONQueries(routingContext.request(), routingContext.response(),
+						EPCISServer.namedQueriesPageMap, uuid);
+			}
 		});
+
 		EPCISServer.logger.info("[GET /queries (application/json)] - router added");
 	}
 

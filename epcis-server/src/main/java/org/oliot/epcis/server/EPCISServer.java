@@ -24,6 +24,7 @@ import org.oliot.epcis.common.MetadataHandler;
 import org.oliot.epcis.converter.data.bson_to_json.EPCISDocumentConverter;
 import org.oliot.epcis.converter.unit.UnitConverter;
 import org.oliot.epcis.pagination.DataPage;
+import org.oliot.epcis.pagination.NamedQueryPage;
 import org.oliot.epcis.pagination.ResourcePage;
 import org.oliot.epcis.query.RESTQueryService;
 import org.oliot.epcis.query.RESTQueryServiceHandler;
@@ -86,6 +87,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static ConcurrentHashMap<UUID, ResourcePage> bizLocationsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
 	public static ConcurrentHashMap<UUID, ResourcePage> readPointsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
 	public static ConcurrentHashMap<UUID, ResourcePage> dispositionsPageMap = new ConcurrentHashMap<UUID, ResourcePage>();
+	public static ConcurrentHashMap<UUID, NamedQueryPage> namedQueriesPageMap = new ConcurrentHashMap<UUID, NamedQueryPage>();
 
 	final XMLCaptureService xmlCaptureCoreService = new XMLCaptureService();
 	final SOAPQueryService soapQueryService = new SOAPQueryService();

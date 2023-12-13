@@ -17,11 +17,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.oliot.epcis.capture.common.Transaction;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.model.*;
 import org.oliot.epcis.pagination.DataPage;
 import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
+import org.oliot.epcis.pagination.NamedQueryPage;
+import org.oliot.epcis.pagination.NamedQueryPageExpiryTimerTask;
 import org.oliot.epcis.pagination.ResourcePage;
 import org.oliot.epcis.pagination.ResourcePageExpiryTimerTask;
 import org.oliot.epcis.resource.StaticResource;
@@ -41,6 +44,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.DeleteResult;
@@ -53,6 +57,8 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -145,29 +151,215 @@ public class RESTQueryService {
 
 	}
 
-	public void getXMLQueries(RoutingContext routingContext) {
-		MongoCursor<org.bson.Document> cursor = EPCISServer.mNamedQueryCollection.find().iterator();
+	public void getXMLQueries(HttpServerRequest serverRequest, HttpServerResponse serverResponse,
+			ConcurrentHashMap<UUID, NamedQueryPage> pages, List<org.bson.Document> namedQueryDocuments) {
 
-		org.w3c.dom.Document doc;
+		// get perPage
+		int perPage;
+
 		try {
-			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-			Element createQueries = doc.createElement("CreateQueries");
-			doc.appendChild(createQueries);
-			while (cursor.hasNext()) {
-				org.bson.Document namedQueryDocument = cursor.next();
-				Element createQuery = QueryDescription.getXMLCreateQuery(doc, namedQueryDocument);
-				createQueries.appendChild(createQuery);
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 400);
+			return;
+		}
+
+		NamedQueryPage message = new NamedQueryPage(namedQueryDocuments);
+		String result;
+		try {
+			result = message.getXMLNextPage(perPage);
+		} catch (ParserConfigurationException e) {
+			EPCISException e1 = new EPCISException("[500ImplementationException] " + e.getMessage());
+			EPCISServer.logger.error("[500ImplementationException] " + e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e1, e1.getClass(), 500);
+			return;
+		}
+		if (!message.isClosed()) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!pages.containsKey(uuid))
+					break;
 			}
 
-			HTTPUtil.sendQueryResults(routingContext.response(), XMLUtil.toString(doc, false), 200, "application/xml");
+			Timer timer = new Timer();
+			message.setTimer(timer);
+			timer.schedule(new NamedQueryPageExpiryTimerTask("GET /queries", pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			pages.put(uuid, message);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " added. # remaining pages - " + pages.size());
 
-		} catch (ParserConfigurationException | TransformerException e) {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(
-							"[500ImplementationException] The server cannot return the response as requested: "
-									+ e.getMessage()),
-					500);
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
+		}
+	}
+
+	public void getNextXMLQueries(HttpServerRequest serverRequest, HttpServerResponse serverResponse,
+			ConcurrentHashMap<UUID, NamedQueryPage> pages, UUID uuid) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 400);
 			return;
+		}
+
+		pages.get(uuid);
+
+		NamedQueryPage page = null;
+		if (!pages.containsKey(uuid)) {
+			EPCISException e = new EPCISException(
+					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e, e.getClass(), 406);
+			return;
+		} else {
+			page = pages.get(uuid);
+		}
+
+		String result = null;
+		try {
+			result = page.getXMLNextPage(perPage);
+		} catch (ParserConfigurationException e) {
+			EPCISException e1 = new EPCISException("[500ImplementationException] " + e.getMessage());
+			EPCISServer.logger.error("[500ImplementationException] " + e.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), e1, e1.getClass(), 500);
+			return;
+		}
+
+		if (!page.isClosed()) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(new NamedQueryPageExpiryTimerTask("GET /queries", pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
+
+		} else {
+			pages.remove(uuid);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " expired. # remaining pages - " + pages.size());
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/xml");
+		}
+	}
+
+	public void getJSONQueries(HttpServerRequest serverRequest, HttpServerResponse serverResponse,
+			ConcurrentHashMap<UUID, NamedQueryPage> pages, List<org.bson.Document> namedQueryDocuments) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+			return;
+		}
+
+		NamedQueryPage message = new NamedQueryPage(namedQueryDocuments);
+		String result = message.getJSONNextPage(perPage);
+		if (!message.isClosed()) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!pages.containsKey(uuid))
+					break;
+			}
+
+			Timer timer = new Timer();
+			message.setTimer(timer);
+			timer.schedule(new NamedQueryPageExpiryTimerTask("GET /queries", pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			pages.put(uuid, message);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " added. # remaining pages - " + pages.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		}
+	}
+
+	public void getNextJSONQueries(HttpServerRequest serverRequest, HttpServerResponse serverResponse,
+			ConcurrentHashMap<UUID, NamedQueryPage> pages, UUID uuid) {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+			return;
+		}
+
+		pages.get(uuid);
+
+		NamedQueryPage page = null;
+		if (!pages.containsKey(uuid)) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The given next page token does not exist or be no longer available."),
+					406);
+			EPCISServer.logger
+					.error("[406NotAcceptable] The given next page token does not exist or be no longer available.");
+			return;
+		} else {
+			page = pages.get(uuid);
+		}
+
+		String result = page.getJSONNextPage(perPage);
+
+		if (!page.isClosed()) {
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(new NamedQueryPageExpiryTimerTask("GET /queries", pages, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+
+		} else {
+			pages.remove(uuid);
+			EPCISServer.logger.debug("[GET /queries] page - " + uuid + " expired. # remaining pages - " + pages.size());
+			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
 		}
 	}
 
