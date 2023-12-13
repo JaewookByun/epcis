@@ -42,6 +42,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 
 import io.vertx.core.http.HttpServerRequest;
@@ -143,19 +144,50 @@ public class RESTQueryService {
 
 	}
 
+	public void deleteXMLQuery(RoutingContext routingContext, String queryName) {
+
+		DeleteResult dr = EPCISServer.mNamedQueryCollection.deleteOne(new org.bson.Document().append("id", queryName));
+
+		long cnt = dr.getDeletedCount();
+		if (cnt == 0) {
+			EPCISException e = new EPCISException("[404ResourceNotFoundException] " + queryName);
+			EPCISServer.logger.error("[404ResourceNotFoundException] " + queryName);
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+			return;
+		} else {
+			routingContext.response().putHeader("Content-Type", "application/xml").setStatusCode(204).end();
+			return;
+		}
+	}
+
 	public void getJSONQuery(RoutingContext routingContext, String queryName) {
 
 		org.bson.Document namedQueryDocument = EPCISServer.mNamedQueryCollection
 				.find(new org.bson.Document().append("id", queryName)).first();
 
 		if (namedQueryDocument == null || namedQueryDocument.isEmpty()) {
-			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-					.get409ResourceAlreadyExistsException("[404] Named Query Not Found: " + queryName), 404);
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get404NoSuchResourceException("[404] Named Query Not Found: " + queryName), 404);
 			return;
 		}
 
 		JsonObject result = QueryDescription.toJSONCreateQuery(namedQueryDocument);
 		HTTPUtil.sendQueryResults(routingContext.response(), result.toString(), 200, "application/json");
+	}
+
+	public void deleteJSONQuery(RoutingContext routingContext, String queryName) {
+
+		DeleteResult dr = EPCISServer.mNamedQueryCollection.deleteOne(new org.bson.Document().append("id", queryName));
+
+		long cnt = dr.getDeletedCount();
+		if (cnt == 0) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get404NoSuchResourceException("[404] Named Query Not Found: " + queryName), 404);
+			return;
+		} else {
+			routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
+			return;
+		}
 	}
 
 	public void postQuery(RoutingContext routingContext, Poll poll) {

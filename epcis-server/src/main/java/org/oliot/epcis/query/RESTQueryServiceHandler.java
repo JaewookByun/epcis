@@ -2417,6 +2417,32 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /queries/:queryName (application/json)] - router added");
 	}
 
+	/**
+	 * Removes a named query and forcibly unsubscribes all active subscriptions,
+	 * whether by WebSockets or Webhooks
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
+	public static void registerDeleteQueryHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.delete("/epcis/queries/:queryName").consumes("application/xml").handler(routingContext -> {
+			String queryName = routingContext.pathParam("queryName");
+			restQueryService.deleteXMLQuery(routingContext, queryName);
+		});
+		EPCISServer.logger.info("[DELETE /queries/:queryName (application/xml)] - router added");
+
+		router.delete("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+
+			String queryName = routingContext.pathParam("queryName");
+			restQueryService.deleteJSONQuery(routingContext, queryName);
+
+		});
+		EPCISServer.logger.info("[DELETE /queries/:queryName (application/json)] - router added");
+	}
+
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();
