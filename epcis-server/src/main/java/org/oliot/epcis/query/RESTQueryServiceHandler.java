@@ -2443,6 +2443,40 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[DELETE /queries/:queryName (application/json)] - router added");
 	}
 
+	/**
+	 * Returns a list of queries available. An endpoint to list named queries. This
+	 * endpoint supports pagination.
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
+	public static void registerGetQueriesHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/queries").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			if (routingContext.response().closed())
+				return;
+
+			restQueryService.getXMLQueries(routingContext);
+		});
+		EPCISServer.logger.info("[GET /queries (application/xml)] - router added");
+
+		router.get("/epcis/queries").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+			restQueryService.getJSONQueries(routingContext);
+
+		});
+		EPCISServer.logger.info("[GET /queries (application/json)] - router added");
+	}
+
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();

@@ -240,6 +240,30 @@ public class QueryDescription {
 
 	}
 
+	public static org.w3c.dom.Element getXMLCreateQuery(org.w3c.dom.Document doc, Document createQueryDocument) {
+		Element createQuery = doc.createElement("CreateQuery");
+		createQuery.setAttribute("xmlns:query", "urn:epcglobal:epcis-query:xsd:2");
+		createQuery.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		createQuery.setAttribute("xmlns:xsd", "http://www.w3.org/2001/XMLSchema");
+
+		Element name = doc.createElement("name");
+		name.setTextContent(createQueryDocument.getString("id"));
+		createQuery.appendChild(name);
+		Element queryName = doc.createElement("queryName");
+		queryName.setTextContent(createQueryDocument.getString("queryName"));
+		createQuery.appendChild(queryName);
+		Element params = doc.createElement("params");
+		createQuery.appendChild(params);
+
+		Document rawQuery = createQueryDocument.get("rawQuery", Document.class);
+		for (String key : rawQuery.keySet()) {
+			Object value = rawQuery.get(key);
+			params.appendChild(getParamElement(doc, key, value));
+		}
+
+		return createQuery;
+	}
+
 	public static JsonObject toJSONCreateQuery(Document createQueryDocument) {
 		JsonObject result = new JsonObject();
 		result.put("name", createQueryDocument.getString("id"));

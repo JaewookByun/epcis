@@ -42,6 +42,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertOneResult;
 
@@ -144,6 +145,32 @@ public class RESTQueryService {
 
 	}
 
+	public void getXMLQueries(RoutingContext routingContext) {
+		MongoCursor<org.bson.Document> cursor = EPCISServer.mNamedQueryCollection.find().iterator();
+
+		org.w3c.dom.Document doc;
+		try {
+			doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			Element createQueries = doc.createElement("CreateQueries");
+			doc.appendChild(createQueries);
+			while (cursor.hasNext()) {
+				org.bson.Document namedQueryDocument = cursor.next();
+				Element createQuery = QueryDescription.getXMLCreateQuery(doc, namedQueryDocument);
+				createQueries.appendChild(createQuery);
+			}
+
+			HTTPUtil.sendQueryResults(routingContext.response(), XMLUtil.toString(doc, false), 200, "application/xml");
+
+		} catch (ParserConfigurationException | TransformerException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e.getMessage()),
+					500);
+			return;
+		}
+	}
+
 	public void deleteXMLQuery(RoutingContext routingContext, String queryName) {
 
 		DeleteResult dr = EPCISServer.mNamedQueryCollection.deleteOne(new org.bson.Document().append("id", queryName));
@@ -173,6 +200,20 @@ public class RESTQueryService {
 
 		JsonObject result = QueryDescription.toJSONCreateQuery(namedQueryDocument);
 		HTTPUtil.sendQueryResults(routingContext.response(), result.toString(), 200, "application/json");
+	}
+
+	public void getJSONQueries(RoutingContext routingContext) {
+		MongoCursor<org.bson.Document> cursor = EPCISServer.mNamedQueryCollection.find().iterator();
+
+		JsonArray createQueries = new JsonArray();
+
+		while (cursor.hasNext()) {
+			org.bson.Document namedQueryDocument = cursor.next();
+			JsonObject createQuery = QueryDescription.toJSONCreateQuery(namedQueryDocument);
+			createQueries.add(createQuery);
+		}
+
+		HTTPUtil.sendQueryResults(routingContext.response(), createQueries.toString(), 200, "application/json");
 	}
 
 	public void deleteJSONQuery(RoutingContext routingContext, String queryName) {
