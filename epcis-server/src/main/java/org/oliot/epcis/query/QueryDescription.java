@@ -119,7 +119,7 @@ public class QueryDescription {
 		Document doc = new Document();
 		for (QueryParam qp : params) {
 			String key = qp.getName();
-			Object value = convertQueryParam(qp.getValue());
+			Object value = qp.getValue();
 			if (value instanceof List) {
 				doc.put(key, value);
 			} else if (value instanceof Long) {
@@ -172,6 +172,7 @@ public class QueryDescription {
 	private static org.w3c.dom.Element getParamElement(org.w3c.dom.Document doc, String k, Object v) {
 		Element param = doc.createElement("param");
 		Element name = doc.createElement("name");
+		name.setTextContent(k);
 		Element value = doc.createElement("value");
 		param.appendChild(name);
 		param.appendChild(value);
@@ -237,6 +238,19 @@ public class QueryDescription {
 			return null;
 		}
 
+	}
+
+	public static JsonObject toJSONCreateQuery(Document createQueryDocument) {
+		JsonObject result = new JsonObject();
+		result.put("name", createQueryDocument.getString("id"));
+		Document rawQuery = createQueryDocument.get("rawQuery", Document.class);
+		JsonObject query = new JsonObject();
+		for (String key : rawQuery.keySet()) {
+			Object value = rawQuery.get(key);
+			query.put(key, value);
+		}
+		result.put("query", query);
+		return result;
 	}
 
 	public Document toMongoDocument() {
@@ -436,6 +450,10 @@ public class QueryDescription {
 		} else if (value instanceof Boolean) {
 			return value;
 		} else if (value instanceof Integer) {
+			return value;
+		} else if (value instanceof Long) {
+			return value;
+		} else if (value instanceof VoidHolder) {
 			return value;
 		} else if (value instanceof List) {
 			return value;

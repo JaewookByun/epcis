@@ -2395,30 +2395,26 @@ public class RESTQueryServiceHandler {
 			if (!isHeaderPassed(routingContext))
 				return;
 
-			String queryName = routingContext.pathParam("queryName");
-			restQueryService.getQuery(routingContext, queryName);
-		});
-		EPCISServer.logger.info("[POST /queries (application/xml)] - router added");
-
-		router.post("/epcis/queries").consumes("application/json").handler(routingContext -> {
-
-			checkJSONPollHeaders2(routingContext);
 			if (routingContext.response().closed())
 				return;
 
-			JsonObject createQuery = null;
-			try {
-				createQuery = getCreateQuery(routingContext);
-			} catch (ValidationException e) {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
-				return;
-			}
+			String queryName = routingContext.pathParam("queryName");
+			restQueryService.getXMLQuery(routingContext, queryName);
+		});
+		EPCISServer.logger.info("[GET /queries/:queryName (application/xml)] - router added");
 
-			restQueryService.postQuery(routingContext, createQuery);
+		router.get("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			String queryName = routingContext.pathParam("queryName");
+
+			restQueryService.getJSONQuery(routingContext, queryName);
 
 		});
-		EPCISServer.logger.info("[POST /epcis/queries (application/json)] - router added");
+		EPCISServer.logger.info("[GET /queries/:queryName (application/json)] - router added");
 	}
 
 	// ---------------------------------------------------------------------------------------

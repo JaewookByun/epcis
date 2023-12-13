@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
@@ -116,7 +117,7 @@ public class RESTQueryService {
 		}
 	}
 
-	public void getQuery(RoutingContext routingContext, String queryName) {
+	public void getXMLQuery(RoutingContext routingContext, String queryName) {
 
 		org.bson.Document namedQueryDocument = EPCISServer.mNamedQueryCollection
 				.find(new org.bson.Document().append("id", queryName)).first();
@@ -128,13 +129,33 @@ public class RESTQueryService {
 			return;
 		}
 
-		// Document{{_id=65787668da07ee62aa2007fa, queryName=SimpleEventQuery,
-		// query=Document{{}}, projection=null, eventCountLimit=2, maxCount=null,
-		// sort=Document{{eventTime=-1}}, rawQuery=Document{{orderBy=eventTime,
-		// orderDirection=DESC, eventCountLimit=2}}, id=latestEvent}}
-		
 		Document result = QueryDescription.toXMLCreateQuery(namedQueryDocument);
+		try {
+			HTTPUtil.sendQueryResults(routingContext.response(), XMLUtil.toString(result, false), 200,
+					"application/xml");
+		} catch (TransformerException e) {
+			// not happen
+			EPCISException e1 = new EPCISException("[500ImplementationException] " + e.getMessage());
+			EPCISServer.logger.error("[500ImplementationException] " + e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+			return;
+		}
 
+	}
+
+	public void getJSONQuery(RoutingContext routingContext, String queryName) {
+
+		org.bson.Document namedQueryDocument = EPCISServer.mNamedQueryCollection
+				.find(new org.bson.Document().append("id", queryName)).first();
+
+		if (namedQueryDocument == null || namedQueryDocument.isEmpty()) {
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
+					.get409ResourceAlreadyExistsException("[404] Named Query Not Found: " + queryName), 404);
+			return;
+		}
+
+		JsonObject result = QueryDescription.toJSONCreateQuery(namedQueryDocument);
+		HTTPUtil.sendQueryResults(routingContext.response(), result.toString(), 200, "application/json");
 	}
 
 	public void postQuery(RoutingContext routingContext, Poll poll) {

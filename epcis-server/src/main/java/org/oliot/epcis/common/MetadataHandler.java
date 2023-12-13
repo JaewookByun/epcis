@@ -1169,7 +1169,7 @@ public class MetadataHandler {
 				SOAPMessage message = new SOAPMessage();
 				String queryName = routingContext.pathParam("queryName");
 				List<Document> jobs = new ArrayList<Document>();
-				EPCISServer.mNamedQueryCollection.find(new Document("_id", queryName)).into(jobs);
+				EPCISServer.mNamedQueryCollection.find(new Document("id", queryName)).into(jobs);
 				if (jobs.isEmpty()) {
 					EPCISException e = new EPCISException("There is no named query with id: " + queryName);
 					HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
@@ -1191,10 +1191,10 @@ public class MetadataHandler {
 			try {
 				String queryName = routingContext.pathParam("queryName");
 				List<Document> queries = new ArrayList<Document>();
-				EPCISServer.mTxCollection.find(new Document("_id", queryName)).into(queries);
+				EPCISServer.mNamedQueryCollection.find(new Document("id", queryName)).into(queries);
 				if (queries.isEmpty()) {
 					HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory
-							.get404NoSuchResourceException("There is no capture job with id: " + queryName), 404);
+							.get404NoSuchResourceException("There is no named query with id: " + queryName), 404);
 					return;
 				}
 			} catch (Throwable throwable) {
