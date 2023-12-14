@@ -179,6 +179,8 @@ public class EPCISServer extends AbstractVerticle {
 
 		MetadataHandler.registerGetQueriesHandler(router);
 		MetadataHandler.registerNamedQueryHandler(router);
+		MetadataHandler.registerGetEventsWithNamedQuery(router);
+		MetadataHandler.registerGetVocabulariesWithNamedQuery(router);
 	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {

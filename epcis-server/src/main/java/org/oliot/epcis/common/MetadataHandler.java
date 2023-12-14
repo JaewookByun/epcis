@@ -1208,4 +1208,132 @@ public class MetadataHandler {
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/json)] - router added");
 	}
 
+	/**
+	 * Query the metadata of the EPCIS events query result endpoint. The `OPTIONS`
+	 * method is used to discover capabilities for named queries. It describes which
+	 * EPCIS and CBV versions are used in the query result supported as well as
+	 * EPCIS and CBV extensions.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetEventsWithNamedQuery(Router router) {
+		router.options("/epcis/queries/:queryName/events").consumes("application/xml").handler(routingContext -> {
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				if (namedQuery.getString("queryName").equals("SimpleEventQuery"))
+					send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+				else {
+					EPCISException e = new EPCISException(
+							"[406NotAcceptableException] queryName is not SimpleEventQuery");
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+					return;
+				}
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/events (application/xml)] - router added");
+
+		router.options("/epcis/queries/:queryName/events").consumes("application/json").handler(routingContext -> {
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available named query for : " + namedQuery),
+						404);
+				return;
+			} else {
+				if (namedQuery.getString("queryName").equals("SimpleEventQuery"))
+					send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+				else {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptableException] queryName is not SimpleEventQuery"),
+							406);
+					return;
+				}
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/events (application/json)] - router added");
+	}
+	
+	/**
+	 * Query the metadata of the EPCIS vocabularies query result endpoint. The `OPTIONS`
+	 * method is used to discover capabilities for named queries. It describes which
+	 * EPCIS and CBV versions are used in the query result supported as well as
+	 * EPCIS and CBV extensions.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetVocabulariesWithNamedQuery(Router router) {
+		router.options("/epcis/queries/:queryName/vocabularies").consumes("application/xml").handler(routingContext -> {
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				if (namedQuery.getString("queryName").equals("SimpleMasterDataQuery"))
+					send204XMLResponse(routingContext.response(), "OPTIONS, GET");
+				else {
+					EPCISException e = new EPCISException(
+							"[406NotAcceptableException] queryName is not SimpleMasterDataQuery");
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+					return;
+				}
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/vocabularies (application/xml)] - router added");
+
+		router.options("/epcis/queries/:queryName/vocabularies").consumes("application/json").handler(routingContext -> {
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get404NoSuchResourceException(
+								"[404NoSuchResourceException] There is no available named query for : " + namedQuery),
+						404);
+				return;
+			} else {
+				if (namedQuery.getString("queryName").equals("SimpleMasterDataQuery"))
+					send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
+				else {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(
+									"[406NotAcceptableException] queryName is not SimpleMasterDataQuery"),
+							406);
+					return;
+				}
+			}
+		});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/vocabularies (application/json)] - router added");
+	}
+
 }
