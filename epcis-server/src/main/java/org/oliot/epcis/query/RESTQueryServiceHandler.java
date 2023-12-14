@@ -2521,6 +2521,165 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /queries (application/json)] - router added");
 	}
 
+	public static void registerGetEventsWithNamedQueryHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/queries/:queryName/events").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				String nextPageToken = routingContext.request().getParam("nextPageToken");
+				if (nextPageToken == null) {
+					soapQueryService.poll(routingContext.request(), routingContext.response(), namedQuery);
+				} else {
+					soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+				}
+				// need websocket
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/queries/:queryName/events (application/xml)] - router added");
+
+		router.get("/epcis/queries/:queryName/events").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for: " + queryName), 404);
+				return;
+			} else {
+				String nextPageToken = routingContext.request().getParam("nextPageToken");
+				if (nextPageToken == null) {
+					restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
+				} else {
+					UUID uuid = null;
+					try {
+						uuid = UUID.fromString(nextPageToken);
+					} catch (Exception e) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get406NotAcceptableException(
+										"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+												+ uuid),
+								406);
+						return;
+					}
+					restQueryService.getNextEventPage(routingContext, uuid);
+				}
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/queries/:queryName/events (application/json)] - router added");
+	}
+
+	public static void registerGetVocabulariesWithNamedQueryHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.get("/epcis/queries/:queryName/vocabularies").consumes("application/xml").handler(routingContext -> {
+
+			if (!isHeaderPassed(routingContext))
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				EPCISException e = new EPCISException(
+						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+				EPCISServer.logger.error(e.getReason());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+				return;
+			} else {
+				String nextPageToken = routingContext.request().getParam("nextPageToken");
+				if (nextPageToken == null) {
+					soapQueryService.poll(routingContext.request(), routingContext.response(), namedQuery);
+				} else {
+					try {
+						soapQueryService.getNextVocabularyPage(routingContext.request(), routingContext.response());
+					} catch (ParserConfigurationException e) {
+						ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+								"GetVocabulariesWithNamedQuery", e.getMessage());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+						return;
+					}
+				}
+				// need websocket
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/queries/:queryName/vocabularies (application/xml)] - router added");
+
+		router.get("/epcis/queries/:queryName/vocabularies").consumes("application/json").handler(routingContext -> {
+
+			checkJSONPollHeaders(routingContext);
+			if (routingContext.response().closed())
+				return;
+
+			routingContext.response().setChunked(true);
+
+			String queryName = routingContext.pathParam("queryName");
+
+			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+					.find(new org.bson.Document().append("id", queryName)).first();
+
+			if (namedQuery == null) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for: " + queryName), 404);
+				return;
+			} else {
+				String nextPageToken = routingContext.request().getParam("nextPageToken");
+				if (nextPageToken == null) {
+					restQueryService.query(routingContext, namedQuery, "SimpleMasterDataQuery");
+				} else {
+					UUID uuid = null;
+					try {
+						uuid = UUID.fromString(nextPageToken);
+					} catch (Exception e) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get406NotAcceptableException(
+										"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
+												+ uuid),
+								406);
+						return;
+					}
+					try {
+						restQueryService.getNextVocabularyPage(routingContext, uuid);
+					} catch (ParserConfigurationException e) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+						return;
+					}
+				}
+			}
+		});
+		EPCISServer.logger.info("[GET /epcis/queries/:queryName/vocabularies (application/json)] - router added");
+	}
+
 	// ---------------------------------------------------------------------------------------
 	public static ArrayList<String> getNamespaces(org.bson.Document event) {
 		ArrayList<String> namespaces = new ArrayList<String>();

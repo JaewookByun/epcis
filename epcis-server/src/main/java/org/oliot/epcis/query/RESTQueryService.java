@@ -41,6 +41,7 @@ import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -58,6 +59,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -105,6 +107,33 @@ public class RESTQueryService {
 				pollEvents(routingContext, query);
 			else
 				pollVocabularies(routingContext, query);
+		} catch (QueryParameterException | ValidationException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get406NotAcceptableException(
+							"[406NotAcceptable] The server cannot return the response as requested: " + e.getReason()),
+					406);
+		} catch (ImplementationException e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e.getReason()),
+					500);
+		} catch (Exception e) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e.getMessage()),
+					500);
+		}
+	}
+
+	public void query(RoutingContext routingContext, org.bson.Document namedQuery, String queryName) {
+
+		try {
+			if (queryName.equals("SimpleEventQuery"))
+				pollEvents(routingContext, namedQuery);
+			else
+				pollVocabularies(routingContext, namedQuery);
 		} catch (QueryParameterException | ValidationException e) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get406NotAcceptableException(
@@ -558,6 +587,20 @@ public class RESTQueryService {
 		invokeSimpleEventQuery(routingContext.response(), qd, perPage);
 	}
 
+	public void pollEvents(RoutingContext routingContext, org.bson.Document namedQuery)
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(routingContext.request());
+		} catch (QueryParameterException e) {
+			throw e;
+		}
+
+		invokeSimpleEventQuery(routingContext.response(), namedQuery, perPage);
+	}
+
 	public void pollVocabularies(RoutingContext routingContext, JsonObject query)
 			throws QueryParameterException, ImplementationException, Exception, ValidationException {
 
@@ -582,6 +625,21 @@ public class RESTQueryService {
 			throw e3;
 		}
 		invokeSimpleMasterDataQuery(routingContext.response(), qd, perPage);
+	}
+
+	public void pollVocabularies(RoutingContext routingContext, org.bson.Document namedQuery)
+			throws QueryParameterException, ImplementationException, Exception, ValidationException {
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(routingContext.request());
+		} catch (QueryParameterException e) {
+			throw e;
+		}
+
+		invokeSimpleMasterDataQuery(routingContext.response(), namedQuery, perPage);
 	}
 
 	public void getNextEventPage(RoutingContext routingContext, UUID uuid) {
@@ -804,6 +862,116 @@ public class RESTQueryService {
 		}
 	}
 
+	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, org.bson.Document namedQuery, int perPage) {
+
+		// CREATE MONGODB QUERY
+		org.bson.Document q = namedQuery.get("query", org.bson.Document.class);
+		FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(q);
+
+		org.bson.Document sort = namedQuery.get("sort", org.bson.Document.class);
+		if (sort != null && !sort.isEmpty())
+			query.sort(sort);
+
+		boolean needPagination = true;
+		int qLimit = perPage;
+		Integer maxCount = namedQuery.getInteger("maxCount");
+		if (maxCount != null && maxCount > perPage) {
+			qLimit = maxCount;
+		} else {
+			qLimit = perPage;
+		}
+
+		Integer eventCountLimit = namedQuery.getInteger("eventCountLimit");
+		if (eventCountLimit != null) {
+			if (qLimit < eventCountLimit) {
+				query.limit(qLimit + 1);
+			} else {
+				query.limit(eventCountLimit);
+				needPagination = false;
+			}
+		} else {
+			query.limit(qLimit + 1);
+		}
+
+		// RETRIEVE
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
+			return;
+		}
+
+		if (maxCount != null && (resultList.size() > maxCount)) {
+			HTTPUtil.sendQueryResults(serverResponse, JSONMessageFactory.get413QueryTooLargeException(
+					"[413QueryTooLargeException] The server cannot return the response as requested: "
+							+ "An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )"),
+					413);
+			return;
+		}
+
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getNamespaces(resultList);
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
+		// conversion
+		List<JsonObject> convertedResultList = getConvertedResultList(sort != null && !sort.isEmpty(), resultList,
+				namespaces, extType);
+		context.add(extType);
+		if (needPagination == true && perPage >= convertedResultList.size()) {
+			needPagination = false;
+		} else if (needPagination == true && perPage < convertedResultList.size()) {
+			if (!convertedResultList.isEmpty())
+				convertedResultList = convertedResultList.subList(0, perPage);
+		}
+
+		JsonObject queryResultDocument = StaticResource.simpleEventQueryResults.copy();
+		JsonArray eventList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("eventList");
+		for (JsonObject list : convertedResultList) {
+			eventList.add(list);
+		}
+		queryResultDocument.put("@context", context);
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.eventPageMap.containsKey(uuid))
+					break;
+			}
+
+			DataPage page = new DataPage(uuid, "SimpleEventQuery", q, null, sort, eventCountLimit, perPage);
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(
+					new DataPageExpiryTimerTask("GET /events", EPCISServer.eventPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.eventPageMap.put(uuid, page);
+			EPCISServer.logger.debug(
+					"[GET /events] page - " + uuid + " added. # remaining pages - " + EPCISServer.eventPageMap.size());
+
+			serverResponse.putHeader("Link", uuid.toString()).putHeader("GS1-Next-Page-Token-Expires",
+					TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+	}
+
 	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, QueryDescription qd, int perPage) {
 
 		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(qd.getMongoQuery());
@@ -879,6 +1047,106 @@ public class RESTQueryService {
 
 			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", qd.getMongoQuery(), qd.getMongoProjection(),
 					null, null, perPage);
+
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(new DataPageExpiryTimerTask("GET /vocabularies", EPCISServer.vocabularyPageMap, uuid,
+					EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.vocabularyPageMap.put(uuid, page);
+			EPCISServer.logger.debug("[GET /vocabularies] page - " + uuid + " added. # remaining pages - "
+					+ EPCISServer.vocabularyPageMap.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		} else {
+
+			HTTPUtil.sendQueryResults(serverResponse, queryResultDocument, 200);
+		}
+
+	}
+
+	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, org.bson.Document namedQuery,
+			int perPage) {
+
+		org.bson.Document q = namedQuery.get("query", org.bson.Document.class);
+		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(q);
+		org.bson.Document projection = namedQuery.get("projection", org.bson.Document.class);
+		if (projection != null && !projection.isEmpty())
+			query.projection(projection);
+
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			HTTPUtil.sendQueryResults(serverResponse,
+					JSONMessageFactory.get500ImplementationException(
+							"[500ImplementationException] The server cannot return the response as requested: "
+									+ e1.getMessage()),
+					500);
+			return;
+		}
+
+		Integer maxCount = namedQuery.getInteger("maxCount");
+		if (maxCount != null && (resultList.size() > maxCount)) {
+			HTTPUtil.sendQueryResults(serverResponse, JSONMessageFactory.get413QueryTooLargeException(
+					"[413QueryTooLargeException] The server cannot return the response as requested: "
+							+ "An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )"),
+					413);
+			return;
+		}
+
+		JsonArray context = new JsonArray();
+		context.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		ArrayList<String> namespaces = getVocabularyNamespaces(resultList);
+
+		JsonObject extType = new JsonObject();
+		JsonObject extContext = new JsonObject();
+		for (int i = 0; i < namespaces.size(); i++) {
+			extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+		}
+		context.add(extContext);
+
+		boolean needPagination = false;
+		if (perPage < resultList.size()) {
+			needPagination = true;
+			resultList = resultList.subList(0, perPage);
+		}
+
+		List<JsonObject> convertedResultList = new ArrayList<JsonObject>();
+		for (org.bson.Document result : resultList) {
+			try {
+				convertedResultList.add(EPCISServer.bsonToJsonConverter.convertVocabulary(result, namespaces, extType));
+			} catch (ValidationException e) {
+				// should not happen
+				e.printStackTrace();
+			}
+		}
+		context.add(extType);
+
+		JsonObject queryResultDocument = StaticResource.simpleMasterDataQueryResults.copy();
+		JsonArray vocabularyList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+				.getJsonObject("resultsBody").getJsonArray("vocabularyList");
+		for (JsonObject list : convertedResultList) {
+			vocabularyList.add(list);
+		}
+		queryResultDocument.put("@context", context);
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.vocabularyPageMap.containsKey(uuid))
+					break;
+			}
+
+			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", q, projection, null, null, perPage);
 
 			Timer timer = new Timer();
 			page.setTimer(timer);

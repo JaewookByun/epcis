@@ -81,7 +81,7 @@ public class SOAPQueryService {
 		elem.appendChild(str);
 		return elem;
 	}
-
+	
 	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage,
 			String... keyValues) throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
@@ -99,8 +99,9 @@ public class SOAPQueryService {
 			try {
 				Poll poll = soapQueryUnmarshaller.getPoll(pollNode);
 				List<QueryParam> queryParamList = poll.getParams().getParam();
-				for(int i = 0 ; i < keyValues.length - 1 ; i=i+2) {
-					queryParamList.add(new QueryParam(keyValues[i], getElementArrayOfString(message.getMessage(), keyValues[i+1])));	
+				for (int i = 0; i < keyValues.length - 1; i = i + 2) {
+					queryParamList.add(new QueryParam(keyValues[i],
+							getElementArrayOfString(message.getMessage(), keyValues[i + 1])));
 				}
 
 				poll(request, response, poll);
@@ -295,6 +296,107 @@ public class SOAPQueryService {
 		}
 	}
 
+	private void invokeSimpleEventQuery(HttpServerResponse serverResponse, SOAPMessage message,
+			org.bson.Document namedQuery, int perPage) {
+
+		// CREATE MONGODB QUERY
+		org.bson.Document q = namedQuery.get("query", org.bson.Document.class);
+		FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(q);
+
+		org.bson.Document sort = namedQuery.get("sort", org.bson.Document.class);
+		if (sort != null && !sort.isEmpty())
+			query.sort(sort);
+
+		boolean needPagination = true;
+		int qLimit = perPage;
+		Integer maxCount = namedQuery.getInteger("maxCount");
+		if (maxCount != null && maxCount > perPage) {
+			qLimit = maxCount;
+		} else {
+			qLimit = perPage;
+		}
+		Integer eventCountLimit = namedQuery.getInteger("eventCountLimit");
+		if (eventCountLimit != null) {
+			if (qLimit < eventCountLimit) {
+				query.limit(qLimit + 1);
+			} else {
+				query.limit(eventCountLimit);
+				needPagination = false;
+			}
+		} else {
+			query.limit(qLimit + 1);
+		}
+
+		// RETRIEVE
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+					e1.getMessage());
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		}
+
+		if (maxCount != null && (resultList.size() > maxCount)) {
+			QueryTooLargeException e = new QueryTooLargeException(
+					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 413);
+			return;
+		}
+
+		List<Object> convertedResultList = getConvertedResultList(!sort.isEmpty(), resultList, message);
+
+		if (needPagination == true && perPage >= convertedResultList.size()) {
+			needPagination = false;
+		} else if (needPagination == true && perPage < convertedResultList.size()) {
+			if (!convertedResultList.isEmpty())
+				convertedResultList = convertedResultList.subList(0, perPage);
+		}
+
+		QueryResults queryResults = new QueryResults();
+		queryResults.setQueryName("SimpleEventQuery");
+
+		QueryResultsBody resultsBody = new QueryResultsBody();
+
+		EventListType elt = new EventListType();
+		elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
+		resultsBody.setEventList(elt);
+		queryResults.setResultsBody(resultsBody);
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.eventPageMap.containsKey(uuid))
+					break;
+			}
+
+			DataPage page = new DataPage(uuid, "SimpleEventQuery", q, null, sort, eventCountLimit, perPage);
+			Timer timer = new Timer();
+			page.setTimer(timer);
+
+			timer.schedule(new DataPageExpiryTimerTask("GET /queries/" + namedQuery.getString("id") + "/events",
+					EPCISServer.eventPageMap, uuid, EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.eventPageMap.put(uuid, page);
+			EPCISServer.logger.debug("GET /queries/" + namedQuery.getString("id") + "/events] page - " + uuid
+					+ " added. # remaining pages - " + EPCISServer.eventPageMap.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		}
+	}
+
 	public void getResources(HttpServerRequest serverRequest, HttpServerResponse serverResponse, String tag,
 			ConcurrentHashMap<UUID, ResourcePage> pages, ConcurrentHashSet<String> eventResources,
 			ConcurrentHashSet<String> vocResources) {
@@ -468,6 +570,119 @@ public class SOAPQueryService {
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
 		} else {
 			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		}
+	}
+
+	private void invokeSimpleMasterDataQuery(HttpServerResponse serverResponse, SOAPMessage message,
+			org.bson.Document namedQuery, int perPage) {
+
+		org.bson.Document q = namedQuery.get("query", org.bson.Document.class);
+		FindIterable<org.bson.Document> query = EPCISServer.mVocCollection.find(q);
+		org.bson.Document projection = namedQuery.get("projection", org.bson.Document.class);
+		if (projection != null && !projection.isEmpty())
+			query.projection(projection);
+
+		List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		try {
+			query.into(resultList);
+		} catch (Throwable e1) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Poll",
+					e1.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		}
+
+		Integer maxCount = namedQuery.getInteger("maxCount");
+		if (maxCount != null && (resultList.size() > maxCount)) {
+			QueryTooLargeException e = new QueryTooLargeException(
+					"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+							+ resultList.size() + " )");
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 413);
+			return;
+		}
+
+		List<VocabularyType> vList = resultList.parallelStream().map(TypeDocument::new)
+				.collect(Collectors.groupingBy(TypeDocument::getType,
+						Collectors.mapping(TypeDocument::getDocument, Collectors.toSet())))
+				.entrySet().parallelStream()
+				.map(e -> new MasterdataConverter().convert(e.getKey(), e.getValue(), message))
+				.collect(Collectors.toList());
+
+		boolean needPagination = false;
+		if (perPage < vList.size()) {
+			needPagination = true;
+			vList = vList.subList(0, perPage);
+		}
+
+		QueryResults queryResults = new QueryResults();
+		queryResults.setQueryName("SimpleMasterDataQuery");
+
+		QueryResultsBody resultsBody = new QueryResultsBody();
+		VocabularyListType vlt = new VocabularyListType();
+		vlt.setVocabulary(vList);
+		resultsBody.setVocabularyList(vlt);
+
+		queryResults.setResultsBody(resultsBody);
+
+		if (needPagination) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.vocabularyPageMap.containsKey(uuid))
+					break;
+			}
+
+			DataPage page = new DataPage(uuid, "SimpleMasterDataQuery", q, projection, null, null, perPage);
+
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(
+					new DataPageExpiryTimerTask("GET /queries/" + namedQuery.getString("id") + "/vocabularies",
+							EPCISServer.vocabularyPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.vocabularyPageMap.put(uuid, page);
+			EPCISServer.logger.debug("[GET /queries/" + namedQuery.getString("id") + "/vocabularies] page - " + uuid
+					+ " added. # remaining pages - " + EPCISServer.vocabularyPageMap.size());
+
+			serverResponse.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		} else {
+			HTTPUtil.sendQueryResults(serverResponse, message, queryResults, QueryResults.class, 200);
+		}
+	}
+
+	public void poll(HttpServerRequest serverRequest, HttpServerResponse serverResponse, org.bson.Document namedQuery) {
+
+		// create SOAP message to return
+		SOAPMessage message = new SOAPMessage();
+
+		// get perPage
+		int perPage;
+
+		try {
+			perPage = getPerPage(serverRequest);
+		} catch (QueryParameterException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		if (namedQuery.getString("queryName").equals("SimpleEventQuery")) {
+			// SimpleEventQuery
+			invokeSimpleEventQuery(serverResponse, message, namedQuery, perPage);
+		} else if (namedQuery.getString("queryName").equals("SimpleMasterDataQuery")) {
+			// SimpleMasterDataQuery
+			invokeSimpleMasterDataQuery(serverResponse, message, namedQuery, perPage);
+		} else {
+			QueryParameterException e = new QueryParameterException(
+					"queryName should be one of SimpleEventQuery and SimpleMasterDataQuery");
+			EPCISServer.logger.error(e.getReason());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
 		}
 	}
 
