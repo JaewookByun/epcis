@@ -4,10 +4,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.Document;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
@@ -2521,6 +2524,18 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /queries (application/json)] - router added");
 	}
 
+	public static boolean hasWebSocketRequest(RoutingContext routingContext) throws ImplementationException {
+		// Upgrade = websocket
+		// Connection = upgrade
+		String upgrade = routingContext.request().getHeader("Upgrade");
+		String connection = routingContext.request().getHeader("Connection");
+		if (upgrade != null && upgrade.equals("websocket") && connection != null && connection.equals("Upgrade")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	public static void registerGetEventsWithNamedQueryHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -2538,23 +2553,23 @@ public class RESTQueryServiceHandler {
 
 			if (namedQuery == null) {
 				EPCISException e = new EPCISException(
-						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+						"[404NoSuchResourceException] There is no available named query for: " + queryName);
 				EPCISServer.logger.error(e.getReason());
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 				return;
 			} else {
+
 				String nextPageToken = routingContext.request().getParam("nextPageToken");
 				if (nextPageToken == null) {
 					soapQueryService.poll(routingContext.request(), routingContext.response(), namedQuery);
 				} else {
 					soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
 				}
-				// need websocket
 			}
 		});
 		EPCISServer.logger.info("[GET /epcis/queries/:queryName/events (application/xml)] - router added");
 
-		router.get("/epcis/queries/:queryName/events").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/queries/:queryName/events").handler(routingContext -> {
 
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -2574,7 +2589,29 @@ public class RESTQueryServiceHandler {
 			} else {
 				String nextPageToken = routingContext.request().getParam("nextPageToken");
 				if (nextPageToken == null) {
-					restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
+					try {
+						if (hasWebSocketRequest(routingContext)) {
+							final AtomicInteger i = new AtomicInteger(1);
+							routingContext.request().toWebSocket(serverWebSocket -> {
+
+								new Timer().schedule(new TimerTask() {
+
+									@Override
+									public void run() {
+
+										serverWebSocket.result().writeTextMessage(String.valueOf(i.incrementAndGet()));
+									}
+								}, 0, 5000);
+							});
+
+						} else {
+							restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
+						}
+					} catch (ImplementationException e) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get500ImplementationException(e.getReason()), 500);
+						return;
+					}
 				} else {
 					UUID uuid = null;
 					try {
@@ -2592,6 +2629,7 @@ public class RESTQueryServiceHandler {
 			}
 		});
 		EPCISServer.logger.info("[GET /epcis/queries/:queryName/events (application/json)] - router added");
+
 	}
 
 	public static void registerGetVocabulariesWithNamedQueryHandler(Router router, SOAPQueryService soapQueryService,
