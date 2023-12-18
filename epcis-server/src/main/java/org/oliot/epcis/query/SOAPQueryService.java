@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,6 +16,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.oliot.epcis.capture.json.JSONMessageFactory;
 import org.oliot.epcis.common.Metadata;
 import org.oliot.epcis.converter.data.bson_to_pojo.AggregationEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.AssociationEventConverter;
@@ -27,6 +29,7 @@ import org.oliot.epcis.pagination.DataPage;
 import org.oliot.epcis.pagination.DataPageExpiryTimerTask;
 import org.oliot.epcis.pagination.ResourcePage;
 import org.oliot.epcis.pagination.ResourcePageExpiryTimerTask;
+import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.util.FileUtil;
 import org.oliot.epcis.util.HTTPUtil;
@@ -49,7 +52,10 @@ import com.mongodb.client.result.InsertOneResult;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.impl.ConcurrentHashSet;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import jakarta.xml.bind.JAXBException;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
@@ -81,7 +87,7 @@ public class SOAPQueryService {
 		elem.appendChild(str);
 		return elem;
 	}
-	
+
 	public void pollEventsOrVocabularies(HttpServerRequest request, HttpServerResponse response, String soapMessage,
 			String... keyValues) throws ValidationException {
 		SOAPMessage message = new SOAPMessage();
@@ -1020,8 +1026,6 @@ public class SOAPQueryService {
 		// cron Example
 		// 0/10 * * * * ? : every 10 second
 		String schedule = subscription.getSchedule();
-		@SuppressWarnings("unused")
-		URI trigger = subscription.getTrigger();
 		if (schedule != null) {
 			try {
 				cronSchedule(schedule);
@@ -1246,88 +1250,291 @@ public class SOAPQueryService {
 		org.bson.Document sort = qd.getMongoSort();
 		Integer eventCountLimit = qd.getEventCountLimit();
 		Integer maxCount = qd.getMaxCount();
+		ServerWebSocket ws = sub.getServerWebSocket();
 
-		try {
-			if (initialRecordTime != null) {
-				mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
-			}
-
-			FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
-
-			if (sort != null)
-				query.sort(sort);
-			if (eventCountLimit != null)
-				query.limit(eventCountLimit);
-
-			List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+		// SOAP subscription (XML)
+		if (ws == null) {
 			try {
-				query.into(resultList);
-			} catch (Throwable e1) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR,
-						"Subscribe", subscriptionID, e1.getMessage());
-				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
-						e, e.getClass());
-				return;
-			}
 
-			if (maxCount != null && (resultList.size() > maxCount)) {
-				QueryTooLargeException e = new QueryTooLargeException(
-						"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
-								+ resultList.size() + " )");
-				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
-						e, e.getClass());
-				return;
-			}
+				if (initialRecordTime != null) {
+					mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+				}
 
-			List<Object> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList, message);
+				FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
 
-			if (reportIfEmpty == false && convertedResultList.size() == 0) {
-				EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
-				return;
-			}
+				if (sort != null)
+					query.sort(sort);
+				if (eventCountLimit != null)
+					query.limit(eventCountLimit);
 
-			QueryResults queryResults = new QueryResults();
-			queryResults.setQueryName("SimpleEventQuery");
-			queryResults.setSubscriptionID(subscriptionID);
-
-			QueryResultsBody resultsBody = new QueryResultsBody();
-
-			EventListType elt = new EventListType();
-			elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
-			resultsBody.setEventList(elt);
-			queryResults.setResultsBody(resultsBody);
-
-			// InitialRecordTime limits recordTime
-			if (initialRecordTime != null) {
+				List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
 				try {
-					long cur = System.currentTimeMillis();
-					sub.setInitialRecordTime(cur);
-					updateInitialRecordTime(subscriptionID, cur);
-					map.put("jobData", sub);
-					SubscriptionManager.sched.addJob(detail, true, true);
-				} catch (SchedulerException e) {
-					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-							message, e, e.getClass());
-					return;
-				} catch (ImplementationException e) {
+					query.into(resultList);
+				} catch (Throwable e1) {
+					ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+							"Subscribe", subscriptionID, e1.getMessage());
 					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
 							message, e, e.getClass());
 					return;
 				}
+
+				if (maxCount != null && (resultList.size() > maxCount)) {
+					QueryTooLargeException e = new QueryTooLargeException(
+							"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+									+ resultList.size() + " )");
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				}
+
+				List<Object> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList, message);
+
+				if (reportIfEmpty == false && convertedResultList.size() == 0) {
+					EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+					return;
+				}
+
+				QueryResults queryResults = new QueryResults();
+				queryResults.setQueryName("SimpleEventQuery");
+				queryResults.setSubscriptionID(subscriptionID);
+
+				QueryResultsBody resultsBody = new QueryResultsBody();
+
+				EventListType elt = new EventListType();
+				elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
+				resultsBody.setEventList(elt);
+				queryResults.setResultsBody(resultsBody);
+
+				// InitialRecordTime limits recordTime
+				if (initialRecordTime != null) {
+					try {
+						long cur = System.currentTimeMillis();
+						sub.setInitialRecordTime(cur);
+						updateInitialRecordTime(subscriptionID, cur);
+						map.put("jobData", sub);
+						SubscriptionManager.sched.addJob(detail, true, true);
+					} catch (SchedulerException e) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+						return;
+					} catch (ImplementationException e) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+						return;
+					}
+				}
+
+				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+						queryResults, QueryResults.class);
+
+			} catch (IllegalStateException e) {
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+						"Subscribe", subscriptionID, e.getMessage());
+				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+						e1, e1.getClass());
+			}
+			// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
+			// NoSuchNameException, SecurityException, ValidationException,
+			// ImplementationException
+		} else {
+			// REST Subscription WebSocket JSON
+			try {
+				if (initialRecordTime != null) {
+					mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+				}
+
+				FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
+
+				if (sort != null)
+					query.sort(sort);
+				if (eventCountLimit != null)
+					query.limit(eventCountLimit);
+
+				List<org.bson.Document> resultList = new ArrayList<org.bson.Document>();
+				try {
+					query.into(resultList);
+				} catch (Throwable e1) {
+					HTTPUtil.sendQueryResults(ws, JSONMessageFactory.get500ImplementationException(e1.getMessage()));
+					return;
+				}
+
+				if (maxCount != null && (resultList.size() > maxCount)) {
+					HTTPUtil.sendQueryResults(ws, JSONMessageFactory.get413QueryTooLargeException(
+							"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
+									+ resultList.size() + " )"));
+					return;
+				}
+
+				JsonArray jContext = new JsonArray();
+				jContext.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+				ArrayList<String> namespaces = getNamespaces(resultList);
+				JsonObject extType = new JsonObject();
+				JsonObject extContext = new JsonObject();
+				for (int i = 0; i < namespaces.size(); i++) {
+					extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+				}
+				jContext.add(extContext);
+				// conversion
+				List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(qd), resultList,
+						namespaces, extType);
+
+				if (reportIfEmpty == false && convertedResultList.size() == 0) {
+					EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+					return;
+				}
+
+				JsonObject queryResultDocument = StaticResource.simpleEventQueryResults.copy();
+				JsonArray eventList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+						.getJsonObject("resultsBody").getJsonArray("eventList");
+				for (JsonObject list : convertedResultList) {
+					eventList.add(list);
+				}
+				queryResultDocument.put("@context", context);
+
+				// InitialRecordTime limits recordTime
+				if (initialRecordTime != null) {
+					try {
+						long cur = System.currentTimeMillis();
+						sub.setInitialRecordTime(cur);
+						map.put("jobData", sub);
+						SubscriptionManager.sched.addJob(detail, true, true);
+					} catch (SchedulerException e) {
+						HTTPUtil.sendQueryResults(ws,
+								JSONMessageFactory.get400SubscriptionControlsException(e.getMessage()));
+						return;
+					}
+				}
+
+				HTTPUtil.sendQueryResults(ws, queryResultDocument);
+			} catch (IllegalStateException e) {
+				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
+						"Subscribe", subscriptionID, e.getMessage());
+				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
+						e1, e1.getClass());
+			}
+			// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
+			// NoSuchNameException, SecurityException, ValidationException,
+			// ImplementationException
+		}
+
+	}
+
+	public static ArrayList<String> getNamespaces(List<org.bson.Document> events) {
+		ArrayList<String> namespaces = new ArrayList<String>();
+		for (org.bson.Document event : events) {
+			org.bson.Document ext = event.get("extension", org.bson.Document.class);
+			if (ext != null) {
+				getNamespaces(namespaces, ext);
+			}
+			List<org.bson.Document> sel = event.getList("sensorElementList", org.bson.Document.class);
+			if (sel != null) {
+				for (org.bson.Document se : sel) {
+					org.bson.Document seExt = se.get("extension", org.bson.Document.class);
+					if (seExt != null) {
+						getNamespaces(namespaces, seExt);
+					}
+				}
 			}
 
-			HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
-					queryResults, QueryResults.class);
-
-		} catch (IllegalStateException e) {
-			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, "Subscribe",
-					subscriptionID, e.getMessage());
-			HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message, e1,
-					e1.getClass());
+			org.bson.Document errorDeclaration = event.get("errorDeclaration", org.bson.Document.class);
+			if (errorDeclaration != null) {
+				org.bson.Document errExt = errorDeclaration.get("extension", org.bson.Document.class);
+				if (errExt != null) {
+					getNamespaces(namespaces, errExt);
+				}
+			}
 		}
-		// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
-		// NoSuchNameException, SecurityException, ValidationException,
-		// ImplementationException
+		return namespaces;
+	}
+
+	public static ArrayList<String> getNamespaces(org.bson.Document event) {
+		ArrayList<String> namespaces = new ArrayList<String>();
+
+		org.bson.Document ext = event.get("extension", org.bson.Document.class);
+		if (ext != null) {
+			getNamespaces(namespaces, ext);
+		}
+		List<org.bson.Document> sel = event.getList("sensorElementList", org.bson.Document.class);
+		if (sel != null) {
+			for (org.bson.Document se : sel) {
+				org.bson.Document seExt = se.get("extension", org.bson.Document.class);
+				if (seExt != null) {
+					getNamespaces(namespaces, seExt);
+				}
+			}
+		}
+
+		org.bson.Document errorDeclaration = event.get("errorDeclaration", org.bson.Document.class);
+		if (errorDeclaration != null) {
+			org.bson.Document errExt = errorDeclaration.get("extension", org.bson.Document.class);
+			if (errExt != null) {
+				getNamespaces(namespaces, errExt);
+			}
+		}
+
+		return namespaces;
+	}
+
+	public static void getNamespaces(ArrayList<String> namespaces, org.bson.Document inner) {
+		for (Entry<String, Object> entry : inner.entrySet()) {
+			String nonDecodedNamespace = entry.getKey();
+			String[] arr = nonDecodedNamespace.split("#");
+			if (arr.length == 2) {
+				if (!namespaces.contains(arr[0])) {
+					namespaces.add(arr[0]);
+				}
+				if (entry.getValue() instanceof org.bson.Document) {
+					getNamespaces(namespaces, (org.bson.Document) entry.getValue());
+				}
+			}
+
+		}
+	}
+
+	public static String decodeMongoObjectKey(String key) {
+		key = key.replace("\uff0e", ".");
+		return key;
+	}
+
+	private List<JsonObject> getConvertedResultList(boolean isResultSorted, List<org.bson.Document> resultList,
+			ArrayList<String> namespaces, JsonObject extType) throws RuntimeException {
+		Stream<org.bson.Document> resultStream;
+		if (isResultSorted == true) {
+			resultStream = resultList.stream();
+		} else {
+			resultStream = resultList.parallelStream();
+		}
+
+		try {
+			List<JsonObject> results = resultStream.map(result -> {
+				try {
+					switch (result.getString("type")) {
+					case "AggregationEvent":
+						return EPCISServer.bsonToJsonConverter.convertAggregationEvent(result, namespaces, extType);
+
+					case "ObjectEvent":
+						return EPCISServer.bsonToJsonConverter.convertObjectEvent(result, namespaces, extType);
+
+					case "TransactionEvent":
+						return EPCISServer.bsonToJsonConverter.convertTransactionEvent(result, namespaces, extType);
+
+					case "TransformationEvent":
+						return EPCISServer.bsonToJsonConverter.convertTransformationEvent(result, namespaces, extType);
+
+					case "AssociationEvent":
+						return EPCISServer.bsonToJsonConverter.convertAssociationEvent(result, namespaces, extType);
+
+					default:
+						return null;
+					}
+				} catch (ValidationException e) {
+					throw new RuntimeException(e.getReason());
+				}
+			}).filter(Objects::nonNull).collect(Collectors.toList());
+			return results;
+		} catch (RuntimeException e) {
+			throw e;
+		}
 	}
 }
 

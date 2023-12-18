@@ -49,6 +49,14 @@ public class HTTPUtil {
 				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(statusCode).end(message.toString());
 	}
 
+	public static void sendQueryResults(ServerWebSocket serverWebSocket, short code, JsonObject message) {
+		serverWebSocket.close(code, message.toString());
+	}
+
+	public static void sendQueryResults(ServerWebSocket serverWebSocket, JsonObject message) {
+		serverWebSocket.writeTextMessage(message.toString());
+	}
+
 	public static void sendQueryResults(HttpServerResponse serverResponse, JsonObject message, int statusCode) {
 		serverResponse.putHeader("content-type", "application/json; charset=utf-8")
 				.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(statusCode)

@@ -15,8 +15,11 @@ import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.SubscriptionControls;
 import org.oliot.epcis.model.SubscriptionControlsException;
+import org.oliot.epcis.model.ValidationException;
 
+import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.RoutingContext;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -35,27 +38,75 @@ public class Subscription {
 	private String subscriptionID;
 	private URI dest;
 	private String schedule;
-	private URI trigger;
+	private String trigger;
 	private Long initialRecordTime;
 	private Boolean reportIfEmpty;
 	private QueryDescription queryDescription;
 	private TriggerDescription triggerDescription;
+	private ServerWebSocket serverWebSocket;
 
 	@Override
-		public String toString() {
-			if(schedule != null) {
-				JsonObject obj = new JsonObject();
-				obj.put("subscriptionID", subscriptionID);
-				obj.put("dest", dest.toString());
-				obj.put("schedule", schedule);
-				obj.put("initialRecordTime", initialRecordTime);
-				obj.put("reportIfEmpty", reportIfEmpty);
-				return obj.toString();
-			}else {
-				return null;
-			}			
+	public String toString() {
+		if (schedule != null) {
+			JsonObject obj = new JsonObject();
+			obj.put("subscriptionID", subscriptionID);
+			obj.put("dest", dest.toString());
+			obj.put("schedule", schedule);
+			obj.put("initialRecordTime", initialRecordTime);
+			obj.put("reportIfEmpty", reportIfEmpty);
+			return obj.toString();
+		} else {
+			return null;
 		}
-	
+	}
+
+	public ServerWebSocket getServerWebSocket() {
+		return serverWebSocket;
+	}
+
+	public void setServerWebSocket(ServerWebSocket serverWebSocket) {
+		this.serverWebSocket = serverWebSocket;
+	}
+
+	/**
+	 * for JSON WebSocket
+	 * 
+	 * @throws Exception
+	 * @throws ValidationException
+	 * @throws ImplementationException
+	 * @throws QueryParameterException
+	 * 
+	 */
+	public Subscription(String queryName, RoutingContext routingContext, org.bson.Document namedQuery,
+			ServerWebSocket serverWebSocket)
+			throws QueryParameterException, ImplementationException, ValidationException, Exception {
+
+		subscriptionID = queryName;
+		dest = null;
+
+		String second = routingContext.queryParam("GS1-Query-Second").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-Second").get(0);
+		String minute = routingContext.queryParam("GS1-Query-Minute").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-Minute").get(0);
+		String hour = routingContext.queryParam("GS1-Query-Hour").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-Hour").get(0);
+		String dayOfMonth = routingContext.queryParam("GS1-Query-DayOfMonth").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-DayOfMonth").get(0);
+		String month = routingContext.queryParam("GS1-Query-Month").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-Month").get(0);
+		String dayOfWeek = routingContext.queryParam("GS1-Query-DayOfWeek").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-DayOfWeek").get(0);
+
+		schedule = getSchedule(new QuerySchedule(second, minute, hour, dayOfMonth, month, dayOfWeek));
+
+		trigger = routingContext.queryParam("GS1-Query-Stream").isEmpty() ? null
+				: routingContext.queryParam("GS1-Query-Stream").get(0);
+
+		queryDescription = new QueryDescription(namedQuery.get("query", JsonObject.class), "SimpleEventQuery");
+
+		this.serverWebSocket = serverWebSocket;
+	}
+
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)
 			throws InvalidURIException, SubscriptionControlsException, ImplementationException, QueryParameterException,
 			SubscribeNotPermittedException {
@@ -76,12 +127,7 @@ public class Subscription {
 
 		schedule = getSchedule(controls.getSchedule());
 		if (controls.getTrigger() != null) {
-			try {
-				trigger = new URI(controls.getTrigger());
-			} catch (URISyntaxException e) {
-				InvalidURIException e1 = new InvalidURIException("Invalid URI: " + e.getMessage());
-				throw e1;
-			}
+			trigger = controls.getTrigger();
 		}
 
 		if ((schedule == null && trigger == null) || (schedule != null && trigger != null)) {
@@ -102,8 +148,6 @@ public class Subscription {
 			triggerDescription = new TriggerDescription(sub, unmarshaller);
 		}
 	}
-	
-	
 
 	public TriggerDescription getTriggerDescription() {
 		return triggerDescription;
@@ -122,7 +166,7 @@ public class Subscription {
 			reportIfEmpty = doc.getBoolean("reportIfEmpty");
 			schedule = doc.getString("schedule");
 			if (doc.getString("trigger") != null)
-				trigger = new URI(doc.getString("trigger"));
+				trigger = doc.getString("trigger");
 
 			queryDescription = new QueryDescription(doc);
 			triggerDescription = new TriggerDescription(doc);
@@ -154,7 +198,7 @@ public class Subscription {
 		if (trigger != null) {
 			doc.put("trigger", trigger.toString());
 			doc.put("query", triggerDescription.getMongoQueryParameter());
-		}		
+		}
 		return doc;
 	}
 
@@ -182,11 +226,11 @@ public class Subscription {
 		this.schedule = schedule;
 	}
 
-	public URI getTrigger() {
+	public String getTrigger() {
 		return trigger;
 	}
 
-	public void setTrigger(URI trigger) {
+	public void setTrigger(String trigger) {
 		this.trigger = trigger;
 	}
 
@@ -225,6 +269,10 @@ public class Subscription {
 		String dayOfMonth = schedule.getDayOfMonth();
 		String month = schedule.getMonth();
 		String dayOfWeek = schedule.getDayOfWeek();
+
+		if (sec == null && min == null && hour == null && dayOfMonth == null && month == null && dayOfWeek == null) {
+			return null;
+		}
 
 		if (sec == null)
 			sec = "*";

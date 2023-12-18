@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.bson.Document;
 import org.oliot.epcis.capture.json.JSONMessageFactory;
@@ -28,6 +25,7 @@ import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.Poll;
+import org.oliot.epcis.model.QueryParameterException;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.model.ValidationException;
@@ -2536,6 +2534,32 @@ public class RESTQueryServiceHandler {
 		}
 	}
 
+	/**
+	 * Returns EPCIS events with the option to use pagination if needed. This
+	 * endpoint supports query subscriptions using WebSockets. The `GET` endpoint is
+	 * to retrieve results of a named query. Furthermore, this endpoint can also be
+	 * used to subscribe to queries using Websocket. To do this, the client must
+	 * specify the query schedule or set the `stream` parameter to `true` as a URL
+	 * query string parameter. Please note that scheduling parameters and the
+	 * `stream` parameter are mutually exclusive.
+	 * 
+	 * ## Scheduled query: Receive query results at 1.05am Handshake from client for
+	 * scheduled query: ``` GET
+	 * https://example.com/queries/MyQuery/events?minute=5&hour=1 Host: example.com
+	 * Upgrade: websocket Connection: Upgrade ``` Handshake from the server: ```
+	 * HTTP/1.1 101 Switching Protocols Upgrade: websocket Connection: Upgrade ```
+	 * 
+	 * ## Streaming query subscription: Whenever a captured EPCIS event matches the
+	 * query criteria Handshake from client for streaming: ``` GET
+	 * https://example.com/queries/MyQuery/events?stream=true Host:
+	 * example.com\nUpgrade: websocket Connection: Upgrade ``` Handshake from the
+	 * server: ``` HTTP/1.1 101 Switching Protocols Upgrade: websocket Connection:
+	 * Upgrade
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
 	public static void registerGetEventsWithNamedQueryHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
@@ -2558,7 +2582,6 @@ public class RESTQueryServiceHandler {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 				return;
 			} else {
-
 				String nextPageToken = routingContext.request().getParam("nextPageToken");
 				if (nextPageToken == null) {
 					soapQueryService.poll(routingContext.request(), routingContext.response(), namedQuery);
@@ -2591,19 +2614,26 @@ public class RESTQueryServiceHandler {
 				if (nextPageToken == null) {
 					try {
 						if (hasWebSocketRequest(routingContext)) {
-							final AtomicInteger i = new AtomicInteger(1);
 							routingContext.request().toWebSocket(serverWebSocket -> {
 
-								new Timer().schedule(new TimerTask() {
+								try {
+									restQueryService.subscribe(routingContext.response(),
+											new Subscription(queryName, routingContext, namedQuery, serverWebSocket.result()));
+								} catch (QueryParameterException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (ImplementationException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (ValidationException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
 
-									@Override
-									public void run() {
-
-										serverWebSocket.result().writeTextMessage(String.valueOf(i.incrementAndGet()));
-									}
-								}, 0, 5000);
 							});
-
 						} else {
 							restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
 						}

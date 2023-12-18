@@ -1296,6 +1296,40 @@ public class RESTQueryService {
 		return perPage;
 	}
 
+	/**
+	 * WebSocket subscription Volatile
+	 *
+	 */
+	public void subscribe(HttpServerResponse serverResponse, Subscription subscription) {
+
+		String schedule = subscription.getSchedule();
+		String trigger = subscription.getTrigger();
+		if (schedule == null && trigger == null) {
+			HTTPUtil.sendQueryResults(subscription.getServerWebSocket(),
+					JSONMessageFactory.get400SubscriptionControlsException(
+							"WebSocket Subscription should contain one of schedule or trigger information"));
+			return;
+		}
+
+		if (schedule != null) {
+			try {
+				cronSchedule(schedule);
+				addScheduleToQuartz(subscription);
+				return;
+			} catch (Throwable e) {
+				HTTPUtil.sendQueryResults(subscription.getServerWebSocket(),
+						JSONMessageFactory.get400SubscriptionControlsException(
+								"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc."
+										+ e.getMessage()));
+				return;
+			}
+		} else {
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
+			addScheduleToDB(subscription);
+			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+		}
+	}
+
 	// ------------TODO-------------------------------------------------------------------------------------------
 
 	public void getSubscriptionIDs(HttpServerResponse serverResponse) {
@@ -1339,66 +1373,6 @@ public class RESTQueryService {
 					"GetSubscriptionIDs", e.getMessage());
 			HTTPUtil.sendQueryResults(serverResponse, new SOAPMessage(), err, err.getClass(), 500);
 			EPCISServer.logger.error(e.getMessage());
-		}
-	}
-
-	public void subscribe(HttpServerResponse serverResponse, Subscribe subscribe) {
-
-		SOAPMessage message = new SOAPMessage();
-
-		Subscription subscription = null;
-		try {
-			subscription = new Subscription(subscribe, soapQueryUnmarshaller);
-		} catch (ImplementationException e) {
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
-			return;
-		} catch (InvalidURIException | SubscriptionControlsException | QueryParameterException
-				| SubscribeNotPermittedException e) {
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
-			return;
-		}
-
-		// Existing subscription Check
-		org.bson.Document result = null;
-		try {
-			result = EPCISServer.mSubscriptionCollection
-					.find(new org.bson.Document().append("_id", subscription.getSubscriptionID())).first();
-		} catch (Throwable e2) {
-			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
-					e2.getMessage());
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
-		}
-
-		if (result != null) {
-			DuplicateSubscriptionException e = new DuplicateSubscriptionException(
-					"The specified subscriptionID is identical to a previous subscription that was created and not yet unsubscribed.: "
-							+ subscription.getSubscriptionID());
-			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
-			return;
-		}
-
-		// cron Example
-		// 0/10 * * * * ? : every 10 second
-		String schedule = subscription.getSchedule();
-		URI trigger = subscription.getTrigger();
-		if (schedule != null) {
-			try {
-				cronSchedule(schedule);
-				addScheduleToQuartz(subscription);
-				addScheduleToDB(subscription);
-				sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
-				return;
-			} catch (Throwable e) {
-				SubscriptionControlsException e1 = new SubscriptionControlsException(
-						"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc."
-								+ e.getMessage());
-				HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
-				return;
-			}
-		} else {
-			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
-			addScheduleToDB(subscription);
-			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
 		}
 	}
 

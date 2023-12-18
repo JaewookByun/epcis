@@ -3,6 +3,10 @@ package org.oliot.epcis.capture.json;
 import io.vertx.core.json.JsonObject;
 
 public class JSONMessageFactory {
+
+	public static JsonObject exception400SubscriptionControlsException = new JsonObject()
+			.put("type", "epcisException:SubscriptionControlsException").put("status", 400);
+
 	public static JsonObject exception413CapturePayloadTooLarge = new JsonObject()
 			.put("type", "epcisException:CaptureLimitExceededException").put("title", "Capture Payload Too large")
 			.put("status", 413);
@@ -14,18 +18,24 @@ public class JSONMessageFactory {
 
 	private static JsonObject exception406NotAcceptableException = new JsonObject()
 			.put("type", "epcisException:NotAcceptableException").put("status", 406);
-	
+
 	private static JsonObject exception409ResourceAlreadyExistsException = new JsonObject()
 			.put("type", "epcisException:ResourceAlreadyExistsException").put("status", 409);
-	
+
 	private static JsonObject exception413QueryTooLargeException = new JsonObject()
 			.put("type", "epcisException:QueryTooLargeException").put("status", 413);
-
+	
 	private static JsonObject exception500ImplementationException = new JsonObject()
 			.put("type", "epcisException:ImplementationException").put("status", 500);
 
 	public static JsonObject get400ValidationException(String title) {
 		JsonObject cloned = exception400ValidationException.copy();
+		cloned.put("title", title);
+		return cloned;
+	}
+
+	public static JsonObject get400SubscriptionControlsException(String title) {
+		JsonObject cloned = exception400SubscriptionControlsException.copy();
 		cloned.put("title", title);
 		return cloned;
 	}
@@ -41,7 +51,7 @@ public class JSONMessageFactory {
 		cloned.put("title", title);
 		return cloned;
 	}
-	
+
 	public static JsonObject get409ResourceAlreadyExistsException(String title) {
 		JsonObject cloned = exception409ResourceAlreadyExistsException.copy();
 		cloned.put("title", title);
@@ -54,7 +64,6 @@ public class JSONMessageFactory {
 		return cloned;
 	}
 
-	
 	public static JsonObject get500ImplementationException(String title) {
 		JsonObject cloned = exception500ImplementationException.copy();
 		cloned.put("title", title);
