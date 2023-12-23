@@ -10,8 +10,8 @@
 	<url>https://github.com/JaewookByun/epcis2</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>20</maven.compiler.source>
-		<maven.compiler.target>20</maven.compiler.target>
+		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
 		<vertx.version>4.5.0</vertx.version>
 		<slf4j.version>2.0.9</slf4j.version>
 		<jaxb.version>4.0.4</jaxb.version>

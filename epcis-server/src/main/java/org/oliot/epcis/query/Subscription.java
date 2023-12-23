@@ -2,6 +2,7 @@ package org.oliot.epcis.query;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.UUID;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
@@ -16,6 +17,7 @@ import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.SubscriptionControls;
 import org.oliot.epcis.model.SubscriptionControlsException;
 import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.util.TimeUtil;
 
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.json.JsonObject;
@@ -75,13 +77,14 @@ public class Subscription {
 	 * @throws ValidationException
 	 * @throws ImplementationException
 	 * @throws QueryParameterException
+	 * @throws SubscribeNotPermittedException
 	 * 
 	 */
 	public Subscription(String queryName, RoutingContext routingContext, org.bson.Document namedQuery,
-			ServerWebSocket serverWebSocket)
-			throws QueryParameterException, ImplementationException, ValidationException, Exception {
+			ServerWebSocket serverWebSocket) throws QueryParameterException, ImplementationException,
+			ValidationException, Exception, SubscribeNotPermittedException {
 
-		subscriptionID = queryName;
+		subscriptionID = queryName + "_" + UUID.randomUUID().toString();
 		dest = null;
 
 		String second = routingContext.queryParam("GS1-Query-Second").isEmpty() ? null
@@ -97,14 +100,33 @@ public class Subscription {
 		String dayOfWeek = routingContext.queryParam("GS1-Query-DayOfWeek").isEmpty() ? null
 				: routingContext.queryParam("GS1-Query-DayOfWeek").get(0);
 
+		try {
+			reportIfEmpty = Boolean.parseBoolean(routingContext.queryParam("GS1-Query-ReportIfEmpty").get(0));
+		} catch (Exception e) {
+			reportIfEmpty = true;
+		}
+
+		try {
+
+			initialRecordTime = TimeUtil
+					.toUnixEpoch(routingContext.queryParam("GS1-Query-InitialRecordTime").isEmpty() ? null
+							: routingContext.queryParam("GS1-Query-InitialRecordTime").get(0));
+		} catch (Exception e) {
+
+		}
+
 		schedule = getSchedule(new QuerySchedule(second, minute, hour, dayOfMonth, month, dayOfWeek));
 
 		trigger = routingContext.queryParam("GS1-Query-Stream").isEmpty() ? null
 				: routingContext.queryParam("GS1-Query-Stream").get(0);
 
-		queryDescription = new QueryDescription(namedQuery.get("query", JsonObject.class), "SimpleEventQuery");
-
+		if (schedule == null && trigger == null)
+			throw new QueryParameterException("no schedule and stream in Websocket subscription request");
+		queryDescription = new QueryDescription(new JsonObject(namedQuery.get("rawQuery", Document.class).toJson()),
+				"SimpleEventQuery");
 		this.serverWebSocket = serverWebSocket;
+
+		triggerDescription = new TriggerDescription(this, SOAPQueryService.soapQueryUnmarshaller);
 	}
 
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)

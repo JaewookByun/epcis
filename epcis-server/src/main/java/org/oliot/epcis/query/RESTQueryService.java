@@ -3,6 +3,7 @@ package org.oliot.epcis.query;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -1315,6 +1316,16 @@ public class RESTQueryService {
 			try {
 				cronSchedule(schedule);
 				addScheduleToQuartz(subscription);
+				subscription.getServerWebSocket().closeHandler(h -> {
+					try {
+						SubscriptionManager.sched.unscheduleJob(
+								org.quartz.TriggerKey.triggerKey(subscription.getSubscriptionID(), "SimpleEventQuery"));
+						SubscriptionManager.sched.deleteJob(
+								org.quartz.JobKey.jobKey(subscription.getSubscriptionID(), "SimpleEventQuery"));
+					} catch (SchedulerException e) {
+						e.printStackTrace();
+					}
+				});
 				return;
 			} catch (Throwable e) {
 				HTTPUtil.sendQueryResults(subscription.getServerWebSocket(),
@@ -1324,9 +1335,15 @@ public class RESTQueryService {
 				return;
 			}
 		} else {
-			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
-			addScheduleToDB(subscription);
-			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(),
+					subscription.getServerWebSocket());
+			subscription.getServerWebSocket().closeHandler(h -> {
+
+				HashSet<Object> obj = TriggerEngine.triggerSubscription.remove(subscription.getTriggerDescription());
+				if(obj != null) {
+					EPCISServer.logger.debug("Trigger Subscription (Web Socket) " + subscription.getTriggerDescription() + " is removed ");
+				}
+			});
 		}
 	}
 

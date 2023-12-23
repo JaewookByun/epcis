@@ -74,6 +74,10 @@ public class QueryDescription {
 	private String orderBy = null;
 	private int orderDirection = -1;
 
+	public Document getRawQuery() {
+		return rawQuery;
+	}
+
 	public QueryDescription(Document doc) {
 		queryName = doc.getString("queryName");
 		mongoQuery = doc.get("query", Document.class);

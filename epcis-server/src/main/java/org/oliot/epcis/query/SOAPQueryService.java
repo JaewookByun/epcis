@@ -1379,7 +1379,7 @@ public class SOAPQueryService {
 						namespaces, extType);
 
 				if (reportIfEmpty == false && convertedResultList.size() == 0) {
-					EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+					EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " invoked but not sent due to reportIfEmpty");
 					return;
 				}
 
@@ -1389,7 +1389,7 @@ public class SOAPQueryService {
 				for (JsonObject list : convertedResultList) {
 					eventList.add(list);
 				}
-				queryResultDocument.put("@context", context);
+				queryResultDocument.put("@context", jContext);
 
 				// InitialRecordTime limits recordTime
 				if (initialRecordTime != null) {
@@ -1404,7 +1404,7 @@ public class SOAPQueryService {
 						return;
 					}
 				}
-
+				EPCISServer.logger.debug(queryResultDocument.encodePrettily());
 				HTTPUtil.sendQueryResults(ws, queryResultDocument);
 			} catch (IllegalStateException e) {
 				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,

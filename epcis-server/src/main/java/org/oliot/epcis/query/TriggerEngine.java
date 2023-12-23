@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.ServerWebSocket;
 
 import org.bson.Document;
 import org.oliot.epcis.converter.data.bson_to_pojo.AggregationEventConverter;
@@ -21,31 +22,46 @@ import org.oliot.epcis.util.SOAPMessage;
 
 public class TriggerEngine {
 
-	public static ConcurrentHashMap<TriggerDescription, HashSet<URI>> triggerSubscription;
+	public static ConcurrentHashMap<TriggerDescription, HashSet<Object>> triggerSubscription;
 
 	public TriggerEngine() {
-		triggerSubscription = new ConcurrentHashMap<TriggerDescription, HashSet<URI>>();
+		triggerSubscription = new ConcurrentHashMap<TriggerDescription, HashSet<Object>>();
 	}
 
 	public void addSubscription(TriggerDescription description, URI uri) {
 		if (triggerSubscription.containsKey(description)) {
 			triggerSubscription.get(description).add(uri);
 		} else {
-			HashSet<URI> set = new HashSet<URI>();
+			HashSet<Object> set = new HashSet<Object>();
 			set.add(uri);
+			triggerSubscription.put(description, set);
+		}
+	}
+
+	public void addSubscription(TriggerDescription description, ServerWebSocket ws) {
+		if (triggerSubscription.containsKey(description)) {
+			triggerSubscription.get(description).add(ws);
+		} else {
+			HashSet<Object> set = new HashSet<Object>();
+			set.add(ws);
 			triggerSubscription.put(description, set);
 		}
 	}
 
 	public static void registerTransactionStartHandler(EventBus eventBus) {
 		eventBus.consumer("trigger", msg -> {
-			for (java.util.Map.Entry<TriggerDescription, HashSet<URI>> entry : TriggerEngine.triggerSubscription
+			for (java.util.Map.Entry<TriggerDescription, HashSet<Object>> entry : TriggerEngine.triggerSubscription
 					.entrySet()) {
 				TriggerDescription desc = entry.getKey();
-				HashSet<URI> uris = entry.getValue();
+				HashSet<Object> dests = entry.getValue();
 				if (desc.isPass((Document) msg.body())) {
-					for (URI uri : uris) {
-						sendQueryResult(desc, (Document) msg.body(), uri);
+					for (Object dest : dests) {
+						if (dest instanceof URI) {
+							sendQueryResult(desc, (Document) msg.body(), (URI) dest);
+						} else if (dest instanceof ServerWebSocket) {
+							sendQueryResult(desc, (Document) msg.body(), (ServerWebSocket) dest);
+						}
+
 					}
 				}
 			}
@@ -92,4 +108,7 @@ public class TriggerEngine {
 				queryResults, QueryResults.class);
 	}
 
+	private static void sendQueryResult(TriggerDescription desc, Document doc, ServerWebSocket ws) {
+		ws.writeTextMessage(doc.toJson());
+	}
 }

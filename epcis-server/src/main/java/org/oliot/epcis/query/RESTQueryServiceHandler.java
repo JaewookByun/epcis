@@ -26,6 +26,7 @@ import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.Poll;
 import org.oliot.epcis.model.QueryParameterException;
+import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
 import org.oliot.epcis.model.ValidationException;
@@ -2617,22 +2618,24 @@ public class RESTQueryServiceHandler {
 							routingContext.request().toWebSocket(serverWebSocket -> {
 
 								try {
-									restQueryService.subscribe(routingContext.response(),
-											new Subscription(queryName, routingContext, namedQuery, serverWebSocket.result()));
+									restQueryService.subscribe(routingContext.response(), new Subscription(queryName,
+											routingContext, namedQuery, serverWebSocket.result()));
 								} catch (QueryParameterException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									serverWebSocket.result().close((short) 1003, e.getReason());
+									return;
 								} catch (ImplementationException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									serverWebSocket.result().close((short) 1003, e.getReason());
+									return;
 								} catch (ValidationException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									serverWebSocket.result().close((short) 1003, e.getReason());
+									return;
 								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
+									serverWebSocket.result().close((short) 1003, e.getMessage());
+									return;
+								} catch (SubscribeNotPermittedException e) {
+									serverWebSocket.result().close((short) 1003, e.getMessage());
+									return;
 								}
-
 							});
 						} else {
 							restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
