@@ -235,6 +235,7 @@ public class EPCISServer extends AbstractVerticle {
 		CommonHandler.registerPingHandler(router);
 		CommonHandler.registerDeleteHandler(router);
 		CommonHandler.registerStatisticsHandler(router);
+		CommonHandler.registerDeletePageTokenHandler(router);
 	}
 
 	private void registerTDTServiceHandler(Router router) {
@@ -261,7 +262,6 @@ public class EPCISServer extends AbstractVerticle {
 		XMLCaptureServiceHandler.registerGetCaptureIDHandler(router, xmlCaptureCoreService);
 		XMLCaptureServiceHandler.registerPostEventsHandler(router, xmlCaptureCoreService, eventBus);
 		XMLCaptureServiceHandler.registerGetCaptureHandler(router, xmlCaptureCoreService);
-		XMLCaptureServiceHandler.registerDeletePageToken(router);
 		XMLCaptureServiceHandler.registerValidationHandler(router, xmlCaptureCoreService);
 	}
 
@@ -270,7 +270,6 @@ public class EPCISServer extends AbstractVerticle {
 		JSONCaptureServiceHandler.registerGetCaptureIDHandler(router, jsonCaptureCoreService);
 		JSONCaptureServiceHandler.registerPostEventsHandler(router, jsonCaptureCoreService, eventBus);
 		JSONCaptureServiceHandler.registerGetCaptureHandler(router, jsonCaptureCoreService);
-		JSONCaptureServiceHandler.registerDeletePageToken(router);
 		JSONCaptureServiceHandler.registerValidationHandler(router, jsonCaptureCoreService);
 	}
 

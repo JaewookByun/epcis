@@ -2,13 +2,7 @@ package org.oliot.epcis.capture.xml;
 
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.ext.web.Router;
-import org.oliot.epcis.model.EPCISException;
-import org.oliot.epcis.pagination.DataPage;
 import org.oliot.epcis.server.EPCISServer;
-import org.oliot.epcis.util.HTTPUtil;
-import org.oliot.epcis.util.SOAPMessage;
-
-import java.util.UUID;
 
 import static org.oliot.epcis.validation.HeaderValidator.*;
 
@@ -131,31 +125,6 @@ public class XMLCaptureServiceHandler {
 			xmlCaptureService.postEvent(routingContext, eventBus);
 		});
 		EPCISServer.logger.info("[POST /epcis/events (application/xml)] - router added");
-	}
-
-	/**
-	 * Optional endpoint that allows on-demand release of any resources associated
-	 * with `nextPageToken`.
-	 *
-	 * @param router
-	 */
-	public static void registerDeletePageToken(Router router) {
-		router.delete("/epcis/nextPageToken/:token").consumes("application/xml").handler(routingContext -> {
-			UUID uuid = UUID.fromString(routingContext.pathParam("token"));
-			DataPage page = EPCISServer.captureIDPageMap.remove(uuid);
-			try {
-				page.getTimer().cancel();
-			} catch (Exception e) {
-
-			}
-			if (page != null) {
-				routingContext.response().setStatusCode(204).end();
-			} else {
-				EPCISException e = new EPCISException("There is no page with token: " + uuid.toString());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
-			}
-		});
-		EPCISServer.logger.info("[DELETE /nextPageToken/:token (application/xml)] - router added");
 	}
 
 	/**

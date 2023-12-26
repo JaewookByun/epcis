@@ -1,8 +1,15 @@
 package org.oliot.epcis.common;
 
 import io.vertx.ext.web.Router;
+
+import java.util.UUID;
+
+import org.oliot.epcis.capture.json.JSONMessageFactory;
+import org.oliot.epcis.model.EPCISException;
 import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.server.EPCISServer;
+import org.oliot.epcis.util.HTTPUtil;
+import org.oliot.epcis.util.SOAPMessage;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -59,4 +66,110 @@ public class CommonHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/query] - router added");
 	}
+
+	/**
+	 * * Optional endpoint that allows on-demand release of any resources associated
+	 * with `nextPageToken`.
+	 * 
+	 * @param router
+	 */
+	public static void registerDeletePageTokenHandler(Router router) {
+		router.delete("/epcis/nextPageToken/:token").consumes("application/xml").handler(routingContext -> {
+
+			String token = routingContext.pathParam("token");
+
+			UUID uuidToken = null;
+			try {
+				uuidToken = UUID.fromString(token);
+			} catch (IllegalArgumentException e) {
+				EPCISException e1 = new EPCISException("[404NoSuchResourceException] There is no page token: " + token);
+				EPCISServer.logger.error("[404NoSuchResourceException] There is no page token: " + token);
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 404);
+				return;
+			}
+
+			if (EPCISServer.eventPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for events");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.vocabularyPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for vocabularies");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.captureIDPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for capture jobs");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.epcsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for epcs");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.bizStepsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for bizSteps");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.bizLocationsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for bizLocations");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.readPointsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for readPoints");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.dispositionsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for dispositions");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.namedQueriesPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for named queries");
+				routingContext.response().setStatusCode(204).end();
+			}
+
+			EPCISException e1 = new EPCISException("[404NoSuchResourceException] There is no page token: " + uuidToken);
+			EPCISServer.logger.error("[404NoSuchResourceException] There is no page token: " + uuidToken);
+			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 404);
+		});
+		EPCISServer.logger.info("[DELETE /epcis/nextPageToken/:token (application/xml)] - router added");
+
+		router.delete("/epcis/nextPageToken/:token").consumes("application/json").handler(routingContext -> {
+
+			String token = routingContext.pathParam("token");
+
+			UUID uuidToken = null;
+			try {
+				uuidToken = UUID.fromString(token);
+			} catch (IllegalArgumentException e) {
+				HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+						"[404NoSuchResourceException] There is no available query for : " + token), 404);
+				return;
+			}
+
+			if (EPCISServer.eventPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for events");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.vocabularyPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for vocabularies");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.captureIDPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for capture jobs");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.epcsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for epcs");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.bizStepsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for bizSteps");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.bizLocationsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for bizLocations");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.readPointsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for readPoints");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.dispositionsPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for dispositions");
+				routingContext.response().setStatusCode(204).end();
+			} else if (EPCISServer.namedQueriesPageMap.remove(uuidToken) != null) {
+				EPCISServer.logger.debug("Page token " + uuidToken + " is invalidated for named queries");
+				routingContext.response().setStatusCode(204).end();
+			}
+
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get404NoSuchResourceException(
+					"[404NoSuchResourceException] There is no available query for : " + token), 404);
+			return;
+		});
+		EPCISServer.logger.info("[DELETE /epcis/nextPageToken/:token (application/json)] - router added");
+	}
+
 }
