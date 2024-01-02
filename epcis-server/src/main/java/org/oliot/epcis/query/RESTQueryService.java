@@ -1301,7 +1301,7 @@ public class RESTQueryService {
 	 * WebSocket subscription Volatile
 	 *
 	 */
-	public void subscribe(HttpServerResponse serverResponse, Subscription subscription) {
+	public void subscribeWebsocket(HttpServerResponse serverResponse, Subscription subscription) {
 
 		String schedule = subscription.getSchedule();
 		String trigger = subscription.getTrigger();
@@ -1344,6 +1344,41 @@ public class RESTQueryService {
 					EPCISServer.logger.debug("Trigger Subscription (Web Socket) " + subscription.getTriggerDescription() + " is removed ");
 				}
 			});
+		}
+	}
+	
+	public void subscribeWebhook(HttpServerResponse serverResponse, Subscription subscription) {
+
+		String schedule = subscription.getSchedule();
+		String trigger = subscription.getTrigger();
+		if (schedule == null && trigger == null) {
+			HTTPUtil.sendQueryResults(subscription.getServerWebSocket(),
+					JSONMessageFactory.get400SubscriptionControlsException(
+							"WebSocket Subscription should contain one of schedule or trigger information"));
+			return;
+		}
+
+		if (schedule != null) {
+			try {
+				cronSchedule(schedule);
+				addScheduleToQuartz(subscription);
+				addScheduleToDB(subscription);
+				serverResponse.putHeader("Location", subscription.getSubscriptionID());
+				HTTPUtil.sendQueryResults(serverResponse, subscription.toJSONResponse(), 201);
+				return;
+			} catch (Throwable e) {
+				HTTPUtil.sendQueryResults(subscription.getServerWebSocket(),
+						JSONMessageFactory.get400SubscriptionControlsException(
+								"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc."
+										+ e.getMessage()));
+				return;
+			}
+		} else {
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(),
+					subscription.getDest());
+			addScheduleToDB(subscription);
+			serverResponse.putHeader("Location", subscription.getSubscriptionID());
+			HTTPUtil.sendQueryResults(serverResponse, subscription.toJSONResponse(), 201);
 		}
 	}
 

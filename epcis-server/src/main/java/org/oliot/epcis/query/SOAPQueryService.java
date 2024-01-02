@@ -1129,12 +1129,26 @@ public class SOAPQueryService {
 		return results;
 	}
 
-	private void updateInitialRecordTime(String subscriptionID, long initialRecordTime) throws ImplementationException {
+	private void updateMinRecordTime(String subscriptionID, long initialRecordTime) throws ImplementationException {
 
 		try {
 			EPCISServer.mSubscriptionCollection.findOneAndUpdate(new org.bson.Document("_id", subscriptionID),
-					new org.bson.Document("$set", new org.bson.Document("initialRecordTime", initialRecordTime)));
-			EPCISServer.logger.debug("initialRecordTime updated to " + initialRecordTime);
+					new org.bson.Document("$set", new org.bson.Document("minRecordTime", initialRecordTime)));
+			EPCISServer.logger.debug("minRecordTime updated to " + initialRecordTime);
+		} catch (Throwable e2) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e2.getMessage());
+			EPCISServer.logger.error(e.getMessage());
+			throw e;
+		}
+	}
+
+	private void updateLastNotifiedAt(String subscriptionID, long lastNotifiedAt) throws ImplementationException {
+
+		try {
+			EPCISServer.mSubscriptionCollection.findOneAndUpdate(new org.bson.Document("_id", subscriptionID),
+					new org.bson.Document("$set", new org.bson.Document("lastNotifiedAt", lastNotifiedAt)));
+			EPCISServer.logger.debug("lastNotifiedAt updated to " + lastNotifiedAt);
 		} catch (Throwable e2) {
 			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e2.getMessage());
@@ -1243,6 +1257,7 @@ public class SOAPQueryService {
 		String subscriptionID = sub.getSubscriptionID();
 		URI dest = sub.getDest();
 		Long initialRecordTime = sub.getInitialRecordTime();
+		Long minRecordTime = sub.getMinRecordTime();
 		boolean reportIfEmpty = sub.getReportIfEmpty();
 
 		QueryDescription qd = sub.getQueryDescription();
@@ -1257,7 +1272,11 @@ public class SOAPQueryService {
 			try {
 
 				if (initialRecordTime != null) {
-					mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+					if (minRecordTime != null)
+						mongoQuery.put("recordTime", new org.bson.Document("$gte", minRecordTime));
+					else
+						mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+
 				}
 
 				FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
@@ -1309,8 +1328,8 @@ public class SOAPQueryService {
 				if (initialRecordTime != null) {
 					try {
 						long cur = System.currentTimeMillis();
-						sub.setInitialRecordTime(cur);
-						updateInitialRecordTime(subscriptionID, cur);
+						sub.setMinRecordTime(cur);
+						updateMinRecordTime(subscriptionID, cur);
 						map.put("jobData", sub);
 						SubscriptionManager.sched.addJob(detail, true, true);
 					} catch (SchedulerException e) {
@@ -1324,6 +1343,21 @@ public class SOAPQueryService {
 					}
 				}
 
+				try {
+					long cur = System.currentTimeMillis();
+					sub.setLastNotifiedAt(cur);
+					updateLastNotifiedAt(subscriptionID, cur);
+					map.put("jobData", sub);
+					SubscriptionManager.sched.addJob(detail, true, true);
+				} catch (SchedulerException e) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				} catch (ImplementationException e) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				}
 				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
 						queryResults, QueryResults.class);
 
@@ -1340,7 +1374,11 @@ public class SOAPQueryService {
 			// REST Subscription WebSocket JSON
 			try {
 				if (initialRecordTime != null) {
-					mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+					if (minRecordTime != null)
+						mongoQuery.put("recordTime", new org.bson.Document("$gte", minRecordTime));
+					else
+						mongoQuery.put("recordTime", new org.bson.Document("$gte", initialRecordTime));
+
 				}
 
 				FindIterable<org.bson.Document> query = EPCISServer.mEventCollection.find(mongoQuery);
@@ -1379,7 +1417,8 @@ public class SOAPQueryService {
 						namespaces, extType);
 
 				if (reportIfEmpty == false && convertedResultList.size() == 0) {
-					EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " invoked but not sent due to reportIfEmpty");
+					EPCISServer.logger.debug(
+							"Subscription " + sub.getSubscriptionID() + " invoked but not sent due to reportIfEmpty");
 					return;
 				}
 
@@ -1395,7 +1434,7 @@ public class SOAPQueryService {
 				if (initialRecordTime != null) {
 					try {
 						long cur = System.currentTimeMillis();
-						sub.setInitialRecordTime(cur);
+						sub.setMinRecordTime(cur);
 						map.put("jobData", sub);
 						SubscriptionManager.sched.addJob(detail, true, true);
 					} catch (SchedulerException e) {
@@ -1405,6 +1444,17 @@ public class SOAPQueryService {
 					}
 				}
 				EPCISServer.logger.debug(queryResultDocument.encodePrettily());
+				try {
+					long cur = System.currentTimeMillis();
+					sub.setLastNotifiedAt(cur);
+
+					map.put("jobData", sub);
+					SubscriptionManager.sched.addJob(detail, true, true);
+				} catch (SchedulerException e) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				}
 				HTTPUtil.sendQueryResults(ws, queryResultDocument);
 			} catch (IllegalStateException e) {
 				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,

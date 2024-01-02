@@ -47,6 +47,69 @@ public class Subscription {
 	private TriggerDescription triggerDescription;
 	private ServerWebSocket serverWebSocket;
 
+	// for json
+	private String signatureToken;
+	private Long createdAt;
+	private Long lastNotifiedAt;
+	private Long minRecordTime;
+
+	public String getSignatureToken() {
+		return signatureToken;
+	}
+
+	public void setSignatureToken(String signatureToken) {
+		this.signatureToken = signatureToken;
+	}
+
+	public Long getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Long createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Long getLastNotifiedAt() {
+		return lastNotifiedAt;
+	}
+
+	public void setLastNotifiedAt(Long lastNotifiedAt) {
+		this.lastNotifiedAt = lastNotifiedAt;
+	}
+
+	public Long getMinRecordTime() {
+		return minRecordTime;
+	}
+
+	public void setMinRecordTime(Long minRecordTime) {
+		this.minRecordTime = minRecordTime;
+	}
+
+	public JsonObject toJSONResponse() {
+		JsonObject result = new JsonObject();
+		result.put("dest", dest.toString());
+		result.put("subscriptionID", subscriptionID);
+		if (schedule != null)
+			result.put("schedule", getSchedule(schedule));
+		if (trigger != null)
+			result.put("stream", true);
+		if (initialRecordTime != null) {
+			result.put("initialRecordTime", TimeUtil.getDateTimeStamp(initialRecordTime));
+		}
+		if (createdAt != null) {
+			result.put("createdAt", TimeUtil.getDateTimeStamp(createdAt));
+		}
+		if (lastNotifiedAt != null) {
+			result.put("lastNotifiedAt", TimeUtil.getDateTimeStamp(lastNotifiedAt));
+		}
+		if (minRecordTime != null) {
+			result.put("minRecordTime", TimeUtil.getDateTimeStamp(minRecordTime));
+		}
+
+		result.put("epcFormat", "Always_GS1_Digital_Link");
+		return result;
+	}
+
 	@Override
 	public String toString() {
 		if (schedule != null) {
@@ -127,6 +190,81 @@ public class Subscription {
 		this.serverWebSocket = serverWebSocket;
 
 		triggerDescription = new TriggerDescription(this, SOAPQueryService.soapQueryUnmarshaller);
+
+		createdAt = System.currentTimeMillis();
+	}
+
+	/**
+	 * for JSON Webhook
+	 * 
+	 * @throws Exception
+	 * @throws ValidationException
+	 * @throws ImplementationException
+	 * @throws QueryParameterException
+	 * @throws SubscribeNotPermittedException
+	 * 
+	 */
+	public Subscription(String queryName, RoutingContext routingContext, org.bson.Document namedQuery,
+			JsonObject subscriptionBase) throws QueryParameterException, ImplementationException, ValidationException,
+			Exception, SubscribeNotPermittedException {
+
+		/*
+		 * { “dest”: // mandatory “signatureToken” : // mandatory “reportIfEmpty” :
+		 * true, “initialRecordTime” : “schedule” : { “second” : “minute” : “hour” :
+		 * “dayOfMonth” : “month” : “dayOfWeek“ : } }
+		 * 
+		 */
+
+		subscriptionID = queryName + "_" + UUID.randomUUID().toString();
+
+		try {
+			dest = new URI(subscriptionBase.getString("dest"));
+			if (dest == null) {
+				throw new ValidationException("dest field is not given (mandatory)");
+			}
+			signatureToken = subscriptionBase.getString("signatrueToken");
+			if (signatureToken == null) {
+				throw new ValidationException("signatureToken field is not given (mandatory)");
+			}
+		} catch (URISyntaxException e) {
+			throw new ValidationException("Invalid dest field");
+		}
+
+		JsonObject schedule = subscriptionBase.getJsonObject("schedule");
+		if (schedule != null) {
+			String second = schedule.getString("second");
+			String minute = schedule.getString("minute");
+			String hour = schedule.getString("hour");
+			String dayOfMonth = schedule.getString("dayOfMonth");
+			String month = schedule.getString("month");
+			String dayOfWeek = schedule.getString("dayOfWeek");
+			this.schedule = getSchedule(new QuerySchedule(second, minute, hour, dayOfMonth, month, dayOfWeek));
+		} else {
+			Object str = subscriptionBase.getValue("stream");
+			if (str == null || str.toString().equals("false")) {
+				throw new ValidationException("either schedule or stream field is not given (mandatory)");
+			}
+			trigger = str.toString();
+		}
+
+		try {
+			reportIfEmpty = subscriptionBase.getBoolean("reportIfEmpty");
+		} catch (Exception e) {
+			reportIfEmpty = true;
+		}
+
+		try {
+			initialRecordTime = TimeUtil.toUnixEpoch(subscriptionBase.getString("initialRecordTime"));
+		} catch (Exception e) {
+
+		}
+
+		queryDescription = new QueryDescription(new JsonObject(namedQuery.get("rawQuery", Document.class).toJson()),
+				"SimpleEventQuery");
+
+		triggerDescription = new TriggerDescription(this, SOAPQueryService.soapQueryUnmarshaller);
+
+		createdAt = System.currentTimeMillis();
 	}
 
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)
@@ -169,6 +307,36 @@ public class Subscription {
 		} else {
 			triggerDescription = new TriggerDescription(sub, unmarshaller);
 		}
+
+		createdAt = System.currentTimeMillis();
+	}
+
+	public Subscription(org.bson.Document doc) {
+		try {
+			subscriptionID = doc.getString("_id");
+			if (doc.getString("dest") != null)
+				dest = new URI(doc.getString("dest"));
+
+			schedule = doc.getString("schedule");
+			if (doc.getString("trigger") != null)
+				trigger = doc.getString("trigger");
+
+			initialRecordTime = doc.getLong("initialRecordTime");
+			reportIfEmpty = doc.getBoolean("reportIfEmpty");
+
+			queryDescription = new QueryDescription(doc);
+			triggerDescription = new TriggerDescription(doc);
+
+			signatureToken = doc.getString("signatureToken");
+			createdAt = doc.getLong("createdAt");
+			lastNotifiedAt = doc.getLong("lastNotifiedAt");
+			minRecordTime = doc.getLong("minRecordTime");
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} catch (QueryParameterException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public TriggerDescription getTriggerDescription() {
@@ -177,26 +345,6 @@ public class Subscription {
 
 	public void setTriggerDescription(TriggerDescription triggerDescription) {
 		this.triggerDescription = triggerDescription;
-	}
-
-	public Subscription(org.bson.Document doc) {
-		try {
-			subscriptionID = doc.getString("_id");
-			if (doc.getString("dest") != null)
-				dest = new URI(doc.getString("dest"));
-			initialRecordTime = doc.getLong("initialRecordTime");
-			reportIfEmpty = doc.getBoolean("reportIfEmpty");
-			schedule = doc.getString("schedule");
-			if (doc.getString("trigger") != null)
-				trigger = doc.getString("trigger");
-
-			queryDescription = new QueryDescription(doc);
-			triggerDescription = new TriggerDescription(doc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} catch (QueryParameterException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public Document toMongoDocument() {
@@ -321,5 +469,28 @@ public class Subscription {
 			dayOfWeek = "?";
 		}
 		return sec + " " + min + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+	}
+
+	private JsonObject getSchedule(String schedule) {
+		JsonObject scheduleObj = new JsonObject();
+		String[] arr = schedule.split("\\s");
+		if (arr.length == 6) {
+			if (!arr[0].equals("*"))
+				scheduleObj.put("second", arr[0]);
+			if (!arr[1].equals("*"))
+				scheduleObj.put("minute", arr[1]);
+			if (!arr[2].equals("*"))
+				scheduleObj.put("hour", arr[2]);
+			if (!arr[3].equals("*"))
+				scheduleObj.put("dayOfMonth", arr[3]);
+			if (!arr[4].equals("*"))
+				scheduleObj.put("month", arr[4]);
+			if (!arr[5].equals("*"))
+				scheduleObj.put("dayOfWeek", arr[5]);
+			return scheduleObj;
+		} else {
+			// not happen
+			return null;
+		}
 	}
 }

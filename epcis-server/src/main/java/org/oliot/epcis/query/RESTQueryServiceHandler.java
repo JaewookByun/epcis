@@ -259,6 +259,37 @@ public class RESTQueryServiceHandler {
 
 		return createQuery;
 	}
+	
+	public static JsonObject getCreateSubscriptionBase(RoutingContext routingContext) throws ValidationException {
+		RequestBody body = routingContext.body();
+		String inputString = null;
+		if (body.isEmpty()) {
+			MultiMap mm = routingContext.queryParams();
+			Iterator<Entry<String, String>> iter = mm.iterator();
+			while (iter.hasNext()) {
+				Entry<String, String> entry = iter.next();
+				String k = entry.getKey();
+				if (k.contains("dest") && k.contains("signatureToken"))
+					inputString = k;
+			}
+			if (inputString == null) {
+				ValidationException e = new ValidationException("[406ValidationException] Empty Request Body");
+				throw e;
+			}
+		} else {
+			inputString = body.asString();
+		}
+
+		JsonObject createSubscriptionBase = null;
+		try {
+			createSubscriptionBase = new JsonObject(inputString);
+		} catch (Exception e) {
+			ValidationException e1 = new ValidationException("[406ValidationException] " + e.getMessage());
+			throw e1;
+		}
+
+		return createSubscriptionBase;
+	}
 
 	public static void registerGetEventsHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
@@ -2618,7 +2649,7 @@ public class RESTQueryServiceHandler {
 							routingContext.request().toWebSocket(serverWebSocket -> {
 
 								try {
-									restQueryService.subscribe(routingContext.response(), new Subscription(queryName,
+									restQueryService.subscribeWebsocket(routingContext.response(), new Subscription(queryName,
 											routingContext, namedQuery, serverWebSocket.result()));
 								} catch (QueryParameterException e) {
 									serverWebSocket.result().close((short) 1003, e.getReason());
@@ -2786,6 +2817,7 @@ public class RESTQueryServiceHandler {
 	public static void registerPostSubscriptionHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
+		// TODO
 		router.post("/epcis/queries/:queryName/subscriptions").consumes("application/xml").handler(routingContext -> {
 
 			if (!isHeaderPassed(routingContext))
@@ -2833,53 +2865,27 @@ public class RESTQueryServiceHandler {
 						"[404NoSuchResourceException] There is no available query for: " + queryName), 404);
 				return;
 			} else {
-				String nextPageToken = routingContext.request().getParam("nextPageToken");
-				if (nextPageToken == null) {
-					try {
-						if (hasWebSocketRequest(routingContext)) {
-							routingContext.request().toWebSocket(serverWebSocket -> {
-
-								try {
-									restQueryService.subscribe(routingContext.response(), new Subscription(queryName,
-											routingContext, namedQuery, serverWebSocket.result()));
-								} catch (QueryParameterException e) {
-									serverWebSocket.result().close((short) 1003, e.getReason());
-									return;
-								} catch (ImplementationException e) {
-									serverWebSocket.result().close((short) 1003, e.getReason());
-									return;
-								} catch (ValidationException e) {
-									serverWebSocket.result().close((short) 1003, e.getReason());
-									return;
-								} catch (Exception e) {
-									serverWebSocket.result().close((short) 1003, e.getMessage());
-									return;
-								} catch (SubscribeNotPermittedException e) {
-									serverWebSocket.result().close((short) 1003, e.getMessage());
-									return;
-								}
-							});
-						} else {
-							restQueryService.query(routingContext, namedQuery, "SimpleEventQuery");
-						}
-					} catch (ImplementationException e) {
-						HTTPUtil.sendQueryResults(routingContext.response(),
-								JSONMessageFactory.get500ImplementationException(e.getReason()), 500);
-						return;
-					}
-				} else {
-					UUID uuid = null;
-					try {
-						uuid = UUID.fromString(nextPageToken);
-					} catch (Exception e) {
-						HTTPUtil.sendQueryResults(routingContext.response(),
-								JSONMessageFactory.get406NotAcceptableException(
-										"[406NotAcceptable] The server cannot return the response as requested: invalid nextPageToken - "
-												+ uuid),
-								406);
-						return;
-					}
-					restQueryService.getNextEventPage(routingContext, uuid);
+				
+				try {
+					JsonObject subscriptionBase = getCreateSubscriptionBase(routingContext);
+					restQueryService.subscribeWebhook(routingContext.response(), new Subscription(queryName,
+							routingContext, namedQuery, subscriptionBase));
+				} catch (ImplementationException e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get500ImplementationException(e.getReason()), 500);
+					return;
+				} catch (QueryParameterException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ValidationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SubscribeNotPermittedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		});
