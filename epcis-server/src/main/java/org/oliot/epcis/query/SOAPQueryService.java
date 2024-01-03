@@ -1047,14 +1047,14 @@ public class SOAPQueryService {
 		}
 	}
 
-	public void subscribe(HttpServerResponse serverResponse, Subscribe subscribe, org.bson.Document namedQuery,
+	public void subscribe(HttpServerResponse serverResponse, Subscribe subscribe, org.bson.Document namedQuery, String queryName,
 			String signatureToken) {
 
 		SOAPMessage message = new SOAPMessage();
 
 		Subscription subscription = null;
 		try {
-			subscription = new Subscription(subscribe, soapQueryUnmarshaller, namedQuery, signatureToken);
+			subscription = new Subscription(subscribe, soapQueryUnmarshaller, namedQuery, queryName, signatureToken);
 		} catch (ImplementationException e) {
 			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
 			return;

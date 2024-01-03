@@ -2804,7 +2804,7 @@ public class RESTQueryServiceHandler {
 	 * subscription is scheduled to trigger every morning at 1.05am. By setting
 	 * `reportIfEmpty` to `true`, the client's callback URL (`dest`) will be called
 	 * even if there are no new events that match the query.
-	 *  
+	 * 
 	 * @param router
 	 * @param soapQueryService
 	 * @param restQueryService
@@ -2854,7 +2854,7 @@ public class RESTQueryServiceHandler {
 					return;
 				}
 
-				soapQueryService.subscribe(routingContext.response(), subscribe, namedQuery, signatureToken);
+				soapQueryService.subscribe(routingContext.response(), subscribe, namedQuery, queryName, signatureToken);
 			}
 		});
 		EPCISServer.logger.info("[POST /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
@@ -2907,6 +2907,39 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /epcis/queries/:queryName/subscriptions (application/json)] - router added");
 
+	}
+
+	/**
+	 * Unsubscribes a client by deleting the query subscription.
+	 * 
+	 * Client unsubscribed from query.
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
+	public static void registerDeleteSubscriptionHandler(Router router, SOAPQueryService soapQueryService,
+			RESTQueryService restQueryService) {
+
+		router.delete("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/xml")
+				.handler(routingContext -> {
+					String queryName = routingContext.pathParam("queryName");
+					String subscriptionID = routingContext.pathParam("subscriptionID");
+					restQueryService.deleteXMLSubscription(routingContext, queryName, subscriptionID);
+				});
+		EPCISServer.logger
+				.info("[DELETE /queries/:queryName/subscriptions/:subscriptionID (application/xml)] - router added");
+
+		router.delete("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/json")
+				.handler(routingContext -> {
+
+					String queryName = routingContext.pathParam("queryName");
+					String subscriptionID = routingContext.pathParam("subscriptionID");
+					restQueryService.deleteJSONSubscription(routingContext, queryName, subscriptionID);
+
+				});
+		EPCISServer.logger
+				.info("[DELETE /queries/:queryName/subscriptions/:subscriptionID (application/json)] - router added");
 	}
 
 	// ---------------------------------------------------------------------------------------

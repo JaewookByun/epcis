@@ -52,6 +52,15 @@ public class Subscription {
 	private Long createdAt;
 	private Long lastNotifiedAt;
 	private Long minRecordTime;
+	private String namedQuery;
+
+	public String getNamedQuery() {
+		return namedQuery;
+	}
+
+	public void setNamedQuery(String namedQuery) {
+		this.namedQuery = namedQuery;
+	}
 
 	private String resultFormat;
 
@@ -228,6 +237,7 @@ public class Subscription {
 		 */
 
 		subscriptionID = queryName + "_" + UUID.randomUUID().toString();
+		this.namedQuery = queryName;
 
 		try {
 			dest = new URI(subscriptionBase.getString("dest"));
@@ -325,9 +335,9 @@ public class Subscription {
 		createdAt = System.currentTimeMillis();
 	}
 
-	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller, Document namedQuery, String signatureToken)
-			throws InvalidURIException, SubscriptionControlsException, ImplementationException, QueryParameterException,
-			SubscribeNotPermittedException {
+	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller, Document namedQuery, String queryName,
+			String signatureToken) throws InvalidURIException, SubscriptionControlsException, ImplementationException,
+			QueryParameterException, SubscribeNotPermittedException {
 		subscriptionID = sub.getSubscriptionID();
 		try {
 			dest = new URI(sub.getDest());
@@ -361,6 +371,8 @@ public class Subscription {
 		}
 
 		createdAt = System.currentTimeMillis();
+
+		this.namedQuery = queryName;
 	}
 
 	public Subscription(org.bson.Document doc) {
@@ -385,6 +397,8 @@ public class Subscription {
 			minRecordTime = doc.getLong("minRecordTime");
 
 			resultFormat = doc.getString("resultFormat");
+			
+			namedQuery = doc.getString("namedQuery");
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -429,6 +443,7 @@ public class Subscription {
 		doc.put("lastNotifiedAt", lastNotifiedAt);
 		doc.put("minRecordTime", minRecordTime);
 		doc.put("resultFormat", resultFormat);
+		doc.put("namedQuery", namedQuery);
 
 		return doc;
 	}
