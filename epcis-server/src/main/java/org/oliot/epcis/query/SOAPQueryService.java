@@ -1047,6 +1047,79 @@ public class SOAPQueryService {
 		}
 	}
 
+	public void subscribe(HttpServerResponse serverResponse, Subscribe subscribe, org.bson.Document namedQuery,
+			String signatureToken) {
+
+		SOAPMessage message = new SOAPMessage();
+
+		Subscription subscription = null;
+		try {
+			subscription = new Subscription(subscribe, soapQueryUnmarshaller, namedQuery, signatureToken);
+		} catch (ImplementationException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+			return;
+		} catch (InvalidURIException | SubscriptionControlsException | QueryParameterException
+				| SubscribeNotPermittedException e) {
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		// Existing subscription Check
+		org.bson.Document result = null;
+		try {
+			result = EPCISServer.mSubscriptionCollection
+					.find(new org.bson.Document().append("_id", subscription.getSubscriptionID())).first();
+		} catch (Throwable e2) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e2.getMessage());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 500);
+		}
+
+		if (result != null) {
+			DuplicateSubscriptionException e = new DuplicateSubscriptionException(
+					"The specified subscriptionID is identical to a previous subscription that was created and not yet unsubscribed.: "
+							+ subscription.getSubscriptionID());
+			HTTPUtil.sendQueryResults(serverResponse, message, e, e.getClass(), 400);
+			return;
+		}
+
+		serverResponse.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*");
+
+		if (subscription.getSubscriptionID() != null)
+			serverResponse.putHeader("Location", subscription.getSubscriptionID());
+		if (subscription.getCreatedAt() != null)
+			serverResponse.putHeader("createdAt", TimeUtil.getDateTimeStamp(subscription.getCreatedAt()));
+		if (subscription.getLastNotifiedAt() != null)
+			serverResponse.putHeader("lastNotifiedAt", TimeUtil.getDateTimeStamp(subscription.getLastNotifiedAt()));
+		if (subscription.getMinRecordTime() != null)
+			serverResponse.putHeader("minRecordTime", TimeUtil.getDateTimeStamp(subscription.getMinRecordTime()));
+
+		serverResponse.putHeader("epcFormat", "Always_EPC_URN");
+
+		// cron Example
+		// 0/10 * * * * ? : every 10 second
+		String schedule = subscription.getSchedule();
+		if (schedule != null) {
+			try {
+				cronSchedule(schedule);
+				addScheduleToQuartz(subscription);
+				addScheduleToDB(subscription);
+				sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+				return;
+			} catch (Throwable e) {
+				SubscriptionControlsException e1 = new SubscriptionControlsException(
+						"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc."
+								+ e.getMessage());
+				HTTPUtil.sendQueryResults(serverResponse, message, e1, e1.getClass(), 500);
+				return;
+			}
+		} else {
+			EPCISServer.triggerEngine.addSubscription(subscription.getTriggerDescription(), subscription.getDest());
+			addScheduleToDB(subscription);
+			sendQueryResults(serverResponse, EPCISServer.subscribeResponse);
+		}
+	}
+
 	void addScheduleToQuartz(Subscription subscription) throws SchedulerException {
 		JobDataMap map = new JobDataMap();
 		map.put("jobData", subscription);
@@ -1225,7 +1298,7 @@ public class SOAPQueryService {
 		}
 	}
 
-	private Document createDocument(String soapMessage) throws ValidationException {
+	public Document createDocument(String soapMessage) throws ValidationException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		docFactory.setNamespaceAware(true);
 		Document doc;
@@ -1266,8 +1339,9 @@ public class SOAPQueryService {
 		Integer eventCountLimit = qd.getEventCountLimit();
 		Integer maxCount = qd.getMaxCount();
 		ServerWebSocket ws = sub.getServerWebSocket();
+		boolean isXMLResult = sub.getResultFormat() == null ? true : false;
 
-		// SOAP subscription (XML)
+		// Webhook subscription
 		if (ws == null) {
 			try {
 
@@ -1292,37 +1366,82 @@ public class SOAPQueryService {
 				} catch (Throwable e1) {
 					ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR,
 							"Subscribe", subscriptionID, e1.getMessage());
-					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-							message, e, e.getClass());
-					return;
+					if (isXMLResult) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+						return;
+					} else {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								JSONMessageFactory.get500ImplementationException(e1.getMessage()));
+						return;
+					}
 				}
 
 				if (maxCount != null && (resultList.size() > maxCount)) {
 					QueryTooLargeException e = new QueryTooLargeException(
 							"An attempt to execute a query resulted in more data than the service was willing to provide. ( result size: "
 									+ resultList.size() + " )");
-					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-							message, e, e.getClass());
-					return;
+					if (isXMLResult) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+						return;
+					} else {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								JSONMessageFactory.get413QueryTooLargeException(e.getReason()));
+						return;
+					}
+
 				}
 
-				List<Object> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList, message);
+				QueryResults queryResults = null;
+				JsonObject queryResultDocument = null;
+				if (isXMLResult) {
+					List<Object> convertedResultList = getConvertedResultList(isResultSorted(sort), resultList,
+							message);
 
-				if (reportIfEmpty == false && convertedResultList.size() == 0) {
-					EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
-					return;
+					if (reportIfEmpty == false && convertedResultList.size() == 0) {
+						EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+						return;
+					}
+
+					queryResults = new QueryResults();
+					queryResults.setQueryName("SimpleEventQuery");
+					queryResults.setSubscriptionID(subscriptionID);
+
+					QueryResultsBody resultsBody = new QueryResultsBody();
+
+					EventListType elt = new EventListType();
+					elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
+					resultsBody.setEventList(elt);
+					queryResults.setResultsBody(resultsBody);
+				} else {
+					JsonArray jContext = new JsonArray();
+					jContext.add("https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+					ArrayList<String> namespaces = getNamespaces(resultList);
+					JsonObject extType = new JsonObject();
+					JsonObject extContext = new JsonObject();
+					for (int i = 0; i < namespaces.size(); i++) {
+						extContext.put("ext" + i, decodeMongoObjectKey(namespaces.get(i)));
+					}
+					jContext.add(extContext);
+					// conversion
+					List<JsonObject> convertedResultList = getConvertedResultList(isResultSorted(qd), resultList,
+							namespaces, extType);
+
+					if (reportIfEmpty == false && convertedResultList.size() == 0) {
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID()
+								+ " invoked but not sent due to reportIfEmpty");
+						return;
+					}
+
+					queryResultDocument = StaticResource.simpleEventQueryResults.copy();
+					JsonArray eventList = queryResultDocument.getJsonObject("epcisBody").getJsonObject("queryResults")
+							.getJsonObject("resultsBody").getJsonArray("eventList");
+					for (JsonObject list : convertedResultList) {
+						eventList.add(list);
+					}
+					queryResultDocument.put("@context", jContext);
 				}
-
-				QueryResults queryResults = new QueryResults();
-				queryResults.setQueryName("SimpleEventQuery");
-				queryResults.setSubscriptionID(subscriptionID);
-
-				QueryResultsBody resultsBody = new QueryResultsBody();
-
-				EventListType elt = new EventListType();
-				elt.setObjectEventOrAggregationEventOrTransformationEvent(convertedResultList);
-				resultsBody.setEventList(elt);
-				queryResults.setResultsBody(resultsBody);
 
 				// InitialRecordTime limits recordTime
 				if (initialRecordTime != null) {
@@ -1333,12 +1452,25 @@ public class SOAPQueryService {
 						map.put("jobData", sub);
 						SubscriptionManager.sched.addJob(detail, true, true);
 					} catch (SchedulerException e) {
-						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-								message, e, e.getClass());
+						if (isXMLResult) {
+							HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest,
+									EPCISServer.logger, message, e, e.getClass());
+						} else {
+							HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest,
+									EPCISServer.logger,
+									JSONMessageFactory.get500ImplementationException(e.getMessage()));
+						}
 						return;
 					} catch (ImplementationException e) {
-						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-								message, e, e.getClass());
+						if (isXMLResult) {
+							HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest,
+									EPCISServer.logger, message, e, e.getClass());
+						} else {
+							HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest,
+									EPCISServer.logger,
+									JSONMessageFactory.get500ImplementationException(e.getMessage()));
+						}
+
 						return;
 					}
 				}
@@ -1350,22 +1482,47 @@ public class SOAPQueryService {
 					map.put("jobData", sub);
 					SubscriptionManager.sched.addJob(detail, true, true);
 				} catch (SchedulerException e) {
-					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-							message, e, e.getClass());
+					if (isXMLResult) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+					} else {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								JSONMessageFactory.get500ImplementationException(e.getMessage()));
+					}
 					return;
 				} catch (ImplementationException e) {
-					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
-							message, e, e.getClass());
+					if (isXMLResult) {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								message, e, e.getClass());
+					} else {
+						HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+								JSONMessageFactory.get500ImplementationException(e.getMessage()));
+					}
+
 					return;
 				}
-				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
-						queryResults, QueryResults.class);
+
+				if (isXMLResult) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, queryResults, QueryResults.class);
+				} else {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							queryResultDocument);
+				}
 
 			} catch (IllegalStateException e) {
 				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR,
 						"Subscribe", subscriptionID, e.getMessage());
-				HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger, message,
-						e1, e1.getClass());
+
+				if (isXMLResult) {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							message, e, e.getClass());
+					return;
+				} else {
+					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
+							JSONMessageFactory.get500ImplementationException(e1.getMessage()));
+					return;
+				}
 			}
 			// QueryParameterException, QueryTooLargeException, QueryTooComplexException,
 			// NoSuchNameException, SecurityException, ValidationException,

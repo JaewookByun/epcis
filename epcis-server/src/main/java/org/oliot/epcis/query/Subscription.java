@@ -53,6 +53,8 @@ public class Subscription {
 	private Long lastNotifiedAt;
 	private Long minRecordTime;
 
+	private String resultFormat;
+
 	public String getSignatureToken() {
 		return signatureToken;
 	}
@@ -133,6 +135,14 @@ public class Subscription {
 		this.serverWebSocket = serverWebSocket;
 	}
 
+	public String getResultFormat() {
+		return resultFormat;
+	}
+
+	public void setResultFormat(String resultFormat) {
+		this.resultFormat = resultFormat;
+	}
+
 	/**
 	 * for JSON WebSocket
 	 * 
@@ -192,6 +202,8 @@ public class Subscription {
 		triggerDescription = new TriggerDescription(this, SOAPQueryService.soapQueryUnmarshaller);
 
 		createdAt = System.currentTimeMillis();
+
+		resultFormat = "JSON";
 	}
 
 	/**
@@ -222,7 +234,7 @@ public class Subscription {
 			if (dest == null) {
 				throw new ValidationException("dest field is not given (mandatory)");
 			}
-			signatureToken = subscriptionBase.getString("signatrueToken");
+			signatureToken = subscriptionBase.getString("signatureToken");
 			if (signatureToken == null) {
 				throw new ValidationException("signatureToken field is not given (mandatory)");
 			}
@@ -265,6 +277,8 @@ public class Subscription {
 		triggerDescription = new TriggerDescription(this, SOAPQueryService.soapQueryUnmarshaller);
 
 		createdAt = System.currentTimeMillis();
+
+		resultFormat = "JSON";
 	}
 
 	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller)
@@ -311,6 +325,44 @@ public class Subscription {
 		createdAt = System.currentTimeMillis();
 	}
 
+	public Subscription(Subscribe sub, SOAPQueryUnmarshaller unmarshaller, Document namedQuery, String signatureToken)
+			throws InvalidURIException, SubscriptionControlsException, ImplementationException, QueryParameterException,
+			SubscribeNotPermittedException {
+		subscriptionID = sub.getSubscriptionID();
+		try {
+			dest = new URI(sub.getDest());
+		} catch (URISyntaxException e) {
+			InvalidURIException e1 = new InvalidURIException("Invalid URI: " + e.getMessage());
+			throw e1;
+		}
+		reportIfEmpty = sub.getControls().isReportIfEmpty();
+
+		SubscriptionControls controls = sub.getControls();
+		XMLGregorianCalendar xmlInitialRecordTime = controls.getInitialRecordTime();
+		if (xmlInitialRecordTime != null) {
+			initialRecordTime = xmlInitialRecordTime.toGregorianCalendar().getTimeInMillis();
+		}
+
+		schedule = getSchedule(controls.getSchedule());
+		if (controls.getTrigger() != null) {
+			trigger = controls.getTrigger();
+		}
+
+		if ((schedule == null && trigger == null) || (schedule != null && trigger != null)) {
+			SubscriptionControlsException se = new SubscriptionControlsException(
+					"The specified subscription controls was invalid; e.g., the schedule parameters were out of range, the trigger URI could not be parsed or did not name a recognised trigger, etc.");
+			throw se;
+		}
+
+		if (schedule != null) {
+			queryDescription = new QueryDescription(namedQuery);
+		} else {
+			triggerDescription = new TriggerDescription(subscriptionID, namedQuery);
+		}
+
+		createdAt = System.currentTimeMillis();
+	}
+
 	public Subscription(org.bson.Document doc) {
 		try {
 			subscriptionID = doc.getString("_id");
@@ -332,6 +384,8 @@ public class Subscription {
 			lastNotifiedAt = doc.getLong("lastNotifiedAt");
 			minRecordTime = doc.getLong("minRecordTime");
 
+			resultFormat = doc.getString("resultFormat");
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		} catch (QueryParameterException e) {
@@ -352,23 +406,30 @@ public class Subscription {
 		doc.put("_id", subscriptionID);
 		doc.put("dest", dest.toString());
 
-		if (initialRecordTime != null)
-			doc.put("initialRecordTime", initialRecordTime);
-		doc.put("reportIfEmpty", reportIfEmpty);
 		if (schedule != null) {
 			doc.put("schedule", schedule);
-			doc.put("eventCountLimit", queryDescription.getEventCountLimit());
-			doc.put("maxCount", queryDescription.getMaxCount());
-			doc.put("projection", queryDescription.getMongoProjection());
 			doc.put("query", queryDescription.getMongoQuery());
-			doc.put("sort", queryDescription.getMongoSort());
-			doc.put("queryName", queryDescription.getQueryName());
 		}
 
 		if (trigger != null) {
 			doc.put("trigger", trigger.toString());
 			doc.put("query", triggerDescription.getMongoQueryParameter());
 		}
+
+		doc.put("eventCountLimit", queryDescription.getEventCountLimit());
+		doc.put("maxCount", queryDescription.getMaxCount());
+		doc.put("projection", queryDescription.getMongoProjection());
+		doc.put("sort", queryDescription.getMongoSort());
+		doc.put("queryName", queryDescription.getQueryName());
+
+		doc.put("initialRecordTime", initialRecordTime);
+		doc.put("reportIfEmpty", reportIfEmpty);
+		doc.put("signatureToken", signatureToken);
+		doc.put("createdAt", createdAt);
+		doc.put("lastNotifiedAt", lastNotifiedAt);
+		doc.put("minRecordTime", minRecordTime);
+		doc.put("resultFormat", resultFormat);
+
 		return doc;
 	}
 

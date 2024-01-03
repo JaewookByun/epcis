@@ -17,6 +17,7 @@ import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
+import org.oliot.epcis.util.TimeUtil;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.Router;
@@ -1345,31 +1346,33 @@ public class MetadataHandler {
 	 * @param router
 	 */
 	public static void registerGetPostSubscriptions(Router router) {
-		router.options("/epcis/queries/:queryName/subscriptions").consumes("application/xml").handler(routingContext -> {
+		router.options("/epcis/queries/:queryName/subscriptions").consumes("application/xml")
+				.handler(routingContext -> {
 
-			String queryName = routingContext.pathParam("queryName");
+					String queryName = routingContext.pathParam("queryName");
 
-			org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
-					.find(new org.bson.Document().append("id", queryName)).first();
+					org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+							.find(new org.bson.Document().append("id", queryName)).first();
 
-			if (namedQuery == null) {
-				EPCISException e = new EPCISException(
-						"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
-				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
-				return;
-			} else {
-				if (namedQuery.getString("queryName").equals("SimpleEventQuery"))
-					send204XMLResponse(routingContext.response(), "OPTIONS, GET, POST");
-				else {
-					EPCISException e = new EPCISException(
-							"[406NotAcceptableException] queryName is not SimpleEventQuery");
-					EPCISServer.logger.error(e.getReason());
-					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
-					return;
-				}
-			}
-		});
+					if (namedQuery == null) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					} else {
+						if (namedQuery.getString("queryName").equals("SimpleEventQuery"))
+							send204XMLResponse(routingContext.response(), "OPTIONS, GET, POST");
+						else {
+							EPCISException e = new EPCISException(
+									"[406NotAcceptableException] queryName is not SimpleEventQuery");
+							EPCISServer.logger.error(e.getReason());
+							HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(),
+									406);
+							return;
+						}
+					}
+				});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
 
 		router.options("/epcis/queries/:queryName/subscriptions").consumes("application/json")
@@ -1398,6 +1401,107 @@ public class MetadataHandler {
 							return;
 						}
 					}
+				});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/json)] - router added");
+	}
+
+	/**
+	 * Query the metadata of the endpoint for an individual subscription. The
+	 * `OPTIONS` method is used to discover capabilities for a query subscription.
+	 * 
+	 * @param router
+	 */
+	public static void registerGetDeleteSubscription(Router router) {
+		router.options("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/xml")
+				.handler(routingContext -> {
+
+					String queryName = routingContext.pathParam("queryName");
+					String subscriptionID = routingContext.pathParam("subscriptionID");
+
+					org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+							.find(new org.bson.Document().append("id", queryName)).first();
+
+					org.bson.Document subscription = EPCISServer.mSubscriptionCollection
+							.find(new org.bson.Document().append("_id", subscriptionID)).first();
+
+					if (namedQuery == null) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available named query for: " + namedQuery);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					if (subscription == null) {
+						EPCISException e = new EPCISException(
+								"[404NoSuchResourceException] There is no available subscription for: "
+										+ subscriptionID);
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+						return;
+					}
+
+					if (namedQuery.getString("queryName").equals("SimpleEventQuery")) {
+						Long minRecordTime = subscription.getLong("minRecordTime");
+						if (minRecordTime != null)
+							routingContext.response().putHeader("GS1-Query-Min-Record-Time",
+									TimeUtil.getDateTimeStamp(minRecordTime));
+						send204XMLResponse(routingContext.response(), "OPTIONS, GET, DELETE");
+					} else {
+						EPCISException e = new EPCISException(
+								"[406NotAcceptableException] queryName is not SimpleEventQuery");
+						EPCISServer.logger.error(e.getReason());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+						return;
+					}
+
+				});
+		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
+
+		router.options("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/json")
+				.handler(routingContext -> {
+
+					String queryName = routingContext.pathParam("queryName");
+					String subscriptionID = routingContext.pathParam("subscriptionID");
+
+					org.bson.Document namedQuery = EPCISServer.mNamedQueryCollection
+							.find(new org.bson.Document().append("id", queryName)).first();
+
+					org.bson.Document subscription = EPCISServer.mSubscriptionCollection
+							.find(new org.bson.Document().append("_id", subscriptionID)).first();
+
+					if (namedQuery == null) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available named query for : "
+												+ namedQuery),
+								404);
+						return;
+					}
+
+					if (subscription == null) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get404NoSuchResourceException(
+										"[404NoSuchResourceException] There is no available subscription for : "
+												+ subscriptionID),
+								404);
+						return;
+					}
+
+					if (namedQuery.getString("queryName").equals("SimpleEventQuery")) {
+						Long minRecordTime = subscription.getLong("minRecordTime");
+						if (minRecordTime != null)
+							routingContext.response().putHeader("GS1-Query-Min-Record-Time",
+									TimeUtil.getDateTimeStamp(minRecordTime));
+						send204JSONLResponse(routingContext.response(), "OPTIONS, GET, DELETE");
+					} else {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get406NotAcceptableException(
+										"[406NotAcceptableException] queryName is not SimpleEventQuery"),
+								406);
+						return;
+					}
+
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/json)] - router added");
 	}

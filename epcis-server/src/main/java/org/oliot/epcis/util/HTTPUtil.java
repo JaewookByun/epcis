@@ -91,6 +91,23 @@ public class HTTPUtil {
 
 	}
 
+	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, JsonObject message) {
+		webClient = HttpClient.newHttpClient();
+		HttpRequest request = HttpRequest.newBuilder().uri(uri)
+				.POST(HttpRequest.BodyPublishers.ofString(message.toString())).build();
+		try {
+			HttpResponse<String> response = webClient.send(request, HttpResponse.BodyHandlers.ofString());
+			if (response.statusCode() == 200) {
+				EPCISServer.logger.debug("subscription result successfully sent");
+			} else {
+				EPCISServer.logger.debug("subscription result delivery fails");
+			}
+		} catch (Exception e) {
+			EPCISServer.logger.debug("subscription result delivery fails: " + e.getMessage());
+		}
+
+	}
+
 //	@SuppressWarnings("rawtypes")
 //	public static void sendQueryResults(HttpServerResponse serverResponse, Object result, Document retDoc,
 //			Element envelope, Element body, Class resultType, int statusCode) {

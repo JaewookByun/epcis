@@ -26,6 +26,7 @@ import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
 import org.oliot.epcis.model.Poll;
 import org.oliot.epcis.model.QueryParameterException;
+import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.TransactionEventType;
 import org.oliot.epcis.model.TransformationEventType;
@@ -54,6 +55,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import jakarta.xml.bind.DataBindingException;
 import jakarta.xml.bind.JAXB;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -259,26 +261,21 @@ public class RESTQueryServiceHandler {
 
 		return createQuery;
 	}
-	
+
+	public static Subscribe getCreateSubscription(RoutingContext routingContext, SOAPQueryService qs)
+			throws ValidationException, JAXBException {
+		RequestBody body = routingContext.body();
+		String inputString = body.asString();
+
+		org.w3c.dom.Document doc = qs.createDocument(inputString);
+		Subscribe subscribe = SOAPQueryService.soapQueryUnmarshaller.getSubscription(doc);
+
+		return subscribe;
+	}
+
 	public static JsonObject getCreateSubscriptionBase(RoutingContext routingContext) throws ValidationException {
 		RequestBody body = routingContext.body();
-		String inputString = null;
-		if (body.isEmpty()) {
-			MultiMap mm = routingContext.queryParams();
-			Iterator<Entry<String, String>> iter = mm.iterator();
-			while (iter.hasNext()) {
-				Entry<String, String> entry = iter.next();
-				String k = entry.getKey();
-				if (k.contains("dest") && k.contains("signatureToken"))
-					inputString = k;
-			}
-			if (inputString == null) {
-				ValidationException e = new ValidationException("[406ValidationException] Empty Request Body");
-				throw e;
-			}
-		} else {
-			inputString = body.asString();
-		}
+		String inputString = body.asString();
 
 		JsonObject createSubscriptionBase = null;
 		try {
@@ -2649,8 +2646,8 @@ public class RESTQueryServiceHandler {
 							routingContext.request().toWebSocket(serverWebSocket -> {
 
 								try {
-									restQueryService.subscribeWebsocket(routingContext.response(), new Subscription(queryName,
-											routingContext, namedQuery, serverWebSocket.result()));
+									restQueryService.subscribeWebsocket(routingContext.response(), new Subscription(
+											queryName, routingContext, namedQuery, serverWebSocket.result()));
 								} catch (QueryParameterException e) {
 									serverWebSocket.result().close((short) 1003, e.getReason());
 									return;
@@ -2807,9 +2804,7 @@ public class RESTQueryServiceHandler {
 	 * subscription is scheduled to trigger every morning at 1.05am. By setting
 	 * `reportIfEmpty` to `true`, the client's callback URL (`dest`) will be called
 	 * even if there are no new events that match the query.
-	 * 
-	 * TODO
-	 * 
+	 *  
 	 * @param router
 	 * @param soapQueryService
 	 * @param restQueryService
@@ -2817,7 +2812,6 @@ public class RESTQueryServiceHandler {
 	public static void registerPostSubscriptionHandler(Router router, SOAPQueryService soapQueryService,
 			RESTQueryService restQueryService) {
 
-		// TODO
 		router.post("/epcis/queries/:queryName/subscriptions").consumes("application/xml").handler(routingContext -> {
 
 			if (!isHeaderPassed(routingContext))
@@ -2837,12 +2831,30 @@ public class RESTQueryServiceHandler {
 				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 				return;
 			} else {
-				String nextPageToken = routingContext.request().getParam("nextPageToken");
-				if (nextPageToken == null) {
-					soapQueryService.poll(routingContext.request(), routingContext.response(), namedQuery);
-				} else {
-					soapQueryService.getNextEventPage(routingContext.request(), routingContext.response());
+				Subscribe subscribe;
+				try {
+					subscribe = getCreateSubscription(routingContext, soapQueryService);
+				} catch (ValidationException e) {
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+					return;
+				} catch (JAXBException e) {
+					EPCISServer.logger.error(e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+					return;
 				}
+
+				String signatureToken = !routingContext.queryParam("signatureToken").isEmpty()
+						? routingContext.queryParam("signatureToken").get(0)
+						: null;
+				if (signatureToken == null) {
+					EPCISException e = new EPCISException("[406NotAcceptableException] signatureToken should be given");
+					EPCISServer.logger.error(e.getReason());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
+					return;
+				}
+
+				soapQueryService.subscribe(routingContext.response(), subscribe, namedQuery, signatureToken);
 			}
 		});
 		EPCISServer.logger.info("[POST /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
@@ -2865,27 +2877,31 @@ public class RESTQueryServiceHandler {
 						"[404NoSuchResourceException] There is no available query for: " + queryName), 404);
 				return;
 			} else {
-				
+
 				try {
 					JsonObject subscriptionBase = getCreateSubscriptionBase(routingContext);
-					restQueryService.subscribeWebhook(routingContext.response(), new Subscription(queryName,
-							routingContext, namedQuery, subscriptionBase));
+					restQueryService.subscribeWebhook(routingContext.response(),
+							new Subscription(queryName, routingContext, namedQuery, subscriptionBase));
 				} catch (ImplementationException e) {
 					HTTPUtil.sendQueryResults(routingContext.response(),
 							JSONMessageFactory.get500ImplementationException(e.getReason()), 500);
 					return;
 				} catch (QueryParameterException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
+					return;
 				} catch (ValidationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
+					return;
 				} catch (SubscribeNotPermittedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(e.getReason()), 406);
+					return;
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+					return;
 				}
 			}
 		});

@@ -2365,6 +2365,1364 @@ public class TriggerDescription {
 	public void setSubscriptionID(String subscriptionID) {
 		this.subscriptionID = subscriptionID;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public TriggerDescription(String subscriptionID, Document queries)
+			throws QueryParameterException, ImplementationException, SubscribeNotPermittedException {
+
+		
+		this.subscriptionID = subscriptionID;
+
+		for (String name : queries.keySet()) {
+			Object value = queries.get(name);
+
+			if (name.equals("eventType")) {
+				eventType = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("GE_eventTime")) {
+				GE_eventTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_eventTime")) {
+				LT_eventTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("GE_recordTime")) {
+				GE_recordTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_recordTime")) {
+				LT_recordTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("EQ_action")) {
+				EQ_action = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_bizStep")) {
+				EQ_bizStep = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_disposition")) {
+				EQ_disposition = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_persistentDisposition_set")) {
+				EQ_persistentDisposition_set = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_persistentDisposition_unset")) {
+				EQ_persistentDisposition_unset = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_readPoint")) {
+				EQ_readPoint = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_bizLocation")) {
+				EQ_bizLocation = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_transformationID")) {
+				EQ_transformationID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_eventID")) {
+				EQ_eventID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EXISTS_errorDeclaration")) {
+				EXISTS_errorDeclaration = (VoidHolder) value;
+				continue;
+			}
+
+			if (name.equals("GE_errorDeclarationTime")) {
+				GE_errorDeclarationTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_errorDeclarationTime")) {
+				LT_errorDeclarationTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("EQ_errorReason")) {
+				EQ_errorReason = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_correctiveEventID")) {
+				EQ_correctiveEventID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_epc")) {
+				MATCH_epc = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_parentID")) {
+				MATCH_parentID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_inputEPC")) {
+				MATCH_inputEPC = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_outputEPC")) {
+				MATCH_outputEPC = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_anyEPC")) {
+				MATCH_anyEPC = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_epcClass")) {
+				MATCH_epcClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_inputEPCClass")) {
+				MATCH_inputEPCClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_outputEPCClass")) {
+				MATCH_outputEPCClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("MATCH_anyEPCClass")) {
+				MATCH_anyEPCClass = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("GE_startTime")) {
+				GE_startTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_startTime")) {
+				LT_startTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("GE_endTime")) {
+				GE_endTime = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_endTime")) {
+				LT_endTime = (long) value;
+				continue;
+
+			}
+
+			if (name.equals("GE_SENSORMETADATA_time")) {
+				GE_SENSORMETADATA_time = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_SENSORMETADATA_time")) {
+				LT_SENSORMETADATA_time = (long) value;
+				continue;
+			}
+
+			if (name.equals("GE_SENSORREPORT_time")) {
+				GE_SENSORREPORT_time = (long) value;
+				continue;
+			}
+
+			if (name.equals("LT_SENSORREPORT_time")) {
+				LT_SENSORREPORT_time = (long) value;
+				continue;
+			}
+
+			if (name.equals("EQ_deviceID")) {
+				EQ_deviceID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_deviceID")) {
+				EQ_SENSORMETADATA_deviceID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_deviceID")) {
+				EQ_SENSORREPORT_deviceID = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_deviceMetadata")) {
+				EQ_SENSORMETADATA_deviceMetadata = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_deviceMetadata")) {
+				EQ_SENSORREPORT_deviceMetadata = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_rawData")) {
+				EQ_SENSORMETADATA_rawData = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_rawData")) {
+				EQ_SENSORREPORT_rawData = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_dataProcessingMethod")) {
+				EQ_dataProcessingMethod = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORMETADATA_dataProcessingMethod")) {
+				EQ_SENSORMETADATA_dataProcessingMethod = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_SENSORREPORT_dataProcessingMethod")) {
+				EQ_SENSORREPORT_dataProcessingMethod = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_microorganism")) {
+				EQ_microorganism = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_chemicalSubstance")) {
+				EQ_chemicalSubstance = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_bizRules")) {
+				EQ_bizRules = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_stringValue")) {
+				EQ_stringValue = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_booleanValue")) {
+				EQ_booleanValue = (Boolean) value;
+				continue;
+			}
+
+			if (name.equals("EQ_hexBinaryValue")) {
+				EQ_hexBinaryValue = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("EQ_uriValue")) {
+				EQ_uriValue = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("GE_percRank")) {
+				GE_percRank = (double) value;
+				continue;
+			}
+
+			if (name.equals("LT_percRank")) {
+				LT_percRank = (double) value;
+				continue;
+			}
+
+			if (name.startsWith("EQ_bizTransaction")) {
+				if (EQ_bizTransaction == null)
+					EQ_bizTransaction = new HashMap<String, List<String>>();
+				String type = name.substring(18);
+				List<String> values = EQ_bizTransaction.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_bizTransaction.put(type, values);
+				continue;
+			}
+
+			if (name.startsWith("EQ_source")) {
+				if (EQ_source == null)
+					EQ_source = new HashMap<String, List<String>>();
+				String type = name.substring(10);
+				List<String> values = EQ_source.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_source.put(type, values);
+				continue;
+			}
+
+			if (name.startsWith("EQ_destination")) {
+				if (EQ_destination == null)
+					EQ_destination = new HashMap<String, List<String>>();
+				String type = name.substring(15);
+				List<String> values = EQ_destination.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_destination.put(type, values);
+				continue;
+			}
+
+			if (name.startsWith("EQ_quantity")) {
+				if (EQ_quantity == null)
+					EQ_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				EQ_quantity.put(uom, (double) value);
+				continue;
+			}
+
+			if (name.startsWith("GT_quantity")) {
+				if (GT_quantity == null)
+					GT_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				GT_quantity.put(uom, (double) value);
+				continue;
+			}
+
+			if (name.startsWith("GE_quantity")) {
+				if (GE_quantity == null)
+					GE_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				GE_quantity.put(uom, (double) value);
+				continue;
+			}
+
+			if (name.startsWith("LT_quantity")) {
+				if (LT_quantity == null)
+					LT_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				LT_quantity.put(uom, (double) value);
+				continue;
+			}
+
+			if (name.startsWith("LE_quantity")) {
+				if (LE_quantity == null)
+					LE_quantity = new HashMap<String, Double>();
+				String uom = name.substring(12);
+
+				LE_quantity.put(uom, (double) value);
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER_ILMD")) {
+				if (EQ_INNER_ILMD == null)
+					EQ_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				EQ_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER_ILMD")) {
+				if (GT_INNER_ILMD == null)
+					GT_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				GT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_INNER_ILMD")) {
+				if (GE_INNER_ILMD == null)
+					GE_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				GE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_INNER_ILMD")) {
+				if (LT_INNER_ILMD == null)
+					LT_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				LT_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_INNER_ILMD")) {
+				if (LE_INNER_ILMD == null)
+					LE_INNER_ILMD = new HashMap<String, Object>();
+				String key = name.substring(14);
+				LE_INNER_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER_ILMD")) {
+				if (EXISTS_INNER_ILMD == null)
+					EXISTS_INNER_ILMD = new ArrayList<String>();
+				EXISTS_INNER_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(18)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER_SENSORELEMENT")) {
+				if (EQ_INNER_SENSORELEMENT == null)
+					EQ_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				EQ_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER_SENSORELEMENT")) {
+				if (GT_INNER_SENSORELEMENT == null)
+					GT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				GT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_INNER_SENSORELEMENT")) {
+				if (GE_INNER_SENSORELEMENT == null)
+					GE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				GE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_INNER_SENSORELEMENT")) {
+				if (LT_INNER_SENSORELEMENT == null)
+					LT_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				LT_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_INNER_SENSORELEMENT")) {
+				if (LE_INNER_SENSORELEMENT == null)
+					LE_INNER_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(23);
+				LE_INNER_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER_SENSORELEMENT")) {
+				if (EXISTS_INNER_SENSORELEMENT == null)
+					EXISTS_INNER_SENSORELEMENT = new ArrayList<String>();
+				EXISTS_INNER_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(27)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER_readPoint")) {
+				if (EQ_INNER_readPoint == null)
+					EQ_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				EQ_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER_readPoint")) {
+				if (GT_INNER_readPoint == null)
+					GT_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				GT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_INNER_readPoint")) {
+				if (GE_INNER_readPoint == null)
+					GE_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				GE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_INNER_readPoint")) {
+				if (LT_INNER_readPoint == null)
+					LT_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				LT_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_INNER_readPoint")) {
+				if (LE_INNER_readPoint == null)
+					LE_INNER_readPoint = new HashMap<String, Object>();
+				String key = name.substring(19);
+				LE_INNER_readPoint.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER_readPoint")) {
+				if (EXISTS_INNER_readPoint == null)
+					EXISTS_INNER_readPoint = new ArrayList<String>();
+				EXISTS_INNER_readPoint.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(23)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER_bizLocation")) {
+				if (EQ_INNER_bizLocation == null)
+					EQ_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				EQ_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER_bizLocation")) {
+				if (GT_INNER_bizLocation == null)
+					GT_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_INNER_bizLocation")) {
+				if (GE_INNER_bizLocation == null)
+					GE_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_INNER_bizLocation")) {
+				if (LT_INNER_bizLocation == null)
+					LT_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LT_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_INNER_bizLocation")) {
+				if (LE_INNER_bizLocation == null)
+					LE_INNER_bizLocation = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LE_INNER_bizLocation.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER_bizLocation")) {
+				if (EXISTS_INNER_bizLocation == null)
+					EXISTS_INNER_bizLocation = new ArrayList<String>();
+				EXISTS_INNER_bizLocation.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER_ERROR_DECLARATION")) {
+				if (EQ_INNER_ERROR_DECLARATION == null)
+					EQ_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				EQ_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER_ERROR_DECLARATION")) {
+				if (GT_INNER_ERROR_DECLARATION == null)
+					GT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				GT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_INNER_ERROR_DECLARATION")) {
+				if (GE_INNER_ERROR_DECLARATION == null)
+					GE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				GE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_INNER_ERROR_DECLARATION")) {
+				if (LT_INNER_ERROR_DECLARATION == null)
+					LT_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				LT_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_INNER_ERROR_DECLARATION")) {
+				if (LE_INNER_ERROR_DECLARATION == null)
+					LE_INNER_ERROR_DECLARATION = new HashMap<String, Object>();
+				String key = name.substring(27);
+				LE_INNER_ERROR_DECLARATION.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER_ERROR_DECLARATION")) {
+				if (EXISTS_INNER_ERROR_DECLARATION == null)
+					EXISTS_INNER_ERROR_DECLARATION = new ArrayList<String>();
+				EXISTS_INNER_ERROR_DECLARATION.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(31)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_INNER")) {
+				if (EQ_INNER == null)
+					EQ_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				EQ_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_INNER")) {
+				if (GT_INNER == null)
+					GT_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				GT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_INNER")) {
+				if (GE_INNER == null)
+					GE_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				GE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_INNER")) {
+				if (LT_INNER == null)
+					LT_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				LT_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_INNER")) {
+				if (LE_INNER == null)
+					LE_INNER = new HashMap<String, Object>();
+				String key = name.substring(9);
+				LE_INNER.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_INNER")) {
+				if (EXISTS_INNER == null)
+					EXISTS_INNER = new ArrayList<String>();
+				EXISTS_INNER.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(13)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_ILMD")) {
+				if (EQ_ILMD == null)
+					EQ_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				EQ_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_ILMD")) {
+				if (GT_ILMD == null)
+					GT_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				GT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_ILMD")) {
+				if (GE_ILMD == null)
+					GE_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				GE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_ILMD")) {
+				if (LT_ILMD == null)
+					LT_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				LT_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_ILMD")) {
+				if (LE_ILMD == null)
+					LE_ILMD = new HashMap<String, Object>();
+				String key = name.substring(8);
+				LE_ILMD.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_ILMD")) {
+				if (EXISTS_ILMD == null)
+					EXISTS_ILMD = new ArrayList<String>();
+				EXISTS_ILMD.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(12)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_SENSORELEMENT")) {
+				if (EQ_SENSORELEMENT == null)
+					EQ_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				EQ_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_SENSORELEMENT")) {
+				if (GT_SENSORELEMENT == null)
+					GT_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				GT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("GE_SENSORELEMENT")) {
+				if (GE_SENSORELEMENT == null)
+					GE_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				GE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LT_SENSORELEMENT")) {
+				if (LT_SENSORELEMENT == null)
+					LT_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				LT_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+			if (name.startsWith("LE_SENSORELEMENT")) {
+				if (LE_SENSORELEMENT == null)
+					LE_SENSORELEMENT = new HashMap<String, Object>();
+				String key = name.substring(17);
+				LE_SENSORELEMENT.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_SENSORELEMENT")) {
+				if (EXISTS_SENSORELEMENT == null)
+					EXISTS_SENSORELEMENT = new ArrayList<String>();
+				EXISTS_SENSORELEMENT.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(21)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_SENSORMETADATA")) {
+				if (EQ_SENSORMETADATA == null)
+					EQ_SENSORMETADATA = new HashMap<String, List<String>>();
+				String type = name.substring(18);
+				List<String> values = EQ_SENSORMETADATA.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_SENSORMETADATA.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
+				continue;
+			}
+
+			if (name.startsWith("EQ_SENSORREPORT")) {
+				if (EQ_SENSORREPORT == null)
+					EQ_SENSORREPORT = new HashMap<String, List<String>>();
+				String type = name.substring(16);
+				List<String> values = EQ_SENSORREPORT.get(type);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				EQ_SENSORREPORT.put(POJOtoBSONUtil.encodeMongoObjectKey(type), values);
+				continue;
+			}
+
+			if (name.equals("EXISTS_SENSORMETADATA")) {
+				EXISTS_SENSORMETADATA = (VoidHolder) value;
+				continue;
+			}
+
+			if (name.equals("EXISTS_SENSORREPORT")) {
+				EXISTS_SENSORREPORT = (VoidHolder) value;
+				continue;
+			}
+
+			if (name.startsWith("EQ_readPoint_")) {
+				if (EQ_readPoint_extension == null)
+					EQ_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				EQ_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_readPoint_")) {
+				if (GT_readPoint_extension == null)
+					GT_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				GT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_readPoint_")) {
+				if (GE_readPoint_extension == null)
+					GE_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				GE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_readPoint_")) {
+				if (LT_readPoint_extension == null)
+					LT_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				LT_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_readPoint_")) {
+				if (LE_readPoint_extension == null)
+					LE_readPoint_extension = new HashMap<String, Object>();
+				String key = name.substring(13);
+				LE_readPoint_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_readPoint_")) {
+				if (EXISTS_readPoint_extension == null)
+					EXISTS_readPoint_extension = new ArrayList<String>();
+				EXISTS_readPoint_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(17)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_bizLocation_")) {
+				if (EQ_bizLocation_extension == null)
+					EQ_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				EQ_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_bizLocation_")) {
+				if (GT_bizLocation_extension == null)
+					GT_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				GT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_bizLocation_")) {
+				if (GE_bizLocation_extension == null)
+					GE_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				GE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_bizLocation_")) {
+				if (LT_bizLocation_extension == null)
+					LT_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				LT_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_bizLocation_")) {
+				if (LE_bizLocation_extension == null)
+					LE_bizLocation_extension = new HashMap<String, Object>();
+				String key = name.substring(15);
+				LE_bizLocation_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_bizLocation_")) {
+				if (EXISTS_bizLocation_extension == null)
+					EXISTS_bizLocation_extension = new ArrayList<String>();
+				EXISTS_bizLocation_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(19)));
+				continue;
+			}
+
+			if (name.startsWith("EQ_ERROR_DECLARATION_")) {
+				if (EQ_ERROR_DECLARATION_extension == null)
+					EQ_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				EQ_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_ERROR_DECLARATION_")) {
+				if (GT_ERROR_DECLARATION_extension == null)
+					GT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_ERROR_DECLARATION_")) {
+				if (GE_ERROR_DECLARATION_extension == null)
+					GE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				GE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_ERROR_DECLARATION_")) {
+				if (LT_ERROR_DECLARATION_extension == null)
+					LT_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LT_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_ERROR_DECLARATION_")) {
+				if (LE_ERROR_DECLARATION_extension == null)
+					LE_ERROR_DECLARATION_extension = new HashMap<String, Object>();
+				String key = name.substring(21);
+				LE_ERROR_DECLARATION_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_ERROR_DECLARATION_")) {
+				if (EXISTS_ERROR_DECLARATION_extension == null)
+					EXISTS_ERROR_DECLARATION_extension = new ArrayList<String>();
+				EXISTS_ERROR_DECLARATION_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(25)));
+				continue;
+			}
+
+			if (name.equals("EQ_type")) {
+				EQ_type = (List<String>) value;
+				continue;
+			}
+
+			if (name.startsWith("EQ_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_value_")) {
+				String uom = name.substring(9);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_value = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_minValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_minValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_maxValue_")) {
+				String uom = name.substring(12);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_maxValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_meanValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_meanValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_sDev_")) {
+				String uom = name.substring(8);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_sDev = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				EQ_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GT_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GT_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("GE_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				GE_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LT_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LT_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("LE_percValue_")) {
+				String uom = name.substring(13);
+				Double v = (Double) value;
+
+				String type = StaticResource.unitConverter.getType(uom);
+				String rUom = StaticResource.unitConverter.getRepresentativeUoMFromType(type);
+				double rValue = StaticResource.unitConverter.getRepresentativeValue(type, uom, v);
+
+				LE_percValue = new SensorUomValue(rUom, rValue);
+				continue;
+			}
+
+			if (name.startsWith("EQ_ATTR_")) {
+				if (EQ_ATTR == null)
+					EQ_ATTR = new HashMap<String, HashMap<String, List<String>>>();
+				String partial = name.substring(8);
+				String[] arr = partial.split("_");
+				String t = arr[0];
+				String a = POJOtoBSONUtil.encodeMongoObjectKey(arr[1]);
+				HashMap<String, List<String>> tv = EQ_ATTR.get(t);
+				if (tv == null)
+					tv = new HashMap<String, List<String>>();
+				List<String> tva = tv.get(a);
+				if (tva == null)
+					tva = new ArrayList<String>();
+
+				tva.addAll((List<String>) value);
+				tv.put(a, tva);
+				EQ_ATTR.put(t, tv);
+				continue;
+			}
+
+			if (name.startsWith("EQ_")) {
+				if (EQ_extension == null)
+					EQ_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				EQ_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GT_")) {
+				if (GT_extension == null)
+					GT_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				GT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("GE_")) {
+				if (GE_extension == null)
+					GE_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				GE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LT_")) {
+				if (LT_extension == null)
+					LT_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				LT_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("LE_")) {
+				if (LE_extension == null)
+					LE_extension = new HashMap<String, Object>();
+				String key = name.substring(3);
+				LE_extension.put(POJOtoBSONUtil.encodeMongoObjectKey(key), value);
+				continue;
+			}
+
+			if (name.startsWith("EXISTS_")) {
+				if (EXISTS_extension == null)
+					EXISTS_extension = new ArrayList<String>();
+				EXISTS_extension.add(POJOtoBSONUtil.encodeMongoObjectKey(name.substring(7)));
+				continue;
+			}
+
+			if (name.equals("WD_readPoint")) {
+				WD_readPoint = (List<String>) value;
+				continue;
+			}
+
+			if (name.equals("WD_bizLocation")) {
+				WD_bizLocation = (List<String>) value;
+				continue;
+			}
+
+			if (name.startsWith("HASATTR_")) {
+				if (HASATTR == null)
+					HASATTR = new HashMap<String, List<String>>();
+				String key = POJOtoBSONUtil.encodeMongoObjectKey(name.substring(8));
+				List<String> values = HASATTR.get(key);
+				if (values == null)
+					values = new ArrayList<String>();
+				values.addAll((List<String>) value);
+				HASATTR.put(key, values);
+				continue;
+			}
+
+		}
+	}
+
 
 	@SuppressWarnings("unchecked")
 	public TriggerDescription(Subscription subscription, SOAPQueryUnmarshaller unmarshaller)

@@ -182,6 +182,7 @@ public class EPCISServer extends AbstractVerticle {
 		MetadataHandler.registerGetEventsWithNamedQuery(router);
 		MetadataHandler.registerGetVocabulariesWithNamedQuery(router);
 		MetadataHandler.registerGetPostSubscriptions(router);
+		MetadataHandler.registerGetDeleteSubscription(router);
 	}
 
 	public void registerRESTQueryServiceHandler(Router router, EventBus eventBus) {
@@ -223,6 +224,8 @@ public class EPCISServer extends AbstractVerticle {
 		RESTQueryServiceHandler.registerGetEventsWithNamedQueryHandler(router, soapQueryService, restQueryService);
 		RESTQueryServiceHandler.registerGetVocabulariesWithNamedQueryHandler(router, soapQueryService,
 				restQueryService);
+		
+		RESTQueryServiceHandler.registerPostSubscriptionHandler(router, soapQueryService, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {
