@@ -2,26 +2,39 @@ package org.oliot.epcis.query;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.bson.Document;
+import org.oliot.epcis.model.ArrayOfString;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.InvalidURIException;
+import org.oliot.epcis.model.QueryParam;
 import org.oliot.epcis.model.QueryParameterException;
+import org.oliot.epcis.model.QueryParams;
 import org.oliot.epcis.model.QuerySchedule;
 import org.oliot.epcis.model.Subscribe;
 import org.oliot.epcis.model.SubscribeNotPermittedException;
 import org.oliot.epcis.model.SubscriptionControls;
 import org.oliot.epcis.model.SubscriptionControlsException;
 import org.oliot.epcis.model.ValidationException;
+import org.oliot.epcis.model.VoidHolder;
+import org.oliot.epcis.util.BSONReadUtil;
 import org.oliot.epcis.util.TimeUtil;
+import org.oliot.epcis.util.XMLUtil;
 
 import io.vertx.core.http.ServerWebSocket;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
@@ -149,6 +162,124 @@ public class Subscription {
 			result.put("minRecordTime", TimeUtil.getDateTimeStamp(minRecordTime));
 		}
 		result.put("epcFormat", "Always_GS1_Digital_Link");
+		return result;
+	}
+
+	public static String toJSONResponse(List<org.bson.Document> docs) {
+		JsonArray results = new JsonArray();
+		for (org.bson.Document doc : docs) {
+			JsonObject result = new JsonObject();
+			result.put("dest", doc.getString("dest"));
+			result.put("subscriptionID", doc.getString("_id"));
+
+			String schedule = doc.getString("schedule");
+			if (schedule != null)
+				result.put("schedule", getSchedule(schedule));
+			String trigger = doc.getString("trigger");
+			if (trigger != null)
+				result.put("stream", true);
+			Long initialRecordTime = doc.getLong("initialRecordTime");
+			if (initialRecordTime != null) {
+				result.put("initialRecordTime", TimeUtil.getDateTimeStamp(initialRecordTime));
+			}
+			Long createdAt = doc.getLong("createdAt");
+			if (createdAt != null) {
+				result.put("createdAt", TimeUtil.getDateTimeStamp(createdAt));
+			}
+			Long lastNotifiedAt = doc.getLong("lastNotifiedAt");
+			if (lastNotifiedAt != null) {
+				result.put("lastNotifiedAt", TimeUtil.getDateTimeStamp(lastNotifiedAt));
+			}
+			Long minRecordTime = doc.getLong("minRecordTime");
+			if (minRecordTime != null) {
+				result.put("minRecordTime", TimeUtil.getDateTimeStamp(minRecordTime));
+			}
+			result.put("epcFormat", "Always_GS1_Digital_Link");
+			results.add(result);
+		}
+		return results.toString();
+	}
+
+	public static QueryParams getQueryParams(org.bson.Document doc) throws QueryParameterException {
+		QueryParams queryParamList = new QueryParams();
+
+		List<QueryParam> queryParams = new ArrayList<QueryParam>();
+		for (String field : doc.keySet()) {
+			Object value = doc.get(field);
+			if (value == null) {
+				queryParams.add(new QueryParam(field, new VoidHolder()));
+			} else if (value instanceof ArrayList) {
+				List<String> arrayOfString = new ArrayList<String>();
+				ArrayList<?> arr = (ArrayList<?>) value;
+				for (Object arrValue : arr) {
+					arrayOfString.add(arrValue.toString());
+				}
+				ArrayOfString aos = new ArrayOfString();
+				aos.setString(arrayOfString);
+				queryParams.add(new QueryParam(field, aos));
+			} else if (value instanceof String) {
+				try {
+					long t = TimeUtil.toUnixEpoch(value.toString());
+					queryParams.add(new QueryParam(field, t));
+
+				} catch (ParseException | NullPointerException e) {
+					queryParams.add(new QueryParam(field, value.toString()));
+				}
+			} else if (value instanceof Boolean) {
+				queryParams.add(new QueryParam(field, (Boolean) value));
+			} else if (value instanceof Double) {
+				queryParams.add(new QueryParam(field, (Double) value));
+			} else if (value instanceof Integer) {
+				queryParams.add(new QueryParam(field, (Integer) value));
+			} else {
+				throw new QueryParameterException(
+						"value of REST Query Parameter should be one of JsonArray, String, Time, Boolean, Double, Integer");
+			}
+		}
+		queryParamList.setParam(queryParams);
+
+		return queryParamList;
+	}
+
+	public static String toXMLResponse(List<org.bson.Document> docs)
+			throws ParserConfigurationException, JAXBException, TransformerException, QueryParameterException {
+		String result = "<Subscribes>";
+		for (org.bson.Document doc : docs) {
+			Subscribe subscribe = new Subscribe();
+			subscribe.setDest(doc.getString("dest"));
+			subscribe.setSubscriptionID(doc.getString("_id"));
+
+			SubscriptionControls controls = new SubscriptionControls();
+			String schedule = doc.getString("schedule");
+			if (schedule != null) {
+				controls.setSchedule(getQuerySchedule(schedule));
+			}
+
+			String trigger = doc.getString("trigger");
+			if (trigger != null) {
+				controls.setTrigger(trigger);
+			}
+
+			Long initialRecordTime = doc.getLong("initialRecordTime");
+			if (initialRecordTime != null) {
+				controls.setInitialRecordTime(BSONReadUtil.getGregorianCalendar(initialRecordTime));
+			}
+
+			Boolean reportIfEmpty = doc.getBoolean("reportIfEmpty");
+			if (reportIfEmpty != null) {
+				controls.setReportIfEmpty(reportIfEmpty);
+			}
+
+			subscribe.setControls(controls);
+
+			subscribe.setQueryName(doc.getString("queryName"));
+
+			subscribe.setParams(getQueryParams(doc.get("rawQuery", org.bson.Document.class)));
+
+			String subscribeString = XMLUtil.toString(subscribe, Subscribe.class);
+			result += subscribeString;
+		}
+		result += "</Subscribes>";
 		return result;
 	}
 
@@ -351,17 +482,15 @@ public class Subscription {
 			throw se;
 		}
 
-		if (schedule != null) {
-			try {
-				queryDescription = new QueryDescription(sub, unmarshaller);
-			} catch (ImplementationException e2) {
-				throw new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null, e2.getMessage());
-			} catch (QueryParameterException | SubscribeNotPermittedException e) {
-				throw e;
-			}
-		} else {
-			triggerDescription = new TriggerDescription(sub, unmarshaller);
+		try {
+			queryDescription = new QueryDescription(sub, unmarshaller);
+		} catch (ImplementationException e2) {
+			throw new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null, e2.getMessage());
+		} catch (QueryParameterException | SubscribeNotPermittedException e) {
+			throw e;
 		}
+
+		triggerDescription = new TriggerDescription(sub, unmarshaller);
 
 		createdAt = System.currentTimeMillis();
 	}
@@ -395,11 +524,9 @@ public class Subscription {
 			throw se;
 		}
 
-		if (schedule != null) {
-			queryDescription = new QueryDescription(namedQuery);
-		} else {
-			triggerDescription = new TriggerDescription(subscriptionID, namedQuery);
-		}
+		queryDescription = new QueryDescription(namedQuery);
+
+		triggerDescription = new TriggerDescription(subscriptionID, namedQuery);
 
 		createdAt = System.currentTimeMillis();
 
@@ -453,19 +580,19 @@ public class Subscription {
 
 		if (schedule != null) {
 			doc.put("schedule", schedule);
-			doc.put("query", queryDescription.getMongoQuery());
-			doc.put("eventCountLimit", queryDescription.getEventCountLimit());
-			doc.put("maxCount", queryDescription.getMaxCount());
-			doc.put("projection", queryDescription.getMongoProjection());
-			doc.put("sort", queryDescription.getMongoSort());
-			doc.put("queryName", queryDescription.getQueryName());
 		}
 
 		if (trigger != null) {
 			doc.put("trigger", trigger.toString());
-			doc.put("query", triggerDescription.getMongoQueryParameter());
-			doc.put("queryName", "SimpleEventQuery");
 		}
+
+		doc.put("query", queryDescription.getMongoQuery());
+		doc.put("eventCountLimit", queryDescription.getEventCountLimit());
+		doc.put("maxCount", queryDescription.getMaxCount());
+		doc.put("projection", queryDescription.getMongoProjection());
+		doc.put("sort", queryDescription.getMongoSort());
+		doc.put("queryName", queryDescription.getQueryName());
+		doc.put("rawQuery", queryDescription.getRawQuery());
 
 		doc.put("initialRecordTime", initialRecordTime);
 		doc.put("reportIfEmpty", reportIfEmpty);
@@ -601,4 +728,26 @@ public class Subscription {
 		}
 	}
 
+	private static QuerySchedule getQuerySchedule(String schedule) {
+		QuerySchedule querySchedule = new QuerySchedule();
+		String[] arr = schedule.split("\\s");
+		if (arr.length == 6) {
+			if (!arr[0].equals("*"))
+				querySchedule.setSecond(arr[0]);
+			if (!arr[1].equals("*"))
+				querySchedule.setMinute(arr[1]);
+			if (!arr[2].equals("*"))
+				querySchedule.setHour(arr[2]);
+			if (!arr[3].equals("*"))
+				querySchedule.setDayOfMonth(arr[3]);
+			if (!arr[4].equals("*"))
+				querySchedule.setMonth(arr[4]);
+			if (!arr[5].equals("*"))
+				querySchedule.setDayOfWeek(arr[5]);
+			return querySchedule;
+		} else {
+			// not happen
+			return null;
+		}
+	}
 }

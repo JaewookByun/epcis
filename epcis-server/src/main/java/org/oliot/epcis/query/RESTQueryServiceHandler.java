@@ -2954,7 +2954,7 @@ public class RESTQueryServiceHandler {
 	 * @param restQueryService
 	 */
 	public static void registerGetSubscriptionsHandler(Router router, RESTQueryService restQueryService) {
-		router.get("/epcis/queries/:queryName/subscriptions").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/queries/:queryName/subscriptions").consumes("application/xml").handler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
@@ -2963,9 +2963,25 @@ public class RESTQueryServiceHandler {
 			String nextPageToken = routingContext.request().getParam("nextPageToken");
 			String namedQuery = routingContext.pathParam("queryName");
 			if (nextPageToken == null) {
-				restQueryService.getSubscriptions(routingContext, namedQuery);
+				restQueryService.getSubscriptions(routingContext, namedQuery, "xml");
 			} else {
-				restQueryService.postRemainingSubscriptions(routingContext, nextPageToken);
+				restQueryService.postRemainingSubscriptions(routingContext, nextPageToken, "xml");
+			}
+		});
+		EPCISServer.logger.info("[GET /queries/:queryName/subscriptions (application/json)] - router added");
+		
+		router.get("/epcis/queries/:queryName/subscriptions").handler(routingContext -> {
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
+				return;
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			String namedQuery = routingContext.pathParam("queryName");
+			if (nextPageToken == null) {
+				restQueryService.getSubscriptions(routingContext, namedQuery, "json");
+			} else {
+				restQueryService.postRemainingSubscriptions(routingContext, nextPageToken, "json");
 			}
 		});
 		EPCISServer.logger.info("[GET /queries/:queryName/subscriptions (application/json)] - router added");

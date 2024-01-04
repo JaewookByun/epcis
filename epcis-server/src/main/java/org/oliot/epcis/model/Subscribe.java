@@ -10,7 +10,9 @@ package org.oliot.epcis.model;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
@@ -42,6 +44,8 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Subscribe", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName", "params", "dest",
 		"controls", "subscriptionID" })
+@XmlSeeAlso(ArrayOfString.class)
+@XmlRootElement
 public class Subscribe {
 
 	@XmlElement(required = true)

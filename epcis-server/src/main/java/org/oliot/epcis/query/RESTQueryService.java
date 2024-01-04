@@ -1551,8 +1551,6 @@ public class RESTQueryService {
 			HTTPUtil.sendQueryResults(serverResponse, subscription.toJSONResponse(), 201);
 		}
 	}
-	
-	
 
 	// ------------TODO-------------------------------------------------------------------------------------------
 
@@ -2060,7 +2058,7 @@ public class RESTQueryService {
 		}
 	}
 
-	public void getSubscriptions(RoutingContext routingContext, String namedQuery) {
+	public void getSubscriptions(RoutingContext routingContext, String namedQuery, String resultFormat) {
 		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -2069,10 +2067,19 @@ public class RESTQueryService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
-				EPCISServer.logger.error(msg);
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get406NotAcceptableException(msg), 406);
+				if (resultFormat.equals("xml")) {
+					EPCISException e1 = new EPCISException(
+							"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+					EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+					return;
+				} else {
+					String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+					EPCISServer.logger.error(msg);
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(msg), 406);
+					return;
+				}
 			}
 		}
 
@@ -2080,13 +2087,20 @@ public class RESTQueryService {
 		List<org.bson.Document> jobs = new ArrayList<org.bson.Document>();
 		org.bson.Document query = new org.bson.Document().append("namedQuery", namedQuery);
 		try {
-			EPCISServer.mSubscriptionCollection.find(query)
-					.sort(sort).limit(perPage + 1).into(jobs);
+			EPCISServer.mSubscriptionCollection.find(query).sort(sort).limit(perPage + 1).into(jobs);
 		} catch (MongoException e) {
-			EPCISServer.logger.error(e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
-			return;
+			if (resultFormat.equals("xml")) {
+				EPCISException e1 = new EPCISException("[500ImplementationException] " + e.getMessage());
+				EPCISServer.logger.error("[500ImplementationException] " + e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			} else {
+				EPCISServer.logger.error(e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+				return;
+			}
+
 		}
 
 		// there are remaining list
@@ -2094,10 +2108,21 @@ public class RESTQueryService {
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		JsonArray result = new JsonArray();
-		for (int i = 0; i < jobSize; i++) {
-			result.add(Subscription.toJSONResponse(jobs.get(i)));
+
+		String result = "";
+		if (resultFormat.equals("xml")) {
+			try {
+				result = Subscription.toXMLResponse(jobs.subList(0, jobSize));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} catch (QueryParameterException e) {
+
+			}
+
+		} else {
+			result = Subscription.toJSONResponse(jobs.subList(0, jobSize));
 		}
+
 		// There are remaining lists
 		if (perPage < jobs.size()) {
 			UUID uuid;
@@ -2111,27 +2136,37 @@ public class RESTQueryService {
 			DataPage page = new DataPage(uuid, "subscription", query, null, sort, Integer.MAX_VALUE, perPage);
 			Timer timer = new Timer();
 			page.setTimer(timer);
-			timer.schedule(
-					new DataPageExpiryTimerTask("GET /queries/:query/subscriptions", EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger),
-					Metadata.GS1_Next_Page_Token_Expires);
+			timer.schedule(new DataPageExpiryTimerTask("GET /queries/:query/subscriptions",
+					EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
 			EPCISServer.subscriptionsPageMap.put(uuid, page);
-			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " added. # remaining pages - "
-					+ EPCISServer.subscriptionsPageMap.size());
+			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid
+					+ " added. # remaining pages - " + EPCISServer.subscriptionsPageMap.size());
+
+			if (resultFormat.equals("xml")) {
+				routingContext.response().putHeader("content-type", "application/xml");
+			} else {
+				routingContext.response().putHeader("content-type", "application/json");
+			}
 
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
-					.setStatusCode(200).end(result.toString());
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		} else {
+			if (resultFormat.equals("xml")) {
+				routingContext.response().putHeader("content-type", "application/xml");
+			} else {
+				routingContext.response().putHeader("content-type", "application/json");
+			}
+
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("content-type", "application/json")
-					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result.toString());
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		}
 	}
-	
-	public void postRemainingSubscriptions(RoutingContext routingContext, String nextPagetoken) {
+
+	public void postRemainingSubscriptions(RoutingContext routingContext, String nextPagetoken, String resultFormat) {
 		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -2140,10 +2175,19 @@ public class RESTQueryService {
 				if (t > 0)
 					perPage = t;
 			} catch (NumberFormatException e) {
-				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
-				EPCISServer.logger.error(msg);
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get406NotAcceptableException(msg), 406);
+				if (resultFormat.equals("xml")) {
+					EPCISException e1 = new EPCISException(
+							"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+					EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+					return;
+				} else {
+					String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+					EPCISServer.logger.error(msg);
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get406NotAcceptableException(msg), 406);
+					return;
+				}
 			}
 		}
 		DataPage page = null;
@@ -2153,18 +2197,30 @@ public class RESTQueryService {
 		} catch (IllegalArgumentException e) {
 			String msg = "[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage();
 			EPCISServer.logger.error(msg);
-			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(msg),
-					406);
-			return;
+			if (resultFormat.equals("xml")) {
+				EPCISException e1 = new EPCISException(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(msg), 406);
+				return;
+			}
+
 		}
 
 		if (!EPCISServer.subscriptionsPageMap.containsKey(uuid)) {
-			EPCISServer.logger.error(
-					"[500ImplementationExceptione] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get500ImplementationException(
-					"[500ImplementationExceptione] The given next page token does not exist or be no longer available."),
-					500);
-			return;
+			String msg = "[500ImplementationExceptione] The given next page token does not exist or be no longer available.";
+			EPCISServer.logger.error(msg);
+			if (resultFormat.equals("xml")) {
+				EPCISException e1 = new EPCISException(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(msg), 500);
+				return;
+			}
 		} else {
 			page = EPCISServer.subscriptionsPageMap.get(uuid);
 		}
@@ -2177,9 +2233,16 @@ public class RESTQueryService {
 			EPCISServer.mSubscriptionCollection.find(query).sort(sort).skip(skip).limit(perPage + 1).into(jobs);
 		} catch (MongoException e) {
 			EPCISServer.logger.error(e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
-			return;
+			if (resultFormat.equals("xml")) {
+				EPCISException e1 = new EPCISException(e.getMessage());
+				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 500);
+				return;
+			} else {
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+				return;
+			}
+
 		}
 
 		// there are remaining list
@@ -2187,10 +2250,20 @@ public class RESTQueryService {
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		JsonArray result = new JsonArray();
-		for (int i = 0; i < jobSize; i++) {
-			result.add(Subscription.toJSONResponse(jobs.get(i)));
+
+		String result = "";
+		if (resultFormat.equals("xml")) {
+			try {
+				result = Subscription.toXMLResponse(jobs.subList(0, jobSize));
+			} catch (Exception e) {
+
+			} catch (QueryParameterException e) {
+
+			}
+		} else {
+			result = Subscription.toJSONResponse(jobs.subList(0, jobSize));
 		}
+
 		if (perPage < jobs.size()) {
 			page.incrSkip(perPage);
 			long currentTime = System.currentTimeMillis();
@@ -2199,25 +2272,37 @@ public class RESTQueryService {
 				timer.cancel();
 			Timer newTimer = new Timer();
 			page.setTimer(newTimer);
-			newTimer.schedule(
-					new DataPageExpiryTimerTask("GET /queries/:query/subscriptions", EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger),
-					Metadata.GS1_Next_Page_Token_Expires);
-			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " token expiry time extended to "
-					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			newTimer.schedule(new DataPageExpiryTimerTask("GET /queries/:query/subscriptions",
+					EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger), Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger
+					.debug("[GET /queries/:query/subscriptions] page - " + uuid + " token expiry time extended to "
+							+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+
+			if (resultFormat.equals("xml")) {
+				routingContext.response().putHeader("content-type", "application/xml");
+			} else {
+				routingContext.response().putHeader("content-type", "application/json");
+			}
+
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
-					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
-					.setStatusCode(200).end(result.toString());
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		} else {
 			EPCISServer.subscriptionsPageMap.remove(uuid);
-			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " expired. # remaining pages - "
-					+ EPCISServer.subscriptionsPageMap.size());
+			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid
+					+ " expired. # remaining pages - " + EPCISServer.subscriptionsPageMap.size());
+
+			if (resultFormat.equals("xml")) {
+				routingContext.response().putHeader("content-type", "application/xml");
+			} else {
+				routingContext.response().putHeader("content-type", "application/json");
+			}
+
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-					.putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/json")
-					.setStatusCode(200).end(result.toString());
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
 		}
 	}
 
