@@ -121,6 +121,37 @@ public class Subscription {
 		return result;
 	}
 
+	public static JsonObject toJSONResponse(org.bson.Document doc) {
+		JsonObject result = new JsonObject();
+		result.put("dest", doc.getString("dest"));
+		result.put("subscriptionID", doc.getString("_id"));
+
+		String schedule = doc.getString("schedule");
+		if (schedule != null)
+			result.put("schedule", getSchedule(schedule));
+		String trigger = doc.getString("trigger");
+		if (trigger != null)
+			result.put("stream", true);
+		Long initialRecordTime = doc.getLong("initialRecordTime");
+		if (initialRecordTime != null) {
+			result.put("initialRecordTime", TimeUtil.getDateTimeStamp(initialRecordTime));
+		}
+		Long createdAt = doc.getLong("createdAt");
+		if (createdAt != null) {
+			result.put("createdAt", TimeUtil.getDateTimeStamp(createdAt));
+		}
+		Long lastNotifiedAt = doc.getLong("lastNotifiedAt");
+		if (lastNotifiedAt != null) {
+			result.put("lastNotifiedAt", TimeUtil.getDateTimeStamp(lastNotifiedAt));
+		}
+		Long minRecordTime = doc.getLong("minRecordTime");
+		if (minRecordTime != null) {
+			result.put("minRecordTime", TimeUtil.getDateTimeStamp(minRecordTime));
+		}
+		result.put("epcFormat", "Always_GS1_Digital_Link");
+		return result;
+	}
+
 	@Override
 	public String toString() {
 		if (schedule != null) {
@@ -397,7 +428,7 @@ public class Subscription {
 			minRecordTime = doc.getLong("minRecordTime");
 
 			resultFormat = doc.getString("resultFormat");
-			
+
 			namedQuery = doc.getString("namedQuery");
 
 		} catch (Exception e) {
@@ -547,7 +578,7 @@ public class Subscription {
 		return sec + " " + min + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
 	}
 
-	private JsonObject getSchedule(String schedule) {
+	private static JsonObject getSchedule(String schedule) {
 		JsonObject scheduleObj = new JsonObject();
 		String[] arr = schedule.split("\\s");
 		if (arr.length == 6) {
@@ -569,4 +600,5 @@ public class Subscription {
 			return null;
 		}
 	}
+
 }

@@ -63,6 +63,7 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
+import rx.subscriptions.Subscriptions;
 
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
@@ -1550,6 +1551,8 @@ public class RESTQueryService {
 			HTTPUtil.sendQueryResults(serverResponse, subscription.toJSONResponse(), 201);
 		}
 	}
+	
+	
 
 	// ------------TODO-------------------------------------------------------------------------------------------
 
@@ -2054,6 +2057,167 @@ public class RESTQueryService {
 			EPCISServer.logger
 					.debug("[GET /" + tag + "] page - " + uuid + " expired. # remaining pages - " + pages.size());
 			HTTPUtil.sendQueryResults(serverResponse, result, 200, "application/json");
+		}
+	}
+
+	public void getSubscriptions(RoutingContext routingContext, String namedQuery) {
+		String perPageParam = routingContext.request().getParam("perPage");
+		int perPage = 30;
+		if (perPageParam != null) {
+			try {
+				int t = Integer.parseInt(perPageParam);
+				if (t > 0)
+					perPage = t;
+			} catch (NumberFormatException e) {
+				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+				EPCISServer.logger.error(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(msg), 406);
+			}
+		}
+
+		org.bson.Document sort = new org.bson.Document().append("_id", -1);
+		List<org.bson.Document> jobs = new ArrayList<org.bson.Document>();
+		org.bson.Document query = new org.bson.Document().append("namedQuery", namedQuery);
+		try {
+			EPCISServer.mSubscriptionCollection.find(query)
+					.sort(sort).limit(perPage + 1).into(jobs);
+		} catch (MongoException e) {
+			EPCISServer.logger.error(e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+			return;
+		}
+
+		// there are remaining list
+		int jobSize = jobs.size();
+		if (perPage < jobs.size()) {
+			jobSize = perPage;
+		}
+		JsonArray result = new JsonArray();
+		for (int i = 0; i < jobSize; i++) {
+			result.add(Subscription.toJSONResponse(jobs.get(i)));
+		}
+		// There are remaining lists
+		if (perPage < jobs.size()) {
+			UUID uuid;
+			long currentTime = System.currentTimeMillis();
+
+			while (true) {
+				uuid = UUID.randomUUID();
+				if (!EPCISServer.subscriptionsPageMap.containsKey(uuid))
+					break;
+			}
+			DataPage page = new DataPage(uuid, "subscription", query, null, sort, Integer.MAX_VALUE, perPage);
+			Timer timer = new Timer();
+			page.setTimer(timer);
+			timer.schedule(
+					new DataPageExpiryTimerTask("GET /queries/:query/subscriptions", EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.subscriptionsPageMap.put(uuid, page);
+			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " added. # remaining pages - "
+					+ EPCISServer.subscriptionsPageMap.size());
+
+			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
+					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result.toString());
+		} else {
+			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("content-type", "application/json")
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result.toString());
+		}
+	}
+	
+	public void postRemainingSubscriptions(RoutingContext routingContext, String nextPagetoken) {
+		String perPageParam = routingContext.request().getParam("perPage");
+		int perPage = 30;
+		if (perPageParam != null) {
+			try {
+				int t = Integer.parseInt(perPageParam);
+				if (t > 0)
+					perPage = t;
+			} catch (NumberFormatException e) {
+				String msg = "[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage();
+				EPCISServer.logger.error(msg);
+				HTTPUtil.sendQueryResults(routingContext.response(),
+						JSONMessageFactory.get406NotAcceptableException(msg), 406);
+			}
+		}
+		DataPage page = null;
+		UUID uuid = null;
+		try {
+			uuid = UUID.fromString(nextPagetoken);
+		} catch (IllegalArgumentException e) {
+			String msg = "[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage();
+			EPCISServer.logger.error(msg);
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(msg),
+					406);
+			return;
+		}
+
+		if (!EPCISServer.subscriptionsPageMap.containsKey(uuid)) {
+			EPCISServer.logger.error(
+					"[500ImplementationExceptione] The given next page token does not exist or be no longer available.");
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get500ImplementationException(
+					"[500ImplementationExceptione] The given next page token does not exist or be no longer available."),
+					500);
+			return;
+		} else {
+			page = EPCISServer.subscriptionsPageMap.get(uuid);
+		}
+
+		org.bson.Document sort = (org.bson.Document) page.getSort();
+		org.bson.Document query = (org.bson.Document) page.getQuery();
+		int skip = page.getSkip();
+		List<org.bson.Document> jobs = new ArrayList<org.bson.Document>();
+		try {
+			EPCISServer.mSubscriptionCollection.find(query).sort(sort).skip(skip).limit(perPage + 1).into(jobs);
+		} catch (MongoException e) {
+			EPCISServer.logger.error(e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+			return;
+		}
+
+		// there are remaining list
+		int jobSize = jobs.size();
+		if (perPage < jobs.size()) {
+			jobSize = perPage;
+		}
+		JsonArray result = new JsonArray();
+		for (int i = 0; i < jobSize; i++) {
+			result.add(Subscription.toJSONResponse(jobs.get(i)));
+		}
+		if (perPage < jobs.size()) {
+			page.incrSkip(perPage);
+			long currentTime = System.currentTimeMillis();
+			Timer timer = page.getTimer();
+			if (timer != null)
+				timer.cancel();
+			Timer newTimer = new Timer();
+			page.setTimer(newTimer);
+			newTimer.schedule(
+					new DataPageExpiryTimerTask("GET /queries/:query/subscriptions", EPCISServer.subscriptionsPageMap, uuid, EPCISServer.logger),
+					Metadata.GS1_Next_Page_Token_Expires);
+			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " token expiry time extended to "
+					+ TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires));
+			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Link", uuid.toString())
+					.putHeader("GS1-Next-Page-Token-Expires",
+							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
+					.putHeader("content-type", "application/json").putHeader("Access-Control-Expose-Headers", "*")
+					.setStatusCode(200).end(result.toString());
+		} else {
+			EPCISServer.subscriptionsPageMap.remove(uuid);
+			EPCISServer.logger.debug("[GET /queries/:query/subscriptions] page - " + uuid + " expired. # remaining pages - "
+					+ EPCISServer.subscriptionsPageMap.size());
+			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/json")
+					.setStatusCode(200).end(result.toString());
 		}
 	}
 

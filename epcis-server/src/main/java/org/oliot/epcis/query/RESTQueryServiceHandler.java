@@ -1,5 +1,7 @@
 package org.oliot.epcis.query;
 
+import static org.oliot.epcis.validation.HeaderValidator.isEqualHeaderREST;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -2940,6 +2942,33 @@ public class RESTQueryServiceHandler {
 				});
 		EPCISServer.logger
 				.info("[DELETE /queries/:queryName/subscriptions/:subscriptionID (application/json)] - router added");
+	}
+
+	/**
+	 * Returns active subscriptions with the option to use pagination if needed.
+	 * 
+	 * The `GET` endpoint is to list all active subscriptions on that query.
+	 * 
+	 * @param router
+	 * @param soapQueryService
+	 * @param restQueryService
+	 */
+	public static void registerGetSubscriptionsHandler(Router router, RESTQueryService restQueryService) {
+		router.get("/epcis/queries/:queryName/subscriptions").consumes("application/json").handler(routingContext -> {
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
+				return;
+			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
+				return;
+
+			String nextPageToken = routingContext.request().getParam("nextPageToken");
+			String namedQuery = routingContext.pathParam("queryName");
+			if (nextPageToken == null) {
+				restQueryService.getSubscriptions(routingContext, namedQuery);
+			} else {
+				restQueryService.postRemainingSubscriptions(routingContext, nextPageToken);
+			}
+		});
+		EPCISServer.logger.info("[GET /queries/:queryName/subscriptions (application/json)] - router added");
 	}
 
 	// ---------------------------------------------------------------------------------------
