@@ -405,7 +405,103 @@ public class RESTQueryService {
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 			return;
 		} else {
+			// remove all the related subscriptions
+			MongoCursor<org.bson.Document> cursor = EPCISServer.mSubscriptionCollection
+					.find(new org.bson.Document().append("namedQuery", queryName)).iterator();
+			while (cursor.hasNext()) {
+				org.bson.Document next = cursor.next();
+				String subscriptionID = next.getString("_id");
+				String trigger = next.getString("trigger");
+
+				if (trigger == null) {
+					try {
+						SubscriptionManager.sched
+								.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
+						SubscriptionManager.sched
+								.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
+						EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
+					} catch (SchedulerException e) {
+						EPCISException e1 = new EPCISException(e.getMessage());
+						EPCISServer.logger.error(e.getMessage());
+						HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 404);
+						return;
+					}
+				} else {
+					Enumeration<TriggerDescription> enumeration = TriggerEngine.triggerSubscription.keys();
+					TriggerDescription tdd = null;
+					while (enumeration.hasMoreElements()) {
+						TriggerDescription elem = enumeration.nextElement();
+						if (elem.getSubscriptionID().equals(subscriptionID)) {
+							tdd = elem;
+							break;
+						}
+					}
+					if (tdd != null) {
+						TriggerEngine.triggerSubscription.remove(tdd);
+						EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from trigger engine");
+					}
+				}
+
+			}
+			DeleteResult deleteResult = EPCISServer.mSubscriptionCollection
+					.deleteMany(new org.bson.Document().append("namedQuery", queryName));
+
 			routingContext.response().putHeader("Content-Type", "application/xml").setStatusCode(204).end();
+			return;
+		}
+	}
+
+	public void deleteJSONQuery(RoutingContext routingContext, String queryName) {
+
+		DeleteResult dr = EPCISServer.mNamedQueryCollection.deleteOne(new org.bson.Document().append("id", queryName));
+
+		long cnt = dr.getDeletedCount();
+		if (cnt == 0) {
+			HTTPUtil.sendQueryResults(routingContext.response(),
+					JSONMessageFactory.get404NoSuchResourceException("[404] Named Query Not Found: " + queryName), 404);
+			return;
+		} else {
+			// remove all the related subscriptions
+			MongoCursor<org.bson.Document> cursor = EPCISServer.mSubscriptionCollection
+					.find(new org.bson.Document().append("namedQuery", queryName)).iterator();
+			while (cursor.hasNext()) {
+				org.bson.Document next = cursor.next();
+				String subscriptionID = next.getString("_id");
+				String trigger = next.getString("trigger");
+
+				if (trigger == null) {
+					try {
+						SubscriptionManager.sched
+								.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
+						SubscriptionManager.sched
+								.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
+						EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
+					} catch (SchedulerException e) {
+						HTTPUtil.sendQueryResults(routingContext.response(),
+								JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+						return;
+					}
+				} else {
+					Enumeration<TriggerDescription> enumeration = TriggerEngine.triggerSubscription.keys();
+					TriggerDescription tdd = null;
+					while (enumeration.hasMoreElements()) {
+						TriggerDescription elem = enumeration.nextElement();
+						if (elem.getSubscriptionID().equals(subscriptionID)) {
+							tdd = elem;
+							break;
+						}
+					}
+					if (tdd != null) {
+						TriggerEngine.triggerSubscription.remove(tdd);
+						EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from trigger engine");
+					}
+				}
+
+			}
+			DeleteResult deleteResult = EPCISServer.mSubscriptionCollection
+					.deleteMany(new org.bson.Document().append("namedQuery", queryName));
+
+			routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
 			return;
 		}
 	}
@@ -524,21 +620,6 @@ public class RESTQueryService {
 		}
 
 		HTTPUtil.sendQueryResults(routingContext.response(), createQueries.toString(), 200, "application/json");
-	}
-
-	public void deleteJSONQuery(RoutingContext routingContext, String queryName) {
-
-		DeleteResult dr = EPCISServer.mNamedQueryCollection.deleteOne(new org.bson.Document().append("id", queryName));
-
-		long cnt = dr.getDeletedCount();
-		if (cnt == 0) {
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get404NoSuchResourceException("[404] Named Query Not Found: " + queryName), 404);
-			return;
-		} else {
-			routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
-			return;
-		}
 	}
 
 	public void postQuery(RoutingContext routingContext, Poll poll) {
