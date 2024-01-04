@@ -155,6 +155,7 @@ public class BootstrapUtil {
 			monitoringEventCollection = monitoringDatabase.getCollection("EventData", Document.class);
 			monitoringTxCollection = monitoringDatabase.getCollection("Tx", Document.class);
 			monitoringSubscriptionCollection = monitoringDatabase.getCollection("Subscription", Document.class);
+			monitoringNamedQueryCollection = monitoringDatabase.getCollection("NamedQuery", Document.class);
 		} catch (Throwable e) {
 			e.printStackTrace();
 			System.exit(1);

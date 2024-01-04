@@ -115,6 +115,7 @@ public class EPCISServer extends AbstractVerticle {
 	public static MongoCollection<Document> monitoringEventCollection;
 	public static MongoCollection<Document> monitoringTxCollection;
 	public static MongoCollection<Document> monitoringSubscriptionCollection;
+	public static MongoCollection<Document> monitoringNamedQueryCollection;
 	public static AtomicLong resourceDiscoveryInterval;
 
 	@Override

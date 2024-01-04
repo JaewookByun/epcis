@@ -28,10 +28,11 @@ public class DynamicResource extends Thread {
 	public static ConcurrentHashSet<String> availableReadPointsInVocabularies = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableDispositions = new ConcurrentHashSet<String>();
 	public static ConcurrentHashSet<String> availableEventTypes = new ConcurrentHashSet<String>();
-	
+
 	public static AtomicLong numOfCaptureJobs = new AtomicLong(0);
 	public static AtomicLong numOfSubscriptions = new AtomicLong(0);
-			
+	public static AtomicLong numOfNamedQueries = new AtomicLong(0);
+
 	private Vertx vertx;
 	public static JsonObject counts = new JsonObject();
 	public static AtomicLong delay;
@@ -57,6 +58,7 @@ public class DynamicResource extends Thread {
 		newCounts.put("readPoints_in_vocabularies", availableReadPointsInVocabularies.size());
 		newCounts.put("captureJobs", numOfCaptureJobs.get());
 		newCounts.put("subscriptions", numOfSubscriptions.get());
+		newCounts.put("namedQueries", numOfNamedQueries.get());
 
 		synchronized (counts) {
 			counts = newCounts;
@@ -64,7 +66,6 @@ public class DynamicResource extends Thread {
 
 		return counts;
 	}
-	
 
 	@Override
 	public void run() {
@@ -153,7 +154,7 @@ public class DynamicResource extends Thread {
 					}
 					availableReadPointsInVocabularies.clear();
 					availableReadPointsInVocabularies.addAll(newVReadPoints);
-					
+
 					MongoCursor<Document> bizLocationCursor = EPCISServer.monitoringEventCollection.aggregate(List.of(
 							new Document().append("$group",
 									new Document().append("_id", null).append("bizLocations",
@@ -257,7 +258,8 @@ public class DynamicResource extends Thread {
 
 					numOfCaptureJobs.set(EPCISServer.monitoringTxCollection.countDocuments());
 					numOfSubscriptions.set(EPCISServer.monitoringSubscriptionCollection.countDocuments());
-					
+					numOfNamedQueries.set(EPCISServer.monitoringNamedQueryCollection.countDocuments());
+
 					EPCISServer.logger.debug("# currently found resources: " + getCounts());
 
 					long elapsed = System.currentTimeMillis() - pre;
