@@ -423,18 +423,18 @@ public class Subscription {
 		if (schedule != null) {
 			doc.put("schedule", schedule);
 			doc.put("query", queryDescription.getMongoQuery());
+			doc.put("eventCountLimit", queryDescription.getEventCountLimit());
+			doc.put("maxCount", queryDescription.getMaxCount());
+			doc.put("projection", queryDescription.getMongoProjection());
+			doc.put("sort", queryDescription.getMongoSort());
+			doc.put("queryName", queryDescription.getQueryName());
 		}
 
 		if (trigger != null) {
 			doc.put("trigger", trigger.toString());
 			doc.put("query", triggerDescription.getMongoQueryParameter());
+			doc.put("queryName", "SimpleEventQuery");
 		}
-
-		doc.put("eventCountLimit", queryDescription.getEventCountLimit());
-		doc.put("maxCount", queryDescription.getMaxCount());
-		doc.put("projection", queryDescription.getMongoProjection());
-		doc.put("sort", queryDescription.getMongoSort());
-		doc.put("queryName", queryDescription.getQueryName());
 
 		doc.put("initialRecordTime", initialRecordTime);
 		doc.put("reportIfEmpty", reportIfEmpty);

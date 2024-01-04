@@ -226,6 +226,7 @@ public class EPCISServer extends AbstractVerticle {
 				restQueryService);
 		
 		RESTQueryServiceHandler.registerPostSubscriptionHandler(router, soapQueryService, restQueryService);
+		RESTQueryServiceHandler.registerDeleteSubscriptionHandler(router, soapQueryService, restQueryService);
 	}
 
 	public void registerSubscriptionMonitorHandler(Router router, EventBus eventBus) {

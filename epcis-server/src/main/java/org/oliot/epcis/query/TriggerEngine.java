@@ -14,6 +14,8 @@ import org.oliot.epcis.converter.data.bson_to_pojo.ObjectEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransactionEventConverter;
 import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
 import org.oliot.epcis.model.EventListType;
+import org.oliot.epcis.model.ImplementationException;
+import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.QueryResults;
 import org.oliot.epcis.model.QueryResultsBody;
 import org.oliot.epcis.server.EPCISServer;
@@ -26,6 +28,21 @@ public class TriggerEngine {
 
 	public TriggerEngine() {
 		triggerSubscription = new ConcurrentHashMap<TriggerDescription, HashSet<Object>>();
+	}
+
+	private static void updateLastNotifiedAt(String subscriptionID, long lastNotifiedAt)
+			throws ImplementationException {
+
+		try {
+			EPCISServer.mSubscriptionCollection.findOneAndUpdate(new org.bson.Document("_id", subscriptionID),
+					new org.bson.Document("$set", new org.bson.Document("lastNotifiedAt", lastNotifiedAt)));
+			EPCISServer.logger.debug("lastNotifiedAt updated to " + lastNotifiedAt);
+		} catch (Throwable e2) {
+			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e2.getMessage());
+			EPCISServer.logger.error(e.getMessage());
+			throw e;
+		}
 	}
 
 	public void addSubscription(TriggerDescription description, URI uri) {
@@ -55,14 +72,21 @@ public class TriggerEngine {
 				TriggerDescription desc = entry.getKey();
 				HashSet<Object> dests = entry.getValue();
 				if (desc.isPass((Document) msg.body())) {
-					for (Object dest : dests) {
-						if (dest instanceof URI) {
-							sendQueryResult(desc, (Document) msg.body(), (URI) dest);
-						} else if (dest instanceof ServerWebSocket) {
-							sendQueryResult(desc, (Document) msg.body(), (ServerWebSocket) dest);
+					long cur = System.currentTimeMillis();
+					try {
+						updateLastNotifiedAt(desc.getSubscriptionID(), cur);
+						for (Object dest : dests) {
+							if (dest instanceof URI) {
+								sendQueryResult(desc, (Document) msg.body(), (URI) dest);
+							} else if (dest instanceof ServerWebSocket) {
+								sendQueryResult(desc, (Document) msg.body(), (ServerWebSocket) dest);
+							}
+
 						}
+					} catch (ImplementationException e) {
 
 					}
+
 				}
 			}
 		});
@@ -103,7 +127,7 @@ public class TriggerEngine {
 		elt.setObjectEventOrAggregationEventOrTransformationEvent(List.of(getConvertedEvent(message, doc, nsList)));
 		resultsBody.setEventList(elt);
 		queryResults.setResultsBody(resultsBody);
-
+		;
 		HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, uri, EPCISServer.logger, message,
 				queryResults, QueryResults.class);
 	}

@@ -142,8 +142,8 @@ public class JSONCaptureService {
 				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", tx.getTxId()).setStatusCode(202).end();
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Location", tx.getTxId())
+						.setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
 
 				captureEvents(routingContext, context, eventList, eventBus, tx);
@@ -309,7 +309,7 @@ public class JSONCaptureService {
 		String validationError = validateJSON(epcisEvent);
 		if (validationError == null) {
 			EPCISServer.logger.debug(
-					"[400ValidationException] An incoming EPCIS document is valid against the json schema 2.0.0");
+					"An incoming EPCIS document is valid against the json schema 2.0.0");
 		} else {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get400ValidationException(validationError), 400);
@@ -340,8 +340,9 @@ public class JSONCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
-						.setStatusCode(201).end();
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8")).setStatusCode(201)
+						.end().result();
+				return;
 			} catch (MongoException | UnsupportedEncodingException e) {
 				EPCISServer.logger.error(e.getMessage());
 				HTTPUtil.sendQueryResults(routingContext.response(),
@@ -358,8 +359,9 @@ public class JSONCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
-						.setStatusCode(201).end();
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8")).setStatusCode(201)
+						.end();
+				return;
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());
 				HTTPUtil.sendQueryResults(routingContext.response(),
@@ -460,8 +462,8 @@ public class JSONCaptureService {
 		} catch (IllegalArgumentException e) {
 			String msg = "[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage();
 			EPCISServer.logger.error(msg);
-			HTTPUtil.sendQueryResults(routingContext.response(),
-					JSONMessageFactory.get406NotAcceptableException(msg), 406);
+			HTTPUtil.sendQueryResults(routingContext.response(), JSONMessageFactory.get406NotAcceptableException(msg),
+					406);
 			return;
 		}
 
@@ -521,8 +523,9 @@ public class JSONCaptureService {
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
-					.putHeader("content-type", "application/json").setStatusCode(200).end(result.toString());
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/json")
+					.setStatusCode(200).end(result.toString());
 		}
 	}
 

@@ -1400,7 +1400,7 @@ public class SOAPQueryService {
 							message);
 
 					if (reportIfEmpty == false && convertedResultList.size() == 0) {
-						EPCISServer.logger.debug("Subscription " + sub + " invoked but not sent due to reportIfEmpty");
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " invoked but not sent due to reportIfEmpty");
 						return;
 					}
 
@@ -1503,9 +1503,19 @@ public class SOAPQueryService {
 				}
 
 				if (isXMLResult) {
+					if(sub.getNamedQuery() == null) {
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " is trying to deliver the message.");
+					}else {
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " of " + sub.getNamedQuery() + " is trying to deliver the message.");
+					}
 					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
 							message, queryResults, QueryResults.class);
 				} else {
+					if(sub.getNamedQuery() == null) {
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " is trying to deliver the message.");
+					}else {
+						EPCISServer.logger.debug("Subscription " + sub.getSubscriptionID() + " of " + sub.getNamedQuery() + " is trying to deliver the message.");
+					}
 					HTTPUtil.sendQueryResults(EPCISServer.clientForSubscriptionCallback, dest, EPCISServer.logger,
 							queryResultDocument);
 				}

@@ -570,7 +570,7 @@ public class TriggerDescription {
 	@SuppressWarnings("unchecked")
 	public boolean isPass(Document doc) {
 		try {
-			if (eventType != null && isPassString(eventType, doc.getString("type"))) {
+			if (eventType != null && !isPassString(eventType, doc.getString("type"))) {
 				return false;
 			}
 

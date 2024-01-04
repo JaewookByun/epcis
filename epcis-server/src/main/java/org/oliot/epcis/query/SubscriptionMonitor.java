@@ -9,8 +9,9 @@ public class SubscriptionMonitor {
 
 	public static void registerEchoHandler(Router router, EventBus eventBus) {
 		router.post("/epcis/echo").handler(routingContext -> {
-			System.out.println(routingContext.body().asString());
-			eventBus.send("subscriptionMonitor", routingContext.body().asString());
+			String result = routingContext.body().asString();
+			EPCISServer.logger.debug("Echo: " + result);	
+			eventBus.send("subscriptionMonitor", result);
 			routingContext.end();
 		});
 		EPCISServer.logger.info("[POST /epcis/echo] - router added");

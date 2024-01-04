@@ -75,20 +75,15 @@ public class HTTPUtil {
 	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, SOAPMessage message,
 			Object result, Class<?> resultType) {
 		message.putResult(result, resultType);
-		webClient = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder().uri(uri)
 				.POST(HttpRequest.BodyPublishers.ofString(message.toString())).build();
+
 		try {
-			HttpResponse<String> response = webClient.send(request, HttpResponse.BodyHandlers.ofString());
-			if (response.statusCode() == 200) {
-				EPCISServer.logger.debug("subscription result successfully sent");
-			} else {
-				EPCISServer.logger.debug("subscription result delivery fails");
-			}
+			webClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+			EPCISServer.logger.debug("subscription result invokes delivery");
 		} catch (Exception e) {
 			EPCISServer.logger.debug("subscription result delivery fails: " + e.getMessage());
 		}
-
 	}
 
 	public static void sendQueryResults(HttpClient webClient, URI uri, Logger logger, JsonObject message) {
@@ -96,12 +91,8 @@ public class HTTPUtil {
 		HttpRequest request = HttpRequest.newBuilder().uri(uri)
 				.POST(HttpRequest.BodyPublishers.ofString(message.toString())).build();
 		try {
-			HttpResponse<String> response = webClient.send(request, HttpResponse.BodyHandlers.ofString());
-			if (response.statusCode() == 200) {
-				EPCISServer.logger.debug("subscription result successfully sent");
-			} else {
-				EPCISServer.logger.debug("subscription result delivery fails");
-			}
+			webClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+			EPCISServer.logger.debug("subscription result invokes delivery");
 		} catch (Exception e) {
 			EPCISServer.logger.debug("subscription result delivery fails: " + e.getMessage());
 		}

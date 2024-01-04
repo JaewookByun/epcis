@@ -3,6 +3,7 @@ package org.oliot.epcis.query;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -411,57 +412,87 @@ public class RESTQueryService {
 
 	public void deleteXMLSubscription(RoutingContext routingContext, String queryName, String subscriptionID) {
 
-		DeleteResult dr = EPCISServer.mSubscriptionCollection
-				.deleteOne(new org.bson.Document().append("_id", subscriptionID).append("namedQuery", queryName));
+		org.bson.Document dr = EPCISServer.mSubscriptionCollection.findOneAndDelete(
+				new org.bson.Document().append("_id", subscriptionID).append("namedQuery", queryName));
 
-		long cnt = dr.getDeletedCount();
-		if (cnt == 0) {
+		if (dr == null) {
 			EPCISException e = new EPCISException("[404ResourceNotFoundException] " + subscriptionID);
 			EPCISServer.logger.error("[404ResourceNotFoundException] " + subscriptionID);
 			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 404);
 			return;
 		} else {
-
-			try {
-				SubscriptionManager.sched
-						.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
-				SubscriptionManager.sched.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
-				EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
-			} catch (SchedulerException e) {
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 500);
-				return;
+			if (dr.getString("trigger") == null) {
+				try {
+					SubscriptionManager.sched
+							.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
+					SubscriptionManager.sched.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
+					EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
+					routingContext.response().putHeader("Content-Type", "application/xml").setStatusCode(204).end();
+				} catch (SchedulerException e) {
+					EPCISException e1 = new EPCISException(e.getMessage());
+					EPCISServer.logger.error(e.getMessage());
+					HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 404);
+					return;
+				}
+			} else {
+				Enumeration<TriggerDescription> enumeration = TriggerEngine.triggerSubscription.keys();
+				TriggerDescription tdd = null;
+				while (enumeration.hasMoreElements()) {
+					TriggerDescription elem = enumeration.nextElement();
+					if (elem.getSubscriptionID().equals(subscriptionID)) {
+						tdd = elem;
+						break;
+					}
+				}
+				if (tdd != null) {
+					TriggerEngine.triggerSubscription.remove(tdd);
+					EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from trigger engine");
+					routingContext.response().putHeader("Content-Type", "application/xml").setStatusCode(204).end();
+				}
 			}
-
-			routingContext.response().putHeader("Content-Type", "application/xml").setStatusCode(204).end();
 			return;
 		}
 	}
 
 	public void deleteJSONSubscription(RoutingContext routingContext, String queryName, String subscriptionID) {
 
-		DeleteResult dr = EPCISServer.mSubscriptionCollection
-				.deleteOne(new org.bson.Document().append("_id", subscriptionID).append("namedQuery", queryName));
+		org.bson.Document dr = EPCISServer.mSubscriptionCollection.findOneAndDelete(
+				new org.bson.Document().append("_id", subscriptionID).append("namedQuery", queryName));
 
-		long cnt = dr.getDeletedCount();
-		if (cnt == 0) {
+		if (dr == null) {
 			HTTPUtil.sendQueryResults(routingContext.response(),
 					JSONMessageFactory.get404NoSuchResourceException("[404] subscription not found: " + subscriptionID),
 					404);
 			return;
 		} else {
-
-			try {
-				SubscriptionManager.sched
-						.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
-				SubscriptionManager.sched.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
-				EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
-			} catch (SchedulerException e) {
-				HTTPUtil.sendQueryResults(routingContext.response(),
-						JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
-				return;
+			if (dr.getString("trigger") == null) {
+				try {
+					SubscriptionManager.sched
+							.unscheduleJob(org.quartz.TriggerKey.triggerKey(subscriptionID, "SimpleEventQuery"));
+					SubscriptionManager.sched.deleteJob(org.quartz.JobKey.jobKey(subscriptionID, "SimpleEventQuery"));
+					EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from scheduler");
+					routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
+				} catch (SchedulerException e) {
+					HTTPUtil.sendQueryResults(routingContext.response(),
+							JSONMessageFactory.get500ImplementationException(e.getMessage()), 500);
+					return;
+				}
+			} else {
+				Enumeration<TriggerDescription> enumeration = TriggerEngine.triggerSubscription.keys();
+				TriggerDescription tdd = null;
+				while (enumeration.hasMoreElements()) {
+					TriggerDescription elem = enumeration.nextElement();
+					if (elem.getSubscriptionID().equals(subscriptionID)) {
+						tdd = elem;
+						break;
+					}
+				}
+				if (tdd != null) {
+					TriggerEngine.triggerSubscription.remove(tdd);
+					EPCISServer.logger.debug("Subscription " + subscriptionID + " is removed from trigger engine");
+					routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
+				}
 			}
-
-			routingContext.response().putHeader("Content-Type", "application/json").setStatusCode(204).end();
 			return;
 		}
 	}
