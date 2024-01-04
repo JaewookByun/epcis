@@ -7,7 +7,7 @@
 	<artifactId>epcis-server</artifactId>
 	<version>2.2.0</version>
 	<name>epcis-server</name>
-	<url>https://github.com/JaewookByun/epcis2</url>
+	<url>https://github.com/JaewookByun/epcis</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>21</maven.compiler.source>

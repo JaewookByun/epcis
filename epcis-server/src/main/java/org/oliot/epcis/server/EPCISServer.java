@@ -46,14 +46,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
  * <p>
  * This project is an open source implementation of Electronic Product Code
  * Information Service (EPCIS) v2.0,
  * <p>
- * EPCISServer is executable as Java application
- * <p>
- * java -jar EPCISServer.jar configuration.json
  *
  * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,
  *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,

@@ -18,12 +18,12 @@ import jakarta.xml.bind.JAXBElement;
 import static org.oliot.epcis.util.BSONReadUtil.*;
 
 /**
- * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
  * <p>
  * This project is an open source implementation of Electronic Product Code
  * Information Service (EPCIS) v2.0,
  * <p>
- * The class converts ObjectEvent (common class) from a POJO to a storage unit, BSON.
+ * TransactionManager holds event-bus handlers for processing capture jobs.
  * <p>
  *
  * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,

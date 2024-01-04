@@ -18,6 +18,17 @@ import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 
+/**
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
+ * <p>
+ * This project is an open source implementation of Electronic Product Code
+ * Information Service (EPCIS) v2.0,
+ * <p>
+ *
+ * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,
+ *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
+ *         bjw0829@gmail.com
+ */
 public class SOAPMessage {
 
 	private Document message;

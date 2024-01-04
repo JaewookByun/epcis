@@ -5,16 +5,15 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 
 /**
- * Copyright (C) 2020 Jaewook Byun
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
  * <p>
- * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
- * v2.x is Java Web Service complying with Electronic Product Code Information
- * Service (EPCIS) v2.0.x
+ * This project is an open source implementation of Electronic Product Code
+ * Information Service (EPCIS) v2.0,
+ * <p>
  *
  * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,
- *         jwbyun@sejong.ac.kr
- *         <p>
- *         Associate Director, Auto-ID Labs, KAIST, bjw0829@kaist.ac.kr
+ *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
+ *         bjw0829@gmail.com
  */
 @SuppressWarnings("unused")
 public class AICodeParser {

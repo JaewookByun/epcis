@@ -49,14 +49,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.oliot.epcis.server.EPCISServer.*;
 
 /**
- * Copyright (C) 2020-2023. (Jaewook Byun) all rights reserved.
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
  * <p>
  * This project is an open source implementation of Electronic Product Code
  * Information Service (EPCIS) v2.0,
- * <p>
- * Among various modules, epcis-capture-xml acts as a server to receive
- * XML-formatted EPCIS documents to capture events in the documents into an
- * EPCIS repository.
  * <p>
  *
  * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,

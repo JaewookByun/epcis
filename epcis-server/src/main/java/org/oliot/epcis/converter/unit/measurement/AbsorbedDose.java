@@ -1,7 +1,7 @@
 package org.oliot.epcis.converter.unit.measurement;
 
 /**
- * Copyright (C) 2020-2023 Jaewook Byun
+ * Copyright (C) 2020-2024 Jaewook Byun
  *
  * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
  * v2.x is Java Web Service complying with Electronic Product Code Information

@@ -3,19 +3,15 @@ package org.oliot.epcis.unit_converter.unit.back;
 import org.oliot.epcis.converter.unit.measurement.Unit;
 
 /**
- * Copyright (C) 2020 Jaewook Byun
- *
- * This project is part of Oliot open source (http://oliot.org). Oliot EPCIS
- * v2.x is Java Web Service complying with Electronic Product Code Information
- * Service (EPCIS) v2.0.x
- *
- * This class is a Java implementation of UnitConverterUNECERec20 written in
- * Javascript (https://github.com/mgh128/UnitConverterUNECERec20)
+ * Copyright (C) 2020-2024. (Jaewook Byun) all rights reserved.
+ * <p>
+ * This project is an open source implementation of Electronic Product Code
+ * Information Service (EPCIS) v2.0,
+ * <p>
  *
  * @author Jaewook Byun, Ph.D., Assistant Professor, Sejong University,
- *         jwbyun@sejong.ac.kr
- * 
- *         Associate Director, Auto-ID Labs, KAIST, bjw0829@kaist.ac.kr
+ *         jwbyun@sejong.ac.kr, Associate Director, Auto-ID Labs, Korea,
+ *         bjw0829@gmail.com
  */
 public class DimensionlessConcentration extends Unit {
 
