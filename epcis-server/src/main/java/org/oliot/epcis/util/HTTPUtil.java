@@ -50,6 +50,23 @@ public class HTTPUtil {
 				.putHeader("GS1-Extensions", Metadata.GS1_Extensions).setStatusCode(statusCode).end(message.toString());
 	}
 
+	public static void sendQueryResults(HttpServerResponse serverResponse, Object result, Class<?> resultType,
+			int statusCode) {
+		try {
+			org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			JAXBContext jc = JAXBContext.newInstance(resultType);
+			Marshaller marshaller = jc.createMarshaller();
+			marshaller.marshal(result, retDoc);
+			serverResponse.putHeader("Access-Control-Expose-Headers", "*")
+					.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("content-type", "application/xml; charset=utf-8").setStatusCode(statusCode)
+					.end(XMLUtil.toString(retDoc));
+		} catch (Exception e) {
+			serverResponse.setStatusCode(500).end();
+		}
+	}
+
 	public static void sendQueryResults(HttpServerResponse serverResponse, SOAPMessage message, Object result,
 			Class<?> resultType, int statusCode) {
 		message.putResult(result, resultType);

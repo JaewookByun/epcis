@@ -15,16 +15,21 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.oliot.epcis.model.BusinessStepListType;
+import org.oliot.epcis.model.EPC;
+import org.oliot.epcis.model.EPCListType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.Disposition;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
+import org.oliot.epcis.util.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import io.vertx.core.impl.ConcurrentHashSet;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jakarta.xml.bind.JAXBException;
 
 public class ResourcePage {
 
@@ -65,35 +70,80 @@ public class ResourcePage {
 		if (isClosed) {
 			return null;
 		}
-		Document message = null;
-		try {
-			message = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
-
-		Element epcs;
-		epcs = message.createElement("Resource");
-		message.appendChild(epcs);
-		int cnt = 0;
-		boolean needPagination = false;
-		for (; cursor < resources.size(); cursor++) {
-			cnt++;
-			Element r = message.createElement(tag);
-			r.setTextContent(resources.get(cursor));
-			epcs.appendChild(r);
-			if (cnt == perPage) {
-				needPagination = true;
-				cursor++;
-				break;
+		if (tag.equals("epc")) {
+			EPCListType epcList = new EPCListType();
+			List<EPC> epcs = epcList.getEpc();
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				EPC epc = new EPC(resources.get(cursor));
+				epcs.add(epc);
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
 			}
-		}
-		if (needPagination == false)
-			isClosed = true;
+			if (needPagination == false)
+				isClosed = true;
+			try {
+				return XMLUtil.toString(epcList, EPCListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
+		} else if (tag.equals("bizStep")) {
+			BusinessStepListType bizStepList = new BusinessStepListType();
+			List<String> bizSteps = bizStepList.getBizStep();
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				bizSteps.add(resources.get(cursor));
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
+			}
+			if (needPagination == false)
+				isClosed = true;
+			try {
+				return XMLUtil.toString(bizStepList, BusinessStepListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
+		} else {
+			Document message = null;
+			try {
+				message = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			} catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			}
 
-		return toXMLString(message);
+			Element epcs;
+			epcs = message.createElement("Resource");
+			message.appendChild(epcs);
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				Element r = message.createElement(tag);
+				r.setTextContent(resources.get(cursor));
+				epcs.appendChild(r);
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
+			}
+			if (needPagination == false)
+				isClosed = true;
+
+			return toXMLString(message);
+		}
 	}
-	
+
 	public static String getQueryNamesResults(List<String> queries) {
 		Document message = null;
 		try {
@@ -105,8 +155,8 @@ public class ResourcePage {
 		Element resources;
 		resources = message.createElement("Resource");
 		message.appendChild(resources);
-		
-		for(String query: queries) {
+
+		for (String query : queries) {
 			Element r = message.createElement("queryName");
 			r.setTextContent(query);
 			resources.appendChild(r);
@@ -115,13 +165,29 @@ public class ResourcePage {
 		return getXMLString(message);
 	}
 
+	/**
+	 * "example": { "@context":
+	 * "https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld", "type":
+	 * "Collection", "member": [
+	 * "urn:jaif:id:obj:37SUN321456789A111222333AB+123456789012",
+	 * "urn:epc:id:sgtin:0614141.107346.2018",
+	 * "https://example.com/01/04012345123456/21/abc234",
+	 * "urn:epc:id:sgtin:0614141.107346.2017" ] }
+	 * 
+	 * @param perPage
+	 * @param type
+	 * @return
+	 */
 	public synchronized String getJSONNextPage(int perPage, String type) {
 		// null means end of page
 		if (isClosed) {
 			return null;
 		}
 
-		JsonArray jsonResource = new JsonArray();
+		JsonObject jsonResource = new JsonObject();
+		jsonResource.put("@context", "https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+		jsonResource.put("type", "Collection");
+		JsonArray member = new JsonArray();
 
 		int cnt = 0;
 		boolean needPagination = false;
@@ -131,24 +197,24 @@ public class ResourcePage {
 			String resource = resources.get(cursor);
 			if (type.equals("epc") || type.equals("readPoint") || type.equals("bizLocation")) {
 				try {
-					jsonResource.add(TagDataTranslationEngine.toDL(resource));
+					member.add(TagDataTranslationEngine.toDL(resource));
 				} catch (ValidationException e) {
-					jsonResource.add(resource);
+					member.add(resource);
 				}
 			} else if (type.equals("bizStep")) {
 				try {
-					jsonResource.add(BusinessStep.getShortVocabularyName(resource));
+					member.add(BusinessStep.getShortVocabularyName(resource));
 				} catch (Exception e) {
-					jsonResource.add(resource);
+					member.add(resource);
 				}
 			} else if (type.equals("disposition")) {
 				try {
-					jsonResource.add(Disposition.getShortVocabularyName(resource));
+					member.add(Disposition.getShortVocabularyName(resource));
 				} catch (Exception e) {
-					jsonResource.add(resource);
+					member.add(resource);
 				}
 			} else {
-				jsonResource.add(resource);
+				member.add(resource);
 			}
 
 			if (cnt == perPage) {
@@ -160,10 +226,9 @@ public class ResourcePage {
 		if (needPagination == false)
 			isClosed = true;
 
-		JsonObject result = new JsonObject();
-		result.put("@set", jsonResource);
+		jsonResource.put("member", member);
 
-		return result.toString();
+		return jsonResource.toString();
 	}
 
 	public boolean isClosed() {
@@ -183,7 +248,7 @@ public class ResourcePage {
 			return null;
 		}
 	}
-	
+
 	public static String getXMLString(Document message) {
 		try {
 			Transformer tf = TransformerFactory.newInstance().newTransformer();

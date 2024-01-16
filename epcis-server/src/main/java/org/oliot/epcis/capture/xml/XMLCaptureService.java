@@ -7,7 +7,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.stream.StreamSource;
 
 import com.mongodb.client.result.InsertOneResult;
@@ -18,6 +21,7 @@ import io.vertx.ext.web.RoutingContext;
 import jakarta.xml.bind.DataBindingException;
 import jakarta.xml.bind.JAXB;
 import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 
 import org.bson.Document;
@@ -128,8 +132,8 @@ public class XMLCaptureService {
 				routingContext.response().putHeader("Access-Control-Expose-Headers", "*")
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
-						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", tx.getTxId()).setStatusCode(202).end();
+						.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Location", tx.getTxId())
+						.setStatusCode(202).end();
 				eventBus.send("txStart", tx.getJson());
 				captureEvents(routingContext, eventList, eventBus, tx);
 			} else
@@ -253,8 +257,8 @@ public class XMLCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
-						.setStatusCode(201).end();
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8")).setStatusCode(201)
+						.end();
 			} catch (MongoException | UnsupportedEncodingException e) {
 				EPCISServer.logger.error(e.getMessage());
 				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
@@ -272,8 +276,8 @@ public class XMLCaptureService {
 						.putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 						.putHeader("GS1-CBV-Version", Metadata.GS1_CBV_Version)
 						.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
-						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8"))
-						.setStatusCode(201).end();
+						.putHeader("Location", URLEncoder.encode(obj.getString("eventID"), "UTF-8")).setStatusCode(201)
+						.end();
 			} catch (Throwable e) {
 				EPCISServer.logger.error(e.getMessage());
 				ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
@@ -404,7 +408,6 @@ public class XMLCaptureService {
 	}
 
 	public void postCaptureJobList(RoutingContext routingContext) {
-		SOAPMessage message = new SOAPMessage();
 		String perPageParam = routingContext.request().getParam("perPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -416,7 +419,7 @@ public class XMLCaptureService {
 				EPCISException e1 = new EPCISException(
 						"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
 				EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 406);
 				return;
 			}
 		}
@@ -429,36 +432,36 @@ public class XMLCaptureService {
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
 			EPCISServer.logger.error(e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 500);
 			return;
 		}
-		String result = "<epcisCaptureJobList>";
 		// there are remaining list
 		int jobSize = jobs.size();
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		for (int j = 0; j < jobSize; j++) {
-			try {
+		EPCISCaptureJobListType captureJobs = new EPCISCaptureJobListType();
+		List<EPCISCaptureJobType> captureJobList = captureJobs.getEPCISCaptureJob();
+		org.w3c.dom.Document retDoc;
+		String resultString = null;
+		try {
+			for (int j = 0; j < jobSize; j++) {
 				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(j));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
-				String resultString = XMLUtil.toString(retDoc, true);
-				String[] lines = resultString.split("\n");
-				for (int i = 1; i < lines.length; i++) {
-					result += lines[i] + "\n";
-				}
-			} catch (Exception throwable) {
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				EPCISServer.logger.error(e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-				return;
+				captureJobList.add(captureJob);
 			}
+			retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobListType.class);
+			Marshaller marshaller = jc.createMarshaller();
+			marshaller.marshal(captureJobs, retDoc);
+			resultString = XMLUtil.toString(retDoc, true);
+		} catch (ParserConfigurationException | JAXBException | TransformerException
+				| DatatypeConfigurationException e) {
+			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 500);
+			return;
 		}
-		result += "</epcisCaptureJobList>";
 
 		// There are remaining lists
 		if (perPage < jobs.size()) {
@@ -485,16 +488,16 @@ public class XMLCaptureService {
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
-					.setStatusCode(200).end(result);
+					.setStatusCode(200).end(resultString);
 		} else {
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
-					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("Access-Control-Expose-Headers", "*")
-					.putHeader("content-type", "application/xml").setStatusCode(200).end(result);
+					.putHeader("GS1-Extensions", Metadata.GS1_Extensions)
+					.putHeader("Access-Control-Expose-Headers", "*").putHeader("content-type", "application/xml")
+					.setStatusCode(200).end(resultString);
 		}
 	}
 
 	public void postRemainingCaptureJobList(RoutingContext routingContext, String nextPagetoken) {
-		SOAPMessage message = new SOAPMessage();
 		String perPageParam = routingContext.request().getParam("PerPage");
 		int perPage = 30;
 		if (perPageParam != null) {
@@ -506,7 +509,7 @@ public class XMLCaptureService {
 				EPCISException e1 = new EPCISException(
 						"[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
 				EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 406);
 				return;
 			}
 		}
@@ -518,13 +521,13 @@ public class XMLCaptureService {
 			EPCISException e1 = new EPCISException(
 					"[406NotAcceptable] not acceptable nextPageToken parameter: " + e.getMessage());
 			EPCISServer.logger.error("[406NotAcceptable] not acceptable perPage parameter: " + e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e1, e1.getClass(), 406);
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 406);
 			return;
 		}
 		if (!EPCISServer.captureIDPageMap.containsKey(uuid)) {
 			EPCISException e = new EPCISException(
 					"[406NotAcceptable] The given next page token does not exist or be no longer available.");
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 406);
+			HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 406);
 			return;
 		} else {
 			page = EPCISServer.captureIDPageMap.get(uuid);
@@ -539,36 +542,37 @@ public class XMLCaptureService {
 			EPCISServer.logger.error(e.getMessage());
 			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 500);
 			return;
 		}
 
-		String result = "<epcisCaptureJobList>";
-		// there are remaining list
 		int jobSize = jobs.size();
 		if (perPage < jobs.size()) {
 			jobSize = perPage;
 		}
-		for (int j = 0; j < jobSize; j++) {
-			try {
+		EPCISCaptureJobListType captureJobs = new EPCISCaptureJobListType();
+		List<EPCISCaptureJobType> captureJobList = captureJobs.getEPCISCaptureJob();
+		org.w3c.dom.Document retDoc;
+		String resultString = null;
+		try {
+			for (int j = 0; j < jobSize; j++) {
 				EPCISCaptureJobType captureJob = Transaction.toCaptureJob(jobs.get(j));
-				org.w3c.dom.Document retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-				JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobType.class);
-				Marshaller marshaller = jc.createMarshaller();
-				marshaller.marshal(captureJob, retDoc);
-				String[] lines = XMLUtil.toString(retDoc, true).split("\n");
-				for (int i = 1; i < lines.length; i++) {
-					result += lines[i] + "\n";
-				}
-			} catch (Exception throwable) {
-				EPCISServer.logger.error(throwable.getMessage());
-				ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null,
-						null, throwable.getMessage());
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
-				return;
+				captureJobList.add(captureJob);
 			}
+			retDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+			JAXBContext jc = JAXBContext.newInstance(EPCISCaptureJobListType.class);
+			Marshaller marshaller = jc.createMarshaller();
+			marshaller.marshal(captureJobs, retDoc);
+			resultString = XMLUtil.toString(retDoc, true);
+		} catch (ParserConfigurationException | JAXBException | TransformerException
+				| DatatypeConfigurationException e) {
+			ImplementationException e1 = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
+					e.getMessage());
+			EPCISServer.logger.error(e.getMessage());
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 500);
+			return;
 		}
-		result += "</epcisCaptureJobList>";
+
 		if (perPage < jobs.size()) {
 			page.incrSkip(perPage);
 			long currentTime = System.currentTimeMillis();
@@ -587,36 +591,35 @@ public class XMLCaptureService {
 					.putHeader("GS1-Next-Page-Token-Expires",
 							TimeUtil.getDateTimeStamp(currentTime + Metadata.GS1_Next_Page_Token_Expires))
 					.putHeader("content-type", "application/xml").putHeader("Access-Control-Expose-Headers", "*")
-					.setStatusCode(200).end(result);
+					.setStatusCode(200).end(resultString);
 		} else {
 			EPCISServer.captureIDPageMap.remove(uuid);
 			EPCISServer.logger.debug("[GET /capture] page - " + uuid + " expired. # remaining pages - "
 					+ EPCISServer.captureIDPageMap.size());
 			routingContext.response().putHeader("GS1-EPCIS-Version", Metadata.GS1_EPCIS_Version)
 					.putHeader("GS1-Extensions", Metadata.GS1_Extensions).putHeader("content-type", "application/xml")
-					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(result);
+					.putHeader("Access-Control-Expose-Headers", "*").setStatusCode(200).end(resultString);
 		}
 	}
 
 	public void postCaptureJob(RoutingContext routingContext, String captureID) {
-		SOAPMessage message = new SOAPMessage();
 
 		List<Document> jobs = new ArrayList<Document>();
 		try {
 			EPCISServer.mTxCollection.find(new Document("_id", new ObjectId(captureID))).into(jobs);
 			if (jobs.isEmpty()) {
 				EPCISException e = new EPCISException("There is no capture job with id: " + captureID);
-				HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 404);
+				HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 404);
 				return;
 			}
 		} catch (IllegalArgumentException e) {
 			EPCISException e1 = new EPCISException("Illegal capture job identifier: " + e.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e1, e1.getClass(), 404);
+			HTTPUtil.sendQueryResults(routingContext.response(), e1, e1.getClass(), 404);
 			return;
 		} catch (Throwable throwable) {
 			EPCISServer.logger.info(throwable.getMessage());
 			EPCISException e = new EPCISException(throwable.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 500);
 			return;
 		}
 
@@ -634,7 +637,7 @@ public class XMLCaptureService {
 		} catch (Exception throwable) {
 			ImplementationException e = new ImplementationException(ImplementationExceptionSeverity.ERROR, null, null,
 					throwable.getMessage());
-			HTTPUtil.sendQueryResults(routingContext.response(), message, e, e.getClass(), 500);
+			HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 500);
 		}
 
 	}

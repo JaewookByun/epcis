@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-	<xsd:schema xmlns:epcis="urn:epcglobal:epcis:xsd:2"
+<xsd:schema xmlns:epcis="urn:epcglobal:epcis:xsd:2"
             xmlns:sbdh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
             xmlns:epcglobal="urn:epcglobal:xsd:1"
             xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.1"
@@ -225,6 +225,8 @@
         <xsd:anyAttribute processContents="lax"/>
     </xsd:complexType>
 
+    <xsd:element name="epcs" type="epcis:EPCListType"/>
+    
     <xsd:complexType name="EPCListType">
         <xsd:sequence>
             <xsd:element name="epc" type="epcglobal:EPC" minOccurs="0" maxOccurs="unbounded"/>
@@ -241,6 +243,14 @@
         <xsd:restriction base="xsd:anyURI"/>
     </xsd:simpleType>
     <!-- Standard Vocabulary -->
+   
+    <xsd:complexType name="BusinessStepListType">
+      <xsd:sequence>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="bizSteps" type="epcis:BusinessStepListType"/>
+   
     <xsd:simpleType name="BusinessStepIDType">
         <xsd:restriction base="xsd:anyURI"/>
     </xsd:simpleType>
@@ -865,6 +875,12 @@
     </xsd:complexType>
 
     <!-- Capture 2.0 -->    
+    <xsd:complexType name="EPCISCaptureJobListType">
+      <xsd:sequence>
+          <xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="EPCISCaptureJobList" type="epcis:EPCISCaptureJobListType"/>
     <xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType"/>
     <xsd:complexType name="EPCISCaptureJobType">
         <xsd:sequence>
@@ -894,6 +910,8 @@
             <xsd:element name="instance" type="xsd:anyURI" minOccurs="0" maxOccurs="1"/>
             <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <!-- while at it also add any attribute -->
+        <xsd:anyAttribute processContents="lax"/> 
     </xsd:complexType>
 
     <xsd:simpleType name="EPCISCaptureErrorBehaviourType">

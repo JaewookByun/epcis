@@ -96,7 +96,7 @@ public class HeaderValidator {
 						"[406NotAcceptable] The server cannot return the response as requested. " + givenHeaderKey
 								+ " does not provided.");
 				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 406);
 				return false;
 			} else {
 				return true;
@@ -110,7 +110,7 @@ public class HeaderValidator {
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_EPCIS_Version);
 				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 406);
 			}
 			return false;
 		} else if ((givenHeaderKey.equals("GS1-CBV-Version") || givenHeaderKey.equals("GS1-CBV-Min")
@@ -120,7 +120,7 @@ public class HeaderValidator {
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_CBV_Version);
 				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 406);
 			}
 			return false;
 		} else if (givenHeaderKey.equals("GS1-EPCIS-Capture-Error-Behaviour")
@@ -130,7 +130,7 @@ public class HeaderValidator {
 						"[406NotAcceptable] The server cannot return the response as requested. \n Conflicting request and response headers."
 								+ given + " != " + Metadata.GS1_EPCIS_Capture_Error_Behaviour);
 				EPCISServer.logger.error(e.getReason());
-				HTTPUtil.sendQueryResults(routingContext.response(), new SOAPMessage(), e, e.getClass(), 406);
+				HTTPUtil.sendQueryResults(routingContext.response(), e, e.getClass(), 406);
 			}
 			return false;
 		}
