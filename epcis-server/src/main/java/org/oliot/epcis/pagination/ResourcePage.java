@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.oliot.epcis.model.BusinessLocationIDListType;
 import org.oliot.epcis.model.BusinessStepListType;
+import org.oliot.epcis.model.DispositionListType;
 import org.oliot.epcis.model.EPC;
 import org.oliot.epcis.model.EPCListType;
 import org.oliot.epcis.model.EventTypeListType;
@@ -113,6 +114,27 @@ public class ResourcePage {
 				isClosed = true;
 			try {
 				return XMLUtil.toString(bizStepList, BusinessStepListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
+		} else if (tag.equals("disposition")) {
+			DispositionListType dispositionList = new DispositionListType();
+			List<String> dispositions = dispositionList.getDisposition();
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				dispositions.add(resources.get(cursor));
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
+			}
+			if (needPagination == false)
+				isClosed = true;
+			try {
+				return XMLUtil.toString(dispositionList, DispositionListType.class);
 			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
 				return null;
 			}

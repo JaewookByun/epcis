@@ -257,6 +257,14 @@
         <xsd:restriction base="xsd:anyURI"/>
     </xsd:simpleType>
     <!-- Standard Vocabulary -->
+    
+    <xsd:complexType name="DispositionListType">
+      <xsd:sequence>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="dispositions" type="epcis:DispositionListType"/>
+    
     <xsd:simpleType name="DispositionIDType">
         <xsd:restriction base="xsd:anyURI"/>
     </xsd:simpleType>
