@@ -15,9 +15,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.oliot.epcis.model.BusinessLocationIDListType;
 import org.oliot.epcis.model.BusinessStepListType;
 import org.oliot.epcis.model.EPC;
 import org.oliot.epcis.model.EPCListType;
+import org.oliot.epcis.model.EventTypeListType;
+import org.oliot.epcis.model.ReadPointIDListType;
 import org.oliot.epcis.model.ValidationException;
 import org.oliot.epcis.model.cbv.BusinessStep;
 import org.oliot.epcis.model.cbv.Disposition;
@@ -113,24 +116,14 @@ public class ResourcePage {
 			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
 				return null;
 			}
-		} else {
-			Document message = null;
-			try {
-				message = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-			} catch (ParserConfigurationException e) {
-				e.printStackTrace();
-			}
-
-			Element epcs;
-			epcs = message.createElement("Resource");
-			message.appendChild(epcs);
+		} else if (tag.equals("bizLocation")) {
+			BusinessLocationIDListType bizLocationList = new BusinessLocationIDListType();
+			List<String> bizLocations = bizLocationList.getBizLocation();
 			int cnt = 0;
 			boolean needPagination = false;
 			for (; cursor < resources.size(); cursor++) {
 				cnt++;
-				Element r = message.createElement(tag);
-				r.setTextContent(resources.get(cursor));
-				epcs.appendChild(r);
+				bizLocations.add(resources.get(cursor));
 				if (cnt == perPage) {
 					needPagination = true;
 					cursor++;
@@ -139,8 +132,53 @@ public class ResourcePage {
 			}
 			if (needPagination == false)
 				isClosed = true;
-
-			return toXMLString(message);
+			try {
+				return XMLUtil.toString(bizLocationList, BusinessLocationIDListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
+		} else if (tag.equals("readPoint")) {
+			ReadPointIDListType readPointList = new ReadPointIDListType();
+			List<String> readPoints = readPointList.getReadPoint();
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				readPoints.add(resources.get(cursor));
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
+			}
+			if (needPagination == false)
+				isClosed = true;
+			try {
+				return XMLUtil.toString(readPointList, ReadPointIDListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
+		} else {
+			EventTypeListType eventTypeList = new EventTypeListType();
+			List<String> eventTypes = eventTypeList.getEventType();
+			int cnt = 0;
+			boolean needPagination = false;
+			for (; cursor < resources.size(); cursor++) {
+				cnt++;
+				eventTypes.add(resources.get(cursor));
+				if (cnt == perPage) {
+					needPagination = true;
+					cursor++;
+					break;
+				}
+			}
+			if (needPagination == false)
+				isClosed = true;
+			try {
+				return XMLUtil.toString(eventTypeList, EventTypeListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+				return null;
+			}
 		}
 	}
 

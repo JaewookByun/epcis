@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ import org.oliot.epcis.converter.data.bson_to_pojo.TransformationEventConverter;
 import org.oliot.epcis.model.AggregationEventType;
 import org.oliot.epcis.model.AssociationEventType;
 import org.oliot.epcis.model.EPCISException;
+import org.oliot.epcis.model.EventTypeListType;
 import org.oliot.epcis.model.ImplementationException;
 import org.oliot.epcis.model.ImplementationExceptionSeverity;
 import org.oliot.epcis.model.ObjectEventType;
@@ -41,7 +43,6 @@ import org.oliot.epcis.resource.DynamicResource;
 import org.oliot.epcis.resource.StaticResource;
 import org.oliot.epcis.server.EPCISServer;
 import org.oliot.epcis.tdt.TagDataTranslationEngine;
-import org.oliot.epcis.util.EventTypesMessage;
 import org.oliot.epcis.util.HTTPUtil;
 import org.oliot.epcis.util.SOAPMessage;
 import org.oliot.epcis.util.XMLUtil;
@@ -771,7 +772,21 @@ public class RESTQueryServiceHandler {
 			checkXMLPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
-			HTTPUtil.sendQueryResults(routingContext.response(), new EventTypesMessage(), 200, "application/xml");
+
+			EventTypeListType eventTypeList = new EventTypeListType();
+			List<String> eventTypes = eventTypeList.getEventType();
+			for (String type : DynamicResource.availableEventTypes) {
+				eventTypes.add(type);
+
+			}
+
+			String result = null;
+			try {
+				result = XMLUtil.toString(eventTypeList, EventTypeListType.class);
+			} catch (ParserConfigurationException | JAXBException | TransformerException e) {
+			}
+
+			HTTPUtil.sendQueryResults(routingContext.response(), result, 200, "application/xml");
 		});
 
 		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
@@ -779,14 +794,18 @@ public class RESTQueryServiceHandler {
 			if (routingContext.response().closed())
 				return;
 
-			JsonArray eventTypes = new JsonArray();
+			JsonObject eventTypes = new JsonObject();
+			eventTypes.put("@context", "https://ref.gs1.org/standards/epcis/2.0.0/epcis-context.jsonld");
+			eventTypes.put("type", "Collection");
+
+			JsonArray member = new JsonArray();
 			for (String eventType : DynamicResource.availableEventTypes) {
-				eventTypes.add(eventType);
+				member.add(eventType);
 			}
 
-			JsonObject result = new JsonObject().put("@set", eventTypes);
+			eventTypes.put("member", member);
 
-			HTTPUtil.sendQueryResults(routingContext.response(), result, 200);
+			HTTPUtil.sendQueryResults(routingContext.response(), eventTypes, 200);
 		});
 	}
 
@@ -2969,7 +2988,7 @@ public class RESTQueryServiceHandler {
 			}
 		});
 		EPCISServer.logger.info("[GET /queries/:queryName/subscriptions (application/json)] - router added");
-		
+
 		router.get("/epcis/queries/:queryName/subscriptions").handler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;

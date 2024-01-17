@@ -225,6 +225,8 @@
         <xsd:anyAttribute processContents="lax"/>
     </xsd:complexType>
 
+
+
     <xsd:element name="epcs" type="epcis:EPCListType"/>
     
     <xsd:complexType name="EPCListType">
@@ -293,6 +295,27 @@
         </xsd:sequence>
     </xsd:complexType>
 
+	<xsd:element name="EventTypeList" type="epcis:EventTypeListType"/>
+    
+    <xsd:complexType name="EventTypeListType">
+        <xsd:sequence>
+            <xsd:element name="eventType" type="epcis:EventTypeType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    
+    <xsd:simpleType name="EventTypeType">
+        <xsd:restriction base="xsd:string"/>
+    </xsd:simpleType>
+
+
+	<xsd:element name="ReadPointIDList" type="epcis:ReadPointIDListType"/>
+    
+    <xsd:complexType name="ReadPointIDListType">
+        <xsd:sequence>
+            <xsd:element name="readPoint" type="epcis:ReadPointIDType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
 
     <!-- User Vocabulary -->
     <xsd:simpleType name="ReadPointIDType">
@@ -312,6 +335,16 @@
         </xsd:sequence>
         <xsd:anyAttribute processContents="lax"/>
     </xsd:complexType>
+    
+    
+    <xsd:element name="BusinessLocationIDList" type="epcis:BusinessLocationIDListType"/>
+    
+    <xsd:complexType name="BusinessLocationIDListType">
+        <xsd:sequence>
+            <xsd:element name="bizLocation" type="epcis:BusinessLocationIDType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    
     <!-- User Vocabulary -->
     <xsd:simpleType name="BusinessLocationIDType">
         <xsd:restriction base="xsd:anyURI"/>
