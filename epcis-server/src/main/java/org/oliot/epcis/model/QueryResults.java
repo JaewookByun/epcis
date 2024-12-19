@@ -44,7 +44,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryResults", propOrder = {
+@XmlType(name = "QueryResults", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "queryName",
     "subscriptionID",
     "resultsBody",

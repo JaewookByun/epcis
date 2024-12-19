@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryResultsBody", propOrder = {
+@XmlType(name = "QueryResultsBody", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "eventList",
     "vocabularyList"
 })

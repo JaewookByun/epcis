@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SubscriptionControlsException")
+@XmlType(name = "SubscriptionControlsException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class SubscriptionControlsException
     extends EPCISException
 {
-    public SubscriptionControlsException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 26648286334439039L;
+
+	public SubscriptionControlsException() {
     }
 
     public SubscriptionControlsException(String reason) {

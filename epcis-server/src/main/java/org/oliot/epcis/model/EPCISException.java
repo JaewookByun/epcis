@@ -55,7 +55,11 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class EPCISException extends Throwable{
 
-    @XmlElement(required = true)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 8408539993661081501L;
+	@XmlElement(required = true)
     protected String reason;
 
     public EPCISException() {

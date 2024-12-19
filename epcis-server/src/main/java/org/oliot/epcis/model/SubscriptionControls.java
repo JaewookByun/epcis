@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SubscriptionControls", propOrder = {
+@XmlType(name = "SubscriptionControls", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "schedule",
     "trigger",
     "initialRecordTime",

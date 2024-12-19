@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "NoSuchNameException")
+@XmlType(name = "NoSuchNameException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class NoSuchNameException
     extends EPCISException
 {
-    public NoSuchNameException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 5496092789570789203L;
+
+	public NoSuchNameException() {
     }
 
     public NoSuchNameException(String reason) {

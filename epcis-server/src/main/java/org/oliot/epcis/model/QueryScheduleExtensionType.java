@@ -42,7 +42,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryScheduleExtensionType", propOrder = {
+@XmlType(name = "QueryScheduleExtensionType", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "any"
 })
 public class QueryScheduleExtensionType {

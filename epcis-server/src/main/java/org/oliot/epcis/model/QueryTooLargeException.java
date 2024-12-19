@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryTooLargeException", propOrder = {
+@XmlType(name = "QueryTooLargeException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "queryName",
     "subscriptionID"
 })
@@ -42,7 +42,11 @@ public class QueryTooLargeException
     extends EPCISException
 {
 
-    protected String queryName;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 733722941883351042L;
+	protected String queryName;
     protected String subscriptionID;
 
 

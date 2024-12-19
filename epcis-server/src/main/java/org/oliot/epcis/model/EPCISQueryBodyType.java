@@ -60,7 +60,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISQueryBodyType", propOrder = {
+@XmlType(name = "EPCISQueryBodyType", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "getQueryNames",
     "getQueryNamesResult",
     "subscribe",

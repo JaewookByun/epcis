@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DuplicateSubscriptionException")
+@XmlType(name = "DuplicateSubscriptionException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class DuplicateSubscriptionException
     extends EPCISException
 {
-    public DuplicateSubscriptionException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8986942482644047941L;
+
+	public DuplicateSubscriptionException() {
     }
 
     public DuplicateSubscriptionException(String reason) {

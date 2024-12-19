@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "NoSuchSubscriptionException")
+@XmlType(name = "NoSuchSubscriptionException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class NoSuchSubscriptionException
     extends EPCISException
 {
-    public NoSuchSubscriptionException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -8052206529882458870L;
+
+	public NoSuchSubscriptionException() {
     }
 
     public NoSuchSubscriptionException(String reason) {

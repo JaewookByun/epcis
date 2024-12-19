@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryParameterException")
+@XmlType(name = "QueryParameterException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class QueryParameterException
     extends EPCISException
 {
-    public QueryParameterException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -4730040628539675088L;
+
+	public QueryParameterException() {
     }
 
     public QueryParameterException(String reason) {

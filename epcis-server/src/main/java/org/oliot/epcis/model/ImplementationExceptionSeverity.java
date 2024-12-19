@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  * 
  */
-@XmlType(name = "ImplementationExceptionSeverity")
+@XmlType(name = "ImplementationExceptionSeverity", namespace = "urn:epcglobal:epcis-query:xsd:2")
 @XmlEnum
 public enum ImplementationExceptionSeverity {
 

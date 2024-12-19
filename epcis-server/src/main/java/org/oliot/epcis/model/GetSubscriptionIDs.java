@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GetSubscriptionIDs", propOrder = {
+@XmlType(name = "GetSubscriptionIDs", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "queryName"
 })
 public class GetSubscriptionIDs {

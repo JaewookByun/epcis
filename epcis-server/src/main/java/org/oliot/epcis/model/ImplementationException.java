@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ImplementationException", propOrder = {
+@XmlType(name = "ImplementationException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "severity",
     "queryName",
     "subscriptionID"
@@ -46,7 +46,11 @@ public class ImplementationException
     extends EPCISException
 {
 
-    @XmlElement(required = true)
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2079738157549019811L;
+	@XmlElement(required = true)
     @XmlSchemaType(name = "NCName")
     protected ImplementationExceptionSeverity severity;
     protected String queryName;

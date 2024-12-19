@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DuplicateNameException")
+@XmlType(name = "DuplicateNameException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class DuplicateNameException
     extends EPCISException
 {
-    public DuplicateNameException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 265255800567056982L;
+
+	public DuplicateNameException() {
 
     }
 

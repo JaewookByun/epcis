@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ArrayOfString", propOrder = {
+@XmlType(name = "ArrayOfString", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "string"
 })
 public class ArrayOfString {

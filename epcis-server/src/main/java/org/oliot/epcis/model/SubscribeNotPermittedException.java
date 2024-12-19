@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SubscribeNotPermittedException")
+@XmlType(name = "SubscribeNotPermittedException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class SubscribeNotPermittedException
     extends EPCISException
 {
-    public SubscribeNotPermittedException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2835860298206408434L;
+
+	public SubscribeNotPermittedException() {
     }
 
     public SubscribeNotPermittedException(String reason) {

@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryTooComplexException")
+@XmlType(name = "QueryTooComplexException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class QueryTooComplexException
     extends EPCISException
 {
-    public QueryTooComplexException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -3223583427865791876L;
+
+	public QueryTooComplexException() {
     }
 
     public QueryTooComplexException(String reason) {

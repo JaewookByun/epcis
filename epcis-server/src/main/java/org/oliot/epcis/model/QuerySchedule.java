@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QuerySchedule", propOrder = {
+@XmlType(name = "QuerySchedule", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "second",
     "minute",
     "hour",

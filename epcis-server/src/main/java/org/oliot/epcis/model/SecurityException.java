@@ -32,11 +32,16 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SecurityException")
+@XmlType(name = "SecurityException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class SecurityException
     extends EPCISException
 {
-    public SecurityException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1230002763494330186L;
+
+	public SecurityException() {
     }
 
     public SecurityException(String reason) {

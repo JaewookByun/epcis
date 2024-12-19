@@ -39,7 +39,7 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Subscribe", propOrder = {
+@XmlType(name = "Subscribe", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
     "queryName",
     "params",
     "dest",

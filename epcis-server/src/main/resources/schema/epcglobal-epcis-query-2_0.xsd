@@ -32,7 +32,7 @@
     </xsd:annotation>
 
     <xsd:import namespace="urn:epcglobal:epcis:xsd:2"
-                schemaLocation="epcglobal-epcis-2_0_detour.xsd"/>
+                schemaLocation="epcglobal-epcis-2_0.xsd"/>
 	<xsd:import namespace="urn:epcglobal:xsd:1"
                 schemaLocation="epcglobal.xsd"/>
 

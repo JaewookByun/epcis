@@ -30,11 +30,16 @@ import javax.xml.bind.annotation.XmlType;
  * </pre>
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "InvalidURIException")
+@XmlType(name = "InvalidURIException", namespace = "urn:epcglobal:epcis-query:xsd:2")
 public class InvalidURIException
         extends EPCISException {
 
-    public InvalidURIException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 8037588064228307920L;
+
+	public InvalidURIException() {
     }
 
     public InvalidURIException(String reason) {
