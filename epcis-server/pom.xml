@@ -15,6 +15,7 @@
 		<vertx.version>4.5.3</vertx.version>
 		<slf4j.version>2.0.9</slf4j.version>
 		<jaxb.version>4.0.4</jaxb.version>
+		<jaxb.api.version>2.3.1</jaxb.api.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -37,6 +38,12 @@
 			<version>2.3.9</version>
 			-->
 			<version>${jaxb.version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
