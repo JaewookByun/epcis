@@ -55,6 +55,13 @@ public class ReadPointType {
     @XmlAnyElement(lax = true)
     protected List<Object> any;
 
+    public ReadPointType() {
+    }
+
+    public ReadPointType(String id) {
+        this.id = id;
+    }
+
     /**
      * Gets the value of the id property.
      * 
@@ -133,4 +140,7 @@ public class ReadPointType {
         return this.any;
     }
 
+    public void setAny(List<Object> any) {
+        this.any = any;
+    }
 }

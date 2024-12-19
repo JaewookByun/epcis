@@ -468,4 +468,7 @@ public class AggregationEventType
         return this.any;
     }
 
+    public void setAny(List<Object> any) {
+        this.any = any;
+    }
 }

@@ -55,6 +55,13 @@ public class BusinessLocationType {
     @XmlAnyElement(lax = true)
     protected List<Object> any;
 
+    public BusinessLocationType() {
+    }
+
+    public BusinessLocationType(String id) {
+        this.id = id;
+    }
+
     /**
      * Gets the value of the id property.
      * 
@@ -133,4 +140,7 @@ public class BusinessLocationType {
         return this.any;
     }
 
+    public void setAny(List<Object> any) {
+        this.any = any;
+    }
 }
