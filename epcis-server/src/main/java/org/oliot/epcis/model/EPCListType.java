@@ -42,6 +42,13 @@ public class EPCListType {
 
     protected List<EPC> epc;
 
+    public EPCListType() {
+    }
+
+    public EPCListType(List<EPC> epc) {
+        this.epc = epc;
+    }
+
     /**
      * Gets the value of the epc property.
      * 

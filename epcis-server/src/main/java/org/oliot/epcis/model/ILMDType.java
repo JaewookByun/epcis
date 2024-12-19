@@ -55,6 +55,13 @@ public class ILMDType {
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
+    public ILMDType() {
+    }
+
+    public ILMDType(List<Object> any) {
+        this.any = any;
+    }
+
     /**
      * Gets the value of the extension property.
      * 

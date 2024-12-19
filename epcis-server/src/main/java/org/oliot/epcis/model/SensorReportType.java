@@ -727,4 +727,11 @@ public class SensorReportType {
         return otherAttributes;
     }
 
+    public Boolean getBooleanValue() {
+        return booleanValue;
+    }
+
+    public void setOtherAttributes(Map<QName, String> otherAttributes) {
+        this.otherAttributes = otherAttributes;
+    }
 }

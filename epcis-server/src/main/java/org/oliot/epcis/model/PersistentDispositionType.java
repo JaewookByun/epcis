@@ -106,4 +106,11 @@ public class PersistentDispositionType {
         return this.set;
     }
 
+    public void setUnset(List<String> unset) {
+        this.unset = unset;
+    }
+
+    public void setSet(List<String> set) {
+        this.set = set;
+    }
 }

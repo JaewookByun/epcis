@@ -129,4 +129,11 @@ public class AttributeType {
         return otherAttributes;
     }
 
+    public void setOtherAttributes(Map<QName, String> otherAttributes) {
+        this.otherAttributes = otherAttributes;
+    }
+
+    public void setContent(List<Object> content) {
+        this.content = content;
+    }
 }

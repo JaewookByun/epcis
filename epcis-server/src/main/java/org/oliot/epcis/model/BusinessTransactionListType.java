@@ -44,6 +44,13 @@ public class BusinessTransactionListType {
     @XmlElement(required = true)
     protected List<BusinessTransactionType> bizTransaction;
 
+    public BusinessTransactionListType() {
+    }
+
+    public BusinessTransactionListType(List<BusinessTransactionType> bizTransaction) {
+        this.bizTransaction = bizTransaction;
+    }
+
     /**
      * Gets the value of the bizTransaction property.
      * 

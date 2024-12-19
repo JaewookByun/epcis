@@ -312,4 +312,7 @@ public class SensorMetadataType {
         return otherAttributes;
     }
 
+    public void setOtherAttributes(Map<QName, String> otherAttributes) {
+        this.otherAttributes = otherAttributes;
+    }
 }

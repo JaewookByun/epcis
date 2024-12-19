@@ -44,6 +44,13 @@ public class DestinationListType {
     @XmlElement(required = true)
     protected List<SourceDestType> destination;
 
+    public DestinationListType() {
+    }
+
+    public DestinationListType(List<SourceDestType> destination) {
+        this.destination = destination;
+    }
+
     /**
      * Gets the value of the destination property.
      * 

@@ -8,7 +8,6 @@
 
 package org.oliot.epcis.model;
 
-import java.math.BigDecimal;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -16,6 +15,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
 
 
 /**
@@ -53,8 +53,18 @@ public class QuantityElementType {
     @XmlSchemaType(name = "anyURI")
     protected String epcClass;
     @XmlElementRef(name = "quantity", type = JAXBElement.class, required = false)
-    protected JAXBElement<BigDecimal> quantity;
+    protected JAXBElement<Double> quantity;
     protected String uom;
+
+    public QuantityElementType() {
+    }
+
+    public QuantityElementType(String epcClass, Double quantity, String uom) {
+        this.epcClass = epcClass;
+        if (quantity != null)
+            this.quantity = new JAXBElement<Double>(new QName("", "quantity"), Double.class, quantity);
+        this.uom = uom;
+    }
 
     /**
      * Gets the value of the epcClass property.
@@ -85,10 +95,10 @@ public class QuantityElementType {
      * 
      * @return
      *     possible object is
-     *     {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}
+     *     {@link JAXBElement }{@code <}{@link Double }{@code >}
      *     
      */
-    public JAXBElement<BigDecimal> getQuantity() {
+    public JAXBElement<Double> getQuantity() {
         return quantity;
     }
 
@@ -97,10 +107,10 @@ public class QuantityElementType {
      * 
      * @param value
      *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}
+     *     {@link JAXBElement }{@code <}{@link Double }{@code >}
      *     
      */
-    public void setQuantity(JAXBElement<BigDecimal> value) {
+    public void setQuantity(JAXBElement<Double> value) {
         this.quantity = value;
     }
 

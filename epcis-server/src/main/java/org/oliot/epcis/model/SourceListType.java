@@ -44,6 +44,13 @@ public class SourceListType {
     @XmlElement(required = true)
     protected List<SourceDestType> source;
 
+    public SourceListType() {
+    }
+
+    public SourceListType(List<SourceDestType> source) {
+        this.source = source;
+    }
+
     /**
      * Gets the value of the source property.
      * 

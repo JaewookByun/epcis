@@ -43,6 +43,13 @@ public class EPC {
     @XmlValue
     protected String value;
 
+    public EPC() {
+    }
+
+    public EPC(String value) {
+        this.value = value;
+    }
+
     /**
      * Gets the value of the value property.
      * 

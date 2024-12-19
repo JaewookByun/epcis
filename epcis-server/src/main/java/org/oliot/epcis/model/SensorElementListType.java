@@ -47,6 +47,13 @@ public class SensorElementListType {
     protected List<SensorElementType> sensorElement;
     protected SensorElementListExtensionType extension;
 
+    public SensorElementListType() {
+    }
+
+    public SensorElementListType(List<SensorElementType> sensorElement) {
+        this.sensorElement = sensorElement;
+    }
+
     /**
      * Gets the value of the sensorElement property.
      * 

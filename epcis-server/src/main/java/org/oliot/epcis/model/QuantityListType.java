@@ -42,6 +42,13 @@ public class QuantityListType {
 
     protected List<QuantityElementType> quantityElement;
 
+    public QuantityListType() {
+    }
+
+    public QuantityListType(List<QuantityElementType> quantityElement) {
+        this.quantityElement = quantityElement;
+    }
+
     /**
      * Gets the value of the quantityElement property.
      * 

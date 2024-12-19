@@ -163,4 +163,11 @@ public class SensorElementType {
         return this.any;
     }
 
+    public void setSensorReport(List<SensorReportType> sensorReport) {
+        this.sensorReport = sensorReport;
+    }
+
+    public void setAny(List<Object> any) {
+        this.any = any;
+    }
 }
