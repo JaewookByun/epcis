@@ -71,4 +71,7 @@ public class QueryParams {
         return this.param;
     }
 
+    public void setParam(List<QueryParam> param) {
+        this.param = param;
+    }
 }

@@ -44,7 +44,15 @@ public class QueryParam {
     @XmlElement(required = true)
     protected String name;
     @XmlElement(name = "value", required = true)
-    protected Object valueAttribute;
+    protected Object value;
+
+    public QueryParam() {
+    }
+
+    public QueryParam(String name, Object value) {
+        this.name = name;
+        this.value = value;
+    }
 
     /**
      * Gets the value of the name property.
@@ -71,27 +79,26 @@ public class QueryParam {
     }
 
     /**
-     * Gets the value of the valueAttribute property.
+     * Gets the value of the value property.
      * 
      * @return
      *     possible object is
      *     {@link Object }
      *     
      */
-    public Object getValueAttribute() {
-        return valueAttribute;
+    public Object getValue() {
+        return value;
     }
 
     /**
-     * Sets the value of the valueAttribute property.
+     * Sets the value of the value property.
      * 
      * @param value
      *     allowed object is
      *     {@link Object }
      *     
      */
-    public void setValueAttribute(Object value) {
-        this.valueAttribute = value;
+    public void setValue(Object value) {
+        this.value = value;
     }
-
 }

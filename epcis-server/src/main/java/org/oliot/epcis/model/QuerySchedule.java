@@ -66,6 +66,18 @@ public class QuerySchedule {
     @XmlAnyElement(lax = true)
     protected List<Object> any;
 
+    public QuerySchedule() {
+    }
+
+    public QuerySchedule(String second, String minute, String hour, String dayOfMonth, String month, String dayOfWeek) {
+        this.second = second;
+        this.minute = minute;
+        this.hour = hour;
+        this.dayOfMonth = dayOfMonth;
+        this.month = month;
+        this.dayOfWeek = dayOfWeek;
+    }
+
     /**
      * Gets the value of the second property.
      * 

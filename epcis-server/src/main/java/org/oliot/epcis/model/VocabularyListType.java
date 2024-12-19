@@ -73,4 +73,7 @@ public class VocabularyListType {
         return this.vocabulary;
     }
 
+    public void setVocabulary(List<VocabularyType> vocabulary) {
+        this.vocabulary = vocabulary;
+    }
 }

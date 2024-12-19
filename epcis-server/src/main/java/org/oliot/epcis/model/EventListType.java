@@ -118,4 +118,7 @@ public class EventListType {
         return otherAttributes;
     }
 
+    public void setObjectEventOrAggregationEventOrTransformationEvent(List<Object> objectEventOrAggregationEventOrTransformationEvent) {
+        this.objectEventOrAggregationEventOrTransformationEvent = objectEventOrAggregationEventOrTransformationEvent;
+    }
 }
