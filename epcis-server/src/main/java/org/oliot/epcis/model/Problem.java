@@ -16,29 +16,31 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 
 
 /**
- * <p>Java class for VocabularyElementType complex type.
+ * <p>Java class for problem complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="VocabularyElementType">
+ * &lt;complexType name="problem">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="attribute" type="{urn:epcglobal:epcis:xsd:2}AttributeType" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="children" type="{urn:epcglobal:epcis:xsd:2}IDListType" minOccurs="0"/>
- *         &lt;element name="extension" type="{urn:epcglobal:epcis:xsd:2}VocabularyElementExtensionType" minOccurs="0"/>
+ *         &lt;element name="type" type="{http://www.w3.org/2001/XMLSchema}anyURI"/>
+ *         &lt;element name="title" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="status" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
+ *         &lt;element name="detail" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *         &lt;element name="instance" type="{http://www.w3.org/2001/XMLSchema}anyURI" minOccurs="0"/>
  *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
- *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}anyURI" />
  *       &lt;anyAttribute processContents='lax'/>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -48,100 +50,151 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "VocabularyElementType", propOrder = {
-    "attribute",
-    "children",
-    "extension",
+@XmlType(name = "problem", namespace = "urn:ietf:rfc:7807", propOrder = {
+    "type",
+    "title",
+    "status",
+    "detail",
+    "instance",
     "any"
 })
-public class VocabularyElementType {
+@XmlSeeAlso({
+    RFC7807ProblemResponseBodyType.class
+})
+public class Problem {
 
-    protected List<AttributeType> attribute;
-    protected IDListType children;
-    protected VocabularyElementExtensionType extension;
+    @XmlElement(required = true)
+    @XmlSchemaType(name = "anyURI")
+    protected String type;
+    @XmlElement(required = true)
+    protected String title;
+    protected Integer status;
+    protected String detail;
+    @XmlSchemaType(name = "anyURI")
+    protected String instance;
     @XmlAnyElement(lax = true)
     protected List<Object> any;
-    @XmlAttribute(name = "id", required = true)
-    @XmlSchemaType(name = "anyURI")
-    protected String id;
     @XmlAnyAttribute
     private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
     /**
-     * Gets the value of the attribute property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the attribute property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAttribute().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link AttributeType }
-     * 
-     * 
-     */
-    public List<AttributeType> getAttribute() {
-        if (attribute == null) {
-            attribute = new ArrayList<AttributeType>();
-        }
-        return this.attribute;
-    }
-
-    /**
-     * Gets the value of the children property.
+     * Gets the value of the type property.
      * 
      * @return
      *     possible object is
-     *     {@link IDListType }
+     *     {@link String }
      *     
      */
-    public IDListType getChildren() {
-        return children;
+    public String getType() {
+        return type;
     }
 
     /**
-     * Sets the value of the children property.
+     * Sets the value of the type property.
      * 
      * @param value
      *     allowed object is
-     *     {@link IDListType }
+     *     {@link String }
      *     
      */
-    public void setChildren(IDListType value) {
-        this.children = value;
+    public void setType(String value) {
+        this.type = value;
     }
 
     /**
-     * Gets the value of the extension property.
+     * Gets the value of the title property.
      * 
      * @return
      *     possible object is
-     *     {@link VocabularyElementExtensionType }
+     *     {@link String }
      *     
      */
-    public VocabularyElementExtensionType getExtension() {
-        return extension;
+    public String getTitle() {
+        return title;
     }
 
     /**
-     * Sets the value of the extension property.
+     * Sets the value of the title property.
      * 
      * @param value
      *     allowed object is
-     *     {@link VocabularyElementExtensionType }
+     *     {@link String }
      *     
      */
-    public void setExtension(VocabularyElementExtensionType value) {
-        this.extension = value;
+    public void setTitle(String value) {
+        this.title = value;
+    }
+
+    /**
+     * Gets the value of the status property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the value of the status property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setStatus(Integer value) {
+        this.status = value;
+    }
+
+    /**
+     * Gets the value of the detail property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDetail() {
+        return detail;
+    }
+
+    /**
+     * Sets the value of the detail property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDetail(String value) {
+        this.detail = value;
+    }
+
+    /**
+     * Gets the value of the instance property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getInstance() {
+        return instance;
+    }
+
+    /**
+     * Sets the value of the instance property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setInstance(String value) {
+        this.instance = value;
     }
 
     /**
@@ -172,30 +225,6 @@ public class VocabularyElementType {
             any = new ArrayList<Object>();
         }
         return this.any;
-    }
-
-    /**
-     * Gets the value of the id property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setId(String value) {
-        this.id = value;
     }
 
     /**
