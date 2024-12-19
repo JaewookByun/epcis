@@ -36,6 +36,9 @@ import javax.xml.bind.annotation.XmlType;
 public class SubscribeNotPermittedException
     extends EPCISException
 {
+    public SubscribeNotPermittedException() {
+    }
+
     public SubscribeNotPermittedException(String reason) {
         super(reason);
     }

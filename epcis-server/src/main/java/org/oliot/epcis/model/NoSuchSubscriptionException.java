@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class NoSuchSubscriptionException
     extends EPCISException
 {
+    public NoSuchSubscriptionException() {
+    }
 
     public NoSuchSubscriptionException(String reason) {
         super(reason);

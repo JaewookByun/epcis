@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class DuplicateSubscriptionException
     extends EPCISException
 {
+    public DuplicateSubscriptionException() {
+    }
 
     public DuplicateSubscriptionException(String reason) {
         super(reason);

@@ -36,6 +36,9 @@ import javax.xml.bind.annotation.XmlType;
 public class QueryParameterException
     extends EPCISException
 {
+    public QueryParameterException() {
+    }
+
     public QueryParameterException(String reason) {
         super(reason);
     }

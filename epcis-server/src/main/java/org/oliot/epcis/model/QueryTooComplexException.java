@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class QueryTooComplexException
     extends EPCISException
 {
+    public QueryTooComplexException() {
+    }
 
     public QueryTooComplexException(String reason) {
         super(reason);

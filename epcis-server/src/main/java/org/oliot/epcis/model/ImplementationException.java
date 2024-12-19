@@ -52,6 +52,7 @@ public class ImplementationException
     protected String queryName;
     protected String subscriptionID;
 
+
     public ImplementationException() {
         super();
         this.severity = ImplementationExceptionSeverity.ERROR;

@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class SubscriptionControlsException
     extends EPCISException
 {
+    public SubscriptionControlsException() {
+    }
 
     public SubscriptionControlsException(String reason) {
         super(reason);

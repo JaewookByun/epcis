@@ -36,6 +36,10 @@ import javax.xml.bind.annotation.XmlType;
 public class DuplicateNameException
     extends EPCISException
 {
+    public DuplicateNameException() {
+
+    }
+
     public DuplicateNameException(String reason) {
         super(reason);
     }

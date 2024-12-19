@@ -34,6 +34,9 @@ import javax.xml.bind.annotation.XmlType;
 public class InvalidURIException
         extends EPCISException {
 
+    public InvalidURIException() {
+    }
+
     public InvalidURIException(String reason) {
         super(reason);
     }

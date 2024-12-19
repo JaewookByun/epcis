@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class SecurityException
     extends EPCISException
 {
+    public SecurityException() {
+    }
 
     public SecurityException(String reason) {
         super(reason);

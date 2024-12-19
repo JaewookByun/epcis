@@ -36,6 +36,8 @@ import javax.xml.bind.annotation.XmlType;
 public class NoSuchNameException
     extends EPCISException
 {
+    public NoSuchNameException() {
+    }
 
     public NoSuchNameException(String reason) {
         super(reason);
