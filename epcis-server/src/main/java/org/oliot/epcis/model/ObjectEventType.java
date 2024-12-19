@@ -18,6 +18,8 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
  * 
@@ -76,6 +78,7 @@ import org.w3c.dom.Element;
     "extension",
     "any"
 })
+@XmlRootElement
 public class ObjectEventType
     extends EPCISEventType
 {

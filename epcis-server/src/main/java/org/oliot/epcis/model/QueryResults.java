@@ -17,6 +17,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import org.w3c.dom.Element;
 
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
  * <p>Java class for QueryResults complex type.
@@ -49,6 +51,7 @@ import org.w3c.dom.Element;
     "extension",
     "any"
 })
+@XmlRootElement
 public class QueryResults {
 
     @XmlElement(required = true)

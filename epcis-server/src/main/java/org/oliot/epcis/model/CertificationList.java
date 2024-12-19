@@ -42,9 +42,16 @@ import javax.xml.bind.annotation.XmlType;
 public class CertificationList {
 
     @XmlSchemaType(name = "anyURI")
-    protected List<String> certificationInfo;
+    public List<String> certificationInfo;
 
-    /**
+	public CertificationList() {
+	}
+	
+    public CertificationList(List<String> certificationInfo) {
+		this.certificationInfo = certificationInfo;
+	}
+
+	/**
      * Gets the value of the certificationInfo property.
      * 
      * <p>

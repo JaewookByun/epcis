@@ -12,6 +12,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import jakarta.xml.bind.annotation.XmlRootElement;
+
 
 /**
  * <p>Java class for ValidationException complex type.
@@ -33,10 +35,16 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ValidationException")
+@XmlRootElement
 public class ValidationException
     extends EPCISException
 {
-    public ValidationException() {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -2010139243354454151L;
+
+	public ValidationException() {
     }
 
     public ValidationException(String reason) {

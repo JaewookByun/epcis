@@ -456,7 +456,7 @@
             <xsd:element name="eventTimeZoneOffset" type="xsd:string"/>
             <xsd:element name="eventID" type="epcis:EventIDType" minOccurs="0"/>
             <xsd:element name="errorDeclaration" type="epcis:ErrorDeclarationType" minOccurs="0"/>
-            <xsd:element name="certificationInfo" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="certificationList" type="epcis:CertificationList" minOccurs="0"/>
             <xsd:element name="baseExtension" type="epcis:EPCISEventExtensionType" minOccurs="0"/>
         </xsd:sequence>
         <xsd:anyAttribute processContents="lax"/>
@@ -473,6 +473,11 @@
       <xsd:anyAttribute processContents="lax"/>
     </xsd:complexType>
   -->
+  	<xsd:complexType name="CertificationList">
+  		<xsd:sequence>
+			<xsd:element name="certificationInfo" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
     <xsd:simpleType name="DateTimeStamp">
         <xsd:restriction base="xsd:dateTime">
             <xsd:pattern
