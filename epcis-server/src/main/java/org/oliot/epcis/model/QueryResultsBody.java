@@ -12,9 +12,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-import epcglobal.epcis.xsd._2.EventListType;
-import epcglobal.epcis.xsd._2.VocabularyListType;
-
 
 /**
  * <p>Java class for QueryResultsBody complex type.

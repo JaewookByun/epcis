@@ -19,8 +19,6 @@ import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-import epcglobal.epcis.xsd._2.EPCISHeaderType;
-import epcglobal.xsd._1.Document;
 import org.w3c.dom.Element;
 
 
