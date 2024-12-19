@@ -44,6 +44,13 @@ public class CorrectiveEventIDsType {
     @XmlSchemaType(name = "anyURI")
     protected List<String> correctiveEventID;
 
+    public CorrectiveEventIDsType() {
+    }
+
+    public CorrectiveEventIDsType(List<String> correctiveEventID) {
+        this.correctiveEventID = correctiveEventID;
+    }
+
     /**
      * Gets the value of the correctiveEventID property.
      * 

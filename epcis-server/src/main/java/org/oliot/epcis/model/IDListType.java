@@ -98,4 +98,7 @@ public class IDListType {
         return otherAttributes;
     }
 
+    public void setId(List<String> id) {
+        this.id = id;
+    }
 }

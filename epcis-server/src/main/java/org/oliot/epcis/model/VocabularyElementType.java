@@ -216,4 +216,7 @@ public class VocabularyElementType {
         return otherAttributes;
     }
 
+    public void setAttribute(List<AttributeType> attribute) {
+        this.attribute = attribute;
+    }
 }
