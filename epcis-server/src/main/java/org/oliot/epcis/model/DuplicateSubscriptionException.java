@@ -37,5 +37,7 @@ public class DuplicateSubscriptionException
     extends EPCISException
 {
 
-
+    public DuplicateSubscriptionException(String reason) {
+        super(reason);
+    }
 }

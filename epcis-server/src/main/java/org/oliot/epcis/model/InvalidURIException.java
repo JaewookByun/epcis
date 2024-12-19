@@ -15,9 +15,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for InvalidURIException complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="InvalidURIException">
  *   &lt;complexContent>
@@ -28,14 +28,13 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "InvalidURIException")
 public class InvalidURIException
-    extends EPCISException
-{
+        extends EPCISException {
 
-
+    public InvalidURIException(String reason) {
+        super(reason);
+    }
 }

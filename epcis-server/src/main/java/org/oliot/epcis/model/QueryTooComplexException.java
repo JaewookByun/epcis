@@ -37,5 +37,7 @@ public class QueryTooComplexException
     extends EPCISException
 {
 
-
+    public QueryTooComplexException(String reason) {
+        super(reason);
+    }
 }

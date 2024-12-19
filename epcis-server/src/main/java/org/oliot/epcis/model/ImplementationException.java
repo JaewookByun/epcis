@@ -52,6 +52,25 @@ public class ImplementationException
     protected String queryName;
     protected String subscriptionID;
 
+    public ImplementationException() {
+        super();
+        this.severity = ImplementationExceptionSeverity.ERROR;
+    }
+
+    public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String reason) {
+        super(reason);
+        this.severity = severity;
+        this.queryName = queryName;
+    }
+
+    public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String subscriptionID,
+                                   String reason) {
+        super(reason);
+        this.severity = severity;
+        this.queryName = queryName;
+        this.subscriptionID = subscriptionID;
+    }
+
     /**
      * Gets the value of the severity property.
      * 

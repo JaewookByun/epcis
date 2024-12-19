@@ -37,5 +37,7 @@ public class NoSuchNameException
     extends EPCISException
 {
 
-
+    public NoSuchNameException(String reason) {
+        super(reason);
+    }
 }

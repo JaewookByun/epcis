@@ -37,5 +37,7 @@ public class NoSuchSubscriptionException
     extends EPCISException
 {
 
-
+    public NoSuchSubscriptionException(String reason) {
+        super(reason);
+    }
 }

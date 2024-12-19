@@ -36,6 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 public class ValidationException
     extends EPCISException
 {
-
-
+    public ValidationException(String reason) {
+        super(reason);
+    }
 }

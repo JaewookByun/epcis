@@ -37,5 +37,7 @@ public class SecurityException
     extends EPCISException
 {
 
-
+    public SecurityException(String reason) {
+        super(reason);
+    }
 }

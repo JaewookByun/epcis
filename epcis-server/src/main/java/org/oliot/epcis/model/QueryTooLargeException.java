@@ -45,6 +45,12 @@ public class QueryTooLargeException
     protected String queryName;
     protected String subscriptionID;
 
+    public QueryTooLargeException(String reason) {
+        super(reason);
+        this.queryName = queryName;
+    }
+
+
     /**
      * Gets the value of the queryName property.
      * 

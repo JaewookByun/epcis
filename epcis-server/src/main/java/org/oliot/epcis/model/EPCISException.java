@@ -53,10 +53,19 @@ import javax.xml.bind.annotation.XmlType;
     QueryParameterException.class,
     DuplicateNameException.class
 })
-public class EPCISException {
+public class EPCISException extends Throwable{
 
     @XmlElement(required = true)
     protected String reason;
+
+    public EPCISException() {
+        this.setStackTrace(new StackTraceElement[0]);
+    }
+
+    public EPCISException(String reason) {
+        this.setStackTrace(new StackTraceElement[0]);
+        this.setReason(reason);
+    }
 
     /**
      * Gets the value of the reason property.
