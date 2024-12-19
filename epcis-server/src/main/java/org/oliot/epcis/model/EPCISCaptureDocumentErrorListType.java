@@ -47,6 +47,15 @@ public class EPCISCaptureDocumentErrorListType {
     protected List<RFC7807ProblemResponseBodyType> problem;
     protected List<RFC7807ProblemResponseBodyType> error;
 
+    public EPCISCaptureDocumentErrorListType() {
+
+    }
+
+    public EPCISCaptureDocumentErrorListType(RFC7807ProblemResponseBodyType err) {
+        error = new ArrayList<RFC7807ProblemResponseBodyType>();
+        error.add(err);
+    }
+
     /**
      * Gets the value of the problem property.
      * 
