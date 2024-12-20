@@ -18,13 +18,13 @@ GS1 retains the right to make changes to this document at any time, without noti
       <epcglobal:specification>EPC INFORMATION SERVICE (EPCIS) Version 2.0</epcglobal:specification>
     </xsd:documentation>
   </xsd:annotation>
-  <xsd:import namespace="urn:epcglobal:xsd:1" schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/epcglobal.xsd"/>
+  <xsd:import namespace="urn:epcglobal:xsd:1" schemaLocation="./EPCglobal.xsd"/>
   <xsd:import 
      namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" 
-     schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/StandardBusinessDocumentHeader.xsd"/>
+     schemaLocation="./StandardBusinessDocumentHeader.xsd"/>
   <xsd:import 
     namespace="urn:epcglobal:epcis:xsd:2" 
-    schemaLocation="https://ref.gs1.org/standards/epcis/2.0.0/epcglobal-epcis.xsd"/>
+    schemaLocation="./EPCglobal-epcis-2_0.xsd"/>
 
   <!-- MasterData CORE ELEMENTS -->
   <xsd:element name="EPCISMasterDataDocument" type="epcismd:EPCISMasterDataDocumentType"/>
