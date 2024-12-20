@@ -15,7 +15,6 @@
 		<vertx.version>4.5.3</vertx.version>
 		<slf4j.version>2.0.9</slf4j.version>
 		<jaxb.version>4.0.4</jaxb.version>
-		<jaxb.api.version>2.3.1</jaxb.api.version>
 	</properties>
 	<dependencies>
 		<dependency>
