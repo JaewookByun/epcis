@@ -875,24 +875,31 @@
     </xsd:complexType>
 
     <!-- Capture 2.0 -->    
-    <xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType"/>
-    <xsd:complexType name="EPCISCaptureJobType">
-        <xsd:sequence>
-            <xsd:element name="captureErrorBehaviour" type="epcis:EPCISCaptureErrorBehaviourType" minOccurs="1"
-                         maxOccurs="1"/>
-            <xsd:element name="createdAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="finishedAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1"/>
-            <xsd:choice minOccurs="0" maxOccurs="1">
-                <xsd:element name="errors" type="epcis:EPCISCaptureDocumentErrorListType"/>
-                <xsd:element name="errorFile" type="xsd:anyURI"/>
-            </xsd:choice>
-            <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="running" use="required" type="xsd:boolean"/>
-        <xsd:attribute name="success" use="required" type="xsd:boolean"/>
-        <xsd:attribute name="captureID" use="required" type="xsd:string"/>
-        <xsd:anyAttribute processContents="lax"/>
-    </xsd:complexType>
+    <xsd:complexType name="EPCISCaptureJobListType">
+    	<xsd:sequence>
+      		<xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType" minOccurs="0" maxOccurs="unbounded"/>
+    	</xsd:sequence>
+  	</xsd:complexType>
+
+  	<xsd:element name="EPCISCaptureJobList" type="epcis:EPCISCaptureJobListType"/>
+
+  	<xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType"/>
+  	<xsd:complexType name="EPCISCaptureJobType">
+    	<xsd:sequence>
+			<xsd:element name="captureErrorBehaviour" type="epcis:EPCISCaptureErrorBehaviourType" minOccurs="1" maxOccurs="1" />
+	      	<xsd:element name="createdAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1" />
+	      	<xsd:element name="finishedAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1" />
+	      	<xsd:choice minOccurs="0" maxOccurs="1">
+				<xsd:element name="errors" type="epcis:EPCISCaptureDocumentErrorListType" />
+	        	<xsd:element name="errorFile" type="xsd:anyURI" />
+	      	</xsd:choice>
+  			<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	    <xsd:attribute name="running" use="required" type="xsd:boolean" />
+	    <xsd:attribute name="success" use="required" type="xsd:boolean" />
+	    <xsd:attribute name="captureID" use="required" type="xsd:string" />
+	    <xsd:anyAttribute processContents="lax"/>
+  	</xsd:complexType>
 
     <xsd:element name="EPCISException" type="epcis:RFC7807ProblemResponseBodyType"/>
     <xsd:complexType name="RFC7807ProblemResponseBodyType">
