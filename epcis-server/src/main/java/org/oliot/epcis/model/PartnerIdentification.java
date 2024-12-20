@@ -5,16 +5,17 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.*;
 
 /**
- * <p>Java class for PartnerIdentification complex type.
+ * <p>
+ * Java class for PartnerIdentification complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="PartnerIdentification">
@@ -30,61 +31,52 @@ import jakarta.xml.bind.annotation.*;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PartnerIdentification", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader", propOrder = {
-    "value"
-})
+		"value" })
 public class PartnerIdentification {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(name = "Authority")
-    protected String authority;
+	@XmlValue
+	protected String value;
+	@XmlAttribute(name = "Authority")
+	protected String authority;
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValue() {
-        return value;
-    }
+	/**
+	 * Gets the value of the value property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getValue() {
+		return value;
+	}
 
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
+	/**
+	 * Sets the value of the value property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-    /**
-     * Gets the value of the authority property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getAuthority() {
-        return authority;
-    }
+	/**
+	 * Gets the value of the authority property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getAuthority() {
+		return authority;
+	}
 
-    /**
-     * Sets the value of the authority property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setAuthority(String value) {
-        this.authority = value;
-    }
+	/**
+	 * Sets the value of the authority property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setAuthority(String value) {
+		this.authority = value;
+	}
 
 }

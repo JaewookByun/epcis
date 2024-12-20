@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -16,11 +15,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * <p>Java class for CorrectiveEventIDsType complex type.
+ * <p>
+ * Java class for CorrectiveEventIDsType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="CorrectiveEventIDsType">
@@ -37,48 +38,46 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CorrectiveEventIDsType", propOrder = {
-    "correctiveEventID"
-})
+@XmlType(name = "CorrectiveEventIDsType", propOrder = { "correctiveEventID" })
 public class CorrectiveEventIDsType {
 
-    @XmlSchemaType(name = "anyURI")
-    protected List<String> correctiveEventID;
+	@XmlSchemaType(name = "anyURI")
+	protected List<String> correctiveEventID;
 
-    public CorrectiveEventIDsType() {
-    }
+	public CorrectiveEventIDsType() {
+	}
 
-    public CorrectiveEventIDsType(List<String> correctiveEventID) {
-        this.correctiveEventID = correctiveEventID;
-    }
+	public CorrectiveEventIDsType(List<String> correctiveEventID) {
+		this.correctiveEventID = correctiveEventID;
+	}
 
-    /**
-     * Gets the value of the correctiveEventID property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the correctiveEventID property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getCorrectiveEventID().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link String }
-     * 
-     * 
-     */
-    public List<String> getCorrectiveEventID() {
-        if (correctiveEventID == null) {
-            correctiveEventID = new ArrayList<String>();
-        }
-        return this.correctiveEventID;
-    }
+	/**
+	 * Gets the value of the correctiveEventID property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the correctiveEventID property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getCorrectiveEventID().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link String }
+	 * 
+	 * 
+	 */
+	public List<String> getCorrectiveEventID() {
+		if (correctiveEventID == null) {
+			correctiveEventID = new ArrayList<String>();
+		}
+		return this.correctiveEventID;
+	}
 
 }

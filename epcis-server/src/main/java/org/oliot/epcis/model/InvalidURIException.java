@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for InvalidURIException complex type.
+ * <p>
+ * Java class for InvalidURIException complex type.
  *
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  *
  * <pre>
  * &lt;complexType name="InvalidURIException">
@@ -31,18 +32,17 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "InvalidURIException", namespace = "urn:epcglobal:epcis-query:xsd:2")
-public class InvalidURIException
-        extends EPCISException {
+public class InvalidURIException extends EPCISException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8037588064228307920L;
 
 	public InvalidURIException() {
-    }
+	}
 
-    public InvalidURIException(String reason) {
-        super(reason);
-    }
+	public InvalidURIException(String reason) {
+		super(reason);
+	}
 }

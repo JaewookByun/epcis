@@ -5,9 +5,7 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for EPCISMasterDataType complex type.
+ * <p>
+ * Java class for EPCISMasterDataType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISMasterDataType">
@@ -35,62 +36,51 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISMasterDataType", propOrder = {
-    "vocabularyList",
-    "extension"
-})
+@XmlType(name = "EPCISMasterDataType", propOrder = { "vocabularyList", "extension" })
 public class EPCISMasterDataType {
 
-    @XmlElement(name = "VocabularyList", required = true)
-    protected VocabularyListType vocabularyList;
-    protected EPCISMasterDataExtensionType extension;
+	@XmlElement(name = "VocabularyList", required = true)
+	protected VocabularyListType vocabularyList;
+	protected EPCISMasterDataExtensionType extension;
 
-    /**
-     * Gets the value of the vocabularyList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public VocabularyListType getVocabularyList() {
-        return vocabularyList;
-    }
+	/**
+	 * Gets the value of the vocabularyList property.
+	 * 
+	 * @return possible object is {@link VocabularyListType }
+	 * 
+	 */
+	public VocabularyListType getVocabularyList() {
+		return vocabularyList;
+	}
 
-    /**
-     * Sets the value of the vocabularyList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public void setVocabularyList(VocabularyListType value) {
-        this.vocabularyList = value;
-    }
+	/**
+	 * Sets the value of the vocabularyList property.
+	 * 
+	 * @param value allowed object is {@link VocabularyListType }
+	 * 
+	 */
+	public void setVocabularyList(VocabularyListType value) {
+		this.vocabularyList = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISMasterDataExtensionType }
-     *     
-     */
-    public EPCISMasterDataExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link EPCISMasterDataExtensionType }
+	 * 
+	 */
+	public EPCISMasterDataExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISMasterDataExtensionType }
-     *     
-     */
-    public void setExtension(EPCISMasterDataExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value allowed object is {@link EPCISMasterDataExtensionType }
+	 * 
+	 */
+	public void setExtension(EPCISMasterDataExtensionType value) {
+		this.extension = value;
+	}
 
 }

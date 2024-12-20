@@ -5,9 +5,7 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for GetSubscriptionIDs complex type.
+ * <p>
+ * Java class for GetSubscriptionIDs complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="GetSubscriptionIDs">
@@ -34,36 +35,30 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "GetSubscriptionIDs", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "queryName"
-})
+@XmlType(name = "GetSubscriptionIDs", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName" })
 public class GetSubscriptionIDs {
 
-    @XmlElement(required = true)
-    protected String queryName;
+	@XmlElement(required = true)
+	protected String queryName;
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
 }

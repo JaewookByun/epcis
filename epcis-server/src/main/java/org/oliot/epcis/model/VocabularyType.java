@@ -19,9 +19,12 @@ import org.w3c.dom.Element;
 
 
 /**
- * <p>Java class for VocabularyType complex type.
+ * <p>
+ * Java class for VocabularyType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="VocabularyType">

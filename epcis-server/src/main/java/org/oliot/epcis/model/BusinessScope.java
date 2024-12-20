@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -16,11 +15,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * <p>Java class for BusinessScope complex type.
+ * <p>
+ * Java class for BusinessScope complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="BusinessScope">
@@ -38,40 +39,39 @@ import java.util.List;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BusinessScope", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader", propOrder = {
-    "scope"
-})
+		"scope" })
 public class BusinessScope {
 
-    @XmlElement(name = "Scope", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
-    protected List<Scope> scope;
+	@XmlElement(name = "Scope", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
+	protected List<Scope> scope;
 
-    /**
-     * Gets the value of the scope property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the scope property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getScope().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Scope }
-     * 
-     * 
-     */
-    public List<Scope> getScope() {
-        if (scope == null) {
-            scope = new ArrayList<Scope>();
-        }
-        return this.scope;
-    }
+	/**
+	 * Gets the value of the scope property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the scope property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getScope().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Scope }
+	 * 
+	 * 
+	 */
+	public List<Scope> getScope() {
+		if (scope == null) {
+			scope = new ArrayList<Scope>();
+		}
+		return this.scope;
+	}
 
 }

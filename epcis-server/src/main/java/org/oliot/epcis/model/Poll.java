@@ -5,9 +5,7 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for Poll complex type.
+ * <p>
+ * Java class for Poll complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="Poll">
@@ -35,63 +36,52 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Poll", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "queryName",
-    "params"
-})
+@XmlType(name = "Poll", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName", "params" })
 public class Poll {
 
-    @XmlElement(required = true)
-    protected String queryName;
-    @XmlElement(required = true)
-    protected QueryParams params;
+	@XmlElement(required = true)
+	protected String queryName;
+	@XmlElement(required = true)
+	protected QueryParams params;
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
-    /**
-     * Gets the value of the params property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QueryParams }
-     *     
-     */
-    public QueryParams getParams() {
-        return params;
-    }
+	/**
+	 * Gets the value of the params property.
+	 * 
+	 * @return possible object is {@link QueryParams }
+	 * 
+	 */
+	public QueryParams getParams() {
+		return params;
+	}
 
-    /**
-     * Sets the value of the params property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QueryParams }
-     *     
-     */
-    public void setParams(QueryParams value) {
-        this.params = value;
-    }
+	/**
+	 * Sets the value of the params property.
+	 * 
+	 * @param value allowed object is {@link QueryParams }
+	 * 
+	 */
+	public void setParams(QueryParams value) {
+		this.params = value;
+	}
 
 }

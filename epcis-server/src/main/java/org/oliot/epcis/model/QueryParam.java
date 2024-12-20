@@ -5,9 +5,7 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for QueryParam complex type.
+ * <p>
+ * Java class for QueryParam complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryParam">
@@ -35,70 +36,59 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryParam", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "name",
-    "value"
-})
+@XmlType(name = "QueryParam", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "name", "value" })
 public class QueryParam {
 
-    @XmlElement(required = true)
-    protected String name;
-    @XmlElement(name = "value", required = true)
-    protected Object value;
+	@XmlElement(required = true)
+	protected String name;
+	@XmlElement(name = "value", required = true)
+	protected Object value;
 
-    public QueryParam() {
-    }
+	public QueryParam() {
+	}
 
-    public QueryParam(String name, Object value) {
-        this.name = name;
-        this.value = value;
-    }
+	public QueryParam(String name, Object value) {
+		this.name = name;
+		this.value = value;
+	}
 
-    /**
-     * Gets the value of the name property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getName() {
-        return name;
-    }
+	/**
+	 * Gets the value of the name property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getName() {
+		return name;
+	}
 
-    /**
-     * Sets the value of the name property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setName(String value) {
-        this.name = value;
-    }
+	/**
+	 * Sets the value of the name property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setName(String value) {
+		this.name = value;
+	}
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Object }
-     *     
-     */
-    public Object getValue() {
-        return value;
-    }
+	/**
+	 * Gets the value of the value property.
+	 * 
+	 * @return possible object is {@link Object }
+	 * 
+	 */
+	public Object getValue() {
+		return value;
+	}
 
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Object }
-     *     
-     */
-    public void setValue(Object value) {
-        this.value = value;
-    }
+	/**
+	 * Sets the value of the value property.
+	 * 
+	 * @param value allowed object is {@link Object }
+	 * 
+	 */
+	public void setValue(Object value) {
+		this.value = value;
+	}
 }

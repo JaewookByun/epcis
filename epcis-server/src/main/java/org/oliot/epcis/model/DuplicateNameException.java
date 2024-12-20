@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for DuplicateNameException complex type.
+ * <p>
+ * Java class for DuplicateNameException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="DuplicateNameException">
@@ -33,19 +34,17 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DuplicateNameException", namespace = "urn:epcglobal:epcis-query:xsd:2")
-public class DuplicateNameException
-    extends EPCISException
-{
-    /**
+public class DuplicateNameException extends EPCISException {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 265255800567056982L;
 
 	public DuplicateNameException() {
 
-    }
+	}
 
-    public DuplicateNameException(String reason) {
-        super(reason);
-    }
+	public DuplicateNameException(String reason) {
+		super(reason);
+	}
 }

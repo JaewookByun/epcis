@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import java.util.ArrayList;
@@ -17,11 +16,13 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.annotation.*;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for problem complex type.
+ * <p>
+ * Java class for problem complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="problem">
@@ -44,199 +45,171 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "problem", namespace = "urn:ietf:rfc:7807", propOrder = {
-    "type",
-    "title",
-    "status",
-    "detail",
-    "instance",
-    "any"
-})
-@XmlSeeAlso({
-    RFC7807ProblemResponseBodyType.class
-})
+@XmlType(name = "problem", namespace = "urn:ietf:rfc:7807", propOrder = { "type", "title", "status", "detail",
+		"instance", "any" })
+@XmlSeeAlso({ RFC7807ProblemResponseBodyType.class })
 public class Problem {
 
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "anyURI")
-    protected String type;
-    @XmlElement(required = true)
-    protected String title;
-    protected Integer status;
-    protected String detail;
-    @XmlSchemaType(name = "anyURI")
-    protected String instance;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "anyURI")
+	protected String type;
+	@XmlElement(required = true)
+	protected String title;
+	protected Integer status;
+	protected String detail;
+	@XmlSchemaType(name = "anyURI")
+	protected String instance;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the type property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getType() {
-        return type;
-    }
+	/**
+	 * Gets the value of the type property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getType() {
+		return type;
+	}
 
-    /**
-     * Sets the value of the type property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setType(String value) {
-        this.type = value;
-    }
+	/**
+	 * Sets the value of the type property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setType(String value) {
+		this.type = value;
+	}
 
-    /**
-     * Gets the value of the title property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getTitle() {
-        return title;
-    }
+	/**
+	 * Gets the value of the title property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getTitle() {
+		return title;
+	}
 
-    /**
-     * Sets the value of the title property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setTitle(String value) {
-        this.title = value;
-    }
+	/**
+	 * Sets the value of the title property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setTitle(String value) {
+		this.title = value;
+	}
 
-    /**
-     * Gets the value of the status property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Integer }
-     *     
-     */
-    public Integer getStatus() {
-        return status;
-    }
+	/**
+	 * Gets the value of the status property.
+	 * 
+	 * @return possible object is {@link Integer }
+	 * 
+	 */
+	public Integer getStatus() {
+		return status;
+	}
 
-    /**
-     * Sets the value of the status property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Integer }
-     *     
-     */
-    public void setStatus(Integer value) {
-        this.status = value;
-    }
+	/**
+	 * Sets the value of the status property.
+	 * 
+	 * @param value allowed object is {@link Integer }
+	 * 
+	 */
+	public void setStatus(Integer value) {
+		this.status = value;
+	}
 
-    /**
-     * Gets the value of the detail property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDetail() {
-        return detail;
-    }
+	/**
+	 * Gets the value of the detail property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDetail() {
+		return detail;
+	}
 
-    /**
-     * Sets the value of the detail property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDetail(String value) {
-        this.detail = value;
-    }
+	/**
+	 * Sets the value of the detail property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setDetail(String value) {
+		this.detail = value;
+	}
 
-    /**
-     * Gets the value of the instance property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getInstance() {
-        return instance;
-    }
+	/**
+	 * Gets the value of the instance property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getInstance() {
+		return instance;
+	}
 
-    /**
-     * Sets the value of the instance property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setInstance(String value) {
-        this.instance = value;
-    }
+	/**
+	 * Sets the value of the instance property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setInstance(String value) {
+		this.instance = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed property
+	 * on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

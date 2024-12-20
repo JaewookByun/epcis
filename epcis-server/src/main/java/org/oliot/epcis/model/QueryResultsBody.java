@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -14,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for QueryResultsBody complex type.
+ * <p>
+ * Java class for QueryResultsBody complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryResultsBody">
@@ -34,63 +36,53 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryResultsBody", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "eventList",
-    "vocabularyList"
-})
+@XmlType(name = "QueryResultsBody", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "eventList",
+		"vocabularyList" })
 public class QueryResultsBody {
 
-    @XmlElement(name = "EventList")
-    protected EventListType eventList;
-    @XmlElement(name = "VocabularyList")
-    protected VocabularyListType vocabularyList;
+	@XmlElement(name = "EventList")
+	protected EventListType eventList;
+	@XmlElement(name = "VocabularyList")
+	protected VocabularyListType vocabularyList;
 
-    /**
-     * Gets the value of the eventList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EventListType }
-     *     
-     */
-    public EventListType getEventList() {
-        return eventList;
-    }
+	/**
+	 * Gets the value of the eventList property.
+	 * 
+	 * @return possible object is {@link EventListType }
+	 * 
+	 */
+	public EventListType getEventList() {
+		return eventList;
+	}
 
-    /**
-     * Sets the value of the eventList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EventListType }
-     *     
-     */
-    public void setEventList(EventListType value) {
-        this.eventList = value;
-    }
+	/**
+	 * Sets the value of the eventList property.
+	 * 
+	 * @param value allowed object is {@link EventListType }
+	 * 
+	 */
+	public void setEventList(EventListType value) {
+		this.eventList = value;
+	}
 
-    /**
-     * Gets the value of the vocabularyList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public VocabularyListType getVocabularyList() {
-        return vocabularyList;
-    }
+	/**
+	 * Gets the value of the vocabularyList property.
+	 * 
+	 * @return possible object is {@link VocabularyListType }
+	 * 
+	 */
+	public VocabularyListType getVocabularyList() {
+		return vocabularyList;
+	}
 
-    /**
-     * Sets the value of the vocabularyList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link VocabularyListType }
-     *     
-     */
-    public void setVocabularyList(VocabularyListType value) {
-        this.vocabularyList = value;
-    }
+	/**
+	 * Sets the value of the vocabularyList property.
+	 * 
+	 * @param value allowed object is {@link VocabularyListType }
+	 * 
+	 */
+	public void setVocabularyList(VocabularyListType value) {
+		this.vocabularyList = value;
+	}
 
 }

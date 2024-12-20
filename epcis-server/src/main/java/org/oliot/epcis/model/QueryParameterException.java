@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for QueryParameterException complex type.
+ * <p>
+ * Java class for QueryParameterException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryParameterException">
@@ -33,18 +34,16 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "QueryParameterException", namespace = "urn:epcglobal:epcis-query:xsd:2")
-public class QueryParameterException
-    extends EPCISException
-{
-    /**
+public class QueryParameterException extends EPCISException {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -4730040628539675088L;
 
 	public QueryParameterException() {
-    }
+	}
 
-    public QueryParameterException(String reason) {
-        super(reason);
-    }
+	public QueryParameterException(String reason) {
+		super(reason);
+	}
 }

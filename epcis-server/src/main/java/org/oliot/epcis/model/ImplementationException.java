@@ -5,16 +5,17 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.*;
 
 /**
- * <p>Java class for ImplementationException complex type.
+ * <p>
+ * Java class for ImplementationException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="ImplementationException">
@@ -33,115 +34,97 @@ import jakarta.xml.bind.annotation.*;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ImplementationException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "severity",
-    "queryName",
-    "subscriptionID"
-})
-public class ImplementationException
-    extends EPCISException
-{
+@XmlType(name = "ImplementationException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "severity",
+		"queryName", "subscriptionID" })
+public class ImplementationException extends EPCISException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2079738157549019811L;
 	@XmlElement(required = true)
-    @XmlSchemaType(name = "NCName")
-    protected ImplementationExceptionSeverity severity;
-    protected String queryName;
-    protected String subscriptionID;
+	@XmlSchemaType(name = "NCName")
+	protected ImplementationExceptionSeverity severity;
+	protected String queryName;
+	protected String subscriptionID;
 
+	public ImplementationException() {
+		super();
+		this.severity = ImplementationExceptionSeverity.ERROR;
+	}
 
-    public ImplementationException() {
-        super();
-        this.severity = ImplementationExceptionSeverity.ERROR;
-    }
+	public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String reason) {
+		super(reason);
+		this.severity = severity;
+		this.queryName = queryName;
+	}
 
-    public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String reason) {
-        super(reason);
-        this.severity = severity;
-        this.queryName = queryName;
-    }
+	public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String subscriptionID,
+			String reason) {
+		super(reason);
+		this.severity = severity;
+		this.queryName = queryName;
+		this.subscriptionID = subscriptionID;
+	}
 
-    public ImplementationException(ImplementationExceptionSeverity severity, String queryName, String subscriptionID,
-                                   String reason) {
-        super(reason);
-        this.severity = severity;
-        this.queryName = queryName;
-        this.subscriptionID = subscriptionID;
-    }
+	/**
+	 * Gets the value of the severity property.
+	 * 
+	 * @return possible object is {@link ImplementationExceptionSeverity }
+	 * 
+	 */
+	public ImplementationExceptionSeverity getSeverity() {
+		return severity;
+	}
 
-    /**
-     * Gets the value of the severity property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ImplementationExceptionSeverity }
-     *     
-     */
-    public ImplementationExceptionSeverity getSeverity() {
-        return severity;
-    }
+	/**
+	 * Sets the value of the severity property.
+	 * 
+	 * @param value allowed object is {@link ImplementationExceptionSeverity }
+	 * 
+	 */
+	public void setSeverity(ImplementationExceptionSeverity value) {
+		this.severity = value;
+	}
 
-    /**
-     * Sets the value of the severity property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ImplementationExceptionSeverity }
-     *     
-     */
-    public void setSeverity(ImplementationExceptionSeverity value) {
-        this.severity = value;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Gets the value of the subscriptionID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getSubscriptionID() {
+		return subscriptionID;
+	}
 
-    /**
-     * Gets the value of the subscriptionID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubscriptionID() {
-        return subscriptionID;
-    }
-
-    /**
-     * Sets the value of the subscriptionID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubscriptionID(String value) {
-        this.subscriptionID = value;
-    }
+	/**
+	 * Sets the value of the subscriptionID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setSubscriptionID(String value) {
+		this.subscriptionID = value;
+	}
 
 }

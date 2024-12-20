@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -13,9 +12,12 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for QueryTooLargeException complex type.
+ * <p>
+ * Java class for QueryTooLargeException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryTooLargeException">
@@ -33,76 +35,63 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryTooLargeException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "queryName",
-    "subscriptionID"
-})
-public class QueryTooLargeException
-    extends EPCISException
-{
+@XmlType(name = "QueryTooLargeException", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName",
+		"subscriptionID" })
+public class QueryTooLargeException extends EPCISException {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 733722941883351042L;
 	protected String queryName;
-    protected String subscriptionID;
+	protected String subscriptionID;
 
+	public QueryTooLargeException() {
+	}
 
-    public QueryTooLargeException() {
-    }
+	public QueryTooLargeException(String reason) {
+		super(reason);
+		this.queryName = queryName;
+	}
 
-    public QueryTooLargeException(String reason) {
-        super(reason);
-        this.queryName = queryName;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Gets the value of the subscriptionID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getSubscriptionID() {
+		return subscriptionID;
+	}
 
-    /**
-     * Gets the value of the subscriptionID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubscriptionID() {
-        return subscriptionID;
-    }
-
-    /**
-     * Sets the value of the subscriptionID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubscriptionID(String value) {
-        this.subscriptionID = value;
-    }
+	/**
+	 * Sets the value of the subscriptionID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setSubscriptionID(String value) {
+		this.subscriptionID = value;
+	}
 
 }

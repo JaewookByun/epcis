@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.*;
@@ -15,11 +14,13 @@ import java.util.Map;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for SensorMetadataType complex type.
+ * <p>
+ * Java class for SensorMetadataType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SensorMetadataType">
@@ -42,272 +43,234 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SensorMetadataType", propOrder = {
-    "value"
-})
+@XmlType(name = "SensorMetadataType", propOrder = { "value" })
 public class SensorMetadataType {
 
-    @XmlValue
-    protected String value;
-    @XmlAttribute(name = "time")
-    protected XMLGregorianCalendar time;
-    @XmlAttribute(name = "deviceID")
-    @XmlSchemaType(name = "anyURI")
-    protected String deviceID;
-    @XmlAttribute(name = "deviceMetadata")
-    @XmlSchemaType(name = "anyURI")
-    protected String deviceMetadata;
-    @XmlAttribute(name = "rawData")
-    @XmlSchemaType(name = "anyURI")
-    protected String rawData;
-    @XmlAttribute(name = "startTime")
-    protected XMLGregorianCalendar startTime;
-    @XmlAttribute(name = "endTime")
-    protected XMLGregorianCalendar endTime;
-    @XmlAttribute(name = "bizRules")
-    @XmlSchemaType(name = "anyURI")
-    protected String bizRules;
-    @XmlAttribute(name = "dataProcessingMethod")
-    @XmlSchemaType(name = "anyURI")
-    protected String dataProcessingMethod;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlValue
+	protected String value;
+	@XmlAttribute(name = "time")
+	protected XMLGregorianCalendar time;
+	@XmlAttribute(name = "deviceID")
+	@XmlSchemaType(name = "anyURI")
+	protected String deviceID;
+	@XmlAttribute(name = "deviceMetadata")
+	@XmlSchemaType(name = "anyURI")
+	protected String deviceMetadata;
+	@XmlAttribute(name = "rawData")
+	@XmlSchemaType(name = "anyURI")
+	protected String rawData;
+	@XmlAttribute(name = "startTime")
+	protected XMLGregorianCalendar startTime;
+	@XmlAttribute(name = "endTime")
+	protected XMLGregorianCalendar endTime;
+	@XmlAttribute(name = "bizRules")
+	@XmlSchemaType(name = "anyURI")
+	protected String bizRules;
+	@XmlAttribute(name = "dataProcessingMethod")
+	@XmlSchemaType(name = "anyURI")
+	protected String dataProcessingMethod;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValue() {
-        return value;
-    }
+	/**
+	 * Gets the value of the value property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getValue() {
+		return value;
+	}
 
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
+	/**
+	 * Sets the value of the value property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-    /**
-     * Gets the value of the time property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getTime() {
-        return time;
-    }
+	/**
+	 * Gets the value of the time property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getTime() {
+		return time;
+	}
 
-    /**
-     * Sets the value of the time property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setTime(XMLGregorianCalendar value) {
-        this.time = value;
-    }
+	/**
+	 * Sets the value of the time property.
+	 * 
+	 * @param value allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setTime(XMLGregorianCalendar value) {
+		this.time = value;
+	}
 
-    /**
-     * Gets the value of the deviceID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDeviceID() {
-        return deviceID;
-    }
+	/**
+	 * Gets the value of the deviceID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDeviceID() {
+		return deviceID;
+	}
 
-    /**
-     * Sets the value of the deviceID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDeviceID(String value) {
-        this.deviceID = value;
-    }
+	/**
+	 * Sets the value of the deviceID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setDeviceID(String value) {
+		this.deviceID = value;
+	}
 
-    /**
-     * Gets the value of the deviceMetadata property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDeviceMetadata() {
-        return deviceMetadata;
-    }
+	/**
+	 * Gets the value of the deviceMetadata property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDeviceMetadata() {
+		return deviceMetadata;
+	}
 
-    /**
-     * Sets the value of the deviceMetadata property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDeviceMetadata(String value) {
-        this.deviceMetadata = value;
-    }
+	/**
+	 * Sets the value of the deviceMetadata property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setDeviceMetadata(String value) {
+		this.deviceMetadata = value;
+	}
 
-    /**
-     * Gets the value of the rawData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getRawData() {
-        return rawData;
-    }
+	/**
+	 * Gets the value of the rawData property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getRawData() {
+		return rawData;
+	}
 
-    /**
-     * Sets the value of the rawData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setRawData(String value) {
-        this.rawData = value;
-    }
+	/**
+	 * Sets the value of the rawData property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setRawData(String value) {
+		this.rawData = value;
+	}
 
-    /**
-     * Gets the value of the startTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getStartTime() {
-        return startTime;
-    }
+	/**
+	 * Gets the value of the startTime property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getStartTime() {
+		return startTime;
+	}
 
-    /**
-     * Sets the value of the startTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setStartTime(XMLGregorianCalendar value) {
-        this.startTime = value;
-    }
+	/**
+	 * Sets the value of the startTime property.
+	 * 
+	 * @param value allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setStartTime(XMLGregorianCalendar value) {
+		this.startTime = value;
+	}
 
-    /**
-     * Gets the value of the endTime property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getEndTime() {
-        return endTime;
-    }
+	/**
+	 * Gets the value of the endTime property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getEndTime() {
+		return endTime;
+	}
 
-    /**
-     * Sets the value of the endTime property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setEndTime(XMLGregorianCalendar value) {
-        this.endTime = value;
-    }
+	/**
+	 * Sets the value of the endTime property.
+	 * 
+	 * @param value allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setEndTime(XMLGregorianCalendar value) {
+		this.endTime = value;
+	}
 
-    /**
-     * Gets the value of the bizRules property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getBizRules() {
-        return bizRules;
-    }
+	/**
+	 * Gets the value of the bizRules property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getBizRules() {
+		return bizRules;
+	}
 
-    /**
-     * Sets the value of the bizRules property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setBizRules(String value) {
-        this.bizRules = value;
-    }
+	/**
+	 * Sets the value of the bizRules property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setBizRules(String value) {
+		this.bizRules = value;
+	}
 
-    /**
-     * Gets the value of the dataProcessingMethod property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDataProcessingMethod() {
-        return dataProcessingMethod;
-    }
+	/**
+	 * Gets the value of the dataProcessingMethod property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDataProcessingMethod() {
+		return dataProcessingMethod;
+	}
 
-    /**
-     * Sets the value of the dataProcessingMethod property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDataProcessingMethod(String value) {
-        this.dataProcessingMethod = value;
-    }
+	/**
+	 * Sets the value of the dataProcessingMethod property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setDataProcessingMethod(String value) {
+		this.dataProcessingMethod = value;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed property
+	 * on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
-    public void setOtherAttributes(Map<QName, String> otherAttributes) {
-        this.otherAttributes = otherAttributes;
-    }
+	public void setOtherAttributes(Map<QName, String> otherAttributes) {
+		this.otherAttributes = otherAttributes;
+	}
 }

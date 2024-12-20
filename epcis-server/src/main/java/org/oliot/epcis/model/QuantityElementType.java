@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.JAXBElement;
@@ -13,11 +12,13 @@ import jakarta.xml.bind.annotation.*;
 
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for QuantityElementType complex type.
+ * <p>
+ * Java class for QuantityElementType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QuantityElementType">
@@ -38,100 +39,86 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QuantityElementType", propOrder = {
-    "epcClass",
-    "quantity",
-    "uom"
-})
+@XmlType(name = "QuantityElementType", propOrder = { "epcClass", "quantity", "uom" })
 public class QuantityElementType {
 
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "anyURI")
-    protected String epcClass;
-    @XmlElementRef(name = "quantity", type = JAXBElement.class, required = false)
-    protected JAXBElement<Double> quantity;
-    protected String uom;
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "anyURI")
+	protected String epcClass;
+	@XmlElementRef(name = "quantity", type = JAXBElement.class, required = false)
+	protected JAXBElement<Double> quantity;
+	protected String uom;
 
-    public QuantityElementType() {
-    }
+	public QuantityElementType() {
+	}
 
-    public QuantityElementType(String epcClass, Double quantity, String uom) {
-        this.epcClass = epcClass;
-        if (quantity != null)
-            this.quantity = new JAXBElement<Double>(new QName("", "quantity"), Double.class, quantity);
-        this.uom = uom;
-    }
+	public QuantityElementType(String epcClass, Double quantity, String uom) {
+		this.epcClass = epcClass;
+		if (quantity != null)
+			this.quantity = new JAXBElement<Double>(new QName("", "quantity"), Double.class, quantity);
+		this.uom = uom;
+	}
 
-    /**
-     * Gets the value of the epcClass property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEpcClass() {
-        return epcClass;
-    }
+	/**
+	 * Gets the value of the epcClass property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getEpcClass() {
+		return epcClass;
+	}
 
-    /**
-     * Sets the value of the epcClass property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEpcClass(String value) {
-        this.epcClass = value;
-    }
+	/**
+	 * Sets the value of the epcClass property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setEpcClass(String value) {
+		this.epcClass = value;
+	}
 
-    /**
-     * Gets the value of the quantity property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link JAXBElement }{@code <}{@link Double }{@code >}
-     *     
-     */
-    public JAXBElement<Double> getQuantity() {
-        return quantity;
-    }
+	/**
+	 * Gets the value of the quantity property.
+	 * 
+	 * @return possible object is {@link JAXBElement }{@code <}{@link Double
+	 *         }{@code >}
+	 * 
+	 */
+	public JAXBElement<Double> getQuantity() {
+		return quantity;
+	}
 
-    /**
-     * Sets the value of the quantity property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link JAXBElement }{@code <}{@link Double }{@code >}
-     *     
-     */
-    public void setQuantity(JAXBElement<Double> value) {
-        this.quantity = value;
-    }
+	/**
+	 * Sets the value of the quantity property.
+	 * 
+	 * @param value allowed object is {@link JAXBElement }{@code <}{@link Double
+	 *              }{@code >}
+	 * 
+	 */
+	public void setQuantity(JAXBElement<Double> value) {
+		this.quantity = value;
+	}
 
-    /**
-     * Gets the value of the uom property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getUom() {
-        return uom;
-    }
+	/**
+	 * Gets the value of the uom property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getUom() {
+		return uom;
+	}
 
-    /**
-     * Sets the value of the uom property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setUom(String value) {
-        this.uom = value;
-    }
+	/**
+	 * Sets the value of the uom property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setUom(String value) {
+		this.uom = value;
+	}
 
 }

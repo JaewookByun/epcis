@@ -5,19 +5,21 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for TypeOfServiceTransaction.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
+ * Java class for TypeOfServiceTransaction.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
+ * <p>
+ * 
  * <pre>
  * &lt;simpleType name="TypeOfServiceTransaction">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -32,27 +34,27 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum TypeOfServiceTransaction {
 
-    @XmlEnumValue("RequestingServiceTransaction")
-    REQUESTING_SERVICE_TRANSACTION("RequestingServiceTransaction"),
-    @XmlEnumValue("RespondingServiceTransaction")
-    RESPONDING_SERVICE_TRANSACTION("RespondingServiceTransaction");
-    private final String value;
+	@XmlEnumValue("RequestingServiceTransaction")
+	REQUESTING_SERVICE_TRANSACTION("RequestingServiceTransaction"), @XmlEnumValue("RespondingServiceTransaction")
+	RESPONDING_SERVICE_TRANSACTION("RespondingServiceTransaction");
 
-    TypeOfServiceTransaction(String v) {
-        value = v;
-    }
+	private final String value;
 
-    public String value() {
-        return value;
-    }
+	TypeOfServiceTransaction(String v) {
+		value = v;
+	}
 
-    public static TypeOfServiceTransaction fromValue(String v) {
-        for (TypeOfServiceTransaction c: TypeOfServiceTransaction.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
+	public String value() {
+		return value;
+	}
+
+	public static TypeOfServiceTransaction fromValue(String v) {
+		for (TypeOfServiceTransaction c : TypeOfServiceTransaction.values()) {
+			if (c.value.equals(v)) {
+				return c;
+			}
+		}
+		throw new IllegalArgumentException(v);
+	}
 
 }

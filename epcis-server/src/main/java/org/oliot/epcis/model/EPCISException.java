@@ -5,16 +5,17 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.*;
 
 /**
- * <p>Java class for EPCISException complex type.
+ * <p>
+ * Java class for EPCISException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISException">
@@ -31,64 +32,47 @@ import jakarta.xml.bind.annotation.*;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISException", propOrder = {
-    "reason"
-})
-@XmlSeeAlso({
-    ValidationException.class,
-    InvalidURIException.class,
-    NoSuchSubscriptionException.class,
-    SubscribeNotPermittedException.class,
-    DuplicateSubscriptionException.class,
-    SubscriptionControlsException.class,
-    QueryTooLargeException.class,
-    ImplementationException.class,
-    SecurityException.class,
-    NoSuchNameException.class,
-    QueryTooComplexException.class,
-    QueryParameterException.class,
-    DuplicateNameException.class
-})
-public class EPCISException extends Throwable{
+@XmlType(name = "EPCISException", propOrder = { "reason" })
+@XmlSeeAlso({ ValidationException.class, InvalidURIException.class, NoSuchSubscriptionException.class,
+		SubscribeNotPermittedException.class, DuplicateSubscriptionException.class, SubscriptionControlsException.class,
+		QueryTooLargeException.class, ImplementationException.class, SecurityException.class, NoSuchNameException.class,
+		QueryTooComplexException.class, QueryParameterException.class, DuplicateNameException.class })
+public class EPCISException extends Throwable {
 
-    /**
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8408539993661081501L;
 	@XmlElement(required = true)
-    protected String reason;
+	protected String reason;
 
-    public EPCISException() {
-        this.setStackTrace(new StackTraceElement[0]);
-    }
+	public EPCISException() {
+		this.setStackTrace(new StackTraceElement[0]);
+	}
 
-    public EPCISException(String reason) {
-        this.setStackTrace(new StackTraceElement[0]);
-        this.setReason(reason);
-    }
+	public EPCISException(String reason) {
+		this.setStackTrace(new StackTraceElement[0]);
+		this.setReason(reason);
+	}
 
-    /**
-     * Gets the value of the reason property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getReason() {
-        return reason;
-    }
+	/**
+	 * Gets the value of the reason property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getReason() {
+		return reason;
+	}
 
-    /**
-     * Sets the value of the reason property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setReason(String value) {
-        this.reason = value;
-    }
+	/**
+	 * Sets the value of the reason property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setReason(String value) {
+		this.reason = value;
+	}
 
 }

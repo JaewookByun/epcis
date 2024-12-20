@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -13,11 +12,13 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for ValidationException complex type.
+ * <p>
+ * Java class for ValidationException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="ValidationException">
@@ -35,18 +36,16 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ValidationException")
 @XmlRootElement
-public class ValidationException
-    extends EPCISException
-{
-    /**
+public class ValidationException extends EPCISException {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -2010139243354454151L;
 
 	public ValidationException() {
-    }
+	}
 
-    public ValidationException(String reason) {
-        super(reason);
-    }
+	public ValidationException(String reason) {
+		super(reason);
+	}
 }

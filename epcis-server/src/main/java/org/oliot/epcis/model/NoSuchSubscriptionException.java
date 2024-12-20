@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for NoSuchSubscriptionException complex type.
+ * <p>
+ * Java class for NoSuchSubscriptionException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="NoSuchSubscriptionException">
@@ -33,18 +34,16 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "NoSuchSubscriptionException", namespace = "urn:epcglobal:epcis-query:xsd:2")
-public class NoSuchSubscriptionException
-    extends EPCISException
-{
-    /**
+public class NoSuchSubscriptionException extends EPCISException {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -8052206529882458870L;
 
 	public NoSuchSubscriptionException() {
-    }
+	}
 
-    public NoSuchSubscriptionException(String reason) {
-        super(reason);
-    }
+	public NoSuchSubscriptionException(String reason) {
+		super(reason);
+	}
 }

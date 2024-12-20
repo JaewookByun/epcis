@@ -5,7 +5,6 @@
 // Generated on: 2024.01.17 at 10:59:12 AM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import java.util.ArrayList;
@@ -16,11 +15,13 @@ import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
- * <p>Java class for EventTypeListType complex type.
+ * <p>
+ * Java class for EventTypeListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EventTypeListType">
@@ -37,41 +38,39 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EventTypeListType", propOrder = {
-    "eventType"
-})
+@XmlType(name = "EventTypeListType", propOrder = { "eventType" })
 @XmlRootElement
 public class EventTypeListType {
 
-    protected List<String> eventType;
+	protected List<String> eventType;
 
-    /**
-     * Gets the value of the eventType property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the eventType property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getEventType().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link String }
-     * 
-     * 
-     */
-    public List<String> getEventType() {
-        if (eventType == null) {
-            eventType = new ArrayList<String>();
-        }
-        return this.eventType;
-    }
+	/**
+	 * Gets the value of the eventType property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the eventType property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getEventType().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link String }
+	 * 
+	 * 
+	 */
+	public List<String> getEventType() {
+		if (eventType == null) {
+			eventType = new ArrayList<String>();
+		}
+		return this.eventType;
+	}
 
 }

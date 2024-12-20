@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.*;
@@ -16,11 +15,13 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for EventListType complex type.
+ * <p>
+ * Java class for EventListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EventListType">
@@ -45,76 +46,72 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EventListType", propOrder = {
-    "objectEventOrAggregationEventOrTransformationEvent"
-})
+@XmlType(name = "EventListType", propOrder = { "objectEventOrAggregationEventOrTransformationEvent" })
 public class EventListType {
 
-    @XmlElements({
-        @XmlElement(name = "ObjectEvent", type = ObjectEventType.class),
-        @XmlElement(name = "AggregationEvent", type = AggregationEventType.class),
-        @XmlElement(name = "TransformationEvent", type = TransformationEventType.class),
-        @XmlElement(name = "TransactionEvent", type = TransactionEventType.class),
-        @XmlElement(name = "AssociationEvent", type = AssociationEventType.class),
-        @XmlElement(name = "extension", type = EPCISEventListExtensionType.class)
-    })
-    protected List<Object> objectEventOrAggregationEventOrTransformationEvent;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlElements({ @XmlElement(name = "ObjectEvent", type = ObjectEventType.class),
+			@XmlElement(name = "AggregationEvent", type = AggregationEventType.class),
+			@XmlElement(name = "TransformationEvent", type = TransformationEventType.class),
+			@XmlElement(name = "TransactionEvent", type = TransactionEventType.class),
+			@XmlElement(name = "AssociationEvent", type = AssociationEventType.class),
+			@XmlElement(name = "extension", type = EPCISEventListExtensionType.class) })
+	protected List<Object> objectEventOrAggregationEventOrTransformationEvent;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the objectEventOrAggregationEventOrTransformationEvent property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the objectEventOrAggregationEventOrTransformationEvent property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getObjectEventOrAggregationEventOrTransformationEvent().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link ObjectEventType }
-     * {@link AggregationEventType }
-     * {@link TransformationEventType }
-     * {@link TransactionEventType }
-     * {@link AssociationEventType }
-     * {@link EPCISEventListExtensionType }
-     * 
-     * 
-     */
-    public List<Object> getObjectEventOrAggregationEventOrTransformationEvent() {
-        if (objectEventOrAggregationEventOrTransformationEvent == null) {
-            objectEventOrAggregationEventOrTransformationEvent = new ArrayList<Object>();
-        }
-        return this.objectEventOrAggregationEventOrTransformationEvent;
-    }
+	/**
+	 * Gets the value of the objectEventOrAggregationEventOrTransformationEvent
+	 * property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the objectEventOrAggregationEventOrTransformationEvent property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getObjectEventOrAggregationEventOrTransformationEvent().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link ObjectEventType } {@link AggregationEventType }
+	 * {@link TransformationEventType } {@link TransactionEventType }
+	 * {@link AssociationEventType } {@link EPCISEventListExtensionType }
+	 * 
+	 * 
+	 */
+	public List<Object> getObjectEventOrAggregationEventOrTransformationEvent() {
+		if (objectEventOrAggregationEventOrTransformationEvent == null) {
+			objectEventOrAggregationEventOrTransformationEvent = new ArrayList<Object>();
+		}
+		return this.objectEventOrAggregationEventOrTransformationEvent;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed property
+	 * on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
-    public void setObjectEventOrAggregationEventOrTransformationEvent(List<Object> objectEventOrAggregationEventOrTransformationEvent) {
-        this.objectEventOrAggregationEventOrTransformationEvent = objectEventOrAggregationEventOrTransformationEvent;
-    }
+	public void setObjectEventOrAggregationEventOrTransformationEvent(
+			List<Object> objectEventOrAggregationEventOrTransformationEvent) {
+		this.objectEventOrAggregationEventOrTransformationEvent = objectEventOrAggregationEventOrTransformationEvent;
+	}
 }

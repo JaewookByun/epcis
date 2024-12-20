@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import java.util.ArrayList;
@@ -14,11 +13,13 @@ import java.util.List;
 import jakarta.xml.bind.annotation.*;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for QueryResults complex type.
+ * <p>
+ * Java class for QueryResults complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="QueryResults">
@@ -39,149 +40,128 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "QueryResults", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "queryName",
-    "subscriptionID",
-    "resultsBody",
-    "extension",
-    "any"
-})
+@XmlType(name = "QueryResults", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "queryName",
+		"subscriptionID", "resultsBody", "extension", "any" })
 @XmlRootElement
 public class QueryResults {
 
-    @XmlElement(required = true)
-    protected String queryName;
-    protected String subscriptionID;
-    @XmlElement(required = true)
-    protected QueryResultsBody resultsBody;
-    protected QueryResultsExtensionType extension;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
+	@XmlElement(required = true)
+	protected String queryName;
+	protected String subscriptionID;
+	@XmlElement(required = true)
+	protected QueryResultsBody resultsBody;
+	protected QueryResultsExtensionType extension;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
 
-    /**
-     * Gets the value of the queryName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getQueryName() {
-        return queryName;
-    }
+	/**
+	 * Gets the value of the queryName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getQueryName() {
+		return queryName;
+	}
 
-    /**
-     * Sets the value of the queryName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setQueryName(String value) {
-        this.queryName = value;
-    }
+	/**
+	 * Sets the value of the queryName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setQueryName(String value) {
+		this.queryName = value;
+	}
 
-    /**
-     * Gets the value of the subscriptionID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubscriptionID() {
-        return subscriptionID;
-    }
+	/**
+	 * Gets the value of the subscriptionID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getSubscriptionID() {
+		return subscriptionID;
+	}
 
-    /**
-     * Sets the value of the subscriptionID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubscriptionID(String value) {
-        this.subscriptionID = value;
-    }
+	/**
+	 * Sets the value of the subscriptionID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setSubscriptionID(String value) {
+		this.subscriptionID = value;
+	}
 
-    /**
-     * Gets the value of the resultsBody property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QueryResultsBody }
-     *     
-     */
-    public QueryResultsBody getResultsBody() {
-        return resultsBody;
-    }
+	/**
+	 * Gets the value of the resultsBody property.
+	 * 
+	 * @return possible object is {@link QueryResultsBody }
+	 * 
+	 */
+	public QueryResultsBody getResultsBody() {
+		return resultsBody;
+	}
 
-    /**
-     * Sets the value of the resultsBody property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QueryResultsBody }
-     *     
-     */
-    public void setResultsBody(QueryResultsBody value) {
-        this.resultsBody = value;
-    }
+	/**
+	 * Sets the value of the resultsBody property.
+	 * 
+	 * @param value allowed object is {@link QueryResultsBody }
+	 * 
+	 */
+	public void setResultsBody(QueryResultsBody value) {
+		this.resultsBody = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QueryResultsExtensionType }
-     *     
-     */
-    public QueryResultsExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link QueryResultsExtensionType }
+	 * 
+	 */
+	public QueryResultsExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QueryResultsExtensionType }
-     *     
-     */
-    public void setExtension(QueryResultsExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value allowed object is {@link QueryResultsExtensionType }
+	 * 
+	 */
+	public void setExtension(QueryResultsExtensionType value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Element }
-     * {@link Object }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Element }
+	 * {@link Object }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
 }

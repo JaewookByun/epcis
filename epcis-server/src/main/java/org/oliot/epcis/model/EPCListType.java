@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -16,9 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * <p>Java class for EPCListType complex type.
+ * <p>
+ * Java class for EPCListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCListType">
@@ -35,47 +37,45 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCListType", propOrder = {
-    "epc"
-})
+@XmlType(name = "EPCListType", propOrder = { "epc" })
 public class EPCListType {
 
-    protected List<EPC> epc;
+	protected List<EPC> epc;
 
-    public EPCListType() {
-    }
+	public EPCListType() {
+	}
 
-    public EPCListType(List<EPC> epc) {
-        this.epc = epc;
-    }
+	public EPCListType(List<EPC> epc) {
+		this.epc = epc;
+	}
 
-    /**
-     * Gets the value of the epc property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the epc property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getEpc().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link EPC }
-     * 
-     * 
-     */
-    public List<EPC> getEpc() {
-        if (epc == null) {
-            epc = new ArrayList<EPC>();
-        }
-        return this.epc;
-    }
+	/**
+	 * Gets the value of the epc property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the epc property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getEpc().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link EPC }
+	 * 
+	 * 
+	 */
+	public List<EPC> getEpc() {
+		if (epc == null) {
+			epc = new ArrayList<EPC>();
+		}
+		return this.epc;
+	}
 
 }

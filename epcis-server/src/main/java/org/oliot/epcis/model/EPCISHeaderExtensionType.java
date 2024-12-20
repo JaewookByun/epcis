@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.*;
@@ -14,11 +13,13 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.xml.namespace.QName;
 
-
 /**
- * <p>Java class for EPCISHeaderExtensionType complex type.
+ * <p>
+ * Java class for EPCISHeaderExtensionType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISHeaderExtensionType">
@@ -37,82 +38,71 @@ import javax.xml.namespace.QName;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISHeaderExtensionType", propOrder = {
-    "epcisMasterData",
-    "extension"
-})
+@XmlType(name = "EPCISHeaderExtensionType", propOrder = { "epcisMasterData", "extension" })
 public class EPCISHeaderExtensionType {
 
-    @XmlElement(name = "EPCISMasterData")
-    protected EPCISMasterDataType epcisMasterData;
-    protected EPCISHeaderExtension2Type extension;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlElement(name = "EPCISMasterData")
+	protected EPCISMasterDataType epcisMasterData;
+	protected EPCISHeaderExtension2Type extension;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the epcisMasterData property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISMasterDataType }
-     *     
-     */
-    public EPCISMasterDataType getEPCISMasterData() {
-        return epcisMasterData;
-    }
+	/**
+	 * Gets the value of the epcisMasterData property.
+	 * 
+	 * @return possible object is {@link EPCISMasterDataType }
+	 * 
+	 */
+	public EPCISMasterDataType getEPCISMasterData() {
+		return epcisMasterData;
+	}
 
-    /**
-     * Sets the value of the epcisMasterData property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISMasterDataType }
-     *     
-     */
-    public void setEPCISMasterData(EPCISMasterDataType value) {
-        this.epcisMasterData = value;
-    }
+	/**
+	 * Sets the value of the epcisMasterData property.
+	 * 
+	 * @param value allowed object is {@link EPCISMasterDataType }
+	 * 
+	 */
+	public void setEPCISMasterData(EPCISMasterDataType value) {
+		this.epcisMasterData = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISHeaderExtension2Type }
-     *     
-     */
-    public EPCISHeaderExtension2Type getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link EPCISHeaderExtension2Type }
+	 * 
+	 */
+	public EPCISHeaderExtension2Type getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISHeaderExtension2Type }
-     *     
-     */
-    public void setExtension(EPCISHeaderExtension2Type value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value allowed object is {@link EPCISHeaderExtension2Type }
+	 * 
+	 */
+	public void setExtension(EPCISHeaderExtension2Type value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed property
+	 * on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

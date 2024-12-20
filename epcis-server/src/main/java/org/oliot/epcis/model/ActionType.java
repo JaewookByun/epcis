@@ -5,17 +5,20 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for ActionType.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
+ * Java class for ActionType.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
+ * <p>
+ * 
  * <pre>
  * &lt;simpleType name="ActionType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -31,16 +34,14 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum ActionType {
 
-    ADD,
-    OBSERVE,
-    DELETE;
+	ADD, OBSERVE, DELETE;
 
-    public String value() {
-        return name();
-    }
+	public String value() {
+		return name();
+	}
 
-    public static ActionType fromValue(String v) {
-        return valueOf(v);
-    }
+	public static ActionType fromValue(String v) {
+		return valueOf(v);
+	}
 
 }

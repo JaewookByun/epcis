@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -15,12 +14,15 @@ import jakarta.xml.bind.annotation.XmlValue;
 
 /**
  * 
- *          EPC represents the Electronic Product Code.
- *       
+ * EPC represents the Electronic Product Code.
  * 
- * <p>Java class for EPC complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for EPC complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPC">
@@ -34,43 +36,37 @@ import jakarta.xml.bind.annotation.XmlValue;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPC", namespace = "urn:epcglobal:xsd:1", propOrder = {
-    "value"
-})
+@XmlType(name = "EPC", namespace = "urn:epcglobal:xsd:1", propOrder = { "value" })
 public class EPC {
 
-    @XmlValue
-    protected String value;
+	@XmlValue
+	protected String value;
 
-    public EPC() {
-    }
+	public EPC() {
+	}
 
-    public EPC(String value) {
-        this.value = value;
-    }
+	public EPC(String value) {
+		this.value = value;
+	}
 
-    /**
-     * Gets the value of the value property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getValue() {
-        return value;
-    }
+	/**
+	 * Gets the value of the value property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getValue() {
+		return value;
+	}
 
-    /**
-     * Sets the value of the value property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setValue(String value) {
-        this.value = value;
-    }
+	/**
+	 * Sets the value of the value property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setValue(String value) {
+		this.value = value;
+	}
 
 }

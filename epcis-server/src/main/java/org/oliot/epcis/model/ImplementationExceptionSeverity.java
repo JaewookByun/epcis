@@ -5,18 +5,20 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for ImplementationExceptionSeverity.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
+ * Java class for ImplementationExceptionSeverity.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
+ * <p>
+ * 
  * <pre>
  * &lt;simpleType name="ImplementationExceptionSeverity">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}NCName">
@@ -31,15 +33,14 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum ImplementationExceptionSeverity {
 
-    ERROR,
-    SEVERE;
+	ERROR, SEVERE;
 
-    public String value() {
-        return name();
-    }
+	public String value() {
+		return name();
+	}
 
-    public static ImplementationExceptionSeverity fromValue(String v) {
-        return valueOf(v);
-    }
+	public static ImplementationExceptionSeverity fromValue(String v) {
+		return valueOf(v);
+	}
 
 }

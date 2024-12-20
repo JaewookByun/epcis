@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import java.util.ArrayList;
@@ -18,11 +17,13 @@ import javax.xml.namespace.QName;
 import jakarta.xml.bind.annotation.*;
 import org.w3c.dom.Element;
 
-
 /**
- * <p>Java class for EPCISCaptureJobType complex type.
+ * <p>
+ * Java class for EPCISCaptureJobType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISCaptureJobType">
@@ -50,258 +51,228 @@ import org.w3c.dom.Element;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISCaptureJobType", propOrder = {
-    "captureErrorBehaviour",
-    "createdAt",
-    "finishedAt",
-    "errors",
-    "errorFile",
-    "any"
-})
+@XmlType(name = "EPCISCaptureJobType", propOrder = { "captureErrorBehaviour", "createdAt", "finishedAt", "errors",
+		"errorFile", "any" })
 public class EPCISCaptureJobType {
 
-    @XmlSchemaType(name = "string")
-    protected EPCISCaptureErrorBehaviourType captureErrorBehaviour;
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar createdAt;
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar finishedAt;
-    protected EPCISCaptureDocumentErrorListType errors;
-    @XmlSchemaType(name = "anyURI")
-    protected String errorFile;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
-    @XmlAttribute(name = "running", required = true)
-    protected boolean running;
-    @XmlAttribute(name = "success", required = true)
-    protected boolean success;
-    @XmlAttribute(name = "captureID", required = true)
-    protected String captureID;
-    @XmlAnyAttribute
-    private Map<QName, String> otherAttributes = new HashMap<QName, String>();
+	@XmlSchemaType(name = "string")
+	protected EPCISCaptureErrorBehaviourType captureErrorBehaviour;
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar createdAt;
+	@XmlSchemaType(name = "dateTime")
+	protected XMLGregorianCalendar finishedAt;
+	protected EPCISCaptureDocumentErrorListType errors;
+	@XmlSchemaType(name = "anyURI")
+	protected String errorFile;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
+	@XmlAttribute(name = "running", required = true)
+	protected boolean running;
+	@XmlAttribute(name = "success", required = true)
+	protected boolean success;
+	@XmlAttribute(name = "captureID", required = true)
+	protected String captureID;
+	@XmlAnyAttribute
+	private Map<QName, String> otherAttributes = new HashMap<QName, String>();
 
-    /**
-     * Gets the value of the captureErrorBehaviour property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISCaptureErrorBehaviourType }
-     *     
-     */
-    public EPCISCaptureErrorBehaviourType getCaptureErrorBehaviour() {
-        return captureErrorBehaviour;
-    }
+	/**
+	 * Gets the value of the captureErrorBehaviour property.
+	 * 
+	 * @return possible object is {@link EPCISCaptureErrorBehaviourType }
+	 * 
+	 */
+	public EPCISCaptureErrorBehaviourType getCaptureErrorBehaviour() {
+		return captureErrorBehaviour;
+	}
 
-    /**
-     * Sets the value of the captureErrorBehaviour property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISCaptureErrorBehaviourType }
-     *     
-     */
-    public void setCaptureErrorBehaviour(EPCISCaptureErrorBehaviourType value) {
-        this.captureErrorBehaviour = value;
-    }
+	/**
+	 * Sets the value of the captureErrorBehaviour property.
+	 * 
+	 * @param value allowed object is {@link EPCISCaptureErrorBehaviourType }
+	 * 
+	 */
+	public void setCaptureErrorBehaviour(EPCISCaptureErrorBehaviourType value) {
+		this.captureErrorBehaviour = value;
+	}
 
-    /**
-     * Gets the value of the createdAt property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getCreatedAt() {
-        return createdAt;
-    }
+	/**
+	 * Gets the value of the createdAt property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getCreatedAt() {
+		return createdAt;
+	}
 
-    /**
-     * Sets the value of the createdAt property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setCreatedAt(XMLGregorianCalendar value) {
-        this.createdAt = value;
-    }
+	/**
+	 * Sets the value of the createdAt property.
+	 * 
+	 * @param value allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setCreatedAt(XMLGregorianCalendar value) {
+		this.createdAt = value;
+	}
 
-    /**
-     * Gets the value of the finishedAt property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public XMLGregorianCalendar getFinishedAt() {
-        return finishedAt;
-    }
+	/**
+	 * Gets the value of the finishedAt property.
+	 * 
+	 * @return possible object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public XMLGregorianCalendar getFinishedAt() {
+		return finishedAt;
+	}
 
-    /**
-     * Sets the value of the finishedAt property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link XMLGregorianCalendar }
-     *     
-     */
-    public void setFinishedAt(XMLGregorianCalendar value) {
-        this.finishedAt = value;
-    }
+	/**
+	 * Sets the value of the finishedAt property.
+	 * 
+	 * @param value allowed object is {@link XMLGregorianCalendar }
+	 * 
+	 */
+	public void setFinishedAt(XMLGregorianCalendar value) {
+		this.finishedAt = value;
+	}
 
-    /**
-     * Gets the value of the errors property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCISCaptureDocumentErrorListType }
-     *     
-     */
-    public EPCISCaptureDocumentErrorListType getErrors() {
-        return errors;
-    }
+	/**
+	 * Gets the value of the errors property.
+	 * 
+	 * @return possible object is {@link EPCISCaptureDocumentErrorListType }
+	 * 
+	 */
+	public EPCISCaptureDocumentErrorListType getErrors() {
+		return errors;
+	}
 
-    /**
-     * Sets the value of the errors property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCISCaptureDocumentErrorListType }
-     *     
-     */
-    public void setErrors(EPCISCaptureDocumentErrorListType value) {
-        this.errors = value;
-    }
+	/**
+	 * Sets the value of the errors property.
+	 * 
+	 * @param value allowed object is {@link EPCISCaptureDocumentErrorListType }
+	 * 
+	 */
+	public void setErrors(EPCISCaptureDocumentErrorListType value) {
+		this.errors = value;
+	}
 
-    /**
-     * Gets the value of the errorFile property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getErrorFile() {
-        return errorFile;
-    }
+	/**
+	 * Gets the value of the errorFile property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getErrorFile() {
+		return errorFile;
+	}
 
-    /**
-     * Sets the value of the errorFile property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setErrorFile(String value) {
-        this.errorFile = value;
-    }
+	/**
+	 * Sets the value of the errorFile property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setErrorFile(String value) {
+		this.errorFile = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
-    /**
-     * Gets the value of the running property.
-     * 
-     */
-    public boolean isRunning() {
-        return running;
-    }
+	/**
+	 * Gets the value of the running property.
+	 * 
+	 */
+	public boolean isRunning() {
+		return running;
+	}
 
-    /**
-     * Sets the value of the running property.
-     * 
-     */
-    public void setRunning(boolean value) {
-        this.running = value;
-    }
+	/**
+	 * Sets the value of the running property.
+	 * 
+	 */
+	public void setRunning(boolean value) {
+		this.running = value;
+	}
 
-    /**
-     * Gets the value of the success property.
-     * 
-     */
-    public boolean isSuccess() {
-        return success;
-    }
+	/**
+	 * Gets the value of the success property.
+	 * 
+	 */
+	public boolean isSuccess() {
+		return success;
+	}
 
-    /**
-     * Sets the value of the success property.
-     * 
-     */
-    public void setSuccess(boolean value) {
-        this.success = value;
-    }
+	/**
+	 * Sets the value of the success property.
+	 * 
+	 */
+	public void setSuccess(boolean value) {
+		this.success = value;
+	}
 
-    /**
-     * Gets the value of the captureID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getCaptureID() {
-        return captureID;
-    }
+	/**
+	 * Gets the value of the captureID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getCaptureID() {
+		return captureID;
+	}
 
-    /**
-     * Sets the value of the captureID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setCaptureID(String value) {
-        this.captureID = value;
-    }
+	/**
+	 * Sets the value of the captureID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setCaptureID(String value) {
+		this.captureID = value;
+	}
 
-    /**
-     * Gets a map that contains attributes that aren't bound to any typed property on this class.
-     * 
-     * <p>
-     * the map is keyed by the name of the attribute and 
-     * the value is the string value of the attribute.
-     * 
-     * the map returned by this method is live, and you can add new attribute
-     * by updating the map directly. Because of this design, there's no setter.
-     * 
-     * 
-     * @return
-     *     always non-null
-     */
-    public Map<QName, String> getOtherAttributes() {
-        return otherAttributes;
-    }
+	/**
+	 * Gets a map that contains attributes that aren't bound to any typed property
+	 * on this class.
+	 * 
+	 * <p>
+	 * the map is keyed by the name of the attribute and the value is the string
+	 * value of the attribute.
+	 * 
+	 * the map returned by this method is live, and you can add new attribute by
+	 * updating the map directly. Because of this design, there's no setter.
+	 * 
+	 * 
+	 * @return always non-null
+	 */
+	public Map<QName, String> getOtherAttributes() {
+		return otherAttributes;
+	}
 
 }

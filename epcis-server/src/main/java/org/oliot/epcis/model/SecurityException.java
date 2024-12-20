@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for SecurityException complex type.
+ * <p>
+ * Java class for SecurityException complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SecurityException">
@@ -33,18 +34,16 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SecurityException", namespace = "urn:epcglobal:epcis-query:xsd:2")
-public class SecurityException
-    extends EPCISException
-{
-    /**
+public class SecurityException extends EPCISException {
+	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1230002763494330186L;
 
 	public SecurityException() {
-    }
+	}
 
-    public SecurityException(String reason) {
-        super(reason);
-    }
+	public SecurityException(String reason) {
+		super(reason);
+	}
 }

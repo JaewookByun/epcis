@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -15,11 +14,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * <p>Java class for EPCISCaptureDocumentErrorListType complex type.
+ * <p>
+ * Java class for EPCISCaptureDocumentErrorListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="EPCISCaptureDocumentErrorListType">
@@ -39,80 +40,79 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EPCISCaptureDocumentErrorListType", propOrder = {
-    "problem",
-    "error"
-})
+@XmlType(name = "EPCISCaptureDocumentErrorListType", propOrder = { "problem", "error" })
 public class EPCISCaptureDocumentErrorListType {
 
-    protected List<RFC7807ProblemResponseBodyType> problem;
-    protected List<RFC7807ProblemResponseBodyType> error;
+	protected List<RFC7807ProblemResponseBodyType> problem;
+	protected List<RFC7807ProblemResponseBodyType> error;
 
-    public EPCISCaptureDocumentErrorListType() {
+	public EPCISCaptureDocumentErrorListType() {
 
-    }
+	}
 
-    public EPCISCaptureDocumentErrorListType(RFC7807ProblemResponseBodyType err) {
-        error = new ArrayList<RFC7807ProblemResponseBodyType>();
-        error.add(err);
-    }
+	public EPCISCaptureDocumentErrorListType(RFC7807ProblemResponseBodyType err) {
+		error = new ArrayList<RFC7807ProblemResponseBodyType>();
+		error.add(err);
+	}
 
-    /**
-     * Gets the value of the problem property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the problem property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getProblem().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link RFC7807ProblemResponseBodyType }
-     * 
-     * 
-     */
-    public List<RFC7807ProblemResponseBodyType> getProblem() {
-        if (problem == null) {
-            problem = new ArrayList<RFC7807ProblemResponseBodyType>();
-        }
-        return this.problem;
-    }
+	/**
+	 * Gets the value of the problem property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the problem property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getProblem().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link RFC7807ProblemResponseBodyType }
+	 * 
+	 * 
+	 */
+	public List<RFC7807ProblemResponseBodyType> getProblem() {
+		if (problem == null) {
+			problem = new ArrayList<RFC7807ProblemResponseBodyType>();
+		}
+		return this.problem;
+	}
 
-    /**
-     * Gets the value of the error property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the error property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getError().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link RFC7807ProblemResponseBodyType }
-     * 
-     * 
-     */
-    public List<RFC7807ProblemResponseBodyType> getError() {
-        if (error == null) {
-            error = new ArrayList<RFC7807ProblemResponseBodyType>();
-        }
-        return this.error;
-    }
+	/**
+	 * Gets the value of the error property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the error property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getError().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link RFC7807ProblemResponseBodyType }
+	 * 
+	 * 
+	 */
+	public List<RFC7807ProblemResponseBodyType> getError() {
+		if (error == null) {
+			error = new ArrayList<RFC7807ProblemResponseBodyType>();
+		}
+		return this.error;
+	}
 
 }

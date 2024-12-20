@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -14,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for BusinessService complex type.
+ * <p>
+ * Java class for BusinessService complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="BusinessService">
@@ -35,62 +37,52 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BusinessService", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader", propOrder = {
-    "businessServiceName",
-    "serviceTransaction"
-})
+		"businessServiceName", "serviceTransaction" })
 public class BusinessService {
 
-    @XmlElement(name = "BusinessServiceName", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
-    protected String businessServiceName;
-    @XmlElement(name = "ServiceTransaction", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
-    protected ServiceTransaction serviceTransaction;
+	@XmlElement(name = "BusinessServiceName", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
+	protected String businessServiceName;
+	@XmlElement(name = "ServiceTransaction", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
+	protected ServiceTransaction serviceTransaction;
 
-    /**
-     * Gets the value of the businessServiceName property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getBusinessServiceName() {
-        return businessServiceName;
-    }
+	/**
+	 * Gets the value of the businessServiceName property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getBusinessServiceName() {
+		return businessServiceName;
+	}
 
-    /**
-     * Sets the value of the businessServiceName property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setBusinessServiceName(String value) {
-        this.businessServiceName = value;
-    }
+	/**
+	 * Sets the value of the businessServiceName property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setBusinessServiceName(String value) {
+		this.businessServiceName = value;
+	}
 
-    /**
-     * Gets the value of the serviceTransaction property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ServiceTransaction }
-     *     
-     */
-    public ServiceTransaction getServiceTransaction() {
-        return serviceTransaction;
-    }
+	/**
+	 * Gets the value of the serviceTransaction property.
+	 * 
+	 * @return possible object is {@link ServiceTransaction }
+	 * 
+	 */
+	public ServiceTransaction getServiceTransaction() {
+		return serviceTransaction;
+	}
 
-    /**
-     * Sets the value of the serviceTransaction property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ServiceTransaction }
-     *     
-     */
-    public void setServiceTransaction(ServiceTransaction value) {
-        this.serviceTransaction = value;
-    }
+	/**
+	 * Sets the value of the serviceTransaction property.
+	 * 
+	 * @param value allowed object is {@link ServiceTransaction }
+	 * 
+	 */
+	public void setServiceTransaction(ServiceTransaction value) {
+		this.serviceTransaction = value;
+	}
 
 }

@@ -5,19 +5,21 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlEnum;
 import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for EPCISCaptureErrorBehaviourType.
- * 
- * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
+ * Java class for EPCISCaptureErrorBehaviourType.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
+ * <p>
+ * 
  * <pre>
  * &lt;simpleType name="EPCISCaptureErrorBehaviourType">
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
@@ -32,27 +34,27 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum EPCISCaptureErrorBehaviourType {
 
-    @XmlEnumValue("rollback")
-    ROLLBACK("rollback"),
-    @XmlEnumValue("proceed")
-    PROCEED("proceed");
-    private final String value;
+	@XmlEnumValue("rollback")
+	ROLLBACK("rollback"), @XmlEnumValue("proceed")
+	PROCEED("proceed");
 
-    EPCISCaptureErrorBehaviourType(String v) {
-        value = v;
-    }
+	private final String value;
 
-    public String value() {
-        return value;
-    }
+	EPCISCaptureErrorBehaviourType(String v) {
+		value = v;
+	}
 
-    public static EPCISCaptureErrorBehaviourType fromValue(String v) {
-        for (EPCISCaptureErrorBehaviourType c: EPCISCaptureErrorBehaviourType.values()) {
-            if (c.value.equals(v)) {
-                return c;
-            }
-        }
-        throw new IllegalArgumentException(v);
-    }
+	public String value() {
+		return value;
+	}
+
+	public static EPCISCaptureErrorBehaviourType fromValue(String v) {
+		for (EPCISCaptureErrorBehaviourType c : EPCISCaptureErrorBehaviourType.values()) {
+			if (c.value.equals(v)) {
+				return c;
+			}
+		}
+		throw new IllegalArgumentException(v);
+	}
 
 }

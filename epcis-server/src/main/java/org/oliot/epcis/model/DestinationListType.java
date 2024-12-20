@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -16,11 +15,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * <p>Java class for DestinationListType complex type.
+ * <p>
+ * Java class for DestinationListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="DestinationListType">
@@ -37,48 +38,47 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DestinationListType", propOrder = {
-    "destination"
-})
+@XmlType(name = "DestinationListType", propOrder = { "destination" })
 public class DestinationListType {
 
-    @XmlElement(required = true)
-    protected List<SourceDestType> destination;
+	@XmlElement(required = true)
+	protected List<SourceDestType> destination;
 
-    public DestinationListType() {
-    }
+	public DestinationListType() {
+	}
 
-    public DestinationListType(List<SourceDestType> destination) {
-        this.destination = destination;
-    }
+	public DestinationListType(List<SourceDestType> destination) {
+		this.destination = destination;
+	}
 
-    /**
-     * Gets the value of the destination property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the destination property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getDestination().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link SourceDestType }
-     * 
-     * 
-     */
-    public List<SourceDestType> getDestination() {
-        if (destination == null) {
-            destination = new ArrayList<SourceDestType>();
-        }
-        return this.destination;
-    }
+	/**
+	 * Gets the value of the destination property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the destination property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getDestination().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link SourceDestType }
+	 * 
+	 * 
+	 */
+	public List<SourceDestType> getDestination() {
+		if (destination == null) {
+			destination = new ArrayList<SourceDestType>();
+		}
+		return this.destination;
+	}
 
 }

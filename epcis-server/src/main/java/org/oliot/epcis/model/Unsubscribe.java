@@ -5,9 +5,7 @@
 // Generated on: 2024.12.19 at 02:07:29 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
@@ -15,9 +13,12 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for Unsubscribe complex type.
+ * <p>
+ * Java class for Unsubscribe complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="Unsubscribe">
@@ -34,36 +35,30 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Unsubscribe", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = {
-    "subscriptionID"
-})
+@XmlType(name = "Unsubscribe", namespace = "urn:epcglobal:epcis-query:xsd:2", propOrder = { "subscriptionID" })
 public class Unsubscribe {
 
-    @XmlElement(required = true)
-    protected String subscriptionID;
+	@XmlElement(required = true)
+	protected String subscriptionID;
 
-    /**
-     * Gets the value of the subscriptionID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getSubscriptionID() {
-        return subscriptionID;
-    }
+	/**
+	 * Gets the value of the subscriptionID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getSubscriptionID() {
+		return subscriptionID;
+	}
 
-    /**
-     * Sets the value of the subscriptionID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setSubscriptionID(String value) {
-        this.subscriptionID = value;
-    }
+	/**
+	 * Sets the value of the subscriptionID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setSubscriptionID(String value) {
+		this.subscriptionID = value;
+	}
 
 }

@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -16,11 +15,13 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
 import java.util.List;
 
-
 /**
- * <p>Java class for SensorElementListType complex type.
+ * <p>
+ * Java class for SensorElementListType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="SensorElementListType">
@@ -38,74 +39,68 @@ import java.util.List;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "SensorElementListType", propOrder = {
-    "sensorElement",
-    "extension"
-})
+@XmlType(name = "SensorElementListType", propOrder = { "sensorElement", "extension" })
 public class SensorElementListType {
 
-    @XmlElement(required = true)
-    protected List<SensorElementType> sensorElement;
-    protected SensorElementListExtensionType extension;
+	@XmlElement(required = true)
+	protected List<SensorElementType> sensorElement;
+	protected SensorElementListExtensionType extension;
 
-    public SensorElementListType() {
-    }
+	public SensorElementListType() {
+	}
 
-    public SensorElementListType(List<SensorElementType> sensorElement) {
-        this.sensorElement = sensorElement;
-    }
+	public SensorElementListType(List<SensorElementType> sensorElement) {
+		this.sensorElement = sensorElement;
+	}
 
-    /**
-     * Gets the value of the sensorElement property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the sensorElement property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getSensorElement().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link SensorElementType }
-     * 
-     * 
-     */
-    public List<SensorElementType> getSensorElement() {
-        if (sensorElement == null) {
-            sensorElement = new ArrayList<SensorElementType>();
-        }
-        return this.sensorElement;
-    }
+	/**
+	 * Gets the value of the sensorElement property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the sensorElement property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getSensorElement().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list
+	 * {@link SensorElementType }
+	 * 
+	 * 
+	 */
+	public List<SensorElementType> getSensorElement() {
+		if (sensorElement == null) {
+			sensorElement = new ArrayList<SensorElementType>();
+		}
+		return this.sensorElement;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SensorElementListExtensionType }
-     *     
-     */
-    public SensorElementListExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link SensorElementListExtensionType }
+	 * 
+	 */
+	public SensorElementListExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SensorElementListExtensionType }
-     *     
-     */
-    public void setExtension(SensorElementListExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value allowed object is {@link SensorElementListExtensionType }
+	 * 
+	 */
+	public void setExtension(SensorElementListExtensionType value) {
+		this.extension = value;
+	}
 
 }

@@ -5,7 +5,6 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
 
 import java.util.ArrayList;
@@ -20,17 +19,19 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
 
-
 /**
  * 
- *         Association Event captures an event that applies to objects that
- *         have a physical association with one another, a physical association being more
- *         permanent or persistent than a physical aggregation.
- *       
+ * Association Event captures an event that applies to objects that have a
+ * physical association with one another, a physical association being more
+ * permanent or persistent than a physical aggregation.
  * 
- * <p>Java class for AssociationEventType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * Java class for AssociationEventType complex type.
+ * 
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="AssociationEventType">
@@ -62,418 +63,346 @@ import jakarta.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AssociationEventType", propOrder = {
-    "parentID",
-    "childEPCs",
-    "childQuantityList",
-    "action",
-    "bizStep",
-    "disposition",
-    "readPoint",
-    "bizLocation",
-    "bizTransactionList",
-    "sourceList",
-    "destinationList",
-    "sensorElementList",
-    "persistentDisposition",
-    "extension",
-    "any"
-})
+@XmlType(name = "AssociationEventType", propOrder = { "parentID", "childEPCs", "childQuantityList", "action", "bizStep",
+		"disposition", "readPoint", "bizLocation", "bizTransactionList", "sourceList", "destinationList",
+		"sensorElementList", "persistentDisposition", "extension", "any" })
 @XmlRootElement
-public class AssociationEventType
-    extends EPCISEventType
-{
+public class AssociationEventType extends EPCISEventType {
 
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "anyURI")
-    protected String parentID;
-    protected EPCListType childEPCs;
-    protected QuantityListType childQuantityList;
-    @XmlElement(required = true)
-    @XmlSchemaType(name = "string")
-    protected ActionType action;
-    @XmlSchemaType(name = "anyURI")
-    protected String bizStep;
-    @XmlSchemaType(name = "anyURI")
-    protected String disposition;
-    protected ReadPointType readPoint;
-    protected BusinessLocationType bizLocation;
-    protected BusinessTransactionListType bizTransactionList;
-    protected SourceListType sourceList;
-    protected DestinationListType destinationList;
-    protected SensorElementListType sensorElementList;
-    protected PersistentDispositionType persistentDisposition;
-    protected AssociationEventExtensionType extension;
-    @XmlAnyElement(lax = true)
-    protected List<Object> any;
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "anyURI")
+	protected String parentID;
+	protected EPCListType childEPCs;
+	protected QuantityListType childQuantityList;
+	@XmlElement(required = true)
+	@XmlSchemaType(name = "string")
+	protected ActionType action;
+	@XmlSchemaType(name = "anyURI")
+	protected String bizStep;
+	@XmlSchemaType(name = "anyURI")
+	protected String disposition;
+	protected ReadPointType readPoint;
+	protected BusinessLocationType bizLocation;
+	protected BusinessTransactionListType bizTransactionList;
+	protected SourceListType sourceList;
+	protected DestinationListType destinationList;
+	protected SensorElementListType sensorElementList;
+	protected PersistentDispositionType persistentDisposition;
+	protected AssociationEventExtensionType extension;
+	@XmlAnyElement(lax = true)
+	protected List<Object> any;
 
-    /**
-     * Gets the value of the parentID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getParentID() {
-        return parentID;
-    }
+	/**
+	 * Gets the value of the parentID property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getParentID() {
+		return parentID;
+	}
 
-    /**
-     * Sets the value of the parentID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setParentID(String value) {
-        this.parentID = value;
-    }
+	/**
+	 * Sets the value of the parentID property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setParentID(String value) {
+		this.parentID = value;
+	}
 
-    /**
-     * Gets the value of the childEPCs property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link EPCListType }
-     *     
-     */
-    public EPCListType getChildEPCs() {
-        return childEPCs;
-    }
+	/**
+	 * Gets the value of the childEPCs property.
+	 * 
+	 * @return possible object is {@link EPCListType }
+	 * 
+	 */
+	public EPCListType getChildEPCs() {
+		return childEPCs;
+	}
 
-    /**
-     * Sets the value of the childEPCs property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link EPCListType }
-     *     
-     */
-    public void setChildEPCs(EPCListType value) {
-        this.childEPCs = value;
-    }
+	/**
+	 * Sets the value of the childEPCs property.
+	 * 
+	 * @param value allowed object is {@link EPCListType }
+	 * 
+	 */
+	public void setChildEPCs(EPCListType value) {
+		this.childEPCs = value;
+	}
 
-    /**
-     * Gets the value of the childQuantityList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link QuantityListType }
-     *     
-     */
-    public QuantityListType getChildQuantityList() {
-        return childQuantityList;
-    }
+	/**
+	 * Gets the value of the childQuantityList property.
+	 * 
+	 * @return possible object is {@link QuantityListType }
+	 * 
+	 */
+	public QuantityListType getChildQuantityList() {
+		return childQuantityList;
+	}
 
-    /**
-     * Sets the value of the childQuantityList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link QuantityListType }
-     *     
-     */
-    public void setChildQuantityList(QuantityListType value) {
-        this.childQuantityList = value;
-    }
+	/**
+	 * Sets the value of the childQuantityList property.
+	 * 
+	 * @param value allowed object is {@link QuantityListType }
+	 * 
+	 */
+	public void setChildQuantityList(QuantityListType value) {
+		this.childQuantityList = value;
+	}
 
-    /**
-     * Gets the value of the action property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ActionType }
-     *     
-     */
-    public ActionType getAction() {
-        return action;
-    }
+	/**
+	 * Gets the value of the action property.
+	 * 
+	 * @return possible object is {@link ActionType }
+	 * 
+	 */
+	public ActionType getAction() {
+		return action;
+	}
 
-    /**
-     * Sets the value of the action property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ActionType }
-     *     
-     */
-    public void setAction(ActionType value) {
-        this.action = value;
-    }
+	/**
+	 * Sets the value of the action property.
+	 * 
+	 * @param value allowed object is {@link ActionType }
+	 * 
+	 */
+	public void setAction(ActionType value) {
+		this.action = value;
+	}
 
-    /**
-     * Gets the value of the bizStep property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getBizStep() {
-        return bizStep;
-    }
+	/**
+	 * Gets the value of the bizStep property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getBizStep() {
+		return bizStep;
+	}
 
-    /**
-     * Sets the value of the bizStep property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setBizStep(String value) {
-        this.bizStep = value;
-    }
+	/**
+	 * Sets the value of the bizStep property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setBizStep(String value) {
+		this.bizStep = value;
+	}
 
-    /**
-     * Gets the value of the disposition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getDisposition() {
-        return disposition;
-    }
+	/**
+	 * Gets the value of the disposition property.
+	 * 
+	 * @return possible object is {@link String }
+	 * 
+	 */
+	public String getDisposition() {
+		return disposition;
+	}
 
-    /**
-     * Sets the value of the disposition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setDisposition(String value) {
-        this.disposition = value;
-    }
+	/**
+	 * Sets the value of the disposition property.
+	 * 
+	 * @param value allowed object is {@link String }
+	 * 
+	 */
+	public void setDisposition(String value) {
+		this.disposition = value;
+	}
 
-    /**
-     * Gets the value of the readPoint property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ReadPointType }
-     *     
-     */
-    public ReadPointType getReadPoint() {
-        return readPoint;
-    }
+	/**
+	 * Gets the value of the readPoint property.
+	 * 
+	 * @return possible object is {@link ReadPointType }
+	 * 
+	 */
+	public ReadPointType getReadPoint() {
+		return readPoint;
+	}
 
-    /**
-     * Sets the value of the readPoint property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ReadPointType }
-     *     
-     */
-    public void setReadPoint(ReadPointType value) {
-        this.readPoint = value;
-    }
+	/**
+	 * Sets the value of the readPoint property.
+	 * 
+	 * @param value allowed object is {@link ReadPointType }
+	 * 
+	 */
+	public void setReadPoint(ReadPointType value) {
+		this.readPoint = value;
+	}
 
-    /**
-     * Gets the value of the bizLocation property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BusinessLocationType }
-     *     
-     */
-    public BusinessLocationType getBizLocation() {
-        return bizLocation;
-    }
+	/**
+	 * Gets the value of the bizLocation property.
+	 * 
+	 * @return possible object is {@link BusinessLocationType }
+	 * 
+	 */
+	public BusinessLocationType getBizLocation() {
+		return bizLocation;
+	}
 
-    /**
-     * Sets the value of the bizLocation property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BusinessLocationType }
-     *     
-     */
-    public void setBizLocation(BusinessLocationType value) {
-        this.bizLocation = value;
-    }
+	/**
+	 * Sets the value of the bizLocation property.
+	 * 
+	 * @param value allowed object is {@link BusinessLocationType }
+	 * 
+	 */
+	public void setBizLocation(BusinessLocationType value) {
+		this.bizLocation = value;
+	}
 
-    /**
-     * Gets the value of the bizTransactionList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link BusinessTransactionListType }
-     *     
-     */
-    public BusinessTransactionListType getBizTransactionList() {
-        return bizTransactionList;
-    }
+	/**
+	 * Gets the value of the bizTransactionList property.
+	 * 
+	 * @return possible object is {@link BusinessTransactionListType }
+	 * 
+	 */
+	public BusinessTransactionListType getBizTransactionList() {
+		return bizTransactionList;
+	}
 
-    /**
-     * Sets the value of the bizTransactionList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link BusinessTransactionListType }
-     *     
-     */
-    public void setBizTransactionList(BusinessTransactionListType value) {
-        this.bizTransactionList = value;
-    }
+	/**
+	 * Sets the value of the bizTransactionList property.
+	 * 
+	 * @param value allowed object is {@link BusinessTransactionListType }
+	 * 
+	 */
+	public void setBizTransactionList(BusinessTransactionListType value) {
+		this.bizTransactionList = value;
+	}
 
-    /**
-     * Gets the value of the sourceList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SourceListType }
-     *     
-     */
-    public SourceListType getSourceList() {
-        return sourceList;
-    }
+	/**
+	 * Gets the value of the sourceList property.
+	 * 
+	 * @return possible object is {@link SourceListType }
+	 * 
+	 */
+	public SourceListType getSourceList() {
+		return sourceList;
+	}
 
-    /**
-     * Sets the value of the sourceList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SourceListType }
-     *     
-     */
-    public void setSourceList(SourceListType value) {
-        this.sourceList = value;
-    }
+	/**
+	 * Sets the value of the sourceList property.
+	 * 
+	 * @param value allowed object is {@link SourceListType }
+	 * 
+	 */
+	public void setSourceList(SourceListType value) {
+		this.sourceList = value;
+	}
 
-    /**
-     * Gets the value of the destinationList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link DestinationListType }
-     *     
-     */
-    public DestinationListType getDestinationList() {
-        return destinationList;
-    }
+	/**
+	 * Gets the value of the destinationList property.
+	 * 
+	 * @return possible object is {@link DestinationListType }
+	 * 
+	 */
+	public DestinationListType getDestinationList() {
+		return destinationList;
+	}
 
-    /**
-     * Sets the value of the destinationList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link DestinationListType }
-     *     
-     */
-    public void setDestinationList(DestinationListType value) {
-        this.destinationList = value;
-    }
+	/**
+	 * Sets the value of the destinationList property.
+	 * 
+	 * @param value allowed object is {@link DestinationListType }
+	 * 
+	 */
+	public void setDestinationList(DestinationListType value) {
+		this.destinationList = value;
+	}
 
-    /**
-     * Gets the value of the sensorElementList property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link SensorElementListType }
-     *     
-     */
-    public SensorElementListType getSensorElementList() {
-        return sensorElementList;
-    }
+	/**
+	 * Gets the value of the sensorElementList property.
+	 * 
+	 * @return possible object is {@link SensorElementListType }
+	 * 
+	 */
+	public SensorElementListType getSensorElementList() {
+		return sensorElementList;
+	}
 
-    /**
-     * Sets the value of the sensorElementList property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link SensorElementListType }
-     *     
-     */
-    public void setSensorElementList(SensorElementListType value) {
-        this.sensorElementList = value;
-    }
+	/**
+	 * Sets the value of the sensorElementList property.
+	 * 
+	 * @param value allowed object is {@link SensorElementListType }
+	 * 
+	 */
+	public void setSensorElementList(SensorElementListType value) {
+		this.sensorElementList = value;
+	}
 
-    /**
-     * Gets the value of the persistentDisposition property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PersistentDispositionType }
-     *     
-     */
-    public PersistentDispositionType getPersistentDisposition() {
-        return persistentDisposition;
-    }
+	/**
+	 * Gets the value of the persistentDisposition property.
+	 * 
+	 * @return possible object is {@link PersistentDispositionType }
+	 * 
+	 */
+	public PersistentDispositionType getPersistentDisposition() {
+		return persistentDisposition;
+	}
 
-    /**
-     * Sets the value of the persistentDisposition property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PersistentDispositionType }
-     *     
-     */
-    public void setPersistentDisposition(PersistentDispositionType value) {
-        this.persistentDisposition = value;
-    }
+	/**
+	 * Sets the value of the persistentDisposition property.
+	 * 
+	 * @param value allowed object is {@link PersistentDispositionType }
+	 * 
+	 */
+	public void setPersistentDisposition(PersistentDispositionType value) {
+		this.persistentDisposition = value;
+	}
 
-    /**
-     * Gets the value of the extension property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link AssociationEventExtensionType }
-     *     
-     */
-    public AssociationEventExtensionType getExtension() {
-        return extension;
-    }
+	/**
+	 * Gets the value of the extension property.
+	 * 
+	 * @return possible object is {@link AssociationEventExtensionType }
+	 * 
+	 */
+	public AssociationEventExtensionType getExtension() {
+		return extension;
+	}
 
-    /**
-     * Sets the value of the extension property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link AssociationEventExtensionType }
-     *     
-     */
-    public void setExtension(AssociationEventExtensionType value) {
-        this.extension = value;
-    }
+	/**
+	 * Sets the value of the extension property.
+	 * 
+	 * @param value allowed object is {@link AssociationEventExtensionType }
+	 * 
+	 */
+	public void setExtension(AssociationEventExtensionType value) {
+		this.extension = value;
+	}
 
-    /**
-     * Gets the value of the any property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the any property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getAny().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link Object }
-     * {@link Element }
-     * 
-     * 
-     */
-    public List<Object> getAny() {
-        if (any == null) {
-            any = new ArrayList<Object>();
-        }
-        return this.any;
-    }
+	/**
+	 * Gets the value of the any property.
+	 * 
+	 * <p>
+	 * This accessor method returns a reference to the live list, not a snapshot.
+	 * Therefore any modification you make to the returned list will be present
+	 * inside the JAXB object. This is why there is not a <CODE>set</CODE> method
+	 * for the any property.
+	 * 
+	 * <p>
+	 * For example, to add a new item, do as follows:
+	 * 
+	 * <pre>
+	 * getAny().add(newItem);
+	 * </pre>
+	 * 
+	 * 
+	 * <p>
+	 * Objects of the following type(s) are allowed in the list {@link Object }
+	 * {@link Element }
+	 * 
+	 * 
+	 */
+	public List<Object> getAny() {
+		if (any == null) {
+			any = new ArrayList<Object>();
+		}
+		return this.any;
+	}
 
-    public void setAny(List<Object> any) {
-        this.any = any;
-    }
+	public void setAny(List<Object> any) {
+		this.any = any;
+	}
 }

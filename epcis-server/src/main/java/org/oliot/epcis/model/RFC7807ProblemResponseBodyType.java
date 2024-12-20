@@ -5,18 +5,19 @@
 // Generated on: 2024.12.19 at 01:15:43 PM KST 
 //
 
-
 package org.oliot.epcis.model;
-
 
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
 /**
- * <p>Java class for RFC7807ProblemResponseBodyType complex type.
+ * <p>
+ * Java class for RFC7807ProblemResponseBodyType complex type.
  * 
- * <p>The following schema fragment specifies the expected content contained within this class.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  * 
  * <pre>
  * &lt;complexType name="RFC7807ProblemResponseBodyType">
@@ -32,9 +33,6 @@ import jakarta.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RFC7807ProblemResponseBodyType")
-public class RFC7807ProblemResponseBodyType
-    extends Problem
-{
-
+public class RFC7807ProblemResponseBodyType extends Problem {
 
 }
