@@ -8,11 +8,8 @@
 
 package org.oliot.epcis.model;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.*;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 
 
@@ -43,7 +40,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
     "requestingDocumentInstanceIdentifier",
     "expectedResponseDateTime"
 })
-public class CorrelationInformation {
+public final class CorrelationInformation {
 
     @XmlElement(name = "RequestingDocumentCreationDateTime", namespace = "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader")
     @XmlSchemaType(name = "dateTime")

@@ -8,10 +8,10 @@
 
 package org.oliot.epcis.model;
 
-import java.math.BigDecimal;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementDecl;
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlElementDecl;
+import jakarta.xml.bind.annotation.XmlRegistry;
+
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
@@ -765,12 +765,12 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link BigDecimal }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link Double }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "", name = "quantity", scope = QuantityElementType.class)
-    public JAXBElement<BigDecimal> createQuantityElementTypeQuantity(BigDecimal value) {
-        return new JAXBElement<BigDecimal>(_QuantityElementTypeQuantity_QNAME, BigDecimal.class, QuantityElementType.class, value);
+    public JAXBElement<Double> createQuantityElementTypeQuantity(Double value) {
+        return new JAXBElement<Double>(_QuantityElementTypeQuantity_QNAME, Double.class, QuantityElementType.class, value);
     }
 
 }
