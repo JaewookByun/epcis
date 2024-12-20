@@ -177,9 +177,12 @@ public class EPCISDocumentConverter {
 		converted.put("recordTime", TimeUtil.getDateTimeStamp(recordTime));
 	}
 
-	private void putCertificationInfo(Document original, JsonObject converted) throws ValidationException {
-		if (original.containsKey("certificationInfo"))
-			converted.put("certificationInfo", original.getString("certificationInfo"));
+	private void putCertificationList(Document original, JsonObject converted) throws ValidationException {
+		if (!original.containsKey("certificationList"))
+			return;
+		
+		List<String> certificationList = original.getList("certificationList", String.class);
+		converted.put("certificationList", certificationList);
 	}
 
 	private void putEventID(Document original, JsonObject converted) {
@@ -703,7 +706,7 @@ public class EPCISDocumentConverter {
 		putEventTime(original, converted);
 		putEventTimeZoneOffset(original, converted);
 		putRecordTime(original, converted);
-		putCertificationInfo(original, converted);
+		putCertificationList(original, converted);
 		putEventID(original, converted);
 
 		putErrorDeclaration(original, converted, namespaces, extType);
