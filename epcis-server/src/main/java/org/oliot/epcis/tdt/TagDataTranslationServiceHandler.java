@@ -35,7 +35,7 @@ public class TagDataTranslationServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /tdt/:id] - router added");
 
-		router.get("/tdt").consumes("application/json").handler(routingContext -> {
+		router.get("/tdt").handler(routingContext -> {
 			try {
 				JsonObject obj = TagDataTranslationEngine.parse(routingContext.body().asJsonObject().getString("id"));
 				routingContext.response().putHeader("content-type", "application/json; charset=utf-8")

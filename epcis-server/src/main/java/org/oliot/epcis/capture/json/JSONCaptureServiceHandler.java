@@ -46,7 +46,7 @@ public class JSONCaptureServiceHandler {
 	public static void registerPostCaptureHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
 
-		router.post("/epcis/capture").consumes("application/json").handler(routingContext -> {
+		router.post("/epcis/capture").handler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version", false))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version", false))
@@ -66,7 +66,7 @@ public class JSONCaptureServiceHandler {
 	 * @param jsonCaptureService jsonCaptureService
 	 */
 	public static void registerGetCaptureIDHandler(Router router, JSONCaptureService jsonCaptureService) {
-		router.get("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/capture/:captureID").handler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))
@@ -87,7 +87,7 @@ public class JSONCaptureServiceHandler {
 	 */
 	public static void registerPostEventsHandler(Router router, JSONCaptureService jsonCaptureService,
 			EventBus eventBus) {
-		router.post("/epcis/events").consumes("*/json").blockingHandler(routingContext -> {
+		router.post("/epcis/events").blockingHandler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Version", false))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-CBV-Version", false))
@@ -104,7 +104,7 @@ public class JSONCaptureServiceHandler {
 	 * @param jsonCaptureService jsonCaptureService
 	 */
 	public static void registerValidationHandler(Router router, JSONCaptureService jsonCaptureService) {
-		router.post("/epcis/validation").consumes("*/json").handler(jsonCaptureService::postValidationResult);
+		router.post("/epcis/validation").handler(jsonCaptureService::postValidationResult);
 		EPCISServer.logger.info("[POST /epcis/validation (application/json)] - router added");
 	}
 
@@ -119,7 +119,7 @@ public class JSONCaptureServiceHandler {
 	 * @param jsonCaptureService jsonCaptureService
 	 */
 	public static void registerGetCaptureHandler(Router router, JSONCaptureService jsonCaptureService) {
-		router.get("/epcis/capture").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/capture").handler(routingContext -> {
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Min", false))
 				return;
 			if (!isEqualHeaderREST(routingContext, "GS1-EPCIS-Max", false))

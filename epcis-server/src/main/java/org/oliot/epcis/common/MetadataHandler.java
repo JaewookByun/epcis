@@ -70,17 +70,19 @@ public class MetadataHandler {
 	 */
 	public static void registerBaseHandler(Router router) {
 
+		// X1
 		router.options("/epcis").consumes("application/xml").handler(routingContext -> {
 			send204XMLResponse(routingContext.response(), "OPTIONS");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis (application/xml)] - router added");
 
+		// J1 (without Content-Type)
 		/**
 		 * Query server settings, EPCIS version(s) and related vocabularies/standards.
 		 * // `OPTIONS` on the root path gives the client an overview of the server's //
 		 * EPCIS-related configurations. (application/json)
 		 */
-		router.options("/epcis").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis (application/json)] - router added");
@@ -110,7 +112,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/capture (application/xml)] - router added");
 
-		router.options("/epcis/capture").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/capture").handler(routingContext -> {
 			send204JSONLResponse(
 					routingContext.response()
 							.putHeader("GS1-EPCIS-Capture-Limit", String.valueOf(Metadata.GS1_CAPTURE_limit))
@@ -166,7 +168,7 @@ public class MetadataHandler {
 		 * which vocabularies and EPCIS and CBV versions are used for a given capture
 		 * job.
 		 */
-		router.options("/epcis/capture/:captureID").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/capture/:captureID").handler(routingContext -> {
 			try {
 				String captureID = routingContext.pathParam("captureID");
 				List<Document> jobs = new ArrayList<Document>();
@@ -204,7 +206,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events (application/xml)] - router added");
 
-		router.options("/epcis/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/events").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, POST");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events (application/json)] - router added");
@@ -223,7 +225,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/vocabularies (application/xml)] - router added");
 
-		router.options("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/vocabularies").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/vocabularies (application/json)] - router added");
@@ -265,7 +267,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/events/:eventID (application/xml)] - router added");
 
-		router.options("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/events/:eventID").handler(routingContext -> {
 			try {
 				String eventID = routingContext.pathParam("eventID");
 				List<Document> jobs = new ArrayList<Document>();
@@ -327,7 +329,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/vocabularies/:vocabularyID (application/xml)] - router added");
 
-		router.options("/epcis/vocabularies/:vocabularyID").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/vocabularies/:vocabularyID").handler(routingContext -> {
 			try {
 				String vocabularyID = routingContext.pathParam("vocabularyID");
 				List<Document> jobs = new ArrayList<Document>();
@@ -382,7 +384,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes (application/xml)] - router added");
 
-		router.options("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/eventTypes").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes (application/json)] - router added");
@@ -397,7 +399,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/epcs (application/xml)] - router added");
 
-		router.options("/epcis/epcs").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/epcs").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/epcs (application/json)] - router added");
@@ -412,7 +414,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps (application/xml)] - router added");
 
-		router.options("/epcis/bizSteps").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/bizSteps").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps (application/json)] - router added");
@@ -427,7 +429,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations (application/xml)] - router added");
 
-		router.options("/epcis/bizLocations").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/bizLocations").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations (application/json)] - router added");
@@ -442,7 +444,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/readPoints (application/xml)] - router added");
 
-		router.options("/epcis/readPoints").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/readPoints").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/readPoints (application/json)] - router added");
@@ -457,7 +459,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/dispositions (application/xml)] - router added");
 
-		router.options("/epcis/dispositions").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/dispositions").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/dispositions (application/json)] - router added");
@@ -488,7 +490,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType (application/xml)] - router added");
 
-		router.options("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/eventTypes/:eventType").handler(routingContext -> {
 
 			String eventType = routingContext.pathParam("eventType");
 
@@ -529,7 +531,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/epcs/:epc (application/xml)] - router added");
 
-		router.options("/epcis/epcs/:epc").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/epcs/:epc").handler(routingContext -> {
 
 			String epc = routingContext.pathParam("epc");
 
@@ -574,7 +576,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps/:bizStep (application/xml)] - router added");
 
-		router.options("/epcis/bizSteps/:bizStep").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/bizSteps/:bizStep").handler(routingContext -> {
 
 			String bizStep = routingContext.pathParam("bizStep");
 
@@ -620,7 +622,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations/:bizLocation (application/xml)] - router added");
 
-		router.options("/epcis/bizLocations/:bizLocation").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/bizLocations/:bizLocation").handler(routingContext -> {
 
 			String bizLocation = routingContext.pathParam("bizLocation");
 
@@ -666,7 +668,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/readPoints/:readPoint (application/xml)] - router added");
 
-		router.options("/epcis/readPoints/:readPoint").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/readPoints/:readPoint").handler(routingContext -> {
 
 			String readPoint = routingContext.pathParam("readPoint");
 
@@ -711,7 +713,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/dispositions/:disposition (application/xml)] - router added");
 
-		router.options("/epcis/dispositions/:disposition").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/dispositions/:disposition").handler(routingContext -> {
 
 			String disposition = routingContext.pathParam("disposition");
 
@@ -756,7 +758,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/eventTypes/:eventType/events (application/xml)] - router added");
 
-		router.options("/epcis/eventTypes/:eventType/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/eventTypes/:eventType/events").handler(routingContext -> {
 
 			String eventType = routingContext.pathParam("eventType");
 
@@ -796,7 +798,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/epcs/:epc/events (application/xml)] - router added");
 
-		router.options("/epcis/epcs/:epc/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/epcs/:epc/events").handler(routingContext -> {
 
 			String epc = routingContext.pathParam("epc");
 
@@ -840,7 +842,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizSteps/:bizStep/events (application/xml)] - router added");
 
-		router.options("/epcis/bizSteps/:bizStep/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/bizSteps/:bizStep/events").handler(routingContext -> {
 
 			String bizStep = routingContext.pathParam("bizStep");
 
@@ -886,7 +888,7 @@ public class MetadataHandler {
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/bizLocations/:bizLocation/events (application/xml)] - router added");
 
-		router.options("/epcis/bizLocations/:bizLocation/events").consumes("application/json")
+		router.options("/epcis/bizLocations/:bizLocation/events")
 				.handler(routingContext -> {
 
 					String bizLocation = routingContext.pathParam("bizLocation");
@@ -934,7 +936,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/readPoints/:readPoint/events (application/xml)] - router added");
 
-		router.options("/epcis/readPoints/:readPoint/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/readPoints/:readPoint/events").handler(routingContext -> {
 
 			String readPoint = routingContext.pathParam("readPoint");
 
@@ -979,7 +981,7 @@ public class MetadataHandler {
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/dispositions/:disposition/events (application/xml)] - router added");
 
-		router.options("/epcis/dispositions/:disposition/events").consumes("application/json")
+		router.options("/epcis/dispositions/:disposition/events")
 				.handler(routingContext -> {
 
 					String disposition = routingContext.pathParam("disposition");
@@ -1027,7 +1029,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/epcs/:epc/vocabularies (application/xml)] - router added");
 
-		router.options("/epcis/epcs/:epc/vocabularies").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/epcs/:epc/vocabularies").handler(routingContext -> {
 
 			String epc = routingContext.pathParam("epc");
 
@@ -1074,7 +1076,7 @@ public class MetadataHandler {
 		EPCISServer.logger
 				.info("[OPTIONS /epcis/bizLocations/:bizLocation/vocabularies (application/xml)] - router added");
 
-		router.options("/epcis/bizLocations/:bizLocation/vocabularies").consumes("application/json")
+		router.options("/epcis/bizLocations/:bizLocation/vocabularies")
 				.handler(routingContext -> {
 
 					String bizLocation = routingContext.pathParam("bizLocation");
@@ -1124,7 +1126,7 @@ public class MetadataHandler {
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/readPoints/:readPoint/vocabularies (application/xml)] - router added");
 
-		router.options("/epcis/readPoints/:readPoint/vocabularies").consumes("application/json")
+		router.options("/epcis/readPoints/:readPoint/vocabularies")
 				.handler(routingContext -> {
 
 					String readPoint = routingContext.pathParam("readPoint");
@@ -1161,7 +1163,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/xml)] - router added");
 
-		router.options("/epcis/queries").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/queries").handler(routingContext -> {
 			send204JSONLResponse(routingContext.response(), "OPTIONS, GET, POST");
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries (application/json)] - router added");
@@ -1201,7 +1203,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName (application/xml)] - router added");
 
-		router.options("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/queries/:queryName").handler(routingContext -> {
 			try {
 				String queryName = routingContext.pathParam("queryName");
 				List<Document> queries = new ArrayList<Document>();
@@ -1258,7 +1260,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/events (application/xml)] - router added");
 
-		router.options("/epcis/queries/:queryName/events").consumes("application/json").handler(routingContext -> {
+		router.options("/epcis/queries/:queryName/events").handler(routingContext -> {
 
 			String queryName = routingContext.pathParam("queryName");
 
@@ -1322,7 +1324,7 @@ public class MetadataHandler {
 		});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/vocabularies (application/xml)] - router added");
 
-		router.options("/epcis/queries/:queryName/vocabularies").consumes("application/json")
+		router.options("/epcis/queries/:queryName/vocabularies")
 				.handler(routingContext -> {
 
 					String queryName = routingContext.pathParam("queryName");
@@ -1388,7 +1390,7 @@ public class MetadataHandler {
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
 
-		router.options("/epcis/queries/:queryName/subscriptions").consumes("application/json")
+		router.options("/epcis/queries/:queryName/subscriptions")
 				.handler(routingContext -> {
 
 					String queryName = routingContext.pathParam("queryName");
@@ -1471,7 +1473,7 @@ public class MetadataHandler {
 				});
 		EPCISServer.logger.info("[OPTIONS /epcis/queries/:queryName/subscriptions (application/xml)] - router added");
 
-		router.options("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/json")
+		router.options("/epcis/queries/:queryName/subscriptions/:subscriptionID")
 				.handler(routingContext -> {
 
 					String queryName = routingContext.pathParam("queryName");

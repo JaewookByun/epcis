@@ -319,7 +319,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/events (application/xml)] - router added");
 
-		router.get("/epcis/events").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/events").handler(routingContext -> {
 
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -390,7 +390,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/vocabularies (application/xml)] - router added");
 
-		router.get("/epcis/vocabularies").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/vocabularies").handler(routingContext -> {
 
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -487,7 +487,7 @@ public class RESTQueryServiceHandler {
 			}
 		});
 
-		router.get("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/events/:eventID").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -604,7 +604,7 @@ public class RESTQueryServiceHandler {
 			}
 		});
 
-		router.get("/epcis/events/:eventID").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/events/:eventID").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -707,7 +707,7 @@ public class RESTQueryServiceHandler {
 			}
 		});
 
-		router.get("/epcis/vocabularies/:vocabularyID").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/vocabularies/:vocabularyID").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -789,7 +789,7 @@ public class RESTQueryServiceHandler {
 			HTTPUtil.sendQueryResults(routingContext.response(), result, 200, "application/xml");
 		});
 
-		router.get("/epcis/eventTypes").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/eventTypes").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -844,7 +844,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/epcs").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/epcs").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -906,7 +906,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/bizSteps").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/bizSteps").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -968,7 +968,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/bizLocations").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/bizLocations").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -1030,7 +1030,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/readPoints").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/readPoints").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -1093,7 +1093,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/dispositions").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/dispositions").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -1149,7 +1149,7 @@ public class RESTQueryServiceHandler {
 
 		});
 
-		router.get("/epcis/eventTypes/:eventType").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/eventTypes/:eventType").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -1191,7 +1191,7 @@ public class RESTQueryServiceHandler {
 							200, "application/xml");
 				});
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType).consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType)
 				.handler(routingContext -> {
 					checkJSONPollHeaders(routingContext);
 					if (routingContext.response().closed())
@@ -1237,7 +1237,7 @@ public class RESTQueryServiceHandler {
 							200, "application/xml");
 				});
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType).consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType)
 				.handler(routingContext -> {
 					checkJSONPollHeaders(routingContext);
 					if (routingContext.response().closed())
@@ -1283,7 +1283,7 @@ public class RESTQueryServiceHandler {
 							200, "application/xml");
 				});
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType).consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType)
 				.handler(routingContext -> {
 					checkJSONPollHeaders(routingContext);
 					if (routingContext.response().closed())
@@ -1332,7 +1332,7 @@ public class RESTQueryServiceHandler {
 							200, "application/xml");
 				});
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType).consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType)
 				.handler(routingContext -> {
 					checkJSONPollHeaders(routingContext);
 					if (routingContext.response().closed())
@@ -1378,7 +1378,7 @@ public class RESTQueryServiceHandler {
 							200, "application/xml");
 				});
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType).consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType)
 				.handler(routingContext -> {
 					checkJSONPollHeaders(routingContext);
 					if (routingContext.response().closed())
@@ -1449,7 +1449,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -1556,7 +1556,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -1668,7 +1668,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -1768,7 +1768,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -1867,7 +1867,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -1966,7 +1966,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info(
 				"[GET /epcis/" + resourceType + "s/:" + resourceType + "/events (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/events")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -2075,7 +2075,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -2188,7 +2188,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -2301,7 +2301,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger.info("[GET /epcis/" + resourceType + "s/:" + resourceType
 				+ "/vocabularies  (application/xml)] - router added");
 
-		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies").consumes("application/json")
+		router.get("/epcis/" + resourceType + "s/:" + resourceType + "/vocabularies")
 				.handler(routingContext -> {
 
 					checkJSONPollHeaders(routingContext);
@@ -2403,7 +2403,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[POST /queries (application/xml)] - router added");
 
-		router.post("/epcis/queries").consumes("application/json").handler(routingContext -> {
+		router.post("/epcis/queries").handler(routingContext -> {
 
 			checkJSONPollHeaders2(routingContext);
 			if (routingContext.response().closed())
@@ -2454,7 +2454,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /queries/:queryName (application/xml)] - router added");
 
-		router.get("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/queries/:queryName").handler(routingContext -> {
 
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -2485,7 +2485,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[DELETE /queries/:queryName (application/xml)] - router added");
 
-		router.delete("/epcis/queries/:queryName").consumes("application/json").handler(routingContext -> {
+		router.delete("/epcis/queries/:queryName").handler(routingContext -> {
 
 			String queryName = routingContext.pathParam("queryName");
 			restQueryService.deleteJSONQuery(routingContext, queryName);
@@ -2538,7 +2538,7 @@ public class RESTQueryServiceHandler {
 
 		EPCISServer.logger.info("[GET /queries (application/xml)] - router added");
 
-		router.get("/epcis/queries").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/queries").handler(routingContext -> {
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
 				return;
@@ -2754,7 +2754,7 @@ public class RESTQueryServiceHandler {
 		});
 		EPCISServer.logger.info("[GET /epcis/queries/:queryName/vocabularies (application/xml)] - router added");
 
-		router.get("/epcis/queries/:queryName/vocabularies").consumes("application/json").handler(routingContext -> {
+		router.get("/epcis/queries/:queryName/vocabularies").handler(routingContext -> {
 
 			checkJSONPollHeaders(routingContext);
 			if (routingContext.response().closed())
@@ -2951,7 +2951,7 @@ public class RESTQueryServiceHandler {
 		EPCISServer.logger
 				.info("[DELETE /queries/:queryName/subscriptions/:subscriptionID (application/xml)] - router added");
 
-		router.delete("/epcis/queries/:queryName/subscriptions/:subscriptionID").consumes("application/json")
+		router.delete("/epcis/queries/:queryName/subscriptions/:subscriptionID")
 				.handler(routingContext -> {
 
 					String queryName = routingContext.pathParam("queryName");

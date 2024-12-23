@@ -123,7 +123,7 @@ public class CommonHandler {
 		});
 		EPCISServer.logger.info("[DELETE /epcis/nextPageToken/:token (application/xml)] - router added");
 
-		router.delete("/epcis/nextPageToken/:token").consumes("application/json").handler(routingContext -> {
+		router.delete("/epcis/nextPageToken/:token").handler(routingContext -> {
 
 			String token = routingContext.pathParam("token");
 
