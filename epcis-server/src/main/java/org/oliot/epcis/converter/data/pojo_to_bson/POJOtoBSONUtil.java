@@ -15,6 +15,7 @@ import org.oliot.epcis.model.ActionType;
 import org.oliot.epcis.model.BusinessLocationType;
 import org.oliot.epcis.model.BusinessTransactionListType;
 import org.oliot.epcis.model.BusinessTransactionType;
+import org.oliot.epcis.model.CertificationList;
 import org.oliot.epcis.model.CorrectiveEventIDsType;
 import org.oliot.epcis.model.DestinationListType;
 import org.oliot.epcis.model.EPC;
@@ -79,9 +80,18 @@ public class POJOtoBSONUtil {
 		o.put("recordTime", System.currentTimeMillis());
 	}
 
-	public static void putCertificationInfo(Document o, String v) {
-		if (v != null)
-			o.put("certificationInfo", v);
+	public static void putCertificationList(Document o, CertificationList v) {
+		if (v == null)
+			return;
+		
+		if (v.getCertificationInfo().isEmpty())
+			return;
+		
+		ArrayList<String> certificationInfo = new ArrayList<String>();
+		for (String info : v.getCertificationInfo()) {
+			certificationInfo.add(info);
+		}
+		o.put("certificationList", certificationInfo);
 	}
 
 	// Object

@@ -616,7 +616,7 @@
     "eventID": {
       "$ref": "#/definitions/uri"
     },
-    "certificationInfo": {
+    "certificationList": {
       "anyOf": [
         {
           "type": "array",
@@ -974,8 +974,8 @@
         "eventID": {
           "$ref": "#/definitions/eventID"
         },
-        "certificationInfo": {
-          "$ref": "#/definitions/certificationInfo"
+        "certificationList": {
+          "$ref": "#/definitions/certificationList"
         },
         "errorDeclaration": {
           "$ref": "#/definitions/errorDeclaration"
@@ -997,7 +997,7 @@
             "recordTime",
             "eventTimeZoneOffset",
             "eventID",
-            "certificationInfo",
+            "certificationList",
             "errorDeclaration"
           ]
         },

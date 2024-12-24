@@ -8,6 +8,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import org.bson.Document;
+import org.oliot.epcis.model.CertificationList;
 import org.oliot.epcis.model.CorrectiveEventIDsType;
 import org.oliot.epcis.model.EPCISEventType;
 import org.oliot.epcis.model.ErrorDeclarationType;
@@ -52,9 +53,11 @@ public class EPCISEventConverter {
 			event.setRecordTime(recordTime);
 
 		// Certification Info
-		String certificationInfo = obj.getString("certificationInfo");
-		if (certificationInfo != null)
-			event.setCertificationInfo(certificationInfo);
+		List<String> certificationList = obj.getList("certificationList", String.class);
+		if (certificationList != null && !certificationList.isEmpty()) {
+			CertificationList ct = new CertificationList(certificationList);
+			event.setCertificationList(ct);
+		}
 
 		// Event ID
 		event.setEventID(obj.getString("eventID"));
