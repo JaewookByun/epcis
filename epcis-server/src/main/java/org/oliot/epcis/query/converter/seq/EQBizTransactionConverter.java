@@ -36,7 +36,7 @@ public class EQBizTransactionConverter extends BaseConverter implements QueryCon
 			try {
 				TagDataTranslationEngine.checkBusinessTransactionEPCPureIdentity(StaticResource.gcpLength, v);
 				if (type.isEmpty()) {
-					docList.add(new Document("bizTransactionList", new Document("value", v)));
+					docList.add(new Document("bizTransactionList", new Document("$elemMatch", new Document("value", v))));
 				} else {
 					docList.add(new Document("bizTransactionList",
 							new Document("$elemMatch", new Document().append("type", type).append("value", v))));
