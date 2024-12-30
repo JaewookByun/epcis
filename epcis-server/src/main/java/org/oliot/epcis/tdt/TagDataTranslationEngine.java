@@ -157,6 +157,21 @@ public class TagDataTranslationEngine {
 				if (LGTINList[i].matcher(epcString).find())
 					return;
 			}
+		} else if (epcString.startsWith("urn:epc:idpat:grai")) {
+			for (int i = 0; i < cGRAIList.length; i++) {
+				if (cGRAIList[i].matcher(epcString).find())
+					return;
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:gdti")) {
+			for (int i = 0; i < cGDTIList.length; i++) {
+				if (cGDTIList[i].matcher(epcString).find())
+					return;
+			}
+		} else if (epcString.startsWith("urn:epc:idpat:sgcn")) {
+			for (int i = 0; i < cSGCNist.length; i++) {
+				if (cSGCNist[i].matcher(epcString).find())
+					return;
+			}
 		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {
 			for (int i = 0; i < cCPIList.length; i++) {
 				if (cCPIList[i].matcher(epcString).find())
