@@ -1,6 +1,6 @@
 package org.oliot.epcis.converter.data.pojo_to_bson;
 
-import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.putCertificationInfo;
+import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.putCertificationList;
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.putErrorDeclaration;
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.putEventID;
 import static org.oliot.epcis.converter.data.pojo_to_bson.POJOtoBSONUtil.putEventTime;
@@ -35,8 +35,9 @@ public class EPCISEventConverter {
 		putEventTimeZoneOffset(dbo, obj.getEventTimeZoneOffset());
 		// Record Time : according to M5
 		putRecordTime(dbo);
-		// Certification Info
-		putCertificationInfo(dbo, obj.getCertificationInfo());
+
+		// Certification List
+		putCertificationList(dbo, obj.getCertificationList());
 
 		// OtherAttributes
 		// putOtherAttributes(dbo, obj.getOtherAttributes());

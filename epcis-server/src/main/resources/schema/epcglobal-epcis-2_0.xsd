@@ -3,7 +3,9 @@
             xmlns:sbdh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
             xmlns:epcglobal="urn:epcglobal:xsd:1"
             xmlns:jxb="http://java.sun.com/xml/ns/jaxb" jxb:version="2.1"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:epcglobal:epcis:xsd:2"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:rfc7807="urn:ietf:rfc:7807"            
+            targetNamespace="urn:epcglobal:epcis:xsd:2"
             elementFormDefault="unqualified" attributeFormDefault="unqualified" version="2.0">
     <xsd:annotation>
         <xsd:documentation xml:lang="en">
@@ -27,6 +29,8 @@
                 schemaLocation="epcglobal.xsd"/>
     <xsd:import namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
                 schemaLocation="StandardBusinessDocumentHeader.xsd"/>
+	<xsd:import namespace="urn:ietf:rfc:7807" schemaLocation="./rfc7807.xsd"/>
+
     <!-- EPCIS CORE ELEMENTS -->
     <xsd:element name="EPCISDocument" type="epcis:EPCISDocumentType"/>
     <!-- #2 oliot extension -->
@@ -456,7 +460,7 @@
             <xsd:element name="eventTimeZoneOffset" type="xsd:string"/>
             <xsd:element name="eventID" type="epcis:EventIDType" minOccurs="0"/>
             <xsd:element name="errorDeclaration" type="epcis:ErrorDeclarationType" minOccurs="0"/>
-            <xsd:element name="certificationInfo" type="xsd:anyURI" minOccurs="0"/>
+            <xsd:element name="certificationList" type="epcis:CertificationList" minOccurs="0" />
             <xsd:element name="baseExtension" type="epcis:EPCISEventExtensionType" minOccurs="0"/>
         </xsd:sequence>
         <xsd:anyAttribute processContents="lax"/>
@@ -473,6 +477,12 @@
       <xsd:anyAttribute processContents="lax"/>
     </xsd:complexType>
   -->
+	<xsd:complexType name="CertificationList">
+		<xsd:sequence>
+			<xsd:element name="certificationInfo" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>  
+	
     <xsd:simpleType name="DateTimeStamp">
         <xsd:restriction base="xsd:dateTime">
             <xsd:pattern
@@ -865,35 +875,37 @@
     </xsd:complexType>
 
     <!-- Capture 2.0 -->    
-    <xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType"/>
-    <xsd:complexType name="EPCISCaptureJobType">
-        <xsd:sequence>
-            <xsd:element name="captureErrorBehaviour" type="epcis:EPCISCaptureErrorBehaviourType" minOccurs="1"
-                         maxOccurs="1"/>
-            <xsd:element name="createdAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="finishedAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1"/>
-            <xsd:choice minOccurs="0" maxOccurs="1">
-                <xsd:element name="errors" type="epcis:EPCISCaptureDocumentErrorListType"/>
-                <xsd:element name="errorFile" type="xsd:anyURI"/>
-            </xsd:choice>
-            <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
-        <xsd:attribute name="running" use="required" type="xsd:boolean"/>
-        <xsd:attribute name="success" use="required" type="xsd:boolean"/>
-        <xsd:attribute name="captureID" use="required" type="xsd:string"/>
-        <xsd:anyAttribute processContents="lax"/>
-    </xsd:complexType>
+    <xsd:complexType name="EPCISCaptureJobListType">
+    	<xsd:sequence>
+      		<xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType" minOccurs="0" maxOccurs="unbounded"/>
+    	</xsd:sequence>
+  	</xsd:complexType>
+
+  	<xsd:element name="EPCISCaptureJobList" type="epcis:EPCISCaptureJobListType"/>
+
+  	<xsd:element name="EPCISCaptureJob" type="epcis:EPCISCaptureJobType"/>
+  	<xsd:complexType name="EPCISCaptureJobType">
+    	<xsd:sequence>
+			<xsd:element name="captureErrorBehaviour" type="epcis:EPCISCaptureErrorBehaviourType" minOccurs="1" maxOccurs="1" />
+	      	<xsd:element name="createdAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1" />
+	      	<xsd:element name="finishedAt" type="epcis:DateTimeStamp" minOccurs="0" maxOccurs="1" />
+	      	<xsd:choice minOccurs="0" maxOccurs="1">
+				<xsd:element name="errors" type="epcis:EPCISCaptureDocumentErrorListType" />
+	        	<xsd:element name="errorFile" type="xsd:anyURI" />
+	      	</xsd:choice>
+  			<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	    <xsd:attribute name="running" use="required" type="xsd:boolean" />
+	    <xsd:attribute name="success" use="required" type="xsd:boolean" />
+	    <xsd:attribute name="captureID" use="required" type="xsd:string" />
+	    <xsd:anyAttribute processContents="lax"/>
+  	</xsd:complexType>
 
     <xsd:element name="EPCISException" type="epcis:RFC7807ProblemResponseBodyType"/>
     <xsd:complexType name="RFC7807ProblemResponseBodyType">
-        <xsd:sequence>
-            <xsd:element name="type" type="xsd:anyURI" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="title" type="xsd:string" minOccurs="1" maxOccurs="1"/>
-            <xsd:element name="status" type="xsd:int" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="detail" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="instance" type="xsd:anyURI" minOccurs="0" maxOccurs="1"/>
-            <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
+		<xsd:complexContent>
+			<xsd:extension base="rfc7807:problem" /> 
+ 		</xsd:complexContent>
     </xsd:complexType>
 
     <xsd:simpleType name="EPCISCaptureErrorBehaviourType">
@@ -905,7 +917,11 @@
 
     <xsd:complexType name="EPCISCaptureDocumentErrorListType">
         <xsd:sequence>
-            <xsd:element name="error" type="epcis:RFC7807ProblemResponseBodyType" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:choice>
+        		<xsd:element name="problem" type="epcis:RFC7807ProblemResponseBodyType" minOccurs="1" maxOccurs="unbounded" />
+        		<!-- "error" to de deprecated, RFC7807 wants "problem" -->
+        		<xsd:element name="error" type="epcis:RFC7807ProblemResponseBodyType" minOccurs="1" maxOccurs="unbounded" />
+      		</xsd:choice>
         </xsd:sequence>
     </xsd:complexType>
 </xsd:schema>

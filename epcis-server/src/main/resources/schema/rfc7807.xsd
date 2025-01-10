@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:rfc7807="urn:ietf:rfc:7807" targetNamespace="urn:ietf:rfc:7807" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.0">
+
+  <xsd:complexType name="problem">
+    <xsd:sequence>
+      <xsd:element name="type" type="xsd:anyURI" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="title" type="xsd:string" minOccurs="1" maxOccurs="1" />
+      <xsd:element name="status" type="xsd:int" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="detail" type="xsd:string" minOccurs="0" maxOccurs="1" />
+      <xsd:element name="instance" type="xsd:anyURI" minOccurs="0" maxOccurs="1" />
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+</xsd:schema>

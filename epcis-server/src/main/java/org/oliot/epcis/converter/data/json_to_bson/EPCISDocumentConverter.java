@@ -198,16 +198,26 @@ public class EPCISDocumentConverter {
 		converted.put("recordTime", System.currentTimeMillis());
 	}
 
-	private void putCertificationInfo(Document original, Document converted) throws ValidationException {
-		String certificationInfo = original.getString("certificationInfo");
-		if (certificationInfo != null) {
+	private void putCertificationList(Document original, Document converted) throws ValidationException {
+		
+		if (!original.containsKey("certificationList"))
+			return;
+		
+		List<String> certificationList = original.getList("certificationList", String.class);
+		
+		if (certificationList.isEmpty())
+			return;
+		
+		List<String> certificationArray = new ArrayList<String>();
+		for(String certificationInfo : certificationList) {
 			try {
 				new URI(certificationInfo);
-				converted.put("certificationInfo", certificationInfo);
+				certificationArray.add(certificationInfo);
 			} catch (URISyntaxException e) {
 				throw new ValidationException(e.getMessage());
 			}
 		}
+		converted.put("certificationList", certificationArray);
 	}
 
 	private void putEventID(Document original, Document converted) {
@@ -802,7 +812,7 @@ public class EPCISDocumentConverter {
 		putEventTime(original, converted);
 		putEventTimeZoneOffset(original, converted);
 		putRecordTime(converted);
-		putCertificationInfo(original, converted);
+		putCertificationList(original, converted);
 		putEventID(original, converted);
 		putErrorDeclaration(original, context, converted);
 		putBaseExtension(original, context, converted);
