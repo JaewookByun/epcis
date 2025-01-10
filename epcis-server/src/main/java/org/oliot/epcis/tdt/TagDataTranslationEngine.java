@@ -168,8 +168,8 @@ public class TagDataTranslationEngine {
 					return;
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:sgcn")) {
-			for (int i = 0; i < cSGCNist.length; i++) {
-				if (cSGCNist[i].matcher(epcString).find())
+			for (int i = 0; i < cSGCNList.length; i++) {
+				if (cSGCNList[i].matcher(epcString).find())
 					return;
 			}
 		} else if (epcString.startsWith("urn:epc:idpat:cpi")) {

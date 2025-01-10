@@ -142,7 +142,7 @@ public class EPCPatterns {
 			Pattern.compile("^urn:epc:id:sgcn:([0-9]{7})\\.([0-9]{5})\\.([!%-?A-Z_a-z\\x22]{0,12})$"),
 			Pattern.compile("^urn:epc:id:sgcn:([0-9]{6})\\.([0-9]{6})\\.([!%-?A-Z_a-z\\x22]{0,12})$") };
 
-	public static final Pattern[] cSGCNist = new Pattern[] {
+	public static final Pattern[] cSGCNList = new Pattern[] {
 			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{12})\\.([0-9]{0})\\.\\*$"),
 			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{11})\\.([0-9]{1})\\.\\*$"),
 			Pattern.compile("^urn:epc:idpat:sgcn:([0-9]{10})\\.([0-9]{2})\\.\\*$"),
