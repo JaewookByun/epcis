@@ -1,4 +1,4 @@
-FROM maven:3.9.6-eclipse-temurin-21
+FROM maven:3.9.11-eclipse-temurin-21
 
 WORKDIR /project
 COPY ./epcis-server/ /project/
